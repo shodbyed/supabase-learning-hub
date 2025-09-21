@@ -38,6 +38,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 // Components
 import { NavBar } from './navigation/NavBar';
 import { NavRoutes } from './navigation/NavRoutes';
+import { UserProvider } from './context/UserProvider';
 
 // CSS
 import './App.css';
@@ -48,10 +49,12 @@ const App: React.FC = () => {
       style={{ minHeight: '100vh', minWidth: '100vw' }}
       className="full-screen"
     >
-      <Router>
-        <NavBar />
-        <NavRoutes />
-      </Router>
+      <UserProvider>
+        <Router>
+          <NavBar />
+          <NavRoutes />
+        </Router>
+      </UserProvider>
     </div>
   );
 };
