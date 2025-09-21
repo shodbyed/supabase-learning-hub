@@ -35,7 +35,9 @@ This file tracks the steps required to implement the Supabase authentication log
 
    - [x] Install React Router DOM for navigation.
    - [x] Set up routing in the app using React Router.
-   - [ ] Configure css to App.tsx to be more generic so pages can be dynamic
+   - [x] Configure css to App.tsx to be more generic so pages can be dynamic
+   - [x] Create modular css for index, App, and Navigation
+   - [ ] Add a check to see if user is logged in.
    - [ ] Add Login screen to route and navigation
    - [ ] Create a secure page (e.g., dashboard) for logged-in users.
    - [ ] Redirect users to the secure page after successful login.

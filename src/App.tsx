@@ -31,10 +31,15 @@ const App: React.FC = () => {
 
 export default App;
 */
-import React from 'react';
+
+// Navigation
 import { BrowserRouter as Router } from 'react-router-dom';
+
+// Components
 import { NavBar } from './navigation/NavBar';
 import { NavRoutes } from './navigation/NavRoutes';
+
+// CSS
 import './App.css';
 
 const App: React.FC = () => {
@@ -45,7 +50,6 @@ const App: React.FC = () => {
     >
       <Router>
         <NavBar />
-
         <NavRoutes />
       </Router>
     </div>

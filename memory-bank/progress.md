@@ -14,12 +14,13 @@
 - Set up routing in the app using React Router.
 - Modularized navigation into `NavBar` and `NavRoutes` components.
 - Created a `Home` page with a link to the Login page.
+- Created an `About` and added it to the navigation.
+- Updated CSS to ensure the navigation bar spans the full width of the screen and removed unnecessary background colors.
 - Verified that navigation between `/`, `/about`, and `/login` works as expected.
 
 ## What's Left to Build
 
-- set the css to App.tsx to make the sight more generic
-- Enhance the `Home` page with additional content or styling.
+- Enhance the `Home` and `About` pages with additional content or styling.
 - Add authentication logic to protect certain routes (e.g., `/dashboard`).
 - Create a secure page (e.g., dashboard) for logged-in users.
 - Redirect users to a secure page (e.g., dashboard) after successful login.
@@ -28,7 +29,8 @@
 ## Current Status
 
 - Navigation is modularized and functional
-- The 'Home' page is implemented and has a link to the login page
+- The `Home` and `About` pages are implemented and linked in the navigation.
+- CSS for navigation and layout has been modularized and improved.
 
 ## Known Issues
 

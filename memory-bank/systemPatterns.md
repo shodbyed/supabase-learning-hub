@@ -38,6 +38,7 @@
 - `NavBar` handles navigation links and is used in `App.tsx`.
 - `NavRoutes` defines all application routes and is used in `App.tsx`.
 - `Home` is the landing page and includes a link to the Login page.
+- `About` is a static page added to the navigation.
 - `Login` handles user authentication.
 
 ## Emerging Patterns
@@ -49,3 +50,4 @@
 - **Modular Navigation**: Navigation is split into `NavBar` (links) and `NavRoutes` (routes) for better maintainability.
 - **Declarative Routing**: React Router DOM is used to define routes declaratively.
 - **Reusable Components**: Components like `NavBar` and `NavRoutes` are designed to be reusable and modular.
+- **Modular CSS**: Navigation-specific styles are moved to `navigation.css` for better organization and maintainability.
