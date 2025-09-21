@@ -35,14 +35,20 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { NavBar } from './navigation/NavBar';
 import { NavRoutes } from './navigation/NavRoutes';
+import './App.css';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <NavBar />
+    <div
+      style={{ minHeight: '100vh', minWidth: '100vw' }}
+      className="full-screen"
+    >
+      <Router>
+        <NavBar />
 
-      <NavRoutes />
-    </Router>
+        <NavRoutes />
+      </Router>
+    </div>
   );
 };
 

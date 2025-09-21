@@ -35,6 +35,10 @@
 - `Login.tsx` handles user authentication by interacting with `supabaseClient.ts`.
 - Future components (e.g., Login UI) will also import `supabaseClient.ts` to interact with Supabase for authentication and other features.
 - React Router DOM is used to manage navigation and routing in the app.
+- `NavBar` handles navigation links and is used in `App.tsx`.
+- `NavRoutes` defines all application routes and is used in `App.tsx`.
+- `Home` is the landing page and includes a link to the Login page.
+- `Login` handles user authentication.
 
 ## Emerging Patterns
 
@@ -42,3 +46,6 @@
 - **Environment-Driven Configuration**: All sensitive configuration (e.g., API keys) is stored in `.env` and accessed via `import.meta.env`, making the app portable and secure.
 - **Step-by-Step Development**: Each feature (e.g., authentication) is built incrementally, with clear testing and validation at each step.
 - **Navigation Flow**: React Router DOM is used to define and protect routes, ensuring secure access to authenticated pages.
+- **Modular Navigation**: Navigation is split into `NavBar` (links) and `NavRoutes` (routes) for better maintainability.
+- **Declarative Routing**: React Router DOM is used to define routes declaratively.
+- **Reusable Components**: Components like `NavBar` and `NavRoutes` are designed to be reusable and modular.

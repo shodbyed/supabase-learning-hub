@@ -34,7 +34,9 @@ This file tracks the steps required to implement the Supabase authentication log
 5. **Set Up Navigation Flow**
 
    - [x] Install React Router DOM for navigation.
-   - [ ] Set up routing in the app using React Router.
+   - [x] Set up routing in the app using React Router.
+   - [ ] Configure css to App.tsx to be more generic so pages can be dynamic
+   - [ ] Add Login screen to route and navigation
    - [ ] Create a secure page (e.g., dashboard) for logged-in users.
    - [ ] Redirect users to the secure page after successful login.
 

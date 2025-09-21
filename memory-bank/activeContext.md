@@ -2,22 +2,20 @@
 
 ## Current Work Focus
 
-## Current Work Focus
-
-- Setting up navigation flow using React Router.
-- Redirecting users to a secure page after successful login.
+- Modularizing navigation into `NavBar` and `NavRoutes` components.
+- Adding and linking the `Home` page to the Login page.
 
 ## Recent Changes
 
-- Implemented login logic using Supabase's `signInWithPassword` method.
-- Successfully logged in with a registered user.
-- Installed React Router DOM for navigation.
+- Created a `Home` page with a link to the Login page.
+- Modularized navigation into `NavBar` and `NavRoutes` components.
+- Updated routing to include `/`, `/about`, and `/login`.
 
 ## Next Steps
 
-- Set up routing in the app using React Router.
+- Enhance the `Home` page with additional content or styling.
+- Add authentication logic to protect certain routes (e.g., `/dashboard`).
 - Create a secure page (e.g., dashboard) for logged-in users.
-- Redirect users to the secure page after successful login.
 
 ## Active Decisions and Considerations
 
