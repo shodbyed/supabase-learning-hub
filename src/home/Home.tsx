@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/useUser';
+import { LogoutButton } from '../login/LogoutButton';
 
 export const Home: React.FC = () => {
   const { isLoggedIn, user } = useUser();
@@ -15,6 +16,7 @@ export const Home: React.FC = () => {
           You are logged in as <strong>{user.email}</strong>.
         </p>
       )}
+      {isLoggedIn && <LogoutButton />}
     </div>
   );
 };

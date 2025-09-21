@@ -27,10 +27,32 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     checkUserSession();
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_, session) => {
+        if (session) {
+          setIsLoggedIn(true);
+          setUser(session.user);
+        } else {
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
+    setUser(null);
+  };
+
   return (
-    <UserContext.Provider value={{ isLoggedIn, user }}>
+    <UserContext.Provider value={{ isLoggedIn, user, logout }}>
       {children}
     </UserContext.Provider>
   );

@@ -39,10 +39,12 @@
 - `NavRoutes` defines all application routes and is used in `App.tsx`.
 - `Home` is the landing page and includes a link to the Login page.
 - `About` is a static page added to the navigation.
-- `Login` handles user authentication.
+- `Login` handles user authentication and integrates with Supabase's `signInWithPassword`.
 - `UserContext` provides a centralized context for managing user authentication state.
 - `UserProvider` wraps the app and manages the `UserContext` state, including `isLoggedIn` and `user`.
 - `useUser` is a custom hook that allows components to access the `UserContext`.
+- `LogoutButton` triggers the logout process and updates the `UserContext`.
+- `UserProvider` manages the authentication state (`isLoggedIn` and `user`) and provides it to the app.
 
 ## Emerging Patterns
 
@@ -57,3 +59,7 @@
 - **Centralized Authentication State**: The `UserContext` and `UserProvider` manage the authentication state (`isLoggedIn` and `user`) and provide it to the app via React Context.
 - **Custom Hooks for Context Access**: The `useUser` hook simplifies access to the `UserContext` and ensures proper usage by throwing an error if used outside of a `UserProvider`.
 - **Separation of Concerns**: The `UserContext`, `UserProvider`, and `useUser` are split into separate files for better maintainability and compatibility with React Fast Refresh.
+- **Authentication Flow**: The `Login` component and `LogoutButton` integrate with Supabase and the `UserContext` to manage authentication state.
+- **Navigation**: React Router's `useNavigate` is used to programmatically navigate after login and logout.
+- **Styling with Tailwind CSS**: Tailwind CSS will be used for utility-first styling, ensuring a consistent and responsive design system.
+- **Reusable Components with shadcn**: shadcn components will be integrated for accessible and reusable UI elements.

@@ -17,6 +17,9 @@
 - Created an `About` and added it to the navigation.
 - Updated CSS to ensure the navigation bar spans the full width of the screen and removed unnecessary background colors.
 - Verified that navigation between `/`, `/about`, and `/login` works as expected.
+- Added logout functionality and ensured it updates the `UserContext`.
+- Implemented navigation to the home page after successful login.
+- Verified that the logout button works and redirects to the home page.
 
 ## What's Left to Build
 
@@ -31,6 +34,8 @@
 - Navigation is modularized and functional
 - The `Home` and `About` pages are implemented and linked in the navigation.
 - CSS for navigation and layout has been modularized and improved.
+- Login and logout flows are functional and integrated with the `UserContext`.
+- Navigation works as expected after login and logout.
 
 ## Known Issues
 
