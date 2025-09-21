@@ -40,6 +40,9 @@
 - `Home` is the landing page and includes a link to the Login page.
 - `About` is a static page added to the navigation.
 - `Login` handles user authentication.
+- `UserContext` provides a centralized context for managing user authentication state.
+- `UserProvider` wraps the app and manages the `UserContext` state, including `isLoggedIn` and `user`.
+- `useUser` is a custom hook that allows components to access the `UserContext`.
 
 ## Emerging Patterns
 
@@ -51,3 +54,6 @@
 - **Declarative Routing**: React Router DOM is used to define routes declaratively.
 - **Reusable Components**: Components like `NavBar` and `NavRoutes` are designed to be reusable and modular.
 - **Modular CSS**: Navigation-specific styles are moved to `navigation.css` for better organization and maintainability.
+- **Centralized Authentication State**: The `UserContext` and `UserProvider` manage the authentication state (`isLoggedIn` and `user`) and provide it to the app via React Context.
+- **Custom Hooks for Context Access**: The `useUser` hook simplifies access to the `UserContext` and ensures proper usage by throwing an error if used outside of a `UserProvider`.
+- **Separation of Concerns**: The `UserContext`, `UserProvider`, and `useUser` are split into separate files for better maintainability and compatibility with React Fast Refresh.

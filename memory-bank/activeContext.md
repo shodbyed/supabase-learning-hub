@@ -2,9 +2,8 @@
 
 ## Current Work Focus
 
-- Modularizing navigation into `NavBar` and `NavRoutes` components.
-- Adding and linking the `Home` and `About` pages to the navigation.
-- Refining CSS for navigation and layout to ensure proper alignment and responsiveness.
+- Ensuring the `UserContext` integrates seamlessly with navigation and page components.
+- Using `UserContext` to dynamically control navigation links and page access based on the user's authentication state.
 
 ## Recent Changes
 
@@ -13,6 +12,10 @@
 - Updated routing to include `/`, `/about`, and `/login`.
 - Modularized CSS for navigation into `navigation.css`.
 - Ensured the navigation bar spans the full width of the screen with a dark blue border.
+- Added `UserContext` to manage user authentication state.
+- Created `UserProvider` to wrap the app and provide `UserContext` to all components.
+- Implemented `useUser` hook to simplify access to the `UserContext`.
+- Separated `UserContext`, `UserProvider`, and `useUser` into individual files to improve maintainability and compatibility with React Fast Refresh.
 
 ## Next Steps
 
