@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input'; // shadcn Input component
 import { Label } from '@/components/ui/label'; // shadcn Label component
 import { Button } from '@/components/ui/button'; // shadcn Button component
@@ -62,6 +62,10 @@ export const Login: React.FC = () => {
           {loading ? 'Logging in...' : 'Login'}
         </Button>
       </CardAction>
+      <CardFooter className="mt-4 text-sm flex justify-around w-full">
+        <Link to="/register">Register</Link>
+        <a href="#">Forgot Password?</a>
+      </CardFooter>
     </LoginCard>
   );
 };
