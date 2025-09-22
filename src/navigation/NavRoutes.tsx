@@ -6,6 +6,7 @@ import { ForgotPassword } from '../login/ForgotPassword';
 import { ResetPassword } from '../login/ResetPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
+import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 
 const routes = [
   { path: '/', element: <Home /> },
@@ -15,6 +16,7 @@ const routes = [
   { path: '/forgot-password', element: <ForgotPassword /> },
   { path: '/reset-password', element: <ResetPassword /> },
   { path: '/confirm', element: <EmailConfirmation /> },
+  { path: '/new-player', element: <NewPlayerForm /> },
 ];
 
 export const NavRoutes: React.FC = () => {

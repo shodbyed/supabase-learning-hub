@@ -5,7 +5,9 @@
 - Ensuring the login and logout flows are seamless and user-friendly.
 - ~~Preparing to add register and forgot password flows.~~ ✅ COMPLETED - Registration flow implemented
 - ~~Integrating shadcn and Tailwind CSS for styling and component design.~~ ✅ COMPLETED
-- Testing complete authentication flows and preparing to add protected routes.
+- ~~Testing complete authentication flows and preparing to add protected routes.~~ ✅ COMPLETED
+- ~~Building new player registration form with comprehensive validation.~~ ✅ COMPLETED
+- Improving code organization and maintainability through schema separation.
 
 ## Recent Changes
 
@@ -25,6 +27,9 @@
 - **NEW: Enhanced navigation** - Added footer links between login/register pages and routing for /register and /confirm
 - **NEW: Complete forgot password flow** - Implemented ForgotPassword and ResetPassword components with full Supabase integration
 - **NEW: Enhanced UX for password reset** - Added detailed messaging, button state changes, and comprehensive user guidance
+- **NEW: New Player Form** - Comprehensive player registration form with full validation, phone formatting, and address collection
+- **NEW: Form State Management** - Implemented useReducer pattern for complex form state with proper error handling
+- **NEW: Schema organization** - Moved Zod validation schema to separate file (src/schemas/playerSchema.ts) for better reusability and maintainability
 
 ## Next Steps
 

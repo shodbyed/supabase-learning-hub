@@ -34,3 +34,4 @@
 - **Radix UI**: Underlying primitive components used by shadcn/ui for accessibility.
 - **class-variance-authority & clsx**: For conditional CSS class management.
 - **lucide-react**: Icon library used by shadcn components.
+- **Zod**: TypeScript-first schema validation library for form validation and type safety.

@@ -45,6 +45,7 @@
 - `useUser` is a custom hook that allows components to access the `UserContext`.
 - `LogoutButton` triggers the logout process and updates the `UserContext`.
 - `UserProvider` manages the authentication state (`isLoggedIn` and `user`) and provides it to the app.
+- `NewPlayerForm` provides comprehensive player registration with routing at `/new-player`.
 
 ## Emerging Patterns
 
@@ -65,3 +66,8 @@
 - **Reusable Components with shadcn/ui**: Integrated accessible and reusable UI components including Button, Input, Label, and Card components.
 - **Component Composition Pattern**: LoginCard wraps common card functionality while Login component focuses on authentication logic.
 - **Variant-based Styling**: Using shadcn's variant system (e.g., `variant="secondary"` for buttons) for consistent component styling.
+- **Schema Organization Pattern**: Validation schemas separated into dedicated `src/schemas/` directory for reusability and maintainability.
+- **Type-Safe Form Validation**: Using Zod schemas with TypeScript type inference for form data validation and type safety.
+- **Complex Form State Management**: useReducer pattern for handling multi-field forms with validation errors and field updates.
+- **Real-time Input Formatting**: Custom formatters for phone numbers and text fields that transform data as users type.
+- **Progressive Form Enhancement**: Forms handle validation, formatting, and submission with comprehensive error feedback.
