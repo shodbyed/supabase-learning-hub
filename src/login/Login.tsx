@@ -15,7 +15,8 @@ export const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -36,34 +37,38 @@ export const Login: React.FC = () => {
       title="Login"
       description="Enter your credentials to access your account"
     >
-      <div className="mb-4">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="password">Password</Label>
-        <PasswordInput
-          id="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <CardAction>
-        <Button
-          onClick={handleLogin}
-          disabled={loading}
-          message={message}
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </Button>
-      </CardAction>
+      <form onSubmit={handleLogin}>
+        <div className="mb-4">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="password">Password</Label>
+          <PasswordInput
+            id="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <CardAction>
+          <Button
+            type="submit"
+            disabled={loading}
+            message={message}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </Button>
+        </CardAction>
+      </form>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">
         <Link to="/register">Register</Link>
         <Link to="/forgot-password">Forgot Password?</Link>

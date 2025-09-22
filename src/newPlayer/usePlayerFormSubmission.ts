@@ -50,7 +50,6 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess }: UsePlayer
         dateOfBirth: result.data.dateOfBirth,
       };
 
-      console.log('Formatted data:', formattedData);
 
       // Show formatted data in popup
       const formattedMessage = `

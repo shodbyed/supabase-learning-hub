@@ -1,12 +1,21 @@
+/**
+ * @fileoverview User profile management hook for fetching and managing member data from Supabase
+ * This hook handles the relationship between authenticated users and their member records
+ */
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../context/useUser';
 
+/** User roles available in the system */
 export type UserRole = 'player' | 'league_operator' | 'developer';
 
+/**
+ * Member interface representing a user's profile data stored in Supabase
+ * This maps to the 'members' table in the database
+ */
 export interface Member {
   id: string;
-  user_id: string;
+  user_id: string; // References Supabase auth.users.id
   first_name: string;
   last_name: string;
   nickname?: string;
@@ -16,15 +25,34 @@ export interface Member {
   city: string;
   state: string;
   zip_code: string;
-  date_of_birth: string;
+  date_of_birth: string; // ISO date string
   role: UserRole;
-  pool_hall_ids: number[];
-  league_operator_ids: number[];
-  membership_paid_date?: string;
-  created_at: string;
-  updated_at: string;
+  pool_hall_ids: number[]; // Array of associated pool hall IDs
+  league_operator_ids: number[]; // Array of league operator IDs user is associated with
+  membership_paid_date?: string; // ISO date string when membership was last paid
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
 }
 
+/**
+ * Custom hook for managing user profile and member data
+ *
+ * This hook:
+ * - Fetches member record from Supabase based on authenticated user
+ * - Provides utility functions for role checking and permissions
+ * - Handles loading states and error management
+ * - Determines if user needs to complete application
+ *
+ * @returns {object} Hook state and utility functions
+ * @returns {Member | null} member - The user's member record or null if not found
+ * @returns {boolean} loading - True while fetching member data
+ * @returns {string | null} error - Error message if fetch fails
+ * @returns {function} hasRole - Check if user has specific role
+ * @returns {function} canAccessLeagueOperatorFeatures - Check league operator permissions
+ * @returns {function} canAccessDeveloperFeatures - Check developer permissions
+ * @returns {function} hasMemberRecord - Check if user has completed application
+ * @returns {function} needsToCompleteApplication - Check if user needs to apply
+ */
 export const useUserProfile = () => {
   const { user } = useUser();
   const [member, setMember] = useState<Member | null>(null);
@@ -32,35 +60,43 @@ export const useUserProfile = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Reset state if user is not authenticated
     if (!user) {
       setMember(null);
       setLoading(false);
       return;
     }
 
+    /**
+     * Fetch member record from database based on authenticated user ID
+     * This establishes the connection between auth user and application data
+     */
     const fetchMember = async () => {
       try {
         setLoading(true);
+
+        // Query the members table for a record matching the authenticated user
         const { data, error } = await supabase
           .from('members')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .single(); // Expect exactly one record
 
         if (error) {
+          // PGRST116 = no rows returned, meaning user hasn't completed application
           if (error.code === 'PGRST116') {
-            // Member doesn't exist - they need to fill out application
-            console.log('No member record found for user');
-            setMember(null);
+            setMember(null); // User needs to complete member application
           } else {
+            // Other database errors (network, permissions, etc.)
             console.error('Error fetching member:', error);
             setError(error.message);
           }
         } else {
-          console.log('Member data found:', data);
+          // Successfully found member record
           setMember(data);
         }
       } catch (err) {
+        // Handle unexpected errors (network issues, etc.)
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
@@ -68,18 +104,25 @@ export const useUserProfile = () => {
     };
 
     fetchMember();
-  }, [user]);
+  }, [user]); // Re-run when user authentication status changes
 
+  // Utility functions for role and permission checking
+
+  /** Check if user has a specific role */
   const hasRole = (role: UserRole) => member?.role === role;
 
+  /** Check if user can access league operator features (league_operator or developer) */
   const canAccessLeagueOperatorFeatures = () =>
     member?.role === 'league_operator' || member?.role === 'developer';
 
+  /** Check if user can access developer features (developer only) */
   const canAccessDeveloperFeatures = () =>
     member?.role === 'developer';
 
+  /** Check if user has completed their member application */
   const hasMemberRecord = () => member !== null;
 
+  /** Check if user needs to complete their member application */
   const needsToCompleteApplication = () => member === null;
 
   return {

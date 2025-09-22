@@ -15,7 +15,8 @@ export const Register: React.FC = () => {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async () => {
+  const handleRegister = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setMessage('');
 
@@ -54,43 +55,48 @@ export const Register: React.FC = () => {
       title="Register"
       description="Create a new account to get started"
     >
-      <div className="mb-4">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="password">Password</Label>
-        <PasswordInput
-          id="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <PasswordInput
-          id="confirmPassword"
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </div>
-      <CardAction>
-        <Button
-          onClick={handleRegister}
-          disabled={loading}
-          message={message}
-        >
-          {loading ? 'Creating Account...' : 'Register'}
-        </Button>
-      </CardAction>
+      <form onSubmit={handleRegister}>
+        <div className="mb-4">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="password">Password</Label>
+          <PasswordInput
+            id="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <PasswordInput
+            id="confirmPassword"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        <CardAction>
+          <Button
+            type="submit"
+            disabled={loading}
+            message={message}
+          >
+            {loading ? 'Creating Account...' : 'Register'}
+          </Button>
+        </CardAction>
+      </form>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">
         <Link to="/login">Already have an account? Login</Link>
       </CardFooter>

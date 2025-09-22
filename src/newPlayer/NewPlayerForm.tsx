@@ -1,3 +1,7 @@
+/**
+ * @fileoverview New Player Application Form Component
+ * A comprehensive form for collecting player information with validation and state management
+ */
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginCard } from '../login/LoginCard';
@@ -10,13 +14,30 @@ import { TextField, SelectField } from './FormField';
 // TODO: Future feature - Add country selection for international phone numbers
 // This would allow proper validation of international formats
 
+/**
+ * New Player Application Form Component
+ *
+ * This form collects comprehensive player information including:
+ * - Personal details (name, nickname, date of birth)
+ * - Contact information (phone, email)
+ * - Address information (street, city, state, zip)
+ *
+ * Features:
+ * - Real-time phone number formatting
+ * - Field-level validation with Zod schema
+ * - Accessible form with proper labels and error messages
+ * - Form submission with Enter key support
+ * - State management using useReducer pattern
+ */
 export const NewPlayerForm: React.FC = () => {
+  // Form state management - handles all field values and validation errors
   const { state, dispatch } = usePlayerForm();
 
+  // Form submission logic - handles validation and data processing
   const { handleSubmit } = usePlayerFormSubmission({
     state,
-    onError: (errors) => dispatch({ type: 'SET_ERRORS', errors }),
-    onSuccess: () => dispatch({ type: 'CLEAR_ERRORS' }),
+    onError: (errors) => dispatch({ type: 'SET_ERRORS', errors }), // Set validation errors
+    onSuccess: () => dispatch({ type: 'CLEAR_ERRORS' }), // Clear errors on success
   });
 
   return (
@@ -54,16 +75,18 @@ export const NewPlayerForm: React.FC = () => {
           error={state.errors.nickname}
         />
 
+        {/* Phone number field with real-time formatting */}
         <TextField
           id="phone"
           label="Phone Number"
           value={state.phone}
           onChange={(value) => {
+            // Apply real-time formatting as user types (e.g., "1234567890" becomes "123-456-7890")
             const formatted = formatPhoneNumber(value);
             dispatch({ type: 'SET_FIELD', field: 'phone', value: formatted });
           }}
           placeholder="123-456-7890"
-          maxLength={12}
+          maxLength={12} // Limit to formatted length: XXX-XXX-XXXX
           error={state.errors.phone}
           required
         />

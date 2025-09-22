@@ -7,24 +7,40 @@ import { ResetPassword } from '../login/ResetPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
-
-const routes = [
-  { path: '/', element: <Home /> },
-  { path: '/about', element: <About /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/forgot-password', element: <ForgotPassword /> },
-  { path: '/reset-password', element: <ResetPassword /> },
-  { path: '/confirm', element: <EmailConfirmation /> },
-  { path: '/new-player', element: <NewPlayerForm /> },
-];
+import { Dashboard } from '../dashboard/Dashboard';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
   return (
     <Routes>
-      {routes.map((route, index) => (
-        <Route key={index} path={route.path} element={route.element} />
-      ))}
+      {/* Public routes */}
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/confirm" element={<EmailConfirmation />} />
+
+      {/* Protected routes - require authentication */}
+      <Route
+        path="/new-player"
+        element={
+          <ProtectedRoute requireAuth={true}>
+            <NewPlayerForm />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected routes - require authentication + member record */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };

@@ -16,7 +16,8 @@ export const ForgotPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setMessage('');
 
@@ -42,21 +43,24 @@ export const ForgotPassword: React.FC = () => {
 
   return (
     <LoginCard title="Reset Password" description="Enter your email to receive a password reset link">
-      <div className="mb-4">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <CardAction>
-        <Button onClick={handleForgotPassword} disabled={loading} message={message}>
-          {loading ? 'Sending...' : emailSent ? 'Resend Reset Link' : 'Send Reset Link'}
-        </Button>
-      </CardAction>
+      <form onSubmit={handleForgotPassword}>
+        <div className="mb-4">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <CardAction>
+          <Button type="submit" disabled={loading} message={message}>
+            {loading ? 'Sending...' : emailSent ? 'Resend Reset Link' : 'Send Reset Link'}
+          </Button>
+        </CardAction>
+      </form>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">
         <Link to="/login">Back to Login</Link>
         <Link to="/register">Create Account</Link>

@@ -41,7 +41,8 @@ export const ResetPassword: React.FC = () => {
     handleAuthChange();
   }, []);
 
-  const handleResetPassword = async () => {
+  const handleResetPassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setMessage('');
 
@@ -73,29 +74,33 @@ export const ResetPassword: React.FC = () => {
 
   return (
     <LoginCard title="Reset Password" description="Enter your new password">
-      <div className="mb-4">
-        <Label htmlFor="password">New Password</Label>
-        <PasswordInput
-          id="password"
-          placeholder="Enter new password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <Label htmlFor="confirmPassword">Confirm New Password</Label>
-        <PasswordInput
-          id="confirmPassword"
-          placeholder="Confirm new password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </div>
-      <CardAction>
-        <Button onClick={handleResetPassword} disabled={loading} message={message}>
-          {loading ? 'Updating...' : 'Update Password'}
-        </Button>
-      </CardAction>
+      <form onSubmit={handleResetPassword}>
+        <div className="mb-4">
+          <Label htmlFor="password">New Password</Label>
+          <PasswordInput
+            id="password"
+            placeholder="Enter new password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <Label htmlFor="confirmPassword">Confirm New Password</Label>
+          <PasswordInput
+            id="confirmPassword"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+        </div>
+        <CardAction>
+          <Button type="submit" disabled={loading} message={message}>
+            {loading ? 'Updating...' : 'Update Password'}
+          </Button>
+        </CardAction>
+      </form>
     </LoginCard>
   );
 };
