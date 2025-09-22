@@ -14,10 +14,30 @@ export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleForgotPassword = async () => {
-    // TODO: Add forgot password functionality
-    console.log('Forgot password clicked', { email });
+    setLoading(true);
+    setMessage('');
+
+    if (!email) {
+      setMessage('Please enter your email address');
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      setMessage(`Error: ${error.message}`);
+      setLoading(false);
+    } else {
+      setMessage('Password reset email sent! Please check your email inbox (and spam folder) for a reset link. Click the link in the email to reset your password. The link will expire in 1 hour.');
+      setEmailSent(true);
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,7 +54,7 @@ export const ForgotPassword: React.FC = () => {
       </div>
       <CardAction>
         <Button variant="secondary" onClick={handleForgotPassword} disabled={loading} message={message}>
-          {loading ? 'Sending...' : 'Send Reset Link'}
+          {loading ? 'Sending...' : emailSent ? 'Resend Reset Link' : 'Send Reset Link'}
         </Button>
       </CardAction>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">

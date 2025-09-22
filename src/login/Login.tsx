@@ -4,12 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input'; // shadcn Input component
 import { Label } from '@/components/ui/label'; // shadcn Label component
 import { Button } from '@/components/ui/button'; // shadcn Button component
-import {
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
+import { CardAction, CardFooter } from '@/components/ui/card';
 import { LoginCard } from './LoginCard';
 
 export const Login: React.FC = () => {
@@ -36,7 +31,10 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <LoginCard title="Login" description="Enter your credentials to access your account">
+    <LoginCard
+      title="Login"
+      description="Enter your credentials to access your account"
+    >
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -58,7 +56,12 @@ export const Login: React.FC = () => {
         />
       </div>
       <CardAction>
-        <Button variant="secondary" onClick={handleLogin} disabled={loading} message={message}>
+        <Button
+          variant="secondary"
+          onClick={handleLogin}
+          disabled={loading}
+          message={message}
+        >
           {loading ? 'Logging in...' : 'Login'}
         </Button>
       </CardAction>
