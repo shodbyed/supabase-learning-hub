@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input'; // shadcn Input component
+import { PasswordInput } from '@/components/ui/password-input'; // Custom password input with toggle
 import { Label } from '@/components/ui/label'; // shadcn Label component
 import { Button } from '@/components/ui/button'; // shadcn Button component
 import { CardAction, CardFooter } from '@/components/ui/card';
@@ -47,9 +48,8 @@ export const Login: React.FC = () => {
       </div>
       <div className="mb-4">
         <Label htmlFor="password">Password</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -57,7 +57,6 @@ export const Login: React.FC = () => {
       </div>
       <CardAction>
         <Button
-          variant="secondary"
           onClick={handleLogin}
           disabled={loading}
           message={message}

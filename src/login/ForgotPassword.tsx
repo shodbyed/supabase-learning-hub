@@ -53,7 +53,7 @@ export const ForgotPassword: React.FC = () => {
         />
       </div>
       <CardAction>
-        <Button variant="secondary" onClick={handleForgotPassword} disabled={loading} message={message}>
+        <Button onClick={handleForgotPassword} disabled={loading} message={message}>
           {loading ? 'Sending...' : emailSent ? 'Resend Reset Link' : 'Send Reset Link'}
         </Button>
       </CardAction>

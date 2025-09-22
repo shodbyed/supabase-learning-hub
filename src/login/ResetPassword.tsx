@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CardAction } from '@/components/ui/card';
@@ -75,9 +75,8 @@ export const ResetPassword: React.FC = () => {
     <LoginCard title="Reset Password" description="Enter your new password">
       <div className="mb-4">
         <Label htmlFor="password">New Password</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           placeholder="Enter new password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -85,16 +84,15 @@ export const ResetPassword: React.FC = () => {
       </div>
       <div className="mb-4">
         <Label htmlFor="confirmPassword">Confirm New Password</Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           placeholder="Confirm new password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
       <CardAction>
-        <Button variant="secondary" onClick={handleResetPassword} disabled={loading} message={message}>
+        <Button onClick={handleResetPassword} disabled={loading} message={message}>
           {loading ? 'Updating...' : 'Update Password'}
         </Button>
       </CardAction>

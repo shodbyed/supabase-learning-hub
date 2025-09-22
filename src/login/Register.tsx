@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CardAction, CardFooter } from '@/components/ui/card';
@@ -65,9 +66,8 @@ export const Register: React.FC = () => {
       </div>
       <div className="mb-4">
         <Label htmlFor="password">Password</Label>
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -75,9 +75,8 @@ export const Register: React.FC = () => {
       </div>
       <div className="mb-4">
         <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           placeholder="Confirm your password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -85,7 +84,6 @@ export const Register: React.FC = () => {
       </div>
       <CardAction>
         <Button
-          variant="secondary"
           onClick={handleRegister}
           disabled={loading}
           message={message}
