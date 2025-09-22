@@ -169,6 +169,8 @@ flowchart TD
 
 - **Dev Server Management**: When restarting the dev server, kill the existing process but then ask the user to manually run `pnpm run dev` in their terminal rather than running it automatically. The background execution doesn't always start a new instance properly for the user.
 
+- **Database Operations**: Unless otherwise specified, implement UI functionality that console.logs database operations instead of making actual database calls. The user's partner handles database queries separately for both web and mobile apps. Show the data structure and format needed for database operations via console.log, and provide UI feedback as if the operation succeeded.
+
 The format is flexible - focus on capturing valuable insights that help me work more effectively with you and the project. Think of memory-bank folder as a living document that grows smarter as we work together.
 
 ## Claude Code Specific Features

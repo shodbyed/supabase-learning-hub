@@ -81,3 +81,11 @@
 - **Profile Information Architecture**: Clear separation between user-editable sections (personal, contact, address) and system-controlled sections (account details, dues status) with visual indicators.
 - **Utility-First Business Logic**: Business calculations (dues status, date formatting) separated into pure utility functions for reusability and testing.
 - **User Experience Flow Separation**: Dashboard as action center vs Profile as information center, with distinct purposes and navigation patterns.
+- **Profile Edit Pattern**: Consistent edit mode UI pattern across all editable sections (edit icon → form fields → save/cancel buttons)
+- **Comprehensive Validation Pattern**: Zod validation schemas for each editable section with real-time error feedback and form save blocking
+- **Database Operation Simulation**: Console.log database operations showing exact SQL queries, parameters, and data formatting for partner integration
+- **Change Detection Pattern**: Only modified fields are logged and prepared for database updates, improving efficiency
+- **Error State Management**: Separate error objects for each editable section with comprehensive validation feedback
+- **Success Feedback Pattern**: Detailed popup showing exactly what changed with before/after values for user confirmation
+- **Real-time Input Formatting**: Phone number formatting that maintains consistency with NewPlayerForm patterns
+- **Data Formatting Integration**: Uses existing utility functions (capitalizeWords) for consistent data formatting across the system
