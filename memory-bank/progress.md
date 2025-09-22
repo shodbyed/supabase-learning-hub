@@ -20,6 +20,10 @@
 - Added logout functionality and ensured it updates the `UserContext`.
 - Implemented navigation to the home page after successful login.
 - Verified that the logout button works and redirects to the home page.
+- **NEW: Integrated shadcn/ui component library** with Button, Input, Label, and Card components.
+- **NEW: Fully implemented Tailwind CSS v4** throughout the project for modern styling.
+- **NEW: Created LoginCard component** as a reusable wrapper for authentication UI.
+- **NEW: Updated Login component** to use shadcn components with improved styling and secondary button variant.
 
 ## What's Left to Build
 

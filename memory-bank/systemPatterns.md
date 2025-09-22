@@ -61,5 +61,7 @@
 - **Separation of Concerns**: The `UserContext`, `UserProvider`, and `useUser` are split into separate files for better maintainability and compatibility with React Fast Refresh.
 - **Authentication Flow**: The `Login` component and `LogoutButton` integrate with Supabase and the `UserContext` to manage authentication state.
 - **Navigation**: React Router's `useNavigate` is used to programmatically navigate after login and logout.
-- **Styling with Tailwind CSS**: Tailwind CSS will be used for utility-first styling, ensuring a consistent and responsive design system.
-- **Reusable Components with shadcn**: shadcn components will be integrated for accessible and reusable UI elements.
+- **Styling with Tailwind CSS v4**: Fully implemented utility-first styling ensuring consistent and responsive design system with @tailwindcss/vite integration.
+- **Reusable Components with shadcn/ui**: Integrated accessible and reusable UI components including Button, Input, Label, and Card components.
+- **Component Composition Pattern**: LoginCard wraps common card functionality while Login component focuses on authentication logic.
+- **Variant-based Styling**: Using shadcn's variant system (e.g., `variant="secondary"` for buttons) for consistent component styling.

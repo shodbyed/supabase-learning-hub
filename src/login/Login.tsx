@@ -4,6 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input'; // shadcn Input component
 import { Label } from '@/components/ui/label'; // shadcn Label component
 import { Button } from '@/components/ui/button'; // shadcn Button component
+import {
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+} from '@/components/ui/card';
+import { LoginCard } from './LoginCard';
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -29,8 +36,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-4 border rounded shadow">
-      <h2 className="text-xl font-bold mb-4">Login</h2>
+    <LoginCard title="Login">
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -51,10 +57,11 @@ export const Login: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <Button onClick={handleLogin} disabled={loading}>
-        {loading ? 'Logging in...' : 'Login'}
-      </Button>
-      {message && <p className="mt-4 text-red-500">{message}</p>}
-    </div>
+      <CardAction>
+        <Button variant="secondary" onClick={handleLogin} disabled={loading} message={message}>
+          {loading ? 'Logging in...' : 'Login'}
+        </Button>
+      </CardAction>
+    </LoginCard>
   );
 };
