@@ -8,6 +8,7 @@ import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
+import { Profile } from '../profile/Profile';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
@@ -38,6 +39,15 @@ export const NavRoutes: React.FC = () => {
         element={
           <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+            <Profile />
           </ProtectedRoute>
         }
       />

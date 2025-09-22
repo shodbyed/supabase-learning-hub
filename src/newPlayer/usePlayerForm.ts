@@ -13,6 +13,7 @@ const initialState: FormState = {
   state: '',
   zipCode: '',
   dateOfBirth: '',
+  isLoading: false,
   errors: {},
 };
 
@@ -37,6 +38,11 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return {
         ...state,
         errors: {},
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.loading,
       };
     default:
       return state;

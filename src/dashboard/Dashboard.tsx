@@ -1,8 +1,13 @@
+/**
+ * @fileoverview Dashboard Component
+ * A simple welcome dashboard with navigation to other features
+ */
 import React from 'react';
 import { useUser } from '../context/useUser';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { LogoutButton } from '../login/LogoutButton';
 import { LoginCard } from '../login/LoginCard';
+import { Button } from '@/components/ui/button';
 
 export const Dashboard: React.FC = () => {
   const { user } = useUser();
@@ -18,37 +23,25 @@ export const Dashboard: React.FC = () => {
 
   return (
     <LoginCard
-      title={`Welcome, ${member.first_name}!`}
-      description="Your member dashboard"
+      title={`Hi, ${member.first_name}!`}
+      description="Welcome to your BCA member dashboard"
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
+        {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold text-lg mb-2">Member Info</h3>
-            <p><strong>Name:</strong> {member.first_name} {member.last_name}</p>
-            {member.nickname && <p><strong>Nickname:</strong> {member.nickname}</p>}
-            <p><strong>Email:</strong> {member.email}</p>
-            <p><strong>Phone:</strong> {member.phone}</p>
-            <p><strong>Role:</strong> {member.role}</p>
-          </div>
+          <Button variant="outline" className="w-full h-20 flex flex-col" disabled>
+            <span className="font-semibold">Leagues</span>
+            <span className="text-sm text-gray-600">Coming soon</span>
+          </Button>
 
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold text-lg mb-2">Address</h3>
-            <p>{member.address}</p>
-            <p>{member.city}, {member.state} {member.zip_code}</p>
-          </div>
+          <Button variant="outline" className="w-full h-20 flex flex-col" disabled>
+            <span className="font-semibold">Tournaments</span>
+            <span className="text-sm text-gray-600">Coming soon</span>
+          </Button>
         </div>
 
-        <div className="p-4 border rounded-lg">
-          <h3 className="font-semibold text-lg mb-2">Account Details</h3>
-          <p><strong>User ID:</strong> {user?.id}</p>
-          <p><strong>Member Since:</strong> {new Date(member.created_at).toLocaleDateString()}</p>
-          {member.membership_paid_date && (
-            <p><strong>Membership Paid:</strong> {new Date(member.membership_paid_date).toLocaleDateString()}</p>
-          )}
-        </div>
-
-        <div className="flex justify-between items-center pt-4">
+        {/* Account Actions */}
+        <div className="flex justify-between items-center pt-4 border-t">
           <p className="text-sm text-gray-600">
             Logged in as: {user?.email}
           </p>

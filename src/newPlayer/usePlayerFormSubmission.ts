@@ -1,18 +1,31 @@
 import { playerFormSchema } from '../schemas/playerSchema';
 import { capitalizeWords, formatFinalPhoneNumber } from '../utils/formatters';
+import { supabase } from '../supabaseClient';
+import { useUser } from '../context/useUser';
+import { useNavigate } from 'react-router-dom';
 import type { FormState } from './types';
 
 interface UsePlayerFormSubmissionProps {
   state: FormState;
   onError: (errors: FormState['errors']) => void;
   onSuccess: () => void;
+  onLoading: (loading: boolean) => void;
 }
 
-export const usePlayerFormSubmission = ({ state, onError, onSuccess }: UsePlayerFormSubmissionProps) => {
-  const handleSubmit = (e: React.FormEvent) => {
+export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }: UsePlayerFormSubmissionProps) => {
+  const { user } = useUser();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Zod validation
+    // Ensure user is authenticated
+    if (!user) {
+      onError({ general: 'You must be logged in to submit an application' });
+      return;
+    }
+
+    // Client-side validation with Zod
     const result = playerFormSchema.safeParse({
       firstName: state.firstName,
       lastName: state.lastName,
@@ -27,43 +40,64 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess }: UsePlayer
     });
 
     if (!result.success) {
+      // Handle validation errors
       const newErrors: FormState['errors'] = {};
       result.error.issues.forEach((issue) => {
         const field = issue.path[0] as keyof FormState['errors'];
         newErrors[field] = issue.message;
       });
       onError(newErrors);
-    } else {
-      onSuccess();
+      return;
+    }
 
-      // Format the data
-      const formattedData = {
-        firstName: capitalizeWords(result.data.firstName),
-        lastName: capitalizeWords(result.data.lastName),
-        nickname: result.data.nickname ? capitalizeWords(result.data.nickname) : '',
+    try {
+      // Start loading state
+      onLoading(true);
+
+      // Format the data for database insertion
+      const memberData = {
+        user_id: user.id, // Link to authenticated user
+        first_name: capitalizeWords(result.data.firstName),
+        last_name: capitalizeWords(result.data.lastName),
+        nickname: result.data.nickname ? capitalizeWords(result.data.nickname) : null,
         phone: formatFinalPhoneNumber(result.data.phone),
         email: result.data.email.toLowerCase(),
         address: capitalizeWords(result.data.address),
         city: capitalizeWords(result.data.city),
         state: result.data.state,
-        zipCode: result.data.zipCode,
-        dateOfBirth: result.data.dateOfBirth,
+        zip_code: result.data.zipCode,
+        date_of_birth: result.data.dateOfBirth,
+        role: 'player' as const, // Default role for new members
+        pool_hall_ids: [], // Empty array for new members
+        league_operator_ids: [], // Empty array for new members
       };
 
+      // Insert member data into Supabase
+      const { error: insertError } = await supabase
+        .from('members')
+        .insert(memberData);
 
-      // Show formatted data in popup
-      const formattedMessage = `
-Player Application Submitted:
+      if (insertError) {
+        // Handle database errors
+        console.error('Database error:', insertError);
+        onError({ general: `Failed to save application: ${insertError.message}` });
+        return;
+      }
 
-Name: ${formattedData.firstName} ${formattedData.lastName}
-${formattedData.nickname ? `Nickname: ${formattedData.nickname}\n` : ''}Phone: ${formattedData.phone}
-Email: ${formattedData.email}
-Address: ${formattedData.address}
-City: ${formattedData.city}, ${formattedData.state} ${formattedData.zipCode}
-Date of Birth: ${formattedData.dateOfBirth}
-      `.trim();
+      // Success! Clear errors and redirect
+      onSuccess();
 
-      alert(formattedMessage);
+      // Show success message and redirect to dashboard
+      alert('Application submitted successfully! Welcome to the league!');
+      navigate('/dashboard');
+
+    } catch (error) {
+      // Handle unexpected errors
+      console.error('Unexpected error:', error);
+      onError({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      // Stop loading state
+      onLoading(false);
     }
   };
 

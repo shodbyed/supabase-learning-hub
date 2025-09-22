@@ -38,6 +38,7 @@ export const NewPlayerForm: React.FC = () => {
     state,
     onError: (errors) => dispatch({ type: 'SET_ERRORS', errors }), // Set validation errors
     onSuccess: () => dispatch({ type: 'CLEAR_ERRORS' }), // Clear errors on success
+    onLoading: (loading) => dispatch({ type: 'SET_LOADING', loading }), // Handle loading state
   });
 
   return (
@@ -152,8 +153,15 @@ export const NewPlayerForm: React.FC = () => {
           required
         />
 
-        <Button type="submit">
-          Submit
+        {/* Show general error messages (like database errors) */}
+        {state.errors.general && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{state.errors.general}</p>
+          </div>
+        )}
+
+        <Button type="submit" disabled={state.isLoading}>
+          {state.isLoading ? 'Submitting Application...' : 'Submit Application'}
         </Button>
       </form>
     </LoginCard>

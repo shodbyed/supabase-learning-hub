@@ -26,6 +26,9 @@ export interface FormState {
   // Other details
   dateOfBirth: string; // ISO date format from date input
 
+  // UI state
+  isLoading: boolean; // Loading state during form submission
+
   // Validation errors - optional fields that show error messages
   errors: {
     firstName?: string;
@@ -38,6 +41,7 @@ export interface FormState {
     state?: string;
     zipCode?: string;
     dateOfBirth?: string;
+    general?: string; // For general errors like database issues
   };
 }
 
@@ -48,4 +52,5 @@ export interface FormState {
 export type FormAction =
   | { type: 'SET_FIELD'; field: keyof FormState; value: string } // Update a single form field
   | { type: 'SET_ERRORS'; errors: FormState['errors'] } // Set validation errors
-  | { type: 'CLEAR_ERRORS' }; // Clear all validation errors
+  | { type: 'CLEAR_ERRORS' } // Clear all validation errors
+  | { type: 'SET_LOADING'; loading: boolean }; // Set loading state

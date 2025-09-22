@@ -30,6 +30,7 @@ export interface Member {
   pool_hall_ids: number[]; // Array of associated pool hall IDs
   league_operator_ids: number[]; // Array of league operator IDs user is associated with
   membership_paid_date?: string; // ISO date string when membership was last paid
+  bca_member_number?: string; // Official BCA member number, null until assigned
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }

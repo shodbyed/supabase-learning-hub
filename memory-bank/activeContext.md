@@ -2,34 +2,61 @@
 
 ## Current Work Focus
 
-- Ensuring the login and logout flows are seamless and user-friendly.
+- ~~Ensuring the login and logout flows are seamless and user-friendly.~~ ✅ COMPLETED
 - ~~Preparing to add register and forgot password flows.~~ ✅ COMPLETED - Registration flow implemented
 - ~~Integrating shadcn and Tailwind CSS for styling and component design.~~ ✅ COMPLETED
 - ~~Testing complete authentication flows and preparing to add protected routes.~~ ✅ COMPLETED
 - ~~Building new player registration form with comprehensive validation.~~ ✅ COMPLETED
-- Improving code organization and maintainability through schema separation.
+- ~~Improving code organization and maintainability through schema separation.~~ ✅ COMPLETED
+- ~~Implementing membership dues tracking system~~ ✅ COMPLETED
+- ~~Creating dedicated Profile page for comprehensive member information~~ ✅ COMPLETED
+- ~~Simplifying Dashboard to focus on actions rather than detailed info~~ ✅ COMPLETED
+- Potential BCA API integration for member number verification
+- Expanding league and tournament features in Dashboard
 
 ## Recent Changes
 
-- Added `UserContext` to manage user authentication state.
-- Created `UserProvider` to wrap the app and provide `UserContext` to all components.
-- Implemented `useUser` hook to simplify access to the `UserContext`.
-- Separated `UserContext`, `UserProvider`, and `useUser` into individual files to improve maintainability and compatibility with React Fast Refresh.
-- Added login functionality with Supabase's `signInWithPassword`.
-- Implemented navigation to the home page after a successful login.
-- Added a logout button to the home page, which updates the `UserContext` and redirects to the home page.
-- **NEW: Integrated shadcn/ui components** - Added Button, Input, Label, and Card components
-- **NEW: Fully implemented Tailwind CSS v4** - Updated styling system throughout the project
-- **NEW: Created LoginCard component** - Modular card wrapper for login UI
-- **NEW: Updated Login component** - Now uses shadcn components with secondary button variant
-- **NEW: Implemented complete registration flow** - Created Register.tsx with form validation and Supabase integration
-- **NEW: Added auto-login after email confirmation** - EmailConfirmation.tsx handles verification and automatic login
-- **NEW: Enhanced navigation** - Added footer links between login/register pages and routing for /register and /confirm
-- **NEW: Complete forgot password flow** - Implemented ForgotPassword and ResetPassword components with full Supabase integration
-- **NEW: Enhanced UX for password reset** - Added detailed messaging, button state changes, and comprehensive user guidance
-- **NEW: New Player Form** - Comprehensive player registration form with full validation, phone formatting, and address collection
-- **NEW: Form State Management** - Implemented useReducer pattern for complex form state with proper error handling
-- **NEW: Schema organization** - Moved Zod validation schema to separate file (src/schemas/playerSchema.ts) for better reusability and maintainability
+**🎯 MAJOR MILESTONE: Member Management System Complete**
+
+### **Membership Dues Tracking System** (Latest Addition)
+- **NEW: membershipUtils.ts** - Comprehensive utility functions for membership dues business logic
+  - `getMembershipStatus()` - Calculates if dues are current, overdue, or never paid
+  - `formatDueDate()` - Formats expiration dates for display
+  - `getDuesStatusStyling()` - Returns color-coded CSS classes based on dues status
+- **Color-coded Status System**: Green (paid), Red (overdue), Yellow (never paid)
+- **Automatic Calculations**: Dues expire exactly one year from payment date
+- **Visual Indicators**: Status badges and background colors throughout profile
+
+### **Profile Page Architecture** (Latest Addition)
+- **NEW: Profile.tsx** - Dedicated member profile page with organized information sections
+- **Information Hierarchy**: Personal Info, Contact Info, Address, Account Details, Membership Dues Status
+- **Edit Icon Pattern**: Visual indicators showing which sections are user-editable vs system-controlled
+- **Responsive Design**: Grid layout adapting from single column on mobile to two columns on larger screens
+- **Integration**: Uses membershipUtils for dues status display and LoginCard for consistent styling
+
+### **Dashboard Simplification** (Latest Addition)
+- **Focused Purpose**: Dashboard now serves as welcome page and action center
+- **Future Ready**: Placeholder buttons for Leagues and Tournaments features
+- **Clean Design**: Removed detailed member info (moved to Profile), focusing on quick actions
+- **Account Management**: Simple logout functionality and user email display
+
+### **Navigation Enhancement** (Latest Addition)
+- **Conditional Profile Link**: Profile link in navigation only shows for authenticated members
+- **Clear Separation**: Dashboard for actions, Profile for information viewing
+- **User Flow**: Natural navigation between welcome (dashboard) and information (profile) pages
+
+### **Database Schema Evolution** (Latest Addition)
+- **NEW: bca_member_number field** - Added to Member interface and database structure
+- **TODO Integration**: Added comment for future BCA API integration to verify member numbers
+- **Type Safety**: Updated TypeScript interfaces to include new membership tracking fields
+
+### **Previous Core System** (Completed Earlier)
+- Complete authentication system (login, register, password reset, email confirmation)
+- UserContext and UserProvider for centralized auth state management
+- useUserProfile hook for member data management with role checking utilities
+- shadcn/ui + Tailwind CSS v4 design system implementation
+- New Player Form with comprehensive validation and phone formatting
+- Protected routing and navigation system
 
 ## Next Steps
 
@@ -37,13 +64,19 @@
 - ~~Add shadcn components for reusable and accessible UI elements.~~ ✅ COMPLETED
 - ~~Add register user flows.~~ ✅ COMPLETED
 - ~~Add forgot password flow.~~ ✅ COMPLETED
-- Enhance the `Home` and `About` page with additional content or styling.
-- Create a secure page (e.g., dashboard) for logged-in users.
-- ~~Test the complete authentication flow with valid and invalid credentials.~~ ✅ COMPLETED
-- Implement protected routes for authenticated users only.
+- ~~Create a secure page (e.g., dashboard) for logged-in users.~~ ✅ COMPLETED
+- ~~Implement protected routes for authenticated users only.~~ ✅ COMPLETED
+- **PRIORITY: League Management Features** - Add league creation, management, and player enrollment
+- **PRIORITY: Tournament System** - Implement tournament brackets and scoring
+- **Future: BCA API Integration** - Connect with official BCA system for member number verification
+- **Enhancement: Profile Editing** - Add edit functionality to user-editable profile sections
+- Enhance the `Home` and `About` page with additional content or styling
 
 ## Active Decisions and Considerations
 
-- Ensure the navigation flow is simple and intuitive.
-- Protect secure routes to prevent unauthorized access.
-- Use shadcn and Tailwind CSS for consistent and modern styling.
+- **Navigation Philosophy**: Clear separation between Dashboard (actions) and Profile (information)
+- **Data Ownership**: User-editable vs system-controlled fields clearly distinguished with visual cues
+- **Business Logic Separation**: Membership dues calculations in pure utility functions for testability
+- **Future API Integration**: Profile structure ready for BCA API integration when available
+- **Scalability**: Dashboard structure prepared for adding league and tournament features
+- **User Experience**: Color-coded status system provides immediate visual feedback for membership status

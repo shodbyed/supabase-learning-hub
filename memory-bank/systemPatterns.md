@@ -46,6 +46,11 @@
 - `LogoutButton` triggers the logout process and updates the `UserContext`.
 - `UserProvider` manages the authentication state (`isLoggedIn` and `user`) and provides it to the app.
 - `NewPlayerForm` provides comprehensive player registration with routing at `/new-player`.
+- `Profile` component displays comprehensive member information with organized sections for personal, contact, address, account details, and membership dues status.
+- `Dashboard` serves as a clean welcome page with future navigation to leagues/tournaments and quick account actions.
+- `useUserProfile` hook manages the relationship between authenticated users and their member records, providing role checking and permission utilities.
+- `membershipUtils.ts` contains business logic for membership dues calculations, status checking, and UI styling determination.
+- Navigation includes conditional Profile link that appears only for authenticated members.
 
 ## Emerging Patterns
 
@@ -71,3 +76,8 @@
 - **Complex Form State Management**: useReducer pattern for handling multi-field forms with validation errors and field updates.
 - **Real-time Input Formatting**: Custom formatters for phone numbers and text fields that transform data as users type.
 - **Progressive Form Enhancement**: Forms handle validation, formatting, and submission with comprehensive error feedback.
+- **Membership Dues Business Logic**: Centralized utilities in `membershipUtils.ts` for calculating dues status, formatting dates, and providing styling classes based on membership payment dates.
+- **Data-Driven UI Styling**: Color-coded status system using utility functions that return CSS classes based on business logic (dues status determines colors).
+- **Profile Information Architecture**: Clear separation between user-editable sections (personal, contact, address) and system-controlled sections (account details, dues status) with visual indicators.
+- **Utility-First Business Logic**: Business calculations (dues status, date formatting) separated into pure utility functions for reusability and testing.
+- **User Experience Flow Separation**: Dashboard as action center vs Profile as information center, with distinct purposes and navigation patterns.
