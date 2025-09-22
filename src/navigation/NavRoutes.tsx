@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Home } from '../home/Home';
 import { Login } from '../login/Login';
 import { Register } from '../login/Register';
+import { ForgotPassword } from '../login/ForgotPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
 
@@ -10,6 +11,7 @@ const routes = [
   { path: '/about', element: <About /> },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
+  { path: '/forgot-password', element: <ForgotPassword /> },
   { path: '/confirm', element: <EmailConfirmation /> },
 ];
 

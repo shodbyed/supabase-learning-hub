@@ -36,7 +36,7 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <LoginCard title="Login">
+    <LoginCard title="Login" description="Enter your credentials to access your account">
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -64,7 +64,7 @@ export const Login: React.FC = () => {
       </CardAction>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">
         <Link to="/register">Register</Link>
-        <a href="#">Forgot Password?</a>
+        <Link to="/forgot-password">Forgot Password?</Link>
       </CardFooter>
     </LoginCard>
   );

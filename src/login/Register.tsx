@@ -4,12 +4,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import {
-  CardAction,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
+import { CardAction, CardFooter } from '@/components/ui/card';
 import { LoginCard } from './LoginCard';
 
 export const Register: React.FC = () => {
@@ -46,13 +41,18 @@ export const Register: React.FC = () => {
       setMessage(`Error: ${error.message}`);
       setLoading(false);
     } else {
-      setMessage('Registration successful! Please check your email and click the confirmation link to be automatically logged in.');
+      setMessage(
+        'Registration successful! Please check your email and click the confirmation link to be automatically logged in.'
+      );
       setLoading(false);
     }
   };
 
   return (
-    <LoginCard title="Register">
+    <LoginCard
+      title="Register"
+      description="Create a new account to get started"
+    >
       <div className="mb-4">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -84,7 +84,12 @@ export const Register: React.FC = () => {
         />
       </div>
       <CardAction>
-        <Button variant="secondary" onClick={handleRegister} disabled={loading} message={message}>
+        <Button
+          variant="secondary"
+          onClick={handleRegister}
+          disabled={loading}
+          message={message}
+        >
           {loading ? 'Creating Account...' : 'Register'}
         </Button>
       </CardAction>

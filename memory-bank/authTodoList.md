@@ -40,27 +40,39 @@ This file tracks the steps required to implement the Supabase authentication log
    - [x] Add shadcn and tailwind
    - [x] Add a check to see if user is logged in.
    - [x] Add Login screen to route and navigation
+   - [x] Add Register screen to route and navigation
+   - [x] Add email confirmation route and auto-login functionality
    - [ ] Create a secure page (e.g., dashboard) for logged-in users.
    - [ ] Redirect users to the secure page after successful login.
 
-6. **Test the Login Flow**
+6. **Add Registration Functionality**
 
-   - [ ] Test the login functionality with valid and invalid credentials.
-   - [ ] Verify that the user session is created on successful login.
+   - [x] Create Register.tsx component with form validation
+   - [x] Implement password confirmation validation
+   - [x] Add Supabase user registration with signUp method
+   - [x] Create auto-login after email confirmation flow
+   - [x] Add navigation links between login and register pages
 
-7. **Add Logout Functionality**
+7. **Test the Authentication Flows**
+
+   - [x] Test the registration functionality with valid and invalid data
+   - [x] Test the login functionality with valid and invalid credentials
+   - [x] Verify that the user session is created on successful login
+   - [x] Test email confirmation and auto-login flow
+
+8. **Add Logout Functionality**
 
    - [x] Add a "Logout" button to allow users to sign out.
    - [x] Use Supabase's `signOut` method to clear the user session.
 
-8. **Secure Routes**
+9. **Secure Routes**
 
    - [ ] Protect certain routes/pages so they are only accessible to authenticated users.
    - [ ] Redirect unauthenticated users to the login page.
 
-9. **Document the Process**
-   - [ ] Update the `progress.md` file to track what has been completed.
-   - [ ] Add any new insights or patterns to `systemPatterns.md`.
+10. **Document the Process**
+   - [x] Update the `progress.md` file to track what has been completed.
+   - [x] Add any new insights or patterns to `systemPatterns.md`.
 
 ---
 
