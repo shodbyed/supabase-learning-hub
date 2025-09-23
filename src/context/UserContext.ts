@@ -12,6 +12,7 @@ import type { User } from '@supabase/supabase-js';
 export interface UserContextType {
   isLoggedIn: boolean; // Whether user is currently authenticated
   user: User | null; // Supabase user object or null if not logged in
+  loading: boolean; // Whether we're still checking authentication status
   logout: () => void; // Function to log out the current user
 }
 

@@ -65,7 +65,7 @@ export const BecomeLeagueOperator: React.FC = () => {
                 <ul className="space-y-2 text-green-700">
                   <li className="flex items-center">
                     <span className="text-green-600 mr-2">✓</span>
-                    Increase patronage to your bar or pool hall
+                    Increase patronage to your pool venue
                   </li>
                   <li className="flex items-center">
                     <span className="text-green-600 mr-2">✓</span>
@@ -110,6 +110,7 @@ export const BecomeLeagueOperator: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-1">
                 <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6 text-center">
+                  <div className="text-sm text-blue-200 mb-1">only</div>
                   <div className="text-4xl font-bold mb-2">$1</div>
                   <div className="text-blue-100">per team, per week</div>
                 </div>
@@ -119,16 +120,16 @@ export const BecomeLeagueOperator: React.FC = () => {
                   <h3 className="font-semibold text-gray-800 mb-4">Example: 12-Week Season</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
+                      <span>6 teams × 12 weeks:</span>
+                      <span className="font-semibold text-lg">$72</span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
                       <span>8 teams × 12 weeks:</span>
                       <span className="font-semibold text-lg">$96</span>
                     </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span>12 teams × 12 weeks:</span>
-                      <span className="font-semibold text-lg">$144</span>
-                    </div>
                     <div className="flex justify-between items-center py-2">
-                      <span>16 teams × 12 weeks:</span>
-                      <span className="font-semibold text-lg">$192</span>
+                      <span>10 teams × 12 weeks:</span>
+                      <span className="font-semibold text-lg">$120</span>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t text-sm text-gray-600">
@@ -159,7 +160,6 @@ export const BecomeLeagueOperator: React.FC = () => {
                 <ul className="space-y-2 text-gray-700">
                   <li>• Valid credit card</li>
                   <li>• Billing address</li>
-                  <li>• Business license (if applicable)</li>
                   <li>• League operator agreement</li>
                 </ul>
               </div>
@@ -181,7 +181,7 @@ export const BecomeLeagueOperator: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600 px-8">
+                <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-blue-600 px-8">
                   Back to Dashboard
                 </Button>
               </Link>

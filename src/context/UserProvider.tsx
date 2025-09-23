@@ -8,21 +8,28 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true); // Start with loading state
 
   useEffect(() => {
     const checkUserSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error checking session:', error.message);
-      } else if (session) {
-        setIsLoggedIn(true);
-        setUser(session.user);
-      } else {
-        setIsLoggedIn(false);
-        setUser(null);
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error checking session:', error.message);
+        } else if (session) {
+          setIsLoggedIn(true);
+          setUser(session.user);
+        } else {
+          setIsLoggedIn(false);
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error in checkUserSession:', error);
+      } finally {
+        setLoading(false); // Always stop loading after check
       }
     };
 
@@ -52,7 +59,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, user, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, user, loading, logout }}>
       {children}
     </UserContext.Provider>
   );

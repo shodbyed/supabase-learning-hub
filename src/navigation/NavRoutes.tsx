@@ -10,6 +10,7 @@ import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
 import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
+import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
@@ -56,8 +57,17 @@ export const NavRoutes: React.FC = () => {
       <Route
         path="/become-league-operator"
         element={
-          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+          <ProtectedRoute requireAuth={true}>
             <BecomeLeagueOperator />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/league-operator-application"
+        element={
+          <ProtectedRoute requireAuth={true}>
+            <LeagueOperatorApplication />
           </ProtectedRoute>
         }
       />

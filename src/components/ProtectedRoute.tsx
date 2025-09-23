@@ -40,12 +40,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireApprovedApplication = false,
   redirectTo = '/login',
 }) => {
-  const { user } = useUser();
-  const { member, loading } = useUserProfile();
+  const { user, loading: authLoading } = useUser();
+  const { member, loading: profileLoading } = useUserProfile();
 
-  // Show loading state while fetching member data from Supabase
-  if (loading) {
-    return <div>Loading...</div>;
+  // Show loading state while checking authentication or fetching member data
+  if (authLoading || profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
   }
 
   // First check: Authentication requirement
