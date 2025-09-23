@@ -1,0 +1,27 @@
+/* context.css */
+.dialog-container {
+  top: 40%;
+  background-color: #333333; /* Lighter background color */
+  border: 2px solid #646cff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 35%;
+  font-weight: 500;
+}
+
+.dialog-content {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dialog-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.dialog-button {
+  margin: 0 10px;
+}

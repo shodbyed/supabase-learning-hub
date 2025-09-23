@@ -9,6 +9,7 @@ import { About } from '../about/About';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
+import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
@@ -48,6 +49,15 @@ export const NavRoutes: React.FC = () => {
         element={
           <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/become-league-operator"
+        element={
+          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+            <BecomeLeagueOperator />
           </ProtectedRoute>
         }
       />

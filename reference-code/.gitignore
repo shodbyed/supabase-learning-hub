@@ -1,0 +1,22 @@
+# This folder contains reference code that may have different dependencies
+# and structure than the main project
+
+# Ignore any node_modules that might get copied over
+node_modules/
+
+# Ignore build artifacts
+build/
+dist/
+.next/
+
+# Ignore environment files
+.env*
+
+# Ignore logs
+*.log
+npm-debug.log*
+
+# But keep the source code for analysis
+!src/
+!package.json
+!README.md

@@ -1,0 +1,98 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+.dark-mode-input {
+  background-color: #333; /* Dark background */
+  color: white; /* Light text */
+  border: 2px solid #00ff00; /* Bright green border */
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.dark-mode-input::placeholder {
+  color: #bbb; /* Lighter placeholder text */
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.rotating-image {
+  height: 30vh;
+  width: 30vh;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 2.5vw;
+  margin-left: 4vw;
+  min-width: 12vw;
+}
+.edit-input-container {
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  display: flex;
+  margin-top: 15px;
+}
+.edit-input {
+  min-width: 25%;
+  height: 80%;
+  font-size: 2vw;
+}
+.select-input {
+  min-width: 55%;
+  height: 100%;
+  font-size: 2vw;
+}
+.confirm-inputs-wrapper {
+  width: 50%;
+  margin-bottom: 20px;
+}
+.input-error {
+  border: 2px solid red;
+  min-width: 25%;
+  height: 80%;
+  font-size: 2vw;
+}
+.confirm-button-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+}
+.view-edit-group {
+  display: contents;
+  align-items: center;
+  font-size: 3vh;
+}
+.view-edit-label {
+  grid-column: 1;
+  justify-self: end;
+  width: 100%;
+}
+.view-edit-icon {
+  grid-column: 2;
+  justify-self: end;
+  align-items: end;
+}
+.view-edit-value {
+  grid-column: 3;
+  justify-self: start;
+  margin: 0 2vh;
+}

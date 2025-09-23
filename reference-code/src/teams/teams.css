@@ -1,0 +1,84 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  margin-top: 20px;
+  width: 100%;
+  margin-bottom: 300px;
+}
+
+.teams-lists {
+  width: 25%;
+}
+.teams-details {
+  width: 60%;
+}
+.list-container {
+  margin-top: 20px;
+}
+.list-button-container {
+  display: flex;
+  flex-direction: column;
+}
+.small-button {
+  font-size: x-small;
+  padding: 2px;
+  margin: 5px;
+}
+.list-name {
+  align-self: center;
+  margin-bottom: 10px;
+}
+
+.list-title {
+  border-bottom: 1px solid var(--button-color);
+  align-self: center;
+  margin-bottom: 10px;
+}
+.add-button-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+}
+.details-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--button-color);
+  padding: 15px 35px;
+  align-items: center;
+}
+
+.details-name-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 30px 0;
+  width: 100%;
+}
+
+.details-title {
+  text-align: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.details-button-group {
+  display: flex;
+  align-self: center;
+  justify-content: space-around;
+  align-items: center;
+  margin: 50px 0;
+  width: 100%;
+}
+.details-player-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+.d2-container {
+  width: 100%;
+  border: 1px solid var(--button-color);
+  margin: auto;
+}

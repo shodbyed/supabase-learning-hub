@@ -4,6 +4,7 @@ import { useUser } from '../context/useUser';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { LogoutButton } from '../login/LogoutButton';
 import { Button } from '@/components/ui/button';
+import { CurrentSponsors } from '../components/SponsorLogos';
 
 export const Home: React.FC = () => {
   const { isLoggedIn, user } = useUser();
@@ -12,7 +13,11 @@ export const Home: React.FC = () => {
   if (!isLoggedIn) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-4">Welcome to the Supabase Learning Hub</h1>
+        <div className="mb-4 relative">
+          <CurrentSponsors />
+          <p className="text-xl font-bold text-gray-700">Welcome to</p>
+          <h1 className="text-3xl font-bold">BCA League Network</h1>
+        </div>
         <p className="text-lg mb-6">Please log in to access your account and member features.</p>
         <Link to="/login">
           <Button>Go to Login</Button>
@@ -24,7 +29,11 @@ export const Home: React.FC = () => {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-4">Welcome to the Supabase Learning Hub</h1>
+        <div className="mb-4 relative">
+          <CurrentSponsors />
+          <p className="text-xl font-bold text-gray-700">Welcome to</p>
+          <h1 className="text-3xl font-bold">BCA League Network</h1>
+        </div>
         <p>Loading your account information...</p>
       </div>
     );
@@ -32,7 +41,11 @@ export const Home: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-4">Welcome to the Supabase Learning Hub</h1>
+      <div className="mb-4 relative">
+        <CurrentSponsors />
+        <p className="text-xl font-bold text-gray-700">Welcome to</p>
+        <h1 className="text-3xl font-bold">BCA League Network</h1>
+      </div>
 
       <div className="mb-6">
         <p className="text-lg mb-2">

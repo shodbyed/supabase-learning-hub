@@ -1,0 +1,71 @@
+.profile-container {
+  margin: 5vh;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.profile-grid-container {
+  border-bottom: solid blue 2px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2vh;
+  width: 80%;
+  padding-bottom: 2vh;
+}
+.profile-edit-group {
+  display: contents;
+  align-items: center;
+  font-size: 3vh;
+}
+.profile-edit-label {
+  grid-column: 1;
+  width: 100%;
+}
+.profile-edit-icon {
+  grid-column: 2;
+  justify-self: end;
+  align-items: end;
+}
+.profile-edit-value {
+  grid-column: 2;
+  margin: 0 2vh;
+}
+.input-row {
+  font-size: 3vh;
+  display: flex;
+  flex-direction: row;
+}
+.input-label {
+  margin-right: 2vw;
+}
+.profile-input {
+  font-size: 3vh;
+}
+
+.modal-warning-title {
+  color: red;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.modal-warning-text {
+  font-size: 2vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3vh;
+}
+.modal-button {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+}
+.modal-input-row {
+  font-size: 3vh;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 2vh;
+}

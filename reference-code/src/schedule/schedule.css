@@ -1,0 +1,144 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; /* Allow items to wrap */
+  margin-top: 20px;
+  width: 100%;
+  margin-bottom: 300px;
+  gap: 5px;
+}
+
+.schedule-view-container {
+  width: 20%; /* Start off narrower */
+  margin-bottom: 50px;
+}
+
+.holiday-view-container {
+  width: 55%; /* Initially wider */
+  margin-bottom: 50px;
+}
+.details-main-container {
+  width: 100%; /* Initially wider */
+  margin-bottom: 50px;
+}
+.view-group {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Allow view-group items to wrap */
+}
+.holiday-list-container {
+  width: 70%;
+}
+/* Media query for moderately small screens */
+@media screen and (max-width: 800px) {
+  .view-group {
+    /* Wrap view-group items more aggressively on smaller screens */
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    > * {
+      margin-bottom: 30px;
+      margin-right: 0;
+    }
+    > *:not(:last-child) {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 600px) {
+  .schedule-view-container,
+  .holiday-view-container {
+    /* Make both containers the same width and stack vertically */
+    width: 100%;
+    margin-bottom: 20px;
+  }
+}
+.details-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+}
+.details-holiday,
+.details-conflicts {
+  flex: 1;
+}
+.details-button-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+.details-sub-title {
+  margin-bottom: 15px;
+}
+.dismiss-button {
+  color: var(--link-color);
+  font-weight: 500;
+  text-decoration: inherit;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.8em;
+}
+
+.dismiss-button:hover {
+  color: #535bf2;
+  text-decoration: underline;
+}
+
+.dismiss-button:focus,
+.dismiss-button:focus-visible {
+  outline: none;
+}
+.finish-button-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  margin: 30px;
+}
+
+.finish-message {
+  margin-top: 20px;
+}
+.reset-button-container {
+  display: flex;
+  justify-content: end;
+  margin-top: 150px;
+}
+.reset-button {
+  background-color: red;
+}
+
+.add-container {
+  margin-top: 25px;
+}
+
+.add-explain {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.add-explain-text {
+  flex-grow: 1;
+  text-align: left;
+}
+.add-explain-title {
+  flex-shrink: 0;
+  flex-grow: 0;
+  flex-basis: 100px;
+}
+.explain-button {
+  padding: 40px;
+  margin: 200px;
+}
+.form-body {
+  width: 75%;
+  margin-bottom: 50px;
+}

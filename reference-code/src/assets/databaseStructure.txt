@@ -1,0 +1,6 @@
+collections
+currentUsers
+pastPlayers
+seasons (includes Schedule object and teams array)
+teams (needs to include matchVictories, matchLosses, points)
+matchups
