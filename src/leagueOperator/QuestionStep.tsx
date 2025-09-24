@@ -8,14 +8,15 @@ import { InfoButton } from '../components/InfoButton';
 
 interface QuestionStepProps {
   title: string;
-  subtitle: string;
-  placeholder: string;
+  subtitle?: string;
+  placeholder?: string;
   value: string;
   onChange: (value: string) => void;
   onNext: (formattedValue?: string) => void;
   onPrevious: () => void;
-  onFormat: (value: string) => string;
-  validator: (value: string) => { success: boolean; error?: string };
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  onFormat?: (value: string) => string;
+  validator?: (value: string) => { success: boolean; error?: string };
   error?: string;
   canGoBack: boolean;
   isLastQuestion: boolean;
@@ -40,6 +41,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   onChange,
   onNext,
   onPrevious,
+  onKeyDown,
   onFormat,
   validator,
   error,
@@ -51,8 +53,14 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   const [autoCapitalize, setAutoCapitalize] = useState(true);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Use external onKeyDown if provided, otherwise handle locally
+    if (onKeyDown) {
+      onKeyDown(e);
+      return;
+    }
+
     // Format when user presses Enter (if auto-capitalize is enabled)
-    if (e.key === 'Enter' && autoCapitalize) {
+    if (e.key === 'Enter' && autoCapitalize && onFormat) {
       const formatted = onFormat(value);
       onChange(formatted);
     }
@@ -61,14 +69,18 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   const handleNext = () => {
     // Format before validation if auto-capitalize is enabled
     let valueToValidate = value;
-    if (autoCapitalize) {
+    if (autoCapitalize && onFormat) {
       valueToValidate = onFormat(value);
       onChange(valueToValidate);
     }
 
-    // Validate and proceed
-    const validation = validator(valueToValidate);
-    if (validation.success) {
+    // Validate and proceed (if validator provided)
+    if (validator) {
+      const validation = validator(valueToValidate);
+      if (validation.success) {
+        onNext(valueToValidate);
+      }
+    } else {
       onNext(valueToValidate);
     }
   };
