@@ -21,7 +21,7 @@ interface SetupGuideModalProps {
  */
 export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
   isOpen,
-  onClose
+  onClose,
 }) => {
   if (!isOpen) return null;
 
@@ -29,7 +29,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div
         className="bg-white rounded-lg p-6 max-w-2xl max-h-96 overflow-y-scroll"
-        style={{scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9'}}
+        style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 #f1f5f9' }}
       >
         <h3 className="text-lg font-bold mb-4">
           Professional League Setup Guide
@@ -40,9 +40,7 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
             <h4 className="font-semibold">
               1. Create Dedicated Email (Highly Recommended)
             </h4>
-            <p>
-              • Google, Outlook, Yahoo and more give FREE email addresses
-            </p>
+            <p>• Google, Outlook, Yahoo and more give FREE email addresses</p>
             <p>• Easy naming format: [YourLeagueName]@gmail.com</p>
             <p>• Example: "MidTownBCALeagues@gmail.com"</p>
             <p>• Keep separate from personal email</p>
@@ -89,16 +87,37 @@ export const SetupGuideModal: React.FC<SetupGuideModalProps> = ({
             </div>
           </div>
 
+          {/* Simple/Small League Option */}
+          <div>
+            <h4 className="font-semibold">
+              4. Keep It Simple (For Small Leagues)
+            </h4>
+            <p>• Set PUBLIC contact to in-app only</p>
+            <p>• Make email public to league members</p>
+            <p>• Give phone number personally to select players</p>
+            <div className="mt-2 text-gray-600 font-medium">
+              Fine for smaller and single leagues
+            </div>
+            <div className="mt-1 text-gray-700 text-xs">
+              Note: Only recommended if you don't plan to grow beyond a couple
+              small leagues
+            </div>
+          </div>
+
           {/* Professional Benefits Section */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <h4 className="font-semibold text-gray-700 mb-2">Why Separate Your Personal Information?</h4>
+            <h4 className="font-semibold text-gray-700 mb-2">
+              Why Separate Your Personal Information?
+            </h4>
             <p className="text-gray-600 leading-relaxed">
-              Setting up dedicated league contact methods protects your personal privacy while
-              presenting a professional, organized image to players. When players see dedicated
-              business email addresses and phone numbers, they immediately recognize you as a
-              serious, trustworthy league operator. Plus, these dedicated channels can be easily
-              shared with co-operators or assistants, making it simple to manage your growing
-              league operations without compromising your personal information.
+              Setting up dedicated league contact methods protects your personal
+              privacy while presenting a professional, organized image to
+              players. When players see dedicated business email addresses and
+              phone numbers, they immediately recognize you as a serious,
+              trustworthy league operator. Plus, these dedicated channels can be
+              easily shared with co-operators or assistants, making it simple to
+              manage your growing league operations without compromising your
+              personal information.
             </p>
           </div>
         </div>

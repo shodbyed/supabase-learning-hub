@@ -3,7 +3,7 @@
  * Centralizes all form state management and business logic
  */
 import { useReducer, useState } from 'react';
-import { applicationReducer, initialApplicationState } from './applicationReducer';
+import { applicationReducer, getInitialApplicationState } from './applicationReducer';
 import { getQuestionDefinitions } from './questionDefinitions';
 import { useUserProfile } from '../hooks/useUserProfile';
 
@@ -20,10 +20,19 @@ export const useApplicationForm = () => {
   const { member } = useUserProfile();
 
   // Main form state using reducer for complex state updates
-  const [state, dispatch] = useReducer(applicationReducer, initialApplicationState);
+  // Load fresh state from localStorage on every mount
+  const [state, dispatch] = useReducer(applicationReducer, getInitialApplicationState());
 
   // Navigation state - tracks which question user is currently on
-  const [currentStep, setCurrentStep] = useState(0);
+  // Load saved step from localStorage or start at 0
+  const [currentStep, setCurrentStep] = useState(() => {
+    try {
+      const savedStep = localStorage.getItem('leagueOperatorApplication_currentStep');
+      return savedStep ? parseInt(savedStep, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
 
   // Current input value - what user is typing before hitting Enter/Next
   const [currentInput, setCurrentInput] = useState('');
@@ -36,6 +45,7 @@ export const useApplicationForm = () => {
   const [customCity, setCustomCity] = useState('');
   const [customState, setCustomState] = useState('');
   const [customZip, setCustomZip] = useState('');
+
 
   // Modal visibility states for security disclaimer and setup guide
   const [showSecurityDisclaimer, setShowSecurityDisclaimer] = useState(false);
@@ -67,7 +77,14 @@ export const useApplicationForm = () => {
    */
   const handleNext = () => {
     if (currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      // Save current step to localStorage
+      try {
+        localStorage.setItem('leagueOperatorApplication_currentStep', nextStep.toString());
+      } catch (error) {
+        console.warn('Failed to save current step:', error);
+      }
       setCurrentInput(''); // Clear input for next question
       setError(''); // Clear any previous errors
     }
@@ -78,7 +95,14 @@ export const useApplicationForm = () => {
    */
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const prevStep = currentStep - 1;
+      setCurrentStep(prevStep);
+      // Save current step to localStorage
+      try {
+        localStorage.setItem('leagueOperatorApplication_currentStep', prevStep.toString());
+      } catch (error) {
+        console.warn('Failed to save current step:', error);
+      }
       setCurrentInput(''); // Clear input when going back
       setError(''); // Clear any errors
     }

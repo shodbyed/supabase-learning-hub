@@ -81,23 +81,25 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
         )}
 
         <div className="space-y-6">
-          {/* Choice Buttons */}
-          <div className="flex gap-4">
-            {choices.map((choice) => (
-              <Button
-                key={choice.value}
-                variant={selectedValue === choice.value ? 'default' : (choice.variant || 'outline')}
-                onClick={() => onSelect(choice.value)}
-                className={`px-6 py-3 ${
-                  selectedValue === choice.value
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                {choice.label}
-              </Button>
-            ))}
-          </div>
+          {/* Choice Buttons - Only show if choices exist */}
+          {choices.length > 0 && (
+            <div className="flex gap-4">
+              {choices.map((choice) => (
+                <Button
+                  key={choice.value}
+                  variant={selectedValue === choice.value ? 'default' : (choice.variant || 'outline')}
+                  onClick={() => onSelect(choice.value)}
+                  className={`px-6 py-3 ${
+                    selectedValue === choice.value
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {choice.label}
+                </Button>
+              ))}
+            </div>
+          )}
 
           {/* Additional Content (shown based on selection) */}
           {additionalContent && (

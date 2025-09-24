@@ -7,6 +7,7 @@ import type { LeagueOperatorApplication } from '../schemas/leagueOperatorSchema'
 import type { ApplicationAction } from './types';
 import {
   leagueNameSchema,
+  leagueEmailSchema,
 } from '../schemas/leagueOperatorSchema';
 import {
   formatLeagueName,
@@ -290,7 +291,7 @@ export const getQuestionDefinitions = (
             ⚠️ Security Warning
           </h4>
           <p className="text-amber-700 mb-3">
-            Any contact information you provide will be made publicly available
+            Any contact information you provide as a League Operator will be made publicly available
             to players searching for leagues. This information will be visible
             on your league listings.
           </p>
@@ -301,42 +302,175 @@ export const getQuestionDefinitions = (
             >
               Security Disclaimer
             </button>
-            <button
-              onClick={() => setShowSetupGuide(true)}
-              className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-md transition-colors"
-            >
-              Recommended Setup
-            </button>
           </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-semibold text-blue-800 mb-2">
-            💡 Available Now
+            💡 Professional Setup Recommendations
           </h4>
-          <p className="text-blue-700">
-            • Email contact (recommended to start)
+          <p className="text-blue-700 mb-3">
+            Please read these insider tips that successful league operators use to build thriving, professional leagues and protect their privacy.
           </p>
-          <p className="text-xs text-blue-600 mt-2">
-            Additional contact methods (phone, social media) will be available
-            in future updates
-          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowSetupGuide(true)}
+              className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-md transition-colors"
+            >
+              Setup Guide
+            </button>
+          </div>
+        </div>
+
+        {/* Agreement Checkbox */}
+        <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={state.contactDisclaimerAcknowledged || false}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_CONTACT_DISCLAIMER_ACKNOWLEDGED',
+                  payload: e.target.checked,
+                })
+              }
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            />
+            <span className="text-sm font-medium text-gray-900">
+              I agree to the terms and acknowledge that my League Operator contact information may be made public
+            </span>
+          </label>
         </div>
       </div>
     ),
+    choices: [],
+    getValue: () =>
+      state.contactDisclaimerAcknowledged ? 'agreed' : '',
+    setValue: () => {
+      // Handled by checkbox onChange
+    },
+  },
+
+  // Question 4: League Email
+  {
+    id: 'leagueEmail',
+    type: 'choice',
+    title: 'League Contact Email',
+    subtitle: `What email should players use to contact ${
+      state.leagueName || 'your league'
+    }?`,
+    content:
+      state.useProfileEmail !== false && member ? (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-semibold text-gray-700 mb-2">
+            Your Profile Email:
+          </h4>
+          <p className="text-gray-900">
+            {member.email}
+          </p>
+        </div>
+      ) : state.useProfileEmail !== false ? (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <p className="text-gray-600">Loading your profile email...</p>
+        </div>
+      ) : (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-semibold text-gray-700 mb-4">
+            Enter League Email:
+          </h4>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                League Email Address
+              </label>
+              <input
+                type="email"
+                value={state.leagueEmail}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  dispatch({
+                    type: 'SET_LEAGUE_EMAIL',
+                    payload: value,
+                  });
+                }}
+                onBlur={(e) => {
+                  // Validate email when user leaves the field
+                  const value = e.target.value;
+                  if (value) {
+                    try {
+                      leagueEmailSchema.parse(value);
+                      e.target.setCustomValidity('');
+                    } catch (error) {
+                      e.target.setCustomValidity('Please enter a valid email address');
+                    }
+                  } else {
+                    e.target.setCustomValidity('');
+                  }
+                }}
+                placeholder="leaguename@gmail.com"
+                className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  state.leagueEmail && (() => {
+                    try {
+                      leagueEmailSchema.parse(state.leagueEmail);
+                      return 'border-gray-300';
+                    } catch {
+                      return 'border-red-300 bg-red-50';
+                    }
+                  })()
+                }`}
+                required
+              />
+              {state.leagueEmail && (() => {
+                try {
+                  leagueEmailSchema.parse(state.leagueEmail);
+                  return null;
+                } catch (error) {
+                  return (
+                    <p className="mt-1 text-sm text-red-600">
+                      Please enter a valid email address
+                    </p>
+                  );
+                }
+              })()}
+            </div>
+          </div>
+        </div>
+      ),
     choices: [
       {
-        value: 'understood',
-        label: 'I Understand',
+        value: 'profile',
+        label: 'Use Profile Email',
         variant: 'default',
       },
+      {
+        value: 'new',
+        label: 'Enter New Email',
+        variant: 'outline',
+      },
     ],
-    getValue: () =>
-      state.contactDisclaimerAcknowledged ? 'understood' : '',
-    setValue: (value: string) =>
-      dispatch({
-        type: 'SET_CONTACT_DISCLAIMER_ACKNOWLEDGED',
-        payload: value === 'understood',
-      }),
+    getValue: () => state.useProfileEmail?.toString() || '',
+    setValue: (value: string) => {
+      const boolValue = value === 'profile';
+      dispatch({ type: 'SET_USE_PROFILE_EMAIL', payload: boolValue });
+    },
+    infoTitle: 'Email Contact Method',
+    infoContent: (
+      <div className="space-y-2 text-sm">
+        <p>
+          This email will be used for league-related communication and may
+          be visible to players in your leagues.
+        </p>
+        <p>
+          <strong>Profile Email:</strong> Uses your existing member email
+        </p>
+        <p>
+          <strong>New Email:</strong> Enter a dedicated league email address
+        </p>
+        <p className="mt-3 text-xs text-blue-600">
+          Consider using a dedicated league email for better organization
+          and privacy protection.
+        </p>
+      </div>
+    ),
   },
 ];

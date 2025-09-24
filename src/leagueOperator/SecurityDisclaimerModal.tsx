@@ -18,10 +18,9 @@ interface SecurityDisclaimerModalProps {
  * @param isOpen - Whether the modal is currently visible
  * @param onClose - Function to call when user wants to close the modal
  */
-export const SecurityDisclaimerModal: React.FC<SecurityDisclaimerModalProps> = ({
-  isOpen,
-  onClose
-}) => {
+export const SecurityDisclaimerModal: React.FC<
+  SecurityDisclaimerModalProps
+> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
@@ -30,8 +29,8 @@ export const SecurityDisclaimerModal: React.FC<SecurityDisclaimerModalProps> = (
         <h3 className="text-lg font-bold mb-4">Security Disclaimer</h3>
         <div className="space-y-3 text-sm">
           <p>
-            <strong>Public Information Warning:</strong> Any contact
-            information you choose to provide will be made publicly
+            <strong>Public Information Warning:</strong> Any contact information
+            you choose to provide as a League Operator will be made publicly
             available to players searching for leagues through our platform.
           </p>
 
@@ -44,22 +43,22 @@ export const SecurityDisclaimerModal: React.FC<SecurityDisclaimerModalProps> = (
           </p>
 
           <p>
-            <strong>Platform Liability:</strong> Our platform serves only as
-            a conduit for information you choose to make public. We accept
-            no responsibility or liability for any problems, damages, or
+            <strong>Platform Liability:</strong> Our platform serves only as a
+            conduit for information you choose to make public. We accept no
+            responsibility or liability for any problems, damages, or
             consequences arising from your decision to publish contact
             information.
           </p>
 
           <p>
-            <strong>Recommendation:</strong> We strongly recommend using
-            dedicated business contact methods rather than personal
+            <strong>Recommendation:</strong> We strongly advise using
+            recommended business contact methods rather than personal
             information to minimize risk.
           </p>
 
           <p>
-            <strong>Your Choice:</strong> Publication of contact information
-            is entirely voluntary and at your own risk.
+            <strong>Your Choice:</strong> Publication of contact information is
+            entirely voluntary and at your own risk.
           </p>
         </div>
         <button

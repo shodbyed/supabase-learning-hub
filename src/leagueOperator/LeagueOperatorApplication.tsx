@@ -24,6 +24,7 @@ import { ApplicationPreview } from './ApplicationPreview';
 import { SecurityDisclaimerModal } from './SecurityDisclaimerModal';
 import { SetupGuideModal } from './SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
+import { leagueEmailSchema } from '../schemas/leagueOperatorSchema';
 
 /**
  * League Operator Application Form Component
@@ -72,15 +73,55 @@ export const LeagueOperatorApplication: React.FC = () => {
   } = useApplicationForm();
 
   /**
+   * Check if the application is complete (all required fields filled)
+   * TODO: Update this function as we add more questions to the form.
+   * Currently only checks the first 3 questions, but we'll be adding venue
+   * questions, contact method selection, and other required fields.
+   * This completion check must be updated to include ALL required questions.
+   */
+  const isApplicationComplete = (): boolean => {
+    // Check if we have completed all questions
+    return (
+      // Organization name filled
+      !!state.leagueName &&
+      // Address choice made and filled
+      state.useProfileAddress !== undefined &&
+      (state.useProfileAddress ||
+        (!!state.organizationAddress && !!state.organizationCity && !!state.organizationState && !!state.organizationZipCode)
+      ) &&
+      // Contact disclaimer acknowledged
+      state.contactDisclaimerAcknowledged === true &&
+      // League email choice made and filled (with validation for custom email)
+      state.useProfileEmail !== undefined &&
+      (state.useProfileEmail || (!!state.leagueEmail && (() => {
+        try {
+          leagueEmailSchema.parse(state.leagueEmail);
+          return true;
+        } catch {
+          return false;
+        }
+      })()))
+      // TODO: Add checks for future questions:
+      // - Venue information (name, address, tables, etc.)
+      // - Contact method selection (phone, etc.)
+      // - Any other required fields we add to the form
+    );
+  };
+
+  /**
    * Sync input field with current question's value when navigating
    * This ensures the input shows the saved value when user goes back to a question
+   * Only runs when the step changes, not on every render
    */
   useEffect(() => {
     if (currentQuestion?.getValue && currentQuestion.type !== 'choice') {
       const savedValue = currentQuestion.getValue();
-      setCurrentInput(savedValue || '');
+      // Only set if we actually have a saved value, otherwise let user type freely
+      if (savedValue) {
+        setCurrentInput(savedValue);
+      }
     }
-  }, [currentStep, currentQuestion, setCurrentInput]);
+  }, [currentStep]); // Only depend on currentStep, not currentQuestion or setCurrentInput
 
   /**
    * Handle Enter key press in input fields
@@ -102,6 +143,14 @@ export const LeagueOperatorApplication: React.FC = () => {
   const handleSubmit = () => {
     // For now, just console.log the completed application
     console.log('League Operator Application Submitted:', state);
+
+    // Clear saved progress since form is submitted
+    try {
+      localStorage.removeItem('leagueOperatorApplication');
+      localStorage.removeItem('leagueOperatorApplication_currentStep');
+    } catch (error) {
+      console.warn('Failed to clear saved progress:', error);
+    }
 
     // TODO: In the future, this will:
     // 1. Validate all required fields are complete
@@ -149,7 +198,7 @@ export const LeagueOperatorApplication: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-2">
             <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {/* TODO: Update when more questions added */} 3
+              Step {currentStep + 1} of {/* TODO: Update when more questions added */} 4
             </span>
           </div>
         </div>
@@ -198,7 +247,10 @@ export const LeagueOperatorApplication: React.FC = () => {
 
           {/* Live Preview Panel (1/3 width on large screens) */}
           <div className="lg:col-span-1">
-            <ApplicationPreview applicationData={state} />
+            <ApplicationPreview
+              applicationData={state}
+              isComplete={isApplicationComplete()}
+            />
           </div>
         </div>
       </div>

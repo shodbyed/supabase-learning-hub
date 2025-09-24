@@ -21,6 +21,8 @@ export const leagueOperatorApplicationSchema = z.object({
   organizationState: z.string().optional(),
   organizationZipCode: z.string().optional(),
   contactDisclaimerAcknowledged: z.boolean().optional(),
+  useProfileEmail: z.boolean().optional(),
+  leagueEmail: z.string().optional(),
   venues: z.array(venueSchema).min(1, 'At least one venue is required'),
   contactName: z.string().min(1, 'Contact name is required').trim(),
   contactEmail: z.string().email('Valid email is required').trim(),
@@ -49,6 +51,10 @@ export const venueTablesSchema = z.string().min(1, 'Number of tables is required
   if (num > 50) throw new Error('Maximum 50 tables');
   return num;
 });
+export const useProfileEmailSchema = z.string().refine((val) => val === 'profile' || val === 'new', {
+  message: 'Please select an email option'
+});
+export const leagueEmailSchema = z.string().email('Valid email is required').trim();
 export const contactNameSchema = z.string().min(1, 'Contact name is required').trim();
 export const contactEmailSchema = z.string().email('Valid email is required').trim();
 export const contactPhoneSchema = z.string().min(10, 'Valid phone number is required').trim();

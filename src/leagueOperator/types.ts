@@ -15,6 +15,8 @@ export type ApplicationAction =
   | { type: 'SET_ORGANIZATION_STATE'; payload: string }
   | { type: 'SET_ORGANIZATION_ZIP_CODE'; payload: string }
   | { type: 'SET_CONTACT_DISCLAIMER_ACKNOWLEDGED'; payload: boolean }
+  | { type: 'SET_USE_PROFILE_EMAIL'; payload: boolean }
+  | { type: 'SET_LEAGUE_EMAIL'; payload: string }
   | { type: 'ADD_VENUE'; payload: Venue }
   | {
       type: 'UPDATE_VENUE';

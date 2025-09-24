@@ -8,9 +8,14 @@ import type {
 import type { ApplicationAction } from './types';
 
 /**
- * Initial state for the league operator application form
+ * LocalStorage key for persisting application state
  */
-export const initialApplicationState: ApplicationData = {
+const STORAGE_KEY = 'leagueOperatorApplication';
+
+/**
+ * Default initial state for the league operator application form
+ */
+const defaultInitialState: ApplicationData = {
   leagueName: '',
   useProfileAddress: undefined,
   organizationAddress: '',
@@ -18,11 +23,60 @@ export const initialApplicationState: ApplicationData = {
   organizationState: '',
   organizationZipCode: '',
   contactDisclaimerAcknowledged: undefined,
+  useProfileEmail: undefined,
+  leagueEmail: '',
   venues: [],
   contactName: '',
   contactEmail: '',
   contactPhone: '',
 };
+
+/**
+ * Load application state from localStorage
+ * Returns default state if no saved state exists or if there's an error
+ */
+export const loadApplicationState = (): ApplicationData => {
+  try {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      // Merge with default state to handle any new fields that might have been added
+      return { ...defaultInitialState, ...parsed };
+    }
+  } catch (error) {
+    console.warn('Failed to load saved application state:', error);
+  }
+  return defaultInitialState;
+};
+
+/**
+ * Save application state to localStorage
+ */
+export const saveApplicationState = (state: ApplicationData): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn('Failed to save application state:', error);
+  }
+};
+
+/**
+ * Clear saved application state from localStorage
+ */
+export const clearApplicationState = (): void => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.warn('Failed to clear saved application state:', error);
+  }
+};
+
+/**
+ * Get initial state for the league operator application form
+ * This function should be called each time the component mounts
+ * to ensure fresh data is loaded from localStorage
+ */
+export const getInitialApplicationState = (): ApplicationData => loadApplicationState();
 
 /**
  * Application state reducer for managing form data
@@ -38,33 +92,51 @@ export function applicationReducer(
   state: ApplicationData,
   action: ApplicationAction
 ): ApplicationData {
+  let newState: ApplicationData;
+
   switch (action.type) {
     case 'SET_LEAGUE_NAME':
-      return { ...state, leagueName: action.payload };
+      newState = { ...state, leagueName: action.payload };
+      break;
 
     case 'SET_USE_PROFILE_ADDRESS':
-      return { ...state, useProfileAddress: action.payload };
+      newState = { ...state, useProfileAddress: action.payload };
+      break;
 
     case 'SET_ORGANIZATION_ADDRESS':
-      return { ...state, organizationAddress: action.payload };
+      newState = { ...state, organizationAddress: action.payload };
+      break;
 
     case 'SET_ORGANIZATION_CITY':
-      return { ...state, organizationCity: action.payload };
+      newState = { ...state, organizationCity: action.payload };
+      break;
 
     case 'SET_ORGANIZATION_STATE':
-      return { ...state, organizationState: action.payload };
+      newState = { ...state, organizationState: action.payload };
+      break;
 
     case 'SET_ORGANIZATION_ZIP_CODE':
-      return { ...state, organizationZipCode: action.payload };
+      newState = { ...state, organizationZipCode: action.payload };
+      break;
 
     case 'SET_CONTACT_DISCLAIMER_ACKNOWLEDGED':
-      return { ...state, contactDisclaimerAcknowledged: action.payload };
+      newState = { ...state, contactDisclaimerAcknowledged: action.payload };
+      break;
+
+    case 'SET_USE_PROFILE_EMAIL':
+      newState = { ...state, useProfileEmail: action.payload };
+      break;
+
+    case 'SET_LEAGUE_EMAIL':
+      newState = { ...state, leagueEmail: action.payload };
+      break;
 
     case 'ADD_VENUE':
-      return { ...state, venues: [...state.venues, action.payload] };
+      newState = { ...state, venues: [...state.venues, action.payload] };
+      break;
 
     case 'UPDATE_VENUE':
-      return {
+      newState = {
         ...state,
         venues: state.venues.map((venue) =>
           venue.id === action.payload.id
@@ -72,17 +144,25 @@ export function applicationReducer(
             : venue
         ),
       };
+      break;
 
     case 'SET_CONTACT_NAME':
-      return { ...state, contactName: action.payload };
+      newState = { ...state, contactName: action.payload };
+      break;
 
     case 'SET_CONTACT_EMAIL':
-      return { ...state, contactEmail: action.payload };
+      newState = { ...state, contactEmail: action.payload };
+      break;
 
     case 'SET_CONTACT_PHONE':
-      return { ...state, contactPhone: action.payload };
+      newState = { ...state, contactPhone: action.payload };
+      break;
 
     default:
       return state;
   }
+
+  // Automatically save to localStorage on every state change
+  saveApplicationState(newState);
+  return newState;
 }

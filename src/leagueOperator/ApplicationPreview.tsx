@@ -10,6 +10,7 @@ import { useUserProfile } from '../hooks/useUserProfile';
 
 interface ApplicationPreviewProps {
   applicationData: ApplicationData;
+  isComplete?: boolean;
 }
 
 /**
@@ -19,7 +20,8 @@ interface ApplicationPreviewProps {
  * Shows all sections with current values or placeholder text
  */
 export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
-  applicationData
+  applicationData,
+  isComplete = false
 }) => {
   const { member } = useUserProfile();
   return (
@@ -30,7 +32,7 @@ export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
         {/* Organization Information */}
         <div className="border-b border-gray-200 pb-4">
           <h4 className="font-semibold text-gray-700 mb-2">Organization Information</h4>
-          {applicationData.leagueName || applicationData.useProfileAddress !== undefined ? (
+          {applicationData.leagueName || applicationData.useProfileAddress !== undefined || applicationData.useProfileEmail !== undefined ? (
             <div className="space-y-1">
               {applicationData.leagueName && (
                 <div className="flex">
@@ -39,23 +41,59 @@ export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
                 </div>
               )}
               {applicationData.useProfileAddress && member && (
-                <div className="flex">
-                  <span className="text-gray-500 w-32">Organization Address: </span>
-                  <span className="text-gray-900 font-medium">
-                    {member.address}, {member.city}, {member.state} {member.zip_code}
-                  </span>
-                </div>
+                <>
+                  <div className="flex">
+                    <span className="text-gray-500 w-32">Organization Address: </span>
+                    <span className="text-gray-900 font-medium">
+                      {member.address}, {member.city}, {member.state} {member.zip_code}
+                    </span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 w-32"></span>
+                    <span className="text-xs text-gray-400">Address is only viewable by you (the league operator)</span>
+                  </div>
+                </>
               )}
               {applicationData.useProfileAddress === false && (
-                <div className="flex">
-                  <span className="text-gray-500 w-32">Organization Address: </span>
-                  <span className="text-gray-900 font-medium">
-                    {applicationData.organizationAddress ?
-                      `${applicationData.organizationAddress}${applicationData.organizationCity ? `, ${applicationData.organizationCity}` : ''}${applicationData.organizationState ? `, ${applicationData.organizationState}` : ''}${applicationData.organizationZipCode ? ` ${applicationData.organizationZipCode}` : ''}` :
-                      'Will enter custom address'
-                    }
-                  </span>
-                </div>
+                <>
+                  <div className="flex">
+                    <span className="text-gray-500 w-32">Organization Address: </span>
+                    <span className="text-gray-900 font-medium">
+                      {applicationData.organizationAddress ?
+                        `${applicationData.organizationAddress}${applicationData.organizationCity ? `, ${applicationData.organizationCity}` : ''}${applicationData.organizationState ? `, ${applicationData.organizationState}` : ''}${applicationData.organizationZipCode ? ` ${applicationData.organizationZipCode}` : ''}` :
+                        'Will enter custom address'
+                      }
+                    </span>
+                  </div>
+                  {applicationData.organizationAddress && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32"></span>
+                      <span className="text-xs text-gray-400">Address is only viewable by you (the league operator)</span>
+                    </div>
+                  )}
+                </>
+              )}
+              {applicationData.useProfileEmail !== undefined && (
+                <>
+                  {applicationData.useProfileEmail && member && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Email: </span>
+                      <span className="text-gray-900 font-medium">{member.email}</span>
+                    </div>
+                  )}
+                  {applicationData.useProfileEmail === false && applicationData.leagueEmail && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Email: </span>
+                      <span className="text-gray-900 font-medium">{applicationData.leagueEmail}</span>
+                    </div>
+                  )}
+                  {applicationData.useProfileEmail === false && !applicationData.leagueEmail && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Email: </span>
+                      <span className="text-gray-400">Custom email will be entered</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (
@@ -118,13 +156,31 @@ export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
         </div>
       </div>
 
-      {/* Save & Exit */}
+      {/* Save & Exit - Only enabled when application is complete */}
       <div className="mt-6 pt-4 border-t">
-        <Link to="/dashboard">
-          <Button variant="outline" size="sm">
+        {isComplete ? (
+          <Link to="/dashboard">
+            <Button variant="outline" size="sm">
+              Save & Exit
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="opacity-50 cursor-not-allowed"
+            title="Complete the questionnaire to save and exit"
+          >
             Save & Exit
           </Button>
-        </Link>
+        )}
+        <p className="text-xs text-gray-500 mt-2">
+          {isComplete
+            ? 'Application complete - you can now save and exit'
+            : 'Complete all questions to save and exit'
+          }
+        </p>
       </div>
     </div>
   );
