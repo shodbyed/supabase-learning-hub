@@ -2,16 +2,17 @@
 
 ## Current Work Focus
 
-### Recent Major Achievement: Complete Profile Edit System
-- **Full Edit Capability**: All user-editable profile sections (personal, contact, address) support comprehensive editing with real-time validation
-- **Advanced UX**: Zod validation, error feedback, form save blocking, success popups with before/after change details
-- **Database Integration Ready**: Console logs exact SQL queries and parameters for partner integration
-- **Technical Excellence**: Consistent edit patterns, error state management, and data formatting
+### ✅ COMPLETED: League Operator Application System
+- **Complete Application Flow**: 6-step application process (organization, address, disclaimer, email, phone, payment)
+- **Advanced Contact Privacy**: Reusable ContactInfoExposure component with role-based visibility controls
+- **Secure Payment Integration**: Mock Stripe tokenization with $0 authorization verification
+- **Comprehensive Data Logging**: Structured console output for database operations
+- **Professional UX**: Progressive disclosure, color-coded privacy levels, real-time validation
 
-### Recent Refactoring Success
-- **LeagueOperatorApplication.tsx**: Reduced from 722 → 221 lines (69% reduction)
-- **Profile.tsx**: Reduced from 647 → 173 lines (74% reduction)
-- **Component Extraction**: Created focused, reusable components with improved organization
+### 🎯 CURRENT PRIORITY: League Builder System
+**Goal**: Enable approved league operators to create and configure their leagues
+**Status**: Ready to begin development
+**Context**: Foundation is complete - now building the actual league management tools
 
 ## Major Completed Features
 
@@ -38,62 +39,82 @@
 - **Status System**: Color-coded indicators (green=paid, red=overdue, yellow=never paid)
 - **Automatic Tracking**: One-year expiration from payment date
 
+### ✅ League Operator Onboarding
+- **Application System**: Complete 6-step application flow with validation
+- **Contact Privacy Controls**: Reusable component for email/phone visibility settings
+- **Payment Integration**: Secure tokenization and card verification system
+- **Database Logging**: Comprehensive console output for all application data
+
 ### ✅ Dashboard & Navigation
-- **Simplified Dashboard**: Clean welcome page focused on actions
-- **Profile Page**: Comprehensive information display
-- **Clear Separation**: Dashboard for actions, Profile for information
-- **Future Ready**: Structure prepared for leagues/tournaments
+- **Member Dashboard**: Clean welcome page for players
+- **Profile System**: Comprehensive member information display
+- **League Operator Path**: Complete application flow from discovery to approval
+- **Role-Based Navigation**: Different experiences for members vs operators
 
 ## Current Architecture Status
 
-**🎯 Project Status**: Member Management System Complete - Ready for League Features
+**🎯 Project Status**: League Operator Onboarding Complete - Building League Creation Tools
 
 **🔐 Authentication**: Complete system with all flows working
 **👤 Member Management**: Full profile system with editing, dues tracking
+**🎯 League Operator Onboarding**: Complete application system with payment verification
 **🎨 Design System**: Consistent shadcn/ui + Tailwind implementation
-**🏗️ Code Organization**: Clean separation, utility functions, proper validation
-**📊 Database Ready**: Console logging pattern established for partner integration
+**🏗️ Code Organization**: Reusable components, utility functions, proper validation
+**📊 Database Ready**: Comprehensive console logging for all operations
 
-## Next Priorities
+## Next Development Phase
 
-### **Immediate Next Phase: League Management**
-- League creation and management tools
-- Player enrollment in leagues
-- League operator dashboard enhancements
+### **🚀 IMMEDIATE: League Builder System**
+**Components Needed:**
+- League creation form (name, format, schedule, rules)
+- Venue management (create/select venues for leagues)
+- League settings configuration
+- League operator dashboard
 
-### **Future Enhancements**
-- Tournament system with brackets and scoring
-- BCA API integration for member number verification
-- Enhanced home/about pages
+**User Flow:**
+1. Approved operator logs in
+2. Sees "Create New League" option
+3. Configures league settings
+4. Sets up venues and schedules
+5. Publishes league for player enrollment
 
-## Technical Patterns Established
+### **Future Phases**
+- Player enrollment and team management
+- Scheduling and match tracking
+- Scoring and standings systems
+- Tournament features
 
-### **Edit System Pattern**
-- Consistent edit mode UI: edit icon → form fields → save/cancel buttons
-- Zod validation schemas for each editable section
-- Real-time error feedback and form save blocking
-- Success popups with detailed change information
-- Database operation simulation via console.log
+## Established Patterns & Architecture
 
-### **Component Organization**
+### **Form System Patterns**
+- Multi-step forms with progress tracking and validation
+- Reusable components (ContactInfoExposure, VisibilityChoiceCard)
+- Progressive disclosure UX for complex options
+- Real-time validation with clear error messaging
+- Secure payment tokenization practices
+
+### **Component Architecture**
 - Utility functions in src/utils/ for business logic
-- Validation schemas in src/schemas/ directory
-- Custom hooks for data management
-- Clean separation of concerns
+- Validation schemas with Zod in src/schemas/
+- Custom hooks for complex state management
+- Reusable UI components with proper TypeScript interfaces
+- Clean separation of concerns across files
 
 ### **Database Integration Strategy**
-- Console.log operations show exact SQL queries and parameters
-- UI provides full functionality while partner handles actual database calls
-- Change detection for efficient updates
-- Consistent data formatting using utility functions
+- Comprehensive console logging for all operations
+- Structured data output for easy database integration
+- Token-based security for sensitive information (payment)
+- UI-first development with database operations clearly documented
 
-## Known Issues
+### **UX Patterns**
+- Role-based interface differences (member vs operator)
+- Clear value proposition and onboarding flows
+- Professional payment and security messaging
+- Accessible form interactions with keyboard navigation
 
-- None identified - system is stable and fully functional for current feature set
+## Ready for League Builder Development
 
-## Active Decisions
-
-- **Navigation Philosophy**: Dashboard (actions) vs Profile (information) separation
-- **Edit Patterns**: Consistent UI flow across all editable sections
-- **Database Strategy**: Console logging for partner integration
-- **Future Ready**: Architecture prepared for league/tournament expansion
+✅ **Foundation Complete**: All operator onboarding systems working
+✅ **Patterns Established**: Reusable components and consistent architecture
+✅ **Database Ready**: Clear logging and integration points documented
+🚀 **Next Phase**: Build league creation and management tools

@@ -8,12 +8,17 @@ import type { ApplicationAction } from './types';
 import {
   leagueNameSchema,
   leagueEmailSchema,
+  leaguePhoneSchema,
 } from '../schemas/leagueOperatorSchema';
 import { ContactInfoExposure } from './ContactInfoExposure';
 import {
   formatLeagueName,
   formatCity,
   formatZipCode,
+  formatPhoneNumber,
+  formatCardNumber,
+  formatExpiryDate,
+  formatCVV,
 } from '../utils/formatters';
 import { US_STATES } from '../constants/states';
 import {
@@ -505,6 +510,342 @@ export const getQuestionDefinitions = (
         <p className="mt-3 text-xs text-blue-600">
           Consider using a dedicated league email for better organization
           and privacy protection.
+        </p>
+      </div>
+    ),
+  },
+
+  // Question 5: League Phone Number
+  {
+    id: 'leaguePhone',
+    type: 'choice',
+    title: 'League Contact Phone Number',
+    subtitle: `What phone number should players use to contact ${
+      state.leagueName || 'your league'
+    }?`,
+    content: (
+      <div className="space-y-6">
+        {/* Phone Display */}
+        <div className="bg-gray-50 p-4 rounded-lg">
+          {state.useProfilePhone !== false && member ? (
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-2">
+                Your Profile Phone:
+              </h4>
+              <p className="text-gray-900 mb-4">
+                {member.phone || 'No phone number in profile'}
+              </p>
+            </div>
+          ) : state.useProfilePhone !== false ? (
+            <div>
+              <p className="text-gray-600 mb-4">Loading your profile phone...</p>
+            </div>
+          ) : (
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-4">
+                Enter League Phone:
+              </h4>
+              <div className="space-y-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    League Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={state.leaguePhone}
+                    onChange={(e) => {
+                      const formatted = formatPhoneNumber(e.target.value);
+                      dispatch({
+                        type: 'SET_LEAGUE_PHONE',
+                        payload: formatted,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      // Validate phone when user leaves the field
+                      const value = e.target.value;
+                      if (value) {
+                        try {
+                          leaguePhoneSchema.parse(value);
+                          e.target.setCustomValidity('');
+                        } catch (error) {
+                          e.target.setCustomValidity('Please enter a valid phone number');
+                        }
+                      } else {
+                        e.target.setCustomValidity('');
+                      }
+                    }}
+                    placeholder="(555) 123-4567"
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      state.leaguePhone && (() => {
+                        try {
+                          leaguePhoneSchema.parse(state.leaguePhone);
+                          return 'border-gray-300';
+                        } catch {
+                          return 'border-red-300 bg-red-50';
+                        }
+                      })()
+                    }`}
+                    required
+                  />
+                  {state.leaguePhone && (() => {
+                    try {
+                      leaguePhoneSchema.parse(state.leaguePhone);
+                      return null;
+                    } catch (error) {
+                      return (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid phone number
+                        </p>
+                      );
+                    }
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Phone Choice Buttons - Inside the content area */}
+          <div className="flex gap-3 pt-2 border-t">
+            <button
+              onClick={() => dispatch({ type: 'SET_USE_PROFILE_PHONE', payload: true })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                state.useProfilePhone === true
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Use Profile Phone
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SET_USE_PROFILE_PHONE', payload: false })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                state.useProfilePhone === false
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Enter New Phone
+            </button>
+          </div>
+        </div>
+
+        {/* Phone Visibility Settings - Show only if phone is selected/entered */}
+        {(state.useProfilePhone === true || (state.useProfilePhone === false && state.leaguePhone)) && (
+          <div className="border-t pt-6">
+            <ContactInfoExposure
+              contactType="phone"
+              userRole="league_operator"
+              selectedLevel={state.phoneVisibility}
+              onLevelChange={(level) => {
+                dispatch({ type: 'SET_PHONE_VISIBILITY', payload: level });
+              }}
+              title="Who can see your league phone number?"
+              helpText="Choose who can access your phone number for league-related communication."
+            />
+          </div>
+        )}
+      </div>
+    ),
+    choices: [],
+    getValue: () => state.useProfilePhone?.toString() || '',
+    setValue: (value: string) => {
+      const boolValue = value === 'profile';
+      dispatch({ type: 'SET_USE_PROFILE_PHONE', payload: boolValue });
+    },
+    infoTitle: 'Phone Contact Method',
+    infoContent: (
+      <div className="space-y-2 text-sm">
+        <p>
+          This phone number will be used for league-related communication and may
+          be visible to players in your leagues.
+        </p>
+        <p>
+          <strong>Profile Phone:</strong> Uses your existing member phone number
+        </p>
+        <p>
+          <strong>New Phone:</strong> Enter a dedicated league phone number
+        </p>
+        <p className="mt-3 text-xs text-blue-600">
+          Consider using a dedicated league phone for better organization
+          and privacy protection.
+        </p>
+      </div>
+    ),
+  },
+
+  // Question 6: Payment Information
+  {
+    id: 'paymentInfo',
+    type: 'choice',
+    title: 'Payment Information',
+    subtitle: `Set up billing for ${state.leagueName || 'your league operation'}`,
+    content: (
+      <div className="space-y-6">
+        {/* Security Notice */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <span className="text-green-600 text-lg">🔒</span>
+            <div>
+              <h4 className="font-semibold text-green-800 mb-2">
+                Secure Payment Setup
+              </h4>
+              <p className="text-green-700 text-sm mb-2">
+                We use bank-level encryption to protect your payment information.
+              </p>
+              <p className="text-green-700 text-sm font-medium">
+                No charges will be made at this time - we're just verifying your card.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mock Payment Form */}
+        <div className="bg-gray-50 p-6 rounded-lg border">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Card Number
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="1234 5678 9012 3456"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  maxLength={19}
+                  onChange={(e) => {
+                    const formatted = formatCardNumber(e.target.value);
+                    e.target.value = formatted;
+                  }}
+                />
+                <div className="absolute right-3 top-2">
+                  <span className="text-xs text-gray-500">VISA/MC/AMEX</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Expiry Date
+                </label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  maxLength={5}
+                  onChange={(e) => {
+                    const formatted = formatExpiryDate(e.target.value);
+                    e.target.value = formatted;
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CVV
+                </label>
+                <input
+                  type="text"
+                  placeholder="123"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  maxLength={4}
+                  onChange={(e) => {
+                    const formatted = formatCVV(e.target.value);
+                    e.target.value = formatted;
+                  }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Billing ZIP Code
+              </label>
+              <input
+                type="text"
+                placeholder="12345"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                maxLength={10}
+              />
+            </div>
+
+            {/* Mock Verify Button */}
+            <button
+              onClick={() => {
+                // Simulate successful card verification
+                dispatch({
+                  type: 'SET_PAYMENT_INFO',
+                  payload: {
+                    paymentToken: 'tok_mock_' + Date.now(),
+                    cardLast4: '4242',
+                    cardBrand: 'visa',
+                    expiryMonth: 12,
+                    expiryYear: 2028,
+                    billingZip: '12345',
+                    paymentVerified: true
+                  }
+                });
+              }}
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
+            >
+              Verify Card ($0.00 Authorization)
+            </button>
+          </div>
+        </div>
+
+        {/* Success Message */}
+        {state.paymentVerified && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center space-x-3">
+              <span className="text-green-600 text-xl">✅</span>
+              <div>
+                <h4 className="font-semibold text-green-800">Card Verified Successfully!</h4>
+                <p className="text-green-700 text-sm">
+                  Card ending in {state.cardLast4} • {state.cardBrand?.toUpperCase()}
+                </p>
+                <p className="text-green-600 text-xs mt-1">
+                  Ready to proceed - no charges have been made.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Information */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-semibold text-blue-800 mb-2">💰 Simple, Fair Pricing</h4>
+          <div className="text-blue-700 text-sm space-y-1">
+            <p><strong>League Fee:</strong> $1 per team, per week</p>
+            <p><strong>Setup Fee:</strong> $0</p>
+            <p><strong>Example:</strong> 8 teams × 12 weeks = $96 per season</p>
+            <p className="text-xs text-blue-600 mt-2">
+              Payment due by week 3-4 of each season.
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+    choices: [],
+    getValue: () => state.paymentVerified ? 'verified' : '',
+    setValue: () => {
+      // Payment verification handled by the verify button
+    },
+    infoTitle: 'Why We Need Payment Info',
+    infoContent: (
+      <div className="space-y-2 text-sm">
+        <p>
+          Payment information is required to prevent spam and ensure serious
+          league operators join the platform.
+        </p>
+        <p>
+          <strong>Security:</strong> We use Stripe's secure tokenization - your card
+          number is never stored on our servers.
+        </p>
+        <p>
+          <strong>No Immediate Charges:</strong> We only verify the card is valid.
+          Billing begins when you create your first league.
+        </p>
+        <p className="mt-3 text-xs text-blue-600">
+          You can update payment information anytime from your dashboard.
         </p>
       </div>
     ),

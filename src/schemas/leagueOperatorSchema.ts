@@ -37,6 +37,16 @@ export const leagueOperatorApplicationSchema = z.object({
   useProfileEmail: z.boolean().optional(),
   leagueEmail: z.string().optional(),
   emailVisibility: z.enum(contactVisibilityLevels).optional(),
+  useProfilePhone: z.boolean().optional(),
+  leaguePhone: z.string().optional(),
+  phoneVisibility: z.enum(contactVisibilityLevels).optional(),
+  paymentToken: z.string().optional(),
+  cardLast4: z.string().optional(),
+  cardBrand: z.string().optional(),
+  expiryMonth: z.number().optional(),
+  expiryYear: z.number().optional(),
+  billingZip: z.string().optional(),
+  paymentVerified: z.boolean().optional(),
   venues: z.array(venueSchema).min(1, 'At least one venue is required'),
   contactName: z.string().min(1, 'Contact name is required').trim(),
   contactEmail: z.string().email('Valid email is required').trim(),
@@ -72,6 +82,29 @@ export const leagueEmailSchema = z.string().email('Valid email is required').tri
 export const emailVisibilitySchema = z.enum(contactVisibilityLevels, {
   message: 'Please select who can see your email'
 });
+export const useProfilePhoneSchema = z.string().refine((val) => val === 'profile' || val === 'new', {
+  message: 'Please select a phone option'
+});
+export const leaguePhoneSchema = z.string()
+  .min(10, 'Phone number must be at least 10 digits')
+  .regex(/^[\d\s\-\(\)\+\.]+$/, { message: 'Phone number can only contain digits, spaces, dashes, parentheses, plus sign, and dots' })
+  .trim();
+export const phoneVisibilitySchema = z.enum(contactVisibilityLevels, {
+  message: 'Please select who can see your phone number'
+});
+export const cardNumberSchema = z.string()
+  .min(13, 'Card number must be at least 13 digits')
+  .max(19, 'Card number cannot exceed 19 digits')
+  .regex(/^[\d\s]+$/, { message: 'Card number can only contain digits and spaces' });
+export const expiryDateSchema = z.string()
+  .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, { message: 'Expiry date must be in MM/YY format' });
+export const cvvSchema = z.string()
+  .min(3, 'CVV must be at least 3 digits')
+  .max(4, 'CVV cannot exceed 4 digits')
+  .regex(/^\d+$/, { message: 'CVV can only contain digits' });
+export const billingZipSchema = z.string()
+  .min(5, 'ZIP code must be at least 5 digits')
+  .regex(/^\d{5}(-\d{4})?$/, { message: 'ZIP code must be 5 digits or 5+4 format' });
 export const contactNameSchema = z.string().min(1, 'Contact name is required').trim();
 export const contactEmailSchema = z.string().email('Valid email is required').trim();
 export const contactPhoneSchema = z.string().min(10, 'Valid phone number is required').trim();

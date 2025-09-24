@@ -120,3 +120,49 @@ export const formatZipCode = (input: string): string => {
 
   return digits.slice(0, 5);
 };
+
+/**
+ * Format credit card number with spaces for readability
+ */
+export const formatCardNumber = (input: string): string => {
+  // Remove all non-digit characters
+  const digits = input.replace(/\D/g, '');
+
+  // Add spaces every 4 digits
+  return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+};
+
+/**
+ * Format expiry date to MM/YY format
+ */
+export const formatExpiryDate = (input: string): string => {
+  // Remove all non-digit characters
+  const digits = input.replace(/\D/g, '');
+
+  // Format as MM/YY
+  if (digits.length >= 2) {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
+  }
+  return digits;
+};
+
+/**
+ * Format CVV to digits only
+ */
+export const formatCVV = (input: string): string => {
+  // Only allow digits, max 4 characters
+  return input.replace(/\D/g, '').slice(0, 4);
+};
+
+/**
+ * Get card brand from card number
+ */
+export const getCardBrand = (cardNumber: string): string => {
+  const number = cardNumber.replace(/\D/g, '');
+
+  if (/^4/.test(number)) return 'visa';
+  if (/^5[1-5]/.test(number)) return 'mastercard';
+  if (/^3[47]/.test(number)) return 'amex';
+  if (/^6/.test(number)) return 'discover';
+  return 'unknown';
+};

@@ -26,6 +26,16 @@ const defaultInitialState: ApplicationData = {
   useProfileEmail: undefined,
   leagueEmail: '',
   emailVisibility: undefined,
+  useProfilePhone: undefined,
+  leaguePhone: '',
+  phoneVisibility: undefined,
+  paymentToken: '',
+  cardLast4: '',
+  cardBrand: '',
+  expiryMonth: undefined,
+  expiryYear: undefined,
+  billingZip: '',
+  paymentVerified: undefined,
   venues: [],
   contactName: '',
   contactEmail: '',
@@ -134,6 +144,31 @@ export function applicationReducer(
 
     case 'SET_EMAIL_VISIBILITY':
       newState = { ...state, emailVisibility: action.payload };
+      break;
+
+    case 'SET_USE_PROFILE_PHONE':
+      newState = { ...state, useProfilePhone: action.payload };
+      break;
+
+    case 'SET_LEAGUE_PHONE':
+      newState = { ...state, leaguePhone: action.payload };
+      break;
+
+    case 'SET_PHONE_VISIBILITY':
+      newState = { ...state, phoneVisibility: action.payload };
+      break;
+
+    case 'SET_PAYMENT_INFO':
+      newState = {
+        ...state,
+        paymentToken: action.payload.paymentToken,
+        cardLast4: action.payload.cardLast4,
+        cardBrand: action.payload.cardBrand,
+        expiryMonth: action.payload.expiryMonth,
+        expiryYear: action.payload.expiryYear,
+        billingZip: action.payload.billingZip,
+        paymentVerified: action.payload.paymentVerified
+      };
       break;
 
     case 'ADD_VENUE':

@@ -18,6 +18,18 @@ export type ApplicationAction =
   | { type: 'SET_USE_PROFILE_EMAIL'; payload: boolean }
   | { type: 'SET_LEAGUE_EMAIL'; payload: string }
   | { type: 'SET_EMAIL_VISIBILITY'; payload: ContactVisibilityLevel }
+  | { type: 'SET_USE_PROFILE_PHONE'; payload: boolean }
+  | { type: 'SET_LEAGUE_PHONE'; payload: string }
+  | { type: 'SET_PHONE_VISIBILITY'; payload: ContactVisibilityLevel }
+  | { type: 'SET_PAYMENT_INFO'; payload: {
+      paymentToken: string;
+      cardLast4: string;
+      cardBrand: string;
+      expiryMonth: number;
+      expiryYear: number;
+      billingZip: string;
+      paymentVerified: boolean;
+    } }
   | { type: 'ADD_VENUE'; payload: Venue }
   | {
       type: 'UPDATE_VENUE';

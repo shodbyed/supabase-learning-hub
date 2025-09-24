@@ -24,7 +24,7 @@ import { ApplicationPreview } from './ApplicationPreview';
 import { SecurityDisclaimerModal } from './SecurityDisclaimerModal';
 import { SetupGuideModal } from './SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
-import { leagueEmailSchema } from '../schemas/leagueOperatorSchema';
+import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
 
 /**
  * League Operator Application Form Component
@@ -100,7 +100,19 @@ export const LeagueOperatorApplication: React.FC = () => {
         } catch {
           return false;
         }
-      })()))
+      })())) &&
+      // League phone choice made and filled (with validation for custom phone)
+      state.useProfilePhone !== undefined &&
+      (state.useProfilePhone || (!!state.leaguePhone && (() => {
+        try {
+          leaguePhoneSchema.parse(state.leaguePhone);
+          return true;
+        } catch {
+          return false;
+        }
+      })())) &&
+      // Payment information verified
+      state.paymentVerified === true
       // TODO: Add checks for future questions:
       // - Venue information (name, address, tables, etc.)
       // - Contact method selection (phone, etc.)
@@ -138,27 +150,101 @@ export const LeagueOperatorApplication: React.FC = () => {
 
   /**
    * Handle form submission (when user clicks Continue on last question)
-   * In the future, this will save the application data
+   * Logs all data for database operations and clears form state
    */
   const handleSubmit = () => {
-    // For now, just console.log the completed application
-    console.log('League Operator Application Submitted:', state);
+    // Log comprehensive application data for database operations
+    console.group('🎯 LEAGUE OPERATOR APPLICATION - DATABASE OPERATIONS');
+
+    console.log('📋 COMPLETE APPLICATION DATA:', state);
+
+    console.group('🏢 ORGANIZATION INFORMATION');
+    console.log('Organization Name:', state.leagueName);
+    console.log('Use Profile Address:', state.useProfileAddress);
+
+    if (state.useProfileAddress) {
+      console.log('📍 Address Source: User Profile Address');
+    } else {
+      console.log('📍 Custom Organization Address:');
+      console.log('  Street:', state.organizationAddress);
+      console.log('  City:', state.organizationCity);
+      console.log('  State:', state.organizationState);
+      console.log('  ZIP:', state.organizationZipCode);
+    }
+    console.groupEnd();
+
+    console.group('📧 CONTACT INFORMATION');
+    console.log('Contact Disclaimer Acknowledged:', state.contactDisclaimerAcknowledged);
+
+    console.log('📧 EMAIL SETUP:');
+    console.log('  Use Profile Email:', state.useProfileEmail);
+    if (state.useProfileEmail) {
+      console.log('  Email Source: User Profile Email');
+    } else {
+      console.log('  Custom League Email:', state.leagueEmail);
+    }
+    console.log('  Email Visibility:', state.emailVisibility);
+
+    console.log('📱 PHONE SETUP:');
+    console.log('  Use Profile Phone:', state.useProfilePhone);
+    if (state.useProfilePhone) {
+      console.log('  Phone Source: User Profile Phone');
+    } else {
+      console.log('  Custom League Phone:', state.leaguePhone);
+    }
+    console.log('  Phone Visibility:', state.phoneVisibility);
+    console.groupEnd();
+
+    console.group('💳 PAYMENT INFORMATION');
+    console.log('Payment Token (SECURE):', state.paymentToken);
+    console.log('Card Last 4:', state.cardLast4);
+    console.log('Card Brand:', state.cardBrand);
+    console.log('Expiry Month:', state.expiryMonth);
+    console.log('Expiry Year:', state.expiryYear);
+    console.log('Billing ZIP:', state.billingZip);
+    console.log('Payment Verified:', state.paymentVerified);
+    console.groupEnd();
+
+    console.group('🎱 VENUES (FUTURE)');
+    console.log('Venues:', state.venues);
+    console.log('Note: Venue creation will happen during league setup');
+    console.groupEnd();
+
+    console.group('👤 LEGACY CONTACT FIELDS (UNUSED)');
+    console.log('Contact Name:', state.contactName);
+    console.log('Contact Email:', state.contactEmail);
+    console.log('Contact Phone:', state.contactPhone);
+    console.log('Note: These fields are not used in current flow');
+    console.groupEnd();
+
+    console.group('🔄 NEXT DATABASE OPERATIONS');
+    console.log('1. Create league_operators record');
+    console.log('2. Store payment token securely');
+    console.log('3. Set up operator permissions/role');
+    console.log('4. Send welcome email');
+    console.log('5. Navigate to league creation flow');
+    console.groupEnd();
+
+    console.groupEnd();
 
     // Clear saved progress since form is submitted
     try {
       localStorage.removeItem('leagueOperatorApplication');
       localStorage.removeItem('leagueOperatorApplication_currentStep');
+      console.log('✅ Cleared localStorage progress data');
     } catch (error) {
-      console.warn('Failed to clear saved progress:', error);
+      console.warn('⚠️ Failed to clear saved progress:', error);
     }
 
     // TODO: In the future, this will:
     // 1. Validate all required fields are complete
-    // 2. Save application data to Supabase
-    // 3. Navigate to next step (venue setup, etc.)
-    // 4. Show success message
+    // 2. Save application data to Supabase tables
+    // 3. Create league operator account/permissions
+    // 4. Send confirmation email
+    // 5. Navigate to league creation dashboard
+    // 6. Show success message
 
-    alert('Application submitted! (This is temporary - will integrate with database later)');
+    alert('✅ Application submitted successfully!\n\n📊 Check console for complete database operation details.\n\n(Database integration coming soon)');
   };
 
   /**
@@ -198,7 +284,7 @@ export const LeagueOperatorApplication: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-2">
             <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {/* TODO: Update when more questions added */} 4
+              Step {currentStep + 1} of {/* TODO: Update when more questions added */} 6
             </span>
           </div>
         </div>

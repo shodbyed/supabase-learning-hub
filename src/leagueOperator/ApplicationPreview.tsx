@@ -102,6 +102,42 @@ export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
                   )}
                 </>
               )}
+              {applicationData.useProfilePhone !== undefined && (
+                <>
+                  {applicationData.useProfilePhone && member && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Phone: </span>
+                      <span className="text-gray-900 font-medium">{member.phone || 'No phone in profile'}</span>
+                    </div>
+                  )}
+                  {applicationData.useProfilePhone === false && applicationData.leaguePhone && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Phone: </span>
+                      <span className="text-gray-900 font-medium">{applicationData.leaguePhone}</span>
+                    </div>
+                  )}
+                  {applicationData.useProfilePhone === false && !applicationData.leaguePhone && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Contact Phone: </span>
+                      <span className="text-gray-400">Custom phone will be entered</span>
+                    </div>
+                  )}
+                  {applicationData.phoneVisibility && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Phone Visibility: </span>
+                      <span className="text-gray-700 text-xs">{getVisibilityLabel(applicationData.phoneVisibility)}</span>
+                    </div>
+                  )}
+                </>
+              )}
+              {applicationData.paymentVerified && (
+                <div className="flex">
+                  <span className="text-gray-500 w-32">Payment Method: </span>
+                  <span className="text-gray-900 font-medium">
+                    {applicationData.cardBrand?.toUpperCase()} ending in {applicationData.cardLast4}
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-gray-400">No organization information added yet</div>
