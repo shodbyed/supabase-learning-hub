@@ -59,7 +59,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <UserContext.Provider value={{ isLoggedIn, user, loading, logout }}>
+    <UserContext.Provider value={{ isLoggedIn, user, loading, logout, setUser, setIsLoggedIn }}>
       {children}
     </UserContext.Provider>
   );

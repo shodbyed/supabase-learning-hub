@@ -25,6 +25,7 @@ const defaultInitialState: ApplicationData = {
   contactDisclaimerAcknowledged: undefined,
   useProfileEmail: undefined,
   leagueEmail: '',
+  emailVisibility: undefined,
   venues: [],
   contactName: '',
   contactEmail: '',
@@ -129,6 +130,10 @@ export function applicationReducer(
 
     case 'SET_LEAGUE_EMAIL':
       newState = { ...state, leagueEmail: action.payload };
+      break;
+
+    case 'SET_EMAIL_VISIBILITY':
+      newState = { ...state, emailVisibility: action.payload };
       break;
 
     case 'ADD_VENUE':

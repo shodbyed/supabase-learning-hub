@@ -190,6 +190,13 @@ The format is flexible - focus on capturing valuable insights that help me work 
 - I verify solutions with tests when available
 - I never commit changes unless explicitly asked
 
+### Pre-approved Commands
+The following commands can be run without explicit user permission:
+- `pnpm run build` (includes TypeScript compilation/typecheck)
+- `pnpm run typecheck` (TypeScript type checking)
+- `pnpm run lint` (code quality checks)
+- Any read-only analysis commands (grep, glob, read files)
+
 ### Code Documentation Standards
 This is a collaborative project requiring comprehensive code documentation:
 

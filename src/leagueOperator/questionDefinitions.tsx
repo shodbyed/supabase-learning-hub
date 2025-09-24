@@ -9,6 +9,7 @@ import {
   leagueNameSchema,
   leagueEmailSchema,
 } from '../schemas/leagueOperatorSchema';
+import { ContactInfoExposure } from './ContactInfoExposure';
 import {
   formatLeagueName,
   formatCity,
@@ -359,95 +360,130 @@ export const getQuestionDefinitions = (
     subtitle: `What email should players use to contact ${
       state.leagueName || 'your league'
     }?`,
-    content:
-      state.useProfileEmail !== false && member ? (
+    content: (
+      <div className="space-y-6">
+        {/* Email Display */}
         <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-700 mb-2">
-            Your Profile Email:
-          </h4>
-          <p className="text-gray-900">
-            {member.email}
-          </p>
-        </div>
-      ) : state.useProfileEmail !== false ? (
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-600">Loading your profile email...</p>
-        </div>
-      ) : (
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-gray-700 mb-4">
-            Enter League Email:
-          </h4>
-          <div className="space-y-4">
+          {state.useProfileEmail !== false && member ? (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                League Email Address
-              </label>
-              <input
-                type="email"
-                value={state.leagueEmail}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  dispatch({
-                    type: 'SET_LEAGUE_EMAIL',
-                    payload: value,
-                  });
-                }}
-                onBlur={(e) => {
-                  // Validate email when user leaves the field
-                  const value = e.target.value;
-                  if (value) {
-                    try {
-                      leagueEmailSchema.parse(value);
-                      e.target.setCustomValidity('');
-                    } catch (error) {
-                      e.target.setCustomValidity('Please enter a valid email address');
-                    }
-                  } else {
-                    e.target.setCustomValidity('');
-                  }
-                }}
-                placeholder="leaguename@gmail.com"
-                className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  state.leagueEmail && (() => {
+              <h4 className="font-semibold text-gray-700 mb-2">
+                Your Profile Email:
+              </h4>
+              <p className="text-gray-900 mb-4">
+                {member.email}
+              </p>
+            </div>
+          ) : state.useProfileEmail !== false ? (
+            <div>
+              <p className="text-gray-600 mb-4">Loading your profile email...</p>
+            </div>
+          ) : (
+            <div>
+              <h4 className="font-semibold text-gray-700 mb-4">
+                Enter League Email:
+              </h4>
+              <div className="space-y-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    League Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={state.leagueEmail}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      dispatch({
+                        type: 'SET_LEAGUE_EMAIL',
+                        payload: value,
+                      });
+                    }}
+                    onBlur={(e) => {
+                      // Validate email when user leaves the field
+                      const value = e.target.value;
+                      if (value) {
+                        try {
+                          leagueEmailSchema.parse(value);
+                          e.target.setCustomValidity('');
+                        } catch (error) {
+                          e.target.setCustomValidity('Please enter a valid email address');
+                        }
+                      } else {
+                        e.target.setCustomValidity('');
+                      }
+                    }}
+                    placeholder="leaguename@gmail.com"
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      state.leagueEmail && (() => {
+                        try {
+                          leagueEmailSchema.parse(state.leagueEmail);
+                          return 'border-gray-300';
+                        } catch {
+                          return 'border-red-300 bg-red-50';
+                        }
+                      })()
+                    }`}
+                    required
+                  />
+                  {state.leagueEmail && (() => {
                     try {
                       leagueEmailSchema.parse(state.leagueEmail);
-                      return 'border-gray-300';
-                    } catch {
-                      return 'border-red-300 bg-red-50';
+                      return null;
+                    } catch (error) {
+                      return (
+                        <p className="mt-1 text-sm text-red-600">
+                          Please enter a valid email address
+                        </p>
+                      );
                     }
-                  })()
-                }`}
-                required
-              />
-              {state.leagueEmail && (() => {
-                try {
-                  leagueEmailSchema.parse(state.leagueEmail);
-                  return null;
-                } catch (error) {
-                  return (
-                    <p className="mt-1 text-sm text-red-600">
-                      Please enter a valid email address
-                    </p>
-                  );
-                }
-              })()}
+                  })()}
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Email Choice Buttons - Now inside the content area */}
+          <div className="flex gap-3 pt-2 border-t">
+            <button
+              onClick={() => dispatch({ type: 'SET_USE_PROFILE_EMAIL', payload: true })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                state.useProfileEmail === true
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Use Profile Email
+            </button>
+            <button
+              onClick={() => dispatch({ type: 'SET_USE_PROFILE_EMAIL', payload: false })}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                state.useProfileEmail === false
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Enter New Email
+            </button>
           </div>
         </div>
-      ),
-    choices: [
-      {
-        value: 'profile',
-        label: 'Use Profile Email',
-        variant: 'default',
-      },
-      {
-        value: 'new',
-        label: 'Enter New Email',
-        variant: 'outline',
-      },
-    ],
+
+        {/* Email Visibility Settings - Show only if email is selected/entered */}
+        {(state.useProfileEmail === true || (state.useProfileEmail === false && state.leagueEmail)) && (
+          <div className="border-t pt-6">
+            <ContactInfoExposure
+              contactType="email"
+              userRole="league_operator"
+              selectedLevel={state.emailVisibility}
+              onLevelChange={(level) => {
+                dispatch({ type: 'SET_EMAIL_VISIBILITY', payload: level });
+              }}
+              title="Who can see your league email?"
+              helpText="Choose who can access your email address for league-related communication."
+            />
+          </div>
+        )}
+      </div>
+    ),
+    choices: [],
     getValue: () => state.useProfileEmail?.toString() || '',
     setValue: (value: string) => {
       const boolValue = value === 'profile';

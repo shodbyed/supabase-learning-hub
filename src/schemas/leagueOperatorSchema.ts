@@ -5,6 +5,19 @@
 import { z } from 'zod';
 import { US_STATES } from '../constants/states';
 
+/**
+ * Contact visibility levels for league operator contact information
+ */
+export const contactVisibilityLevels = [
+  'in_app_only',
+  'my_organization',
+  'my_team_captains',
+  'my_teams',
+  'anyone'
+] as const;
+
+export type ContactVisibilityLevel = typeof contactVisibilityLevels[number];
+
 export const venueSchema = z.object({
   id: z.string(),
   name: z.string().min(1, 'Venue name is required').trim(),
@@ -23,6 +36,7 @@ export const leagueOperatorApplicationSchema = z.object({
   contactDisclaimerAcknowledged: z.boolean().optional(),
   useProfileEmail: z.boolean().optional(),
   leagueEmail: z.string().optional(),
+  emailVisibility: z.enum(contactVisibilityLevels).optional(),
   venues: z.array(venueSchema).min(1, 'At least one venue is required'),
   contactName: z.string().min(1, 'Contact name is required').trim(),
   contactEmail: z.string().email('Valid email is required').trim(),
@@ -55,6 +69,9 @@ export const useProfileEmailSchema = z.string().refine((val) => val === 'profile
   message: 'Please select an email option'
 });
 export const leagueEmailSchema = z.string().email('Valid email is required').trim();
+export const emailVisibilitySchema = z.enum(contactVisibilityLevels, {
+  message: 'Please select who can see your email'
+});
 export const contactNameSchema = z.string().min(1, 'Contact name is required').trim();
 export const contactEmailSchema = z.string().email('Valid email is required').trim();
 export const contactPhoneSchema = z.string().min(10, 'Valid phone number is required').trim();

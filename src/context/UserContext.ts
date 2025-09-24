@@ -14,6 +14,8 @@ export interface UserContextType {
   user: User | null; // Supabase user object or null if not logged in
   loading: boolean; // Whether we're still checking authentication status
   logout: () => void; // Function to log out the current user
+  setUser: (user: User | null) => void; // Function to set the current user
+  setIsLoggedIn: (isLoggedIn: boolean) => void; // Function to set login status
 }
 
 /**

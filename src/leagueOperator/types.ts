@@ -2,7 +2,7 @@
  * @fileoverview League Operator Application Types
  * TypeScript interfaces and types for the league operator application form
  */
-import type { Venue } from '../schemas/leagueOperatorSchema';
+import type { Venue, ContactVisibilityLevel } from '../schemas/leagueOperatorSchema';
 
 /**
  * Application state management action types for useReducer
@@ -17,6 +17,7 @@ export type ApplicationAction =
   | { type: 'SET_CONTACT_DISCLAIMER_ACKNOWLEDGED'; payload: boolean }
   | { type: 'SET_USE_PROFILE_EMAIL'; payload: boolean }
   | { type: 'SET_LEAGUE_EMAIL'; payload: string }
+  | { type: 'SET_EMAIL_VISIBILITY'; payload: ContactVisibilityLevel }
   | { type: 'ADD_VENUE'; payload: Venue }
   | {
       type: 'UPDATE_VENUE';

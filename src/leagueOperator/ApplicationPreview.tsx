@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import type { LeagueOperatorApplication as ApplicationData } from '../schemas/leagueOperatorSchema';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { getVisibilityLabel } from './ContactInfoExposure';
 
 interface ApplicationPreviewProps {
   applicationData: ApplicationData;
@@ -91,6 +92,12 @@ export const ApplicationPreview: React.FC<ApplicationPreviewProps> = ({
                     <div className="flex">
                       <span className="text-gray-500 w-32">Contact Email: </span>
                       <span className="text-gray-400">Custom email will be entered</span>
+                    </div>
+                  )}
+                  {applicationData.emailVisibility && (
+                    <div className="flex">
+                      <span className="text-gray-500 w-32">Email Visibility: </span>
+                      <span className="text-gray-700 text-xs">{getVisibilityLabel(applicationData.emailVisibility)}</span>
                     </div>
                   )}
                 </>
