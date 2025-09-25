@@ -11,6 +11,9 @@ import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
 import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
+import { OperatorWelcome } from '../operator/OperatorWelcome';
+import { OperatorDashboard } from '../operator/OperatorDashboard';
+import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
@@ -68,6 +71,34 @@ export const NavRoutes: React.FC = () => {
         element={
           <ProtectedRoute requireAuth={true}>
             <LeagueOperatorApplication />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* League Operator Routes - Require league_operator role */}
+      <Route
+        path="/operator-welcome"
+        element={
+          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+            <OperatorWelcome />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/operator-dashboard"
+        element={
+          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+            <OperatorDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/create-league"
+        element={
+          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+            <LeagueCreationWizard />
           </ProtectedRoute>
         }
       />

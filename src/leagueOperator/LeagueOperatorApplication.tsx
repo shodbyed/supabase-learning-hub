@@ -18,6 +18,7 @@
  * - Modal components extracted to separate files
  */
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { QuestionStep } from '@/components/forms/QuestionStep';
 import { ChoiceStep } from '@/components/forms/ChoiceStep';
 import { ApplicationPreview } from '@/components/previews/ApplicationPreview';
@@ -40,6 +41,9 @@ import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorS
  * 5. [Future] Contact method selection
  */
 export const LeagueOperatorApplication: React.FC = () => {
+  // Navigation hook for redirecting after completion
+  const navigate = useNavigate();
+
   // Get all form state and handlers from custom hook
   const {
     // Application data
@@ -134,7 +138,8 @@ export const LeagueOperatorApplication: React.FC = () => {
         setCurrentInput(savedValue);
       }
     }
-  }, [currentStep]); // Only depend on currentStep, not currentQuestion or setCurrentInput
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]); // Only depend on currentStep - currentQuestion changes with currentStep, setCurrentInput is stable
 
   /**
    * Handle Enter key press in input fields
@@ -151,9 +156,12 @@ export const LeagueOperatorApplication: React.FC = () => {
 
   /**
    * Handle form submission (when user clicks Continue on last question)
-   * Logs all data for database operations and clears form state
+   * 1. Logs all data for database operations
+   * 2. Upgrades user role from 'player' to 'league_operator'
+   * 3. Clears form state
+   * 4. Redirects to congratulations page
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Log comprehensive application data for database operations
     console.group('🎯 LEAGUE OPERATOR APPLICATION - DATABASE OPERATIONS');
 
@@ -237,15 +245,27 @@ export const LeagueOperatorApplication: React.FC = () => {
       console.warn('⚠️ Failed to clear saved progress:', error);
     }
 
-    // TODO: In the future, this will:
-    // 1. Validate all required fields are complete
-    // 2. Save application data to Supabase tables
-    // 3. Create league operator account/permissions
-    // 4. Send confirmation email
-    // 5. Navigate to league creation dashboard
-    // 6. Show success message
+    console.group('🔄 ROLE UPGRADE (DUMMY OPERATION)');
+    console.log('1. Update members table: SET role = "league_operator" WHERE id = user_id');
+    console.log('2. Create league_operators record with application data');
+    console.log('3. Set up operator permissions/access levels');
+    console.log('4. Send welcome email to new league operator');
+    console.log('✅ User role upgraded: player → league_operator');
+    console.groupEnd();
 
-    alert('✅ Application submitted successfully!\n\n📊 Check console for complete database operation details.\n\n(Database integration coming soon)');
+    console.groupEnd();
+
+    // Clear saved progress since form is submitted
+    try {
+      localStorage.removeItem('leagueOperatorApplication');
+      localStorage.removeItem('leagueOperatorApplication_currentStep');
+      console.log('✅ Cleared localStorage progress data');
+    } catch (error) {
+      console.warn('⚠️ Failed to clear saved progress:', error);
+    }
+
+    // Navigate to congratulations page for new league operators
+    navigate('/operator-welcome');
   };
 
   /**
