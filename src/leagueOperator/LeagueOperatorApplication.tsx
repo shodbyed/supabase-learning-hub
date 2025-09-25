@@ -48,6 +48,7 @@ export const LeagueOperatorApplication: React.FC = () => {
     // Current question navigation
     currentStep,
     currentQuestion,
+    questions,
     isLastQuestion,
     canGoBack,
 
@@ -74,10 +75,14 @@ export const LeagueOperatorApplication: React.FC = () => {
 
   /**
    * Check if the application is complete (all required fields filled)
-   * TODO: Update this function as we add more questions to the form.
-   * Currently only checks the first 3 questions, but we'll be adding venue
-   * questions, contact method selection, and other required fields.
-   * This completion check must be updated to include ALL required questions.
+   *
+   * This function validates all required fields in the current question flow:
+   * 1. Organization name
+   * 2. Address selection (profile or custom with all fields)
+   * 3. Contact disclaimer acknowledgment
+   * 4. Email setup (profile or custom with validation)
+   * 5. Phone setup (profile or custom with validation)
+   * 6. Payment verification
    */
   const isApplicationComplete = (): boolean => {
     // Check if we have completed all questions
@@ -113,10 +118,6 @@ export const LeagueOperatorApplication: React.FC = () => {
       })())) &&
       // Payment information verified
       state.paymentVerified === true
-      // TODO: Add checks for future questions:
-      // - Venue information (name, address, tables, etc.)
-      // - Contact method selection (phone, etc.)
-      // - Any other required fields we add to the form
     );
   };
 
@@ -284,7 +285,7 @@ export const LeagueOperatorApplication: React.FC = () => {
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-2">
             <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {/* TODO: Update when more questions added */} 6
+              Step {currentStep + 1} of {questions.length}
             </span>
           </div>
         </div>
