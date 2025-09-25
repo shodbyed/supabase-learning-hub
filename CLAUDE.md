@@ -165,6 +165,8 @@ flowchart TD
 
 - **Task Scope Management**: Take smaller bites of tasks. Focus ONLY on what is specifically requested without expanding scope. Always ask before adding features or improvements beyond the original request. Break complex tasks into individual steps and complete one at a time.
 
+- **Component-First Development**: Always check existing reusable components first before writing new code. Default to creating reusable components rather than inline code. Break all complex features into small, testable, reusable pieces. Regularly scan existing components to see if they can be used, enhanced, or adapted for new features.
+
 - **Package Manager**: This project uses **pnpm** (not npm). Always use pnpm commands for package management, installations, and dependency operations.
 
 - **Dev Server Management**: When restarting the dev server, kill the existing process but then ask the user to manually run `pnpm run dev` in their terminal rather than running it automatically. The background execution doesn't always start a new instance properly for the user.

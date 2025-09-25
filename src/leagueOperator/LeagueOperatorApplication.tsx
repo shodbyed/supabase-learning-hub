@@ -18,11 +18,11 @@
  * - Modal components extracted to separate files
  */
 import React, { useEffect } from 'react';
-import { QuestionStep } from './QuestionStep';
-import { ChoiceStep } from './ChoiceStep';
-import { ApplicationPreview } from './ApplicationPreview';
-import { SecurityDisclaimerModal } from './SecurityDisclaimerModal';
-import { SetupGuideModal } from './SetupGuideModal';
+import { QuestionStep } from '@/components/forms/QuestionStep';
+import { ChoiceStep } from '@/components/forms/ChoiceStep';
+import { ApplicationPreview } from '@/components/previews/ApplicationPreview';
+import { SecurityDisclaimerModal } from '@/components/modals/SecurityDisclaimerModal';
+import { SetupGuideModal } from '@/components/modals/SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
 import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
 

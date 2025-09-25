@@ -10,15 +10,12 @@ import {
   leagueEmailSchema,
   leaguePhoneSchema,
 } from '../schemas/leagueOperatorSchema';
-import { ContactInfoExposure } from './ContactInfoExposure';
+import { ContactInfoExposure } from '@/components/privacy/ContactInfoExposure';
 import {
   formatLeagueName,
   formatCity,
   formatZipCode,
   formatPhoneNumber,
-  formatCardNumber,
-  formatExpiryDate,
-  formatCVV,
 } from '../utils/formatters';
 import { US_STATES } from '../constants/states';
 import {
@@ -28,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PaymentCardForm } from '@/components/PaymentCardForm';
 
 /**
  * Question configuration interface
@@ -681,134 +679,28 @@ export const getQuestionDefinitions = (
     subtitle: `Set up billing for ${state.leagueName || 'your league operation'}`,
     content: (
       <div className="space-y-6">
-        {/* Security Notice */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <span className="text-green-600 text-lg">🔒</span>
-            <div>
-              <h4 className="font-semibold text-green-800 mb-2">
-                Secure Payment Setup
-              </h4>
-              <p className="text-green-700 text-sm mb-2">
-                We use bank-level encryption to protect your payment information.
-              </p>
-              <p className="text-green-700 text-sm font-medium">
-                No charges will be made at this time - we're just verifying your card.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Mock Payment Form */}
-        <div className="bg-gray-50 p-6 rounded-lg border">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Card Number
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={19}
-                  onChange={(e) => {
-                    const formatted = formatCardNumber(e.target.value);
-                    e.target.value = formatted;
-                  }}
-                />
-                <div className="absolute right-3 top-2">
-                  <span className="text-xs text-gray-500">VISA/MC/AMEX</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expiry Date
-                </label>
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={5}
-                  onChange={(e) => {
-                    const formatted = formatExpiryDate(e.target.value);
-                    e.target.value = formatted;
-                  }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CVV
-                </label>
-                <input
-                  type="text"
-                  placeholder="123"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  maxLength={4}
-                  onChange={(e) => {
-                    const formatted = formatCVV(e.target.value);
-                    e.target.value = formatted;
-                  }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Billing ZIP Code
-              </label>
-              <input
-                type="text"
-                placeholder="12345"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                maxLength={10}
-              />
-            </div>
-
-            {/* Mock Verify Button */}
-            <button
-              onClick={() => {
-                // Simulate successful card verification
-                dispatch({
-                  type: 'SET_PAYMENT_INFO',
-                  payload: {
-                    paymentToken: 'tok_mock_' + Date.now(),
-                    cardLast4: '4242',
-                    cardBrand: 'visa',
-                    expiryMonth: 12,
-                    expiryYear: 2028,
-                    billingZip: '12345',
-                    paymentVerified: true
-                  }
-                });
-              }}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
-            >
-              Verify Card ($0.00 Authorization)
-            </button>
-          </div>
-        </div>
-
-        {/* Success Message */}
-        {state.paymentVerified && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 animate-in slide-in-from-top-2 duration-300">
-            <div className="flex items-center space-x-3">
-              <span className="text-green-600 text-xl">✅</span>
-              <div>
-                <h4 className="font-semibold text-green-800">Card Verified Successfully!</h4>
-                <p className="text-green-700 text-sm">
-                  Card ending in {state.cardLast4} • {state.cardBrand?.toUpperCase()}
-                </p>
-                <p className="text-green-600 text-xs mt-1">
-                  Ready to proceed - no charges have been made.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Reusable Payment Card Form */}
+        <PaymentCardForm
+          onVerificationSuccess={(cardData) => {
+            dispatch({
+              type: 'SET_PAYMENT_INFO',
+              payload: cardData
+            });
+          }}
+          onVerificationError={(error) => {
+            console.error('Payment verification failed:', error);
+          }}
+          showSuccess={state.paymentVerified}
+          cardData={state.paymentVerified && state.paymentToken && state.cardLast4 && state.cardBrand && state.billingZip ? {
+            paymentToken: state.paymentToken,
+            cardLast4: state.cardLast4,
+            cardBrand: state.cardBrand,
+            expiryMonth: state.expiryMonth || 0,
+            expiryYear: state.expiryYear || 0,
+            billingZip: state.billingZip,
+            paymentVerified: state.paymentVerified
+          } : undefined}
+        />
 
         {/* Pricing Information */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
