@@ -40,7 +40,7 @@ export const OperatorDashboard: React.FC = () => {
             <div className="text-blue-600 text-2xl mb-3">🏆</div>
             <h3 className="font-semibold text-gray-900 mb-2">Create New League</h3>
             <p className="text-sm text-gray-600 mb-4">Set up a new tournament or league</p>
-            <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button asChild className="w-full" style={{ backgroundColor: '#2563eb', color: 'white' }}>
               <Link to="/create-league">Create League</Link>
             </Button>
           </div>
@@ -87,7 +87,7 @@ export const OperatorDashboard: React.FC = () => {
                 <p className="text-gray-600 mb-6">
                   You haven't created any leagues yet. Start by creating your first league!
                 </p>
-                <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                <Button asChild style={{ backgroundColor: '#2563eb', color: 'white' }}>
                   <Link to="/create-league">Create Your First League</Link>
                 </Button>
               </div>

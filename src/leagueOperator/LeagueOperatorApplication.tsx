@@ -342,7 +342,6 @@ export const LeagueOperatorApplication: React.FC = () => {
                 onPrevious={handlePrevious}
                 onKeyDown={handleKeyDown}
                 onFormat={currentQuestion.formatter || undefined}
-                validator={currentQuestion.validator || undefined}
                 error={error}
                 canGoBack={canGoBack}
                 isLastQuestion={isLastQuestion}

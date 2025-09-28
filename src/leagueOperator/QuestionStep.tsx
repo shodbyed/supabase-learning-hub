@@ -16,7 +16,7 @@ interface QuestionStepProps {
   onPrevious: () => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
   onFormat?: (value: string) => string;
-  validator?: (value: string) => { success: boolean; error?: string };
+  validator?: (value: string) => { isValid: boolean; error?: string };
   error?: string;
   canGoBack: boolean;
   isLastQuestion: boolean;
@@ -77,7 +77,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
     // Validate and proceed (if validator provided)
     if (validator) {
       const validation = validator(valueToValidate);
-      if (validation.success) {
+      if (validation.isValid) {
         onNext(valueToValidate);
       }
     } else {

@@ -37,7 +37,7 @@ interface QuestionConfig {
   subtitle?: string;
   placeholder?: string;
   formatter?: (value: string) => string;
-  validator?: (value: string) => { success: boolean; error?: string };
+  validator?: (value: string) => { isValid: boolean; error?: string };
   getValue: () => any;
   setValue: (value: any) => void;
   infoTitle?: string;
@@ -95,11 +95,11 @@ export const getQuestionDefinitions = (
     validator: (value: string) => {
       try {
         leagueNameSchema.parse(value);
-        return { success: true };
+        return { isValid: true };
       } catch (error: unknown) {
         const zodError = error as { errors?: Array<{ message: string }> };
         return {
-          success: false,
+          isValid: false,
           error: zodError.errors?.[0]?.message || 'Invalid input',
         };
       }

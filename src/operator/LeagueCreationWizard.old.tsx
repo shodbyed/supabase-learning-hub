@@ -1,62 +1,33 @@
 /**
- * @fileoverview League Creation Wizard - Restructured Component
+ * @fileoverview League Creation Wizard - Main Component
  *
  * Multi-step wizard for league operators to create new leagues.
  * This wizard guides operators through the essential league setup process:
  *
  * WIZARD STEPS:
- * 1. Game Type Selection (8-ball, 9-ball, 10-ball)
- * 2. Start Date Selection (determines day of week)
- * 3. Optional Qualifier
- * 4. Team Format Selection (5-man vs 8-man teams) - Determines handicap system
+ * 1. Basic League Information (name, game type, night of week)
+ * 2. Team Format Selection (5-man vs 8-man teams)
+ * 3. Handicap System Selection (Custom 5-man vs BCA Standard)
+ * 4. Organization & Contact Details (pulled from operator profile)
  * 5. Review & Create
  *
- * NOTE: Venue selection moved to team creation process where team captains
- * choose their home venue when registering teams.
- *
  * DESIGN PHILOSOPHY:
- * - Focus on core league rules and format during creation
- * - Venue selection handled during team registration (more natural)
- * - Team format choice determines handicap system automatically
+ * - Uses existing reusable components from league operator application
  * - Step-by-step approach prevents overwhelming operators
- * - Clear explanations of team formats help operators make informed decisions
+ * - Clear explanations of handicap systems help operators make informed decisions
  * - Validation at each step ensures complete league setup
  * - Database operations are logged but not executed (dummy operations)
  *
  * INTEGRATION POINTS:
  * - Links from OperatorDashboard "Create League" buttons
  * - Uses operator profile data for organization details
- * - Integrates with separate Venue Creation Wizard
  * - Will eventually integrate with league management system
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QuestionStep } from '@/components/forms/QuestionStep';
 import { RadioChoiceStep } from '@/components/forms/RadioChoiceStep';
-import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
-
-/**
- * Venue information interface
- * Represents a billiard hall/bar where matches can be played
- */
-interface Venue {
-  id: string;
-  name: string;
-  address: string; // Full formatted address for display
-  streetAddress: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phone: string;
-  barBoxTables: number;
-  regulationTables: number;
-  totalTables: number;
-  mainContact?: string;
-  organizationId: string;
-  createdAt: string;
-  isActive: boolean;
-}
 
 /**
  * League data structure for the creation wizard
@@ -64,15 +35,13 @@ interface Venue {
  * Organization → League → Season → Team → Player
  */
 interface LeagueFormData {
-  // Venue Information
-  selectedVenueId: string; // ID of selected venue or 'add_new' for new venue creation
-  venueIds: string[]; // Array of venue IDs (for traveling leagues)
-  leagueFormat: 'in_house' | 'traveling' | ''; // Single venue vs multiple venues
-
   // Basic League Information (auto-generated from other fields)
   leagueName: string;
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball' | '';
   startDate: string; // ISO date string (YYYY-MM-DD)
+
+  // Location/Venue Information
+  venueName: string;
 
   // Optional qualifier to differentiate leagues (West Side, North Valley, Blue, Red, etc.)
   qualifier: string;
@@ -127,14 +96,11 @@ interface WizardStep {
  * validation and explanation of complex concepts like handicap systems.
  *
  * FLOW:
- * 1. Venue selection from organization venues
- * 2. League format (in-house vs traveling)
- * 3. Game type selection
- * 4. Start date selection
- * 5. Optional qualifier
- * 6. Team format selection (5-man vs 8-man)
- * 7. Handicap system selection with detailed explanations
- * 8. Review and creation
+ * 1. League name and basic info
+ * 2. Team format selection (5-man vs 8-man)
+ * 3. Handicap system selection with detailed explanations
+ * 4. Organization details review
+ * 5. Final review and creation
  */
 export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -144,89 +110,13 @@ export const LeagueCreationWizard: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [currentInput, setCurrentInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
-  const [showVenueWizard, setShowVenueWizard] = useState(false);
-  const [isLoadingVenues, setIsLoadingVenues] = useState(true);
-
-  // Organization venues - loaded from database
-  const [organizationVenues, setOrganizationVenues] = useState<Venue[]>([]);
-
-  /**
-   * Fake database call to fetch organization venues
-   */
-  const fetchOrganizationVenues = async (): Promise<Venue[]> => {
-    console.log('🔍 Fetching organization venues...');
-    setIsLoadingVenues(true);
-
-    // Simulate database call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Mock venues - some organizations might have none
-    const mockVenues: Venue[] = [
-      {
-        id: 'venue_1',
-        name: 'Billiards Plaza',
-        address: '123 Main St, Phoenix, AZ 85001',
-        streetAddress: '123 Main St',
-        city: 'Phoenix',
-        state: 'AZ',
-        zipCode: '85001',
-        phone: '(602) 555-0123',
-        barBoxTables: 6,
-        regulationTables: 2,
-        totalTables: 8,
-        mainContact: 'John Manager',
-        organizationId: 'current_org_id',
-        createdAt: '2024-01-15T10:00:00Z',
-        isActive: true
-      },
-      {
-        id: 'venue_2',
-        name: 'Corner Pocket',
-        address: '456 Oak Ave, Scottsdale, AZ 85251',
-        streetAddress: '456 Oak Ave',
-        city: 'Scottsdale',
-        state: 'AZ',
-        zipCode: '85251',
-        phone: '(480) 555-0456',
-        barBoxTables: 8,
-        regulationTables: 4,
-        totalTables: 12,
-        mainContact: 'Sarah Owner',
-        organizationId: 'current_org_id',
-        createdAt: '2024-02-01T14:30:00Z',
-        isActive: true
-      }
-    ];
-
-    // Simulate different scenarios:
-    // 50% chance of having venues, 50% chance of no venues yet
-    const hasVenues = Math.random() > 0.3; // Favor having venues for demo
-    const venues = hasVenues ? mockVenues : [];
-
-    console.log(`✅ Found ${venues.length} venues for organization`);
-    setIsLoadingVenues(false);
-    return venues;
-  };
-
-  /**
-   * Load venues when component mounts
-   */
-  useEffect(() => {
-    const loadVenues = async () => {
-      const venues = await fetchOrganizationVenues();
-      setOrganizationVenues(venues);
-    };
-    loadVenues();
-  }, []);
 
   // League form data
   const [formData, setFormData] = useState<LeagueFormData>({
-    selectedVenueId: '',
-    venueIds: [],
-    leagueFormat: '',
     leagueName: '',
     gameType: '',
     startDate: '',
+    venueName: '',
     qualifier: '',
     teamFormat: '',
     handicapSystem: '',
@@ -246,14 +136,15 @@ export const LeagueCreationWizard: React.FC = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+
   /**
    * Build league name automatically based on user selections
    * Based on naming convention from reference code buildSeasonName function
-   * Format: "{Game} {Day} {Venue} {Qualifier?}" or "{Game} {Day} Traveling {Qualifier?}"
+   * Format: "{Game} {Day} {Venue} {Qualifier?}"
    * Examples:
    * - "9-Ball Tuesday Billiards Plaza"
    * - "8-Ball Thursday Corner Pocket West Side"
-   * - "9-Ball Monday Traveling Blue Division"
+   * - "9-Ball Monday Rack Em Up Blue"
    *
    * Day of week is derived from the start date
    */
@@ -282,14 +173,9 @@ export const LeagueCreationWizard: React.FC = () => {
       }
     }
 
-    // Venue name or "Traveling"
-    if (formData.leagueFormat === 'traveling') {
-      parts.push('Traveling');
-    } else if (formData.selectedVenueId && formData.selectedVenueId !== 'add_new') {
-      const selectedVenue = organizationVenues.find(v => v.id === formData.selectedVenueId);
-      if (selectedVenue) {
-        parts.push(selectedVenue.name);
-      }
+    // Venue name
+    if (formData.venueName.trim()) {
+      parts.push(formData.venueName.trim());
     }
 
     // Optional qualifier (West Side, North Valley, Blue, Red, etc.)
@@ -298,6 +184,19 @@ export const LeagueCreationWizard: React.FC = () => {
     }
 
     return parts.length > 0 ? parts.join(' ') : 'League Name Preview';
+  };
+
+  /**
+   * Venue name validation - requires meaningful name
+   */
+  const validateVenueName = (value: string): { isValid: boolean; error?: string } => {
+    if (!value || value.trim().length < 2) {
+      return { isValid: false, error: 'Venue name must be at least 2 characters' };
+    }
+    if (value.trim().length > 30) {
+      return { isValid: false, error: 'Venue name must be 30 characters or less' };
+    }
+    return { isValid: true };
   };
 
   /**
@@ -335,37 +234,6 @@ export const LeagueCreationWizard: React.FC = () => {
       return { isValid: false, error: 'Qualifier must be 20 characters or less' };
     }
     return { isValid: true };
-  };
-
-  /**
-   * Handle venue addition - opens venue creation wizard
-   */
-  const handleAddVenue = () => {
-    console.log('🏢 Opening Venue Creation Wizard...');
-    setShowVenueWizard(true);
-  };
-
-  /**
-   * Handle venue creation completion
-   */
-  const handleVenueCreated = async (newVenue: Venue) => {
-    console.log('✅ Venue created successfully:', newVenue);
-    setShowVenueWizard(false);
-
-    // Refresh venue list to include new venue
-    const updatedVenues = await fetchOrganizationVenues();
-    setOrganizationVenues(updatedVenues);
-
-    // Auto-select the new venue
-    updateFormData('selectedVenueId', newVenue.id);
-  };
-
-  /**
-   * Handle venue creation cancellation
-   */
-  const handleVenueCanceled = () => {
-    console.log('❌ Venue creation canceled');
-    setShowVenueWizard(false);
   };
 
   /**
@@ -420,7 +288,21 @@ export const LeagueCreationWizard: React.FC = () => {
       infoContent: 'This is the date of your first league night. All subsequent matches will be on the same day of the week. The day of the week will automatically be included in your league name.'
     },
 
-    // Step 3: Optional Qualifier
+    // Step 3: Venue Name
+    {
+      id: 'venue_name',
+      title: 'What is the name of your venue?',
+      subtitle: 'Enter the pool hall, bar, or club name where matches will be played',
+      type: 'input',
+      placeholder: 'e.g., "Billiards Plaza" or "Corner Pocket"',
+      validator: validateVenueName,
+      getValue: () => formData.venueName,
+      setValue: (value: string) => updateFormData('venueName', value),
+      infoTitle: 'Venue Naming',
+      infoContent: 'Use the commonly known name of your venue. This will be part of your league name and help players identify your league.'
+    },
+
+    // Step 4: Optional Qualifier
     {
       id: 'qualifier',
       title: 'League qualifier (optional)',
@@ -434,113 +316,46 @@ export const LeagueCreationWizard: React.FC = () => {
       infoContent: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).'
     },
 
-    // Step 4: Team Format Selection - CRITICAL DECISION POINT
+    // Step 5: Team Format Selection
     {
       id: 'team_format',
-      title: 'Choose your team format',
-      subtitle: 'This is the most important decision - it determines your handicap system, match length, and player requirements',
+      title: 'How many players per team?',
+      subtitle: 'This determines your match format and handicap system options',
       type: 'choice',
       choices: [
         {
           value: '5_man',
-          label: '5-Man Teams + Custom Handicap System',
-          subtitle: '⚡ Faster matches • Easier to start • Heavy handicapping',
-          description: `🎯 KEY DIFFERENCES:
-• 5 players per roster, 3 play each night
-• Double round robin: 18 games per match
-• Match time: ~2.5 hours
-• Minimum players needed: 12 total (6 per team)
-
-🏆 HANDICAP SYSTEM: Custom 5-Man Formula
-• Formula: (Wins - Losses) ÷ Weeks Played
-• Range: +2 to -2 handicap points
-• Heavy handicapping for maximum balance
-• Anti-sandbagging: Team win/loss policy
-
-✅ PROS:
-• Faster matches (28% shorter than 8-man)
-• Easier to start (need fewer players)
-• Great for smaller venues
-• Everyone gets more playing time
-• Highly competitive balance
-
-❌ CONS:
-• Non-standard format
-• Fewer total players involved
-• More complex handicap calculations`,
-          infoTitle: '5-Man System Deep Dive',
-          infoContent: 'The 5-man system with custom handicapping creates extremely competitive matches where skill gaps are heavily minimized. Perfect for casual leagues or smaller player pools.'
+          label: '5-Man Teams',
+          subtitle: 'Smaller teams, faster matches',
+          description: '5 players per roster, 3 play each night. Double round robin format (18 games per match).',
+          infoTitle: '5-Man Team Benefits',
+          infoContent: 'Requires fewer players to start (only 12 total needed). Faster matches (28% shorter). Better for smaller venues. Uses custom handicap system optimized for competitive balance.'
         },
         {
           value: '8_man',
-          label: '8-Man Teams + BCA Standard Handicap',
-          subtitle: '🏅 Official BCA format • Standard everywhere • Light handicapping',
-          description: `🎯 KEY DIFFERENCES:
-• 8 players per roster, 5 play each night
-• Single round robin: 25 games per match
-• Match time: ~3.5 hours
-• Minimum players needed: 20 total (10 per team)
-
-🏆 HANDICAP SYSTEM: BCA Standard
-• Formula: Win Percentage (Wins ÷ Total Games)
-• Rolling window: Last 50 games
-• Light handicapping preserves skill advantage
-• Standard CHARTS lookup table
-
-✅ PROS:
-• Official BCA sanctioned format
-• Standard across most pool leagues
-• More players participate each week
-• Proven, time-tested system
-• Easier player transfers between leagues
-
-❌ CONS:
-• Longer matches (3.5+ hours)
-• Need more players to start
-• Skill gaps more pronounced
-• Less playing time per individual`,
-          infoTitle: 'BCA Standard System Deep Dive',
-          infoContent: 'The official BCA format used in leagues nationwide. Minimal handicapping means better players maintain their advantage, creating traditional competitive structure.'
+          label: '8-Man Teams',
+          subtitle: 'Standard BCA format',
+          description: '8 players per roster, 5 play each night. Single round robin format (25 games per match).',
+          infoTitle: '8-Man Team Benefits',
+          infoContent: 'Official BCA format. More players get to participate. Standard across most pool leagues. Uses proven BCA handicap system.'
         }
       ],
       getValue: () => formData.teamFormat,
-      setValue: (value: string) => {
-        updateFormData('teamFormat', value as typeof formData.teamFormat);
-        // Auto-set handicap system based on team format
-        if (value === '5_man') {
-          updateFormData('handicapSystem', 'custom_5man');
-        } else if (value === '8_man') {
-          updateFormData('handicapSystem', 'bca_standard');
-        }
-      },
-      infoTitle: 'Team Format Comparison Chart',
-      infoContent: `
-📊 SIDE-BY-SIDE COMPARISON:
-
-                    5-MAN          8-MAN
-Players/Roster:       5              8
-Play Each Night:      3              5
-Games/Match:         18             25
-Match Duration:    2.5hrs         3.5hrs
-Min Players:         12             20
-Handicap Style:    Heavy          Light
-Skill Impact:       Low           High
-BCA Official:       No            Yes
-Startup Ease:      Easy          Hard
-
-🎯 CHOOSE 5-MAN IF:
-• You want faster, more balanced matches
-• You have a smaller player pool
-• You want maximum competitive balance
-• Venue has limited time slots
-
-🎯 CHOOSE 8-MAN IF:
-• You want official BCA sanctioning
-• You have plenty of players available
-• You prefer skill-based competition
-• You want standard league compatibility`
+      setValue: (value: string) => updateFormData('teamFormat', value as typeof formData.teamFormat)
     },
 
+    // Step 6: Handicap System Selection (conditional based on team format)
+    {
+      id: 'handicap_system',
+      title: 'Choose your handicap system',
+      subtitle: 'This determines how games are balanced for fair play',
+      type: 'choice',
+      choices: [], // Will be populated dynamically based on team format
+      getValue: () => formData.handicapSystem,
+      setValue: (value: string) => updateFormData('handicapSystem', value as typeof formData.handicapSystem),
+      infoTitle: 'Handicap System Importance',
+      infoContent: 'The handicap system ensures fair matches regardless of skill differences. Each system has different philosophies about competitive balance.'
+    }
   ];
 
   /**
@@ -653,15 +468,6 @@ Startup Ease:      Easy          Hard
   };
 
   /**
-   * Cancel wizard and return to operator dashboard
-   */
-  const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
-      navigate('/operator-dashboard');
-    }
-  };
-
-  /**
    * Handle form submission - create the league
    */
   const handleSubmit = async () => {
@@ -674,26 +480,23 @@ Startup Ease:      Easy          Hard
     console.log('Game Type:', formData.gameType);
     console.log('Start Date:', formData.startDate);
     console.log('Day of Week (derived):', formData.startDate ? new Date(formData.startDate).toLocaleDateString('en-US', { weekday: 'long' }) : 'Not set');
-    console.log('League Format:', formData.leagueFormat);
     console.log('Team Format:', formData.teamFormat);
     console.log('Handicap System:', formData.handicapSystem);
     console.groupEnd();
 
-    console.group('📍 VENUE INFORMATION');
-    if (formData.leagueFormat === 'traveling') {
-      console.log('League Type: Traveling League');
-      console.log('Venues:', formData.venueIds);
-    } else {
-      const selectedVenue = organizationVenues.find(v => v.id === formData.selectedVenueId);
-      if (selectedVenue) {
-        console.log('League Type: In-House League');
-        console.log('Venue:', selectedVenue.name);
-        console.log('Address:', selectedVenue.address);
-        console.log('Contact:', selectedVenue.mainContact || 'Not specified');
-        console.log('Phone:', selectedVenue.phone);
-        console.log('Tables:', `${selectedVenue.totalTables} total (${selectedVenue.barBoxTables} Bar Box + ${selectedVenue.regulationTables} Regulation)`);
-      }
-    }
+    console.group('📍 ORGANIZATION DETAILS');
+    console.log('Organization:', formData.organizationName);
+    console.log('Address:', `${formData.organizationAddress}, ${formData.organizationCity}, ${formData.organizationState} ${formData.organizationZipCode}`);
+    console.log('Contact Email:', formData.contactEmail);
+    console.log('Contact Phone:', formData.contactPhone);
+    console.groupEnd();
+
+    console.group('🔄 DATABASE OPERATIONS TO PERFORM');
+    console.log('1. Create leagues table record');
+    console.log('2. Link to operator organization');
+    console.log('3. Set up initial season framework');
+    console.log('4. Configure handicap system parameters');
+    console.log('5. Initialize league settings');
     console.groupEnd();
 
     console.group('📊 HANDICAP SYSTEM CONFIGURATION');
@@ -716,19 +519,10 @@ Startup Ease:      Easy          Hard
     }
     console.groupEnd();
 
-    console.group('🔄 DATABASE OPERATIONS TO PERFORM');
-    console.log('1. Create leagues table record');
-    console.log('2. Link to selected venue(s)');
-    console.log('3. Link to operator organization');
-    console.log('4. Set up initial season framework');
-    console.log('5. Configure handicap system parameters');
-    console.log('6. Initialize league settings');
-    console.groupEnd();
-
     console.group('✅ NEXT STEPS FOR LEAGUE OPERATOR');
     console.log('1. Set up first season parameters');
     console.log('2. Begin team registration process');
-    console.log('3. Schedule venue partnerships (if traveling)');
+    console.log('3. Schedule venue partnerships');
     console.log('4. Set registration deadlines');
     console.log('5. Plan season schedule generation');
     console.groupEnd();
@@ -736,6 +530,7 @@ Startup Ease:      Easy          Hard
     console.groupEnd();
 
     // Navigate back to operator dashboard with success message
+    // In a real implementation, we'd show a success toast/notification
     navigate('/operator-dashboard');
   };
 
@@ -745,6 +540,7 @@ Startup Ease:      Easy          Hard
   useEffect(() => {
     if (member) {
       // Pre-populate basic contact details from member profile
+      // Organization details would come from league operator application (future enhancement)
       updateFormData('contactEmail', member.email);
       updateFormData('contactPhone', member.phone);
     }
@@ -756,7 +552,7 @@ Startup Ease:      Easy          Hard
   useEffect(() => {
     const generatedName = buildLeagueName();
     updateFormData('leagueName', generatedName);
-  }, [formData.gameType, formData.startDate, formData.selectedVenueId, formData.leagueFormat, formData.qualifier]);
+  }, [formData.gameType, formData.startDate, formData.venueName, formData.qualifier]);
 
   /**
    * Sync input field with current step's saved value when navigating
@@ -775,16 +571,6 @@ Startup Ease:      Easy          Hard
   const currentStepData = getCurrentStep();
   const isLastStep = currentStep === steps.length - 1;
   const canGoBack = currentStep > 0;
-
-  // Show venue creation wizard if requested
-  if (showVenueWizard) {
-    return (
-      <VenueCreationWizard
-        onComplete={handleVenueCreated}
-        onCancel={handleVenueCanceled}
-      />
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -820,7 +606,6 @@ Startup Ease:      Easy          Hard
               onSelect={handleChoiceSelect}
               onNext={handleNext}
               onPrevious={handlePrevious}
-              onCancel={handleCancel}
               canGoBack={canGoBack}
               isLastQuestion={isLastStep}
               infoTitle={currentStepData.infoTitle}
@@ -836,7 +621,6 @@ Startup Ease:      Easy          Hard
               onChange={handleInputChange}
               onNext={handleNext}
               onPrevious={handlePrevious}
-              onCancel={handleCancel}
               canGoBack={canGoBack}
               isLastQuestion={isLastStep}
               infoTitle={currentStepData.infoTitle}

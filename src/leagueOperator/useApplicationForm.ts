@@ -144,7 +144,7 @@ export const useApplicationForm = () => {
       // Validate if validator is available
       if (currentQuestion.validator) {
         const validation = currentQuestion.validator(formattedValue);
-        if (!validation.success) {
+        if (!validation.isValid) {
           setError(validation.error || 'Invalid input');
           return false;
         }
