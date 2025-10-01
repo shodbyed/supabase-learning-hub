@@ -7,6 +7,7 @@ import React, { useState, useRef, useEffect } from 'react';
 interface InfoButtonProps {
   title: string;
   children: React.ReactNode;
+  label?: string;
   className?: string;
 }
 
@@ -17,11 +18,13 @@ interface InfoButtonProps {
  *
  * @param title - Title for the info popup
  * @param children - Content to display in the info popup (can be JSX)
+ * @param label - Optional text to display before the ? button
  * @param className - Additional CSS classes for the container
  */
 export const InfoButton: React.FC<InfoButtonProps> = ({
   title,
   children,
+  label,
   className = ""
 }) => {
   const [showInfo, setShowInfo] = useState(false);
@@ -52,14 +55,21 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
 
   return (
     <div className={`relative ${className}`}>
-      <button
-        ref={buttonRef}
-        onClick={togglePopup}
-        className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center text-sm font-bold"
-        title="More information"
-      >
-        ?
-      </button>
+      <div className="flex items-center gap-1">
+        {label && (
+          <span className="text-gray-700 text-sm font-medium">
+            {label}
+          </span>
+        )}
+        <button
+          ref={buttonRef}
+          onClick={togglePopup}
+          className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center text-sm font-bold"
+          title="More information"
+        >
+          ?
+        </button>
+      </div>
 
       {showInfo && (
         <div

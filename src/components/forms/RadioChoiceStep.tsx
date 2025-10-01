@@ -31,6 +31,7 @@ interface RadioChoiceStepProps {
   isLastQuestion: boolean;
   infoTitle?: string;
   infoContent?: React.ReactNode;
+  infoLabel?: string;
   error?: string;
 }
 
@@ -56,6 +57,7 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   isLastQuestion,
   infoTitle,
   infoContent,
+  infoLabel,
   error
 }) => {
   const canProceed = selectedValue && selectedValue.trim() !== '';
@@ -76,6 +78,7 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
           onSelect={onSelect}
           infoTitle={infoTitle}
           infoContent={infoContent}
+          infoLabel={infoLabel}
         />
 
         {/* Error message */}

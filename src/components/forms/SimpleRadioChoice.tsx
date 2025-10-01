@@ -26,6 +26,7 @@ interface SimpleRadioChoiceProps {
   onSelect: (value: string) => void;
   infoTitle?: string;
   infoContent?: React.ReactNode;
+  infoLabel?: string;
 }
 
 /**
@@ -43,7 +44,8 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
   selectedValue,
   onSelect,
   infoTitle,
-  infoContent
+  infoContent,
+  infoLabel
 }) => {
 
   return (
@@ -54,7 +56,7 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
           {title}
         </h3>
         {infoTitle && infoContent && (
-          <InfoButton title={infoTitle}>
+          <InfoButton title={infoTitle} label={infoLabel}>
             {infoContent}
           </InfoButton>
         )}

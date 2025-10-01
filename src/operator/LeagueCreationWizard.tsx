@@ -35,6 +35,8 @@ import { QuestionStep } from '@/components/forms/QuestionStep';
 import { RadioChoiceStep } from '@/components/forms/RadioChoiceStep';
 import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useLocalStorage } from '../hooks/useLocalStorage';
+import { buildLeagueName, generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
 
 /**
  * Venue information interface
@@ -77,6 +79,16 @@ interface LeagueFormData {
   // Optional qualifier to differentiate leagues (West Side, North Valley, Blue, Red, etc.)
   qualifier: string;
 
+  // Season Configuration
+  seasonLength: number; // weeks (10-30, default 16)
+  endDate: string; // calculated from start date + season length
+
+  // Tournament Dates (to avoid conflicts)
+  bcaNationalsStart: string;
+  bcaNationalsEnd: string;
+  apaNationalsStart: string;
+  apaNationalsEnd: string;
+
   // Team Format (determines match structure)
   teamFormat: '5_man' | '8_man' | '';
 
@@ -118,6 +130,7 @@ interface WizardStep {
   setValue: (value: string) => void;
   infoTitle?: string;
   infoContent?: string | null;
+  infoLabel?: string;
 }
 
 /**
@@ -145,7 +158,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const [currentInput, setCurrentInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [showVenueWizard, setShowVenueWizard] = useState(false);
-  const [isLoadingVenues, setIsLoadingVenues] = useState(true);
+  const [seasonLengthChoice, setSeasonLengthChoice] = useState<string>('16'); // Track the radio button selection
 
   // Organization venues - loaded from database
   const [organizationVenues, setOrganizationVenues] = useState<Venue[]>([]);
@@ -155,7 +168,6 @@ export const LeagueCreationWizard: React.FC = () => {
    */
   const fetchOrganizationVenues = async (): Promise<Venue[]> => {
     console.log('🔍 Fetching organization venues...');
-    setIsLoadingVenues(true);
 
     // Simulate database call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -204,7 +216,6 @@ export const LeagueCreationWizard: React.FC = () => {
     const venues = hasVenues ? mockVenues : [];
 
     console.log(`✅ Found ${venues.length} venues for organization`);
-    setIsLoadingVenues(false);
     return venues;
   };
 
@@ -219,14 +230,20 @@ export const LeagueCreationWizard: React.FC = () => {
     loadVenues();
   }, []);
 
-  // League form data
-  const [formData, setFormData] = useState<LeagueFormData>({
+  // League form data with localStorage persistence
+  const [formData, setFormData, clearFormData] = useLocalStorage<LeagueFormData>('league-creation-wizard', {
     selectedVenueId: '',
     venueIds: [],
     leagueFormat: '',
     leagueName: '',
     gameType: '',
     startDate: '',
+    seasonLength: 16, // default 16 weeks
+    endDate: '',
+    bcaNationalsStart: '',
+    bcaNationalsEnd: '',
+    apaNationalsStart: '',
+    apaNationalsEnd: '',
     qualifier: '',
     teamFormat: '',
     handicapSystem: '',
@@ -242,62 +259,17 @@ export const LeagueCreationWizard: React.FC = () => {
   /**
    * Update form data for a specific field
    */
-  const updateFormData = (field: keyof LeagueFormData, value: string) => {
+  const updateFormData = (field: keyof LeagueFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   /**
-   * Build league name automatically based on user selections
-   * Based on naming convention from reference code buildSeasonName function
-   * Format: "{Game} {Day} {Venue} {Qualifier?}" or "{Game} {Day} Traveling {Qualifier?}"
-   * Examples:
-   * - "9-Ball Tuesday Billiards Plaza"
-   * - "8-Ball Thursday Corner Pocket West Side"
-   * - "9-Ball Monday Traveling Blue Division"
-   *
-   * Day of week is derived from the start date
+   * Get the organization name for league naming
    */
-  const buildLeagueName = (): string => {
-    const parts: string[] = [];
-
-    // Game type
-    if (formData.gameType) {
-      const gameNames = {
-        'eight_ball': '8-Ball',
-        'nine_ball': '9-Ball',
-        'ten_ball': '10-Ball'
-      };
-      parts.push(gameNames[formData.gameType]);
-    }
-
-    // Day of week derived from start date
-    if (formData.startDate) {
-      const date = new Date(formData.startDate);
-      if (!isNaN(date.getTime())) {
-        const dayNames = [
-          'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-          'Thursday', 'Friday', 'Saturday'
-        ];
-        parts.push(dayNames[date.getDay()]);
-      }
-    }
-
-    // Venue name or "Traveling"
-    if (formData.leagueFormat === 'traveling') {
-      parts.push('Traveling');
-    } else if (formData.selectedVenueId && formData.selectedVenueId !== 'add_new') {
-      const selectedVenue = organizationVenues.find(v => v.id === formData.selectedVenueId);
-      if (selectedVenue) {
-        parts.push(selectedVenue.name);
-      }
-    }
-
-    // Optional qualifier (West Side, North Valley, Blue, Red, etc.)
-    if (formData.qualifier.trim()) {
-      parts.push(formData.qualifier.trim());
-    }
-
-    return parts.length > 0 ? parts.join(' ') : 'League Name Preview';
+  const getOrganizationName = (): string => {
+    // For now, use a placeholder. In the future, this should come from the operator's profile
+    // Using ERROR in the name ensures we catch missing organization data immediately
+    return formData.organizationName || 'ORGANIZATION_NAME_ERROR';
   };
 
   /**
@@ -318,6 +290,23 @@ export const LeagueCreationWizard: React.FC = () => {
 
     if (date < today) {
       return { isValid: false, error: 'Start date must be today or in the future' };
+    }
+
+    return { isValid: true };
+  };
+
+
+  /**
+   * Tournament date validation - must be valid dates
+   */
+  const validateTournamentDate = (value: string): { isValid: boolean; error?: string } => {
+    if (!value) {
+      return { isValid: false, error: 'Tournament date is required' };
+    }
+
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      return { isValid: false, error: 'Please enter a valid date' };
     }
 
     return { isValid: true };
@@ -369,14 +358,200 @@ export const LeagueCreationWizard: React.FC = () => {
   };
 
   /**
-   * Wizard step definitions
-   * Each step represents a key decision point in league creation
+   * Wizard step definitions - Following reference code flow
+   * Order: Start Date → Season Length → Game Type → Venue → BCA Nationals → APA Nationals → Team Format → Qualifier
    */
   const steps: WizardStep[] = [
-    // Step 1: Game Type Selection
+    // Step 1: Start Date (determines day of week)
+    {
+      id: 'start_date',
+      title: 'When does your season begin?',
+      subtitle: 'Choose the first match date - this determines your league day of the week',
+      type: 'input',
+      placeholder: 'Select start date',
+      validator: validateStartDate,
+      getValue: () => formData.startDate,
+      setValue: (value: string) => {
+        updateFormData('startDate', value);
+        // Auto-calculate end date when start date changes
+        if (value && formData.seasonLength) {
+          const startDate = new Date(value);
+          const endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + (formData.seasonLength * 7));
+          updateFormData('endDate', endDate.toISOString().split('T')[0]);
+        }
+      },
+      infoTitle: 'Season Start Date',
+      infoContent: 'This is the date of your first league night. All subsequent matches will be on the same day of the week. The day of the week will automatically be included in your league name.'
+    },
+
+    // Step 2: Season Length (12-20 weeks common, 6-52 custom)
+    {
+      id: 'season_length',
+      title: 'How many weeks long should the season be?',
+      subtitle: 'Choose a common length or select custom for 6-52 weeks',
+      type: 'choice',
+      choices: [
+        { value: '12', label: '12 weeks', subtitle: 'Compact season' },
+        { value: '14', label: '14 weeks', subtitle: 'Popular choice' },
+        { value: '16', label: '16 weeks', subtitle: 'Most common ⭐', description: 'Standard season length used by most leagues' },
+        { value: '18', label: '18 weeks', subtitle: 'Extended season' },
+        { value: '20', label: '20 weeks', subtitle: 'Long season' },
+        { value: 'custom', label: 'Custom length', subtitle: '6-52 weeks', description: 'Press Continue to choose your own custom season length' }
+      ],
+      getValue: () => seasonLengthChoice,
+      setValue: (value: string) => {
+        setSeasonLengthChoice(value);
+        if (value === 'custom') {
+          // Keep current seasonLength as starting point for custom input
+          // The actual value will be updated in the custom input step
+        } else {
+          const weeks = parseInt(value, 10);
+          updateFormData('seasonLength', weeks);
+          // Auto-calculate end date when season length changes
+          if (formData.startDate && weeks) {
+            const startDate = new Date(formData.startDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + (weeks * 7));
+            updateFormData('endDate', endDate.toISOString().split('T')[0]);
+          }
+        }
+      },
+      infoTitle: 'Things to keep in mind when choosing season length',
+      infoContent: (
+        <div className="space-y-3">
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Longer Seasons:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• Larger prize pools and payouts</li>
+              <li>• Makes sandbagging less effective</li>
+              <li>• More stable standings</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Shorter Seasons:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• More frequent payouts</li>
+              <li>• More engaging and exciting</li>
+              <li>• Easier to retain less committed players</li>
+              <li>• Less likely for runaway/locked positions in standings</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Holiday:</h4>
+            <p className="text-sm text-gray-700 ml-4">
+              • Xmas/New Year near beginning or end of a season can cause issues. Try to avoid this if possible.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Operator Workload:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• Each season requires administrative time even with our tools to streamline the process</li>
+              <li>• Admin/supply fees taken from prize pools affect smaller pools more than larger ones</li>
+            </ul>
+          </div>
+
+          <div className="pt-2 border-t border-gray-200">
+            <p className="text-sm font-medium text-blue-800">
+              <strong>Bottom Line:</strong> 16 weeks is popular because it balances all these factors - enough time for meaningful competition without overwhelming players or operators.
+            </p>
+          </div>
+        </div>
+      ),
+      infoLabel: 'Need help choosing'
+    },
+
+    // Step 2b: Custom Season Length (only shown when custom is selected)
+    {
+      id: 'custom_season_length',
+      title: 'Enter custom season length',
+      subtitle: 'How many weeks should your season be? (6-52 weeks)',
+      type: 'input',
+      placeholder: 'Enter number of weeks',
+      validator: (value: string): { isValid: boolean; error?: string } => {
+        if (!value) {
+          return { isValid: false, error: 'Season length is required' };
+        }
+
+        const weeks = parseInt(value, 10);
+        if (isNaN(weeks)) {
+          return { isValid: false, error: 'Please enter a valid number' };
+        }
+
+        if (weeks < 6 || weeks > 52) {
+          return { isValid: false, error: 'Season must be between 6 and 52 weeks' };
+        }
+
+        return { isValid: true };
+      },
+      getValue: () => {
+        // Always show the current season length as default for easy editing
+        return formData.seasonLength.toString();
+      },
+      setValue: (value: string) => {
+        const weeks = parseInt(value, 10);
+        updateFormData('seasonLength', weeks);
+        // Auto-calculate end date when season length changes
+        if (formData.startDate && weeks) {
+          const startDate = new Date(formData.startDate);
+          const endDate = new Date(startDate);
+          endDate.setDate(startDate.getDate() + (weeks * 7));
+          updateFormData('endDate', endDate.toISOString().split('T')[0]);
+        }
+      },
+      infoTitle: 'Things to keep in mind when choosing season length',
+      infoContent: (
+        <div className="space-y-3">
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Longer Seasons:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• Larger prize pools and payouts</li>
+              <li>• Makes sandbagging less effective</li>
+              <li>• More stable standings</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Shorter Seasons:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• More frequent payouts</li>
+              <li>• More engaging and exciting</li>
+              <li>• Easier to retain less committed players</li>
+              <li>• Less likely for runaway/locked positions in standings</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Holiday:</h4>
+            <p className="text-sm text-gray-700 ml-4">
+              • Xmas/New Year near beginning or end of a season can cause issues. Try to avoid this if possible.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Operator Workload:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• Each season requires administrative time even with our tools to streamline the process</li>
+              <li>• Admin/supply fees taken from prize pools affect smaller pools more than larger ones</li>
+            </ul>
+          </div>
+
+          <div className="pt-2 border-t border-gray-200">
+            <p className="text-sm font-medium text-blue-800">
+              <strong>Bottom Line:</strong> 16 weeks is popular because it balances all these factors - enough time for meaningful competition without overwhelming players or operators.
+            </p>
+          </div>
+        </div>
+      )
+    },
+
+    // Step 3: Game Type Selection
     {
       id: 'game_type',
-      title: 'What type of pool will you be playing?',
+      title: 'What type of pool game?',
       subtitle: 'Select the primary game format for your league',
       type: 'choice',
       choices: [
@@ -385,60 +560,142 @@ export const LeagueCreationWizard: React.FC = () => {
           label: '8-Ball',
           subtitle: 'Most popular choice',
           icon: '🎱',
-          description: 'Traditional 8-ball.'
+          description: 'Traditional 8-ball pool - most common league format'
         },
         {
           value: 'nine_ball',
           label: '9-Ball',
           subtitle: 'Fastest matches',
           icon: '⚡',
-          description: 'Traditional 9-ball rotation.'
+          description: 'Rotation game - faster paced with shorter matches'
         },
         {
           value: 'ten_ball',
           label: '10-Ball',
           subtitle: 'High skill',
           icon: '🏆',
-          warning: 'Matches take significantly longer'
+          description: 'Advanced rotation game requiring call shots',
+          warning: 'Matches take significantly longer and require higher skill level'
         }
       ],
       getValue: () => formData.gameType,
       setValue: (value: string) => updateFormData('gameType', value as typeof formData.gameType)
     },
 
-    // Step 2: Start Date
+    // Step 4: League Format (in-house vs traveling)
     {
-      id: 'start_date',
-      title: 'When does your league start?',
-      subtitle: 'Choose the first match date - this determines your league day of the week',
-      type: 'input',
-      placeholder: 'Select start date',
-      validator: validateStartDate,
-      getValue: () => formData.startDate,
-      setValue: (value: string) => updateFormData('startDate', value),
-      infoTitle: 'League Start Date',
-      infoContent: 'This is the date of your first league night. All subsequent matches will be on the same day of the week. The day of the week will automatically be included in your league name.'
+      id: 'league_format',
+      title: 'What type of league format do you want?',
+      subtitle: 'This determines how venues and team home locations are handled',
+      type: 'choice',
+      choices: [
+        {
+          value: 'in_house',
+          label: 'In-House League',
+          subtitle: 'All matches at one venue',
+          icon: '🏢',
+          description: 'All teams play their matches at the same venue every week. You will select the venue, and all teams will be locked to that location as their home venue. Simpler to manage and builds community.'
+        },
+        {
+          value: 'traveling',
+          label: 'Traveling League',
+          subtitle: 'Teams rotate between venues',
+          icon: '🚗',
+          description: 'Teams can choose their own home venues from your organization\'s venue list. Matches rotate between different locations. Teams travel to each other\'s home venues for matches. More variety but requires more coordination.'
+        }
+      ],
+      getValue: () => formData.leagueFormat,
+      setValue: (value: string) => updateFormData('leagueFormat', value as typeof formData.leagueFormat),
+      infoTitle: 'League Format Comparison',
+      infoContent: (
+        <div className="space-y-3">
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">In-House League:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• All matches at one consistent venue</li>
+              <li>• Easier scheduling and coordination</li>
+              <li>• Builds stronger community among players</li>
+              <li>• No travel between venues required</li>
+              <li>• You select the venue during league creation</li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-2">Traveling League:</h4>
+            <ul className="text-sm text-gray-700 space-y-1 ml-4">
+              <li>• Teams choose their own home venues</li>
+              <li>• Matches rotate between different locations</li>
+              <li>• More variety and venue exposure</li>
+              <li>• Teams travel to away matches</li>
+              <li>• Venue selection happens during team registration</li>
+            </ul>
+          </div>
+        </div>
+      ),
+      infoLabel: 'In-house vs traveling explanation'
     },
 
-    // Step 3: Optional Qualifier
+    // Step 5: BCA Nationals Dates
     {
-      id: 'qualifier',
-      title: 'League qualifier (optional)',
-      subtitle: 'Add a qualifier to differentiate your league from others with the same format',
+      id: 'bca_nationals_start',
+      title: 'When are the BCA National tournaments?',
+      subtitle: 'Enter the start date to avoid scheduling conflicts (check BCA website for current dates)',
       type: 'input',
-      placeholder: 'e.g., "West Side", "North Valley", "Blue", "Red", "Division A"',
-      validator: validateQualifier,
-      getValue: () => formData.qualifier,
-      setValue: (value: string) => updateFormData('qualifier', value),
-      infoTitle: 'League Qualifiers',
-      infoContent: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).'
+      placeholder: 'BCA Nationals start date',
+      validator: validateTournamentDate,
+      getValue: () => formData.bcaNationalsStart,
+      setValue: (value: string) => updateFormData('bcaNationalsStart', value),
+      infoTitle: 'BCA Nationals Scheduling',
+      infoContent: 'BCA Nationals typically occur in late summer. League schedules should avoid these dates to prevent player conflicts. Visit bcapool.com for current tournament dates.'
     },
 
-    // Step 4: Team Format Selection - CRITICAL DECISION POINT
+    // Step 6: BCA Nationals End Date
+    {
+      id: 'bca_nationals_end',
+      title: 'BCA Nationals end date',
+      subtitle: 'Enter the end date for the BCA National tournaments',
+      type: 'input',
+      placeholder: 'BCA Nationals end date',
+      validator: validateTournamentDate,
+      getValue: () => formData.bcaNationalsEnd,
+      setValue: (value: string) => updateFormData('bcaNationalsEnd', value),
+      infoTitle: 'Tournament Conflict Avoidance',
+      infoContent: 'Scheduling around major tournaments ensures your best players can participate in both league play and national competitions.'
+    },
+
+    // Step 7: APA Nationals Start Date
+    {
+      id: 'apa_nationals_start',
+      title: 'When are the APA National tournaments?',
+      subtitle: 'Enter the start date to avoid scheduling conflicts (check APA website for current dates)',
+      type: 'input',
+      placeholder: 'APA Nationals start date',
+      validator: validateTournamentDate,
+      getValue: () => formData.apaNationalsStart,
+      setValue: (value: string) => updateFormData('apaNationalsStart', value),
+      infoTitle: 'APA Nationals Scheduling',
+      infoContent: 'APA Nationals typically occur in late spring/early summer. Visit poolplayers.com for current tournament dates and locations.'
+    },
+
+    // Step 8: APA Nationals End Date
+    {
+      id: 'apa_nationals_end',
+      title: 'APA Nationals end date',
+      subtitle: 'Enter the end date for the APA National tournaments',
+      type: 'input',
+      placeholder: 'APA Nationals end date',
+      validator: validateTournamentDate,
+      getValue: () => formData.apaNationalsEnd,
+      setValue: (value: string) => updateFormData('apaNationalsEnd', value),
+      infoTitle: 'Complete Tournament Calendar',
+      infoContent: 'Having both BCA and APA tournament dates ensures your league schedule works around all major national competitions.'
+    },
+
+    // Step 9: Team Format Selection - CRITICAL DECISION POINT
     {
       id: 'team_format',
       title: 'Choose your team format',
-      subtitle: 'This is the most important decision - it determines your handicap system, match length, and player requirements',
+      subtitle: 'This determines your handicap system, match length, and player requirements',
       type: 'choice',
       choices: [
         {
@@ -541,39 +798,54 @@ Startup Ease:      Easy          Hard
 • You want standard league compatibility`
     },
 
+    // Step 10: Optional Qualifier
+    {
+      id: 'qualifier',
+      title: 'League qualifier (optional)',
+      subtitle: 'Add a qualifier to differentiate your league from others with the same format',
+      type: 'input',
+      placeholder: 'e.g., "West Side", "North Valley", "Blue", "Red", "Division A"',
+      validator: validateQualifier,
+      getValue: () => formData.qualifier,
+      setValue: (value: string) => updateFormData('qualifier', value),
+      infoTitle: 'League Qualifiers',
+      infoContent: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).'
+    },
+
   ];
 
   /**
-   * Get current step with dynamic handicap system choices
+   * Get current step with dynamic choices (venue selection, etc.)
    */
   const getCurrentStep = (): WizardStep => {
     const step = steps[currentStep];
 
-    // Dynamically populate handicap system choices based on team format
-    if (step.id === 'handicap_system') {
-      if (formData.teamFormat === '5_man') {
-        step.choices = [
-          {
-            value: 'custom_5man',
-            label: 'Custom 5-Man System',
-            subtitle: 'Optimized for maximum balance',
-            description: 'Sophisticated system designed for 5-man teams. Heavy handicapping ensures anyone can win.',
-            infoTitle: 'Custom 5-Man System Details',
-            infoContent: 'Uses (Wins-Losses)÷Weeks formula with standings modifiers. 25 handicap levels. Strong anti-sandbagging features. Perfect for casual leagues with skill gaps.'
-          }
-        ];
-      } else if (formData.teamFormat === '8_man') {
-        step.choices = [
-          {
-            value: 'bca_standard',
-            label: 'BCA Standard System',
-            subtitle: 'Official BCA handicapping',
-            description: 'Percentage-based system used in official BCA leagues. Minimal handicap interference.',
-            infoTitle: 'BCA Standard System Details',
-            infoContent: 'Win percentage based (Wins÷Games). Last 50 games rolling window. CHARTS lookup table for game requirements. Standard across BCA leagues.'
-          }
-        ];
-      }
+    // Dynamically populate venue choices based on organization venues
+    if (step.id === 'venue_selection') {
+      const venueChoices = organizationVenues.map(venue => ({
+        value: venue.id,
+        label: venue.name,
+        subtitle: `${venue.totalTables} tables • ${venue.city}, ${venue.state}`,
+        description: `📍 ${venue.address}\n📞 ${venue.phone}\n🎱 ${venue.barBoxTables} Bar Box + ${venue.regulationTables} Regulation tables`
+      }));
+
+      // Add traveling league option
+      venueChoices.push({
+        value: 'traveling',
+        label: 'Traveling League',
+        subtitle: 'Multiple venues',
+        description: 'League rotates between multiple venues. Teams take turns hosting matches at different locations.'
+      });
+
+      // Add option to create new venue
+      venueChoices.push({
+        value: 'add_new',
+        label: '+ Add New Venue',
+        subtitle: 'Create a new venue',
+        description: 'Set up a new pool hall or bar for your organization.'
+      });
+
+      step.choices = venueChoices;
     }
 
     return step;
@@ -592,6 +864,15 @@ Startup Ease:      Easy          Hard
    */
   const handleChoiceSelect = (choiceId: string) => {
     const step = getCurrentStep();
+
+    // Handle special venue selection cases
+    if (step.id === 'venue_selection') {
+      if (choiceId === 'add_new') {
+        handleAddVenue();
+        return;
+      }
+    }
+
     step.setValue(choiceId);
     setError(undefined);
   };
@@ -616,7 +897,7 @@ Startup Ease:      Easy          Hard
   };
 
   /**
-   * Navigate to next step
+   * Navigate to next step with conditional step logic
    */
   const handleNext = () => {
     const step = getCurrentStep();
@@ -632,8 +913,23 @@ Startup Ease:      Easy          Hard
       return;
     }
 
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    // Handle conditional step navigation
+    let nextStep = currentStep + 1;
+
+    // Skip custom season length step if not needed
+    if (step.id === 'season_length' && seasonLengthChoice !== 'custom') {
+      // Skip the custom_season_length step
+      nextStep = currentStep + 2;
+    }
+
+    // Skip custom season length step when going backwards from game_type
+    if (step.id === 'custom_season_length') {
+      // Normal progression to game_type
+      nextStep = currentStep + 1;
+    }
+
+    if (nextStep < steps.length) {
+      setCurrentStep(nextStep);
       setCurrentInput('');
       setError(undefined);
     } else {
@@ -642,13 +938,29 @@ Startup Ease:      Easy          Hard
   };
 
   /**
-   * Navigate to previous step
+   * Navigate to previous step with conditional step logic
    */
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      setCurrentInput('');
-      setError(undefined);
+      let prevStep = currentStep - 1;
+
+      // Handle conditional step navigation when going backwards
+      const currentStepData = steps[currentStep];
+
+      // If we're on game_type and the previous season_length choice wasn't 'custom',
+      // skip back over the custom_season_length step
+      if (currentStepData.id === 'game_type') {
+        if (seasonLengthChoice !== 'custom') {
+          prevStep = currentStep - 2; // Skip back over custom_season_length
+        }
+      }
+
+      // Ensure we don't go below 0
+      if (prevStep >= 0) {
+        setCurrentStep(prevStep);
+        setCurrentInput('');
+        setError(undefined);
+      }
     }
   };
 
@@ -657,7 +969,18 @@ Startup Ease:      Easy          Hard
    */
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
+      clearFormData(); // Clear localStorage data when canceling
       navigate('/operator-dashboard');
+    }
+  };
+
+  /**
+   * Clear form data but stay on the wizard (restart)
+   */
+  const handleClearForm = () => {
+    if (window.confirm('Are you sure you want to clear all form data and start over?')) {
+      clearFormData();
+      setCurrentStep(0); // Reset to first step
     }
   };
 
@@ -670,13 +993,36 @@ Startup Ease:      Easy          Hard
     console.log('📋 COMPLETE LEAGUE DATA:', formData);
 
     console.group('🏢 LEAGUE INFORMATION');
-    console.log('League Name:', formData.leagueName);
     console.log('Game Type:', formData.gameType);
     console.log('Start Date:', formData.startDate);
     console.log('Day of Week (derived):', formData.startDate ? new Date(formData.startDate).toLocaleDateString('en-US', { weekday: 'long' }) : 'Not set');
     console.log('League Format:', formData.leagueFormat);
     console.log('Team Format:', formData.teamFormat);
     console.log('Handicap System:', formData.handicapSystem);
+
+    // Generate all formatted league names for database storage
+    if (formData.startDate) {
+      const startDate = new Date(formData.startDate);
+      const leagueComponents = {
+        organizationName: getOrganizationName(),
+        year: startDate.getFullYear(),
+        season: getTimeOfYear(startDate),
+        gameType: formData.gameType || 'eight_ball',
+        dayOfWeek: getDayOfWeek(startDate),
+        qualifier: formData.qualifier
+      };
+
+      const allNames = generateAllLeagueNames(leagueComponents);
+
+      console.group('📛 FORMATTED LEAGUE NAMES');
+      console.log('Current Preview Name:', formData.leagueName);
+      console.log('Database Systematic Name:', allNames.systematicName);
+      console.log('Player-Friendly Name:', allNames.playerFriendlyName);
+      console.log('Operator Management Name:', allNames.operatorName);
+      console.log('Full Display Name:', allNames.fullDisplayName);
+      console.groupEnd();
+    }
+
     console.groupEnd();
 
     console.group('📍 VENUE INFORMATION');
@@ -735,6 +1081,9 @@ Startup Ease:      Easy          Hard
 
     console.groupEnd();
 
+    // Clear the form data from localStorage after successful creation
+    clearFormData();
+
     // Navigate back to operator dashboard with success message
     navigate('/operator-dashboard');
   };
@@ -754,9 +1103,14 @@ Startup Ease:      Easy          Hard
    * Auto-generate league name whenever relevant form data changes
    */
   useEffect(() => {
-    const generatedName = buildLeagueName();
+    const generatedName = buildLeagueName(
+      formData.startDate,
+      formData.gameType,
+      getOrganizationName(),
+      formData.qualifier
+    );
     updateFormData('leagueName', generatedName);
-  }, [formData.gameType, formData.startDate, formData.selectedVenueId, formData.leagueFormat, formData.qualifier]);
+  }, [formData.gameType, formData.startDate, formData.qualifier]);
 
   /**
    * Sync input field with current step's saved value when navigating
@@ -791,9 +1145,19 @@ Startup Ease:      Easy          Hard
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create New League
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <div></div> {/* Spacer for centering */}
+            <h1 className="text-3xl font-bold text-gray-900">
+              Create New League
+            </h1>
+            <button
+              onClick={handleClearForm}
+              className="text-sm text-red-600 hover:text-red-800 underline"
+              title="Clear all form data and start over"
+            >
+              Clear Form
+            </button>
+          </div>
           <p className="text-gray-600">
             Step {currentStep + 1} of {steps.length}
           </p>
@@ -825,6 +1189,7 @@ Startup Ease:      Easy          Hard
               isLastQuestion={isLastStep}
               infoTitle={currentStepData.infoTitle}
               infoContent={currentStepData.infoContent ?? undefined}
+              infoLabel={currentStepData.infoLabel}
               error={error}
             />
           ) : (
@@ -847,12 +1212,69 @@ Startup Ease:      Easy          Hard
           )}
         </div>
 
-        {/* League Name Preview */}
-        {formData.leagueName !== 'League Name Preview' && (
+        {/* League Preview */}
+        {(formData.leagueName !== 'League Name Preview' || formData.startDate || formData.endDate) && (
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-blue-900 mb-2">League Name Preview:</h3>
-              <p className="text-lg font-semibold text-blue-800">{formData.leagueName}</p>
+              <h3 className="text-sm font-medium text-blue-900 mb-3">League Preview:</h3>
+
+              {formData.leagueName !== 'League Name Preview' && (
+                <p className="text-lg font-semibold text-blue-800 mb-2">{formData.leagueName}</p>
+              )}
+
+              {formData.startDate && (
+                <p className="text-sm text-gray-700 mb-1">
+                  <span className="font-medium">Start Date:</span> {new Date(formData.startDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              )}
+
+              {formData.endDate && (
+                <>
+                  <p className="text-sm text-gray-700 mb-1">
+                    <span className="font-medium">End of Regular Season:</span> {new Date(formData.endDate).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+
+                  <p className="text-sm text-gray-700 mb-1">
+                    <span className="font-medium">Week Off:</span> {(() => {
+                      const weekOff = new Date(formData.endDate);
+                      weekOff.setDate(weekOff.getDate() + 7);
+                      return weekOff.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      });
+                    })()}
+                  </p>
+
+                  <p className="text-sm text-gray-700 mb-3">
+                    <span className="font-medium">Playoffs:</span> {(() => {
+                      const playoffs = new Date(formData.endDate);
+                      playoffs.setDate(playoffs.getDate() + 14);
+                      return playoffs.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      });
+                    })()}
+                  </p>
+
+                  <p className="text-xs text-gray-400 italic">
+                    (does not include holiday breaks)
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}
