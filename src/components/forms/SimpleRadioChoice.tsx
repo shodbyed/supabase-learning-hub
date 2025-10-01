@@ -20,7 +20,7 @@ interface SimpleChoiceOption {
 
 interface SimpleRadioChoiceProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactElement;
   choices: SimpleChoiceOption[];
   selectedValue?: string;
   onSelect: (value: string) => void;

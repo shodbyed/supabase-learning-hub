@@ -20,7 +20,7 @@ interface RadioChoiceOption {
 
 interface RadioChoiceStepProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactElement;
   choices: RadioChoiceOption[];
   selectedValue?: string;
   onSelect: (value: string) => void;

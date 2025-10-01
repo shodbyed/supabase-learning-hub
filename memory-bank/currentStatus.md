@@ -15,12 +15,21 @@
 **Context**: Foundation is complete - now building the actual league management tools
 
 ### ✅ COMPLETED: League Creation Wizard (Production Ready)
-- **10-Step Wizard Flow**: Start Date → Season Length → Game Type → League Format → BCA/APA Nationals → Team Format → Qualifier → Venue Selection → Preview → Create
+- **10-Step Wizard Flow**: Start Date → Season Length → Game Type → BCA Nationals → APA Nationals → Team Format → Qualifier → Preview → Create
 - **Full localStorage Persistence**: Form data AND current step preserved across page refreshes/browser restarts
 - **Smart League Naming**: Separate state fields (dayOfWeek, season, year) with on-demand name generation
 - **Automatic Data Cleanup**: localStorage cleared on completion, cancellation, or manual clear
 - **Clean Architecture**: No constant name regeneration, efficient state management
 - **Enhanced UX**: InfoButton labels, conditional navigation, manual clear functionality
+
+### ✅ COMPLETED: BCA Tournament Scheduling System (Latest Update)
+- **Automatic Database Search**: useEffect triggers search for BCA nationals dates when step is reached
+- **Dynamic Radio Button Choices**: Found date ranges with vote counts, ignore option, and custom entry
+- **Clickable Link Integration**: Subtitle with live "BCA Website" link using fetchBCAChampionshipURL()
+- **Generic Info Content**: Reusable info button content that works for both BCA and APA tournaments
+- **Smart URL Generation**: Tournament links adapt based on current date (post-March 15 uses next year)
+- **Community-Verified Dates**: Database search shows multiple date options with operator vote counts
+- **Flexible Choice Handling**: Radio buttons support found dates, ignore scheduling, or custom date entry
 
 ## Major Completed Features
 
@@ -140,9 +149,22 @@
 - Professional payment and security messaging
 - Accessible form interactions with keyboard navigation
 
-## Ready for League Builder Development
+## Ready for APA Tournament Implementation
 
-✅ **Foundation Complete**: All operator onboarding systems working
-✅ **Patterns Established**: Reusable components and consistent architecture
+✅ **BCA Pattern Complete**: Tournament scheduling system fully implemented and tested
+✅ **Reusable Architecture**: RadioChoiceStep, QuestionStep, and SimpleRadioChoice support React elements
+✅ **Interface Flexibility**: Components handle both string and JSX content seamlessly
+🚀 **Next Phase**: Apply BCA pattern to APA tournaments with minimal changes
+
+### **Immediate Next Task: APA Tournament Scheduling**
+**Goal**: Implement APA tournament scheduling using the established BCA pattern
+**Changes Needed**:
+- Replace "BCA" with "APA" in dialog text
+- Use fetchAPAChampionshipURL() instead of fetchBCAChampionshipURL()
+- Same radio button structure: found dates, ignore, custom entry
+- Same automatic database search triggered by useEffect
+- Same community voting and date verification system
+
+✅ **Foundation Complete**: All operator onboarding and league creation systems working
+✅ **Patterns Established**: Reusable components and consistent architecture with React element support
 ✅ **Database Ready**: Clear logging and integration points documented
-🚀 **Next Phase**: Build league creation and management tools

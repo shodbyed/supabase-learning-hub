@@ -96,6 +96,26 @@ membershipUtils → Status calculations → UI styling
 Edit Forms → Console.log → Database operation simulation
 ```
 
+### **League Creation Wizard Flow**
+```
+LeagueCreationWizard → WizardStep[] definitions
+WizardStep → QuestionStep | RadioChoiceStep (based on type)
+RadioChoiceStep → SimpleRadioChoice → InfoButton
+QuestionStep → Calendar | Input field → InfoButton
+Tournament Steps → tournamentUtils → Dynamic URL generation
+Database Search → useEffect trigger → foundTournamentDates state
+```
+
+### **Tournament Scheduling Flow**
+```
+BCA/APA Step Reached → useEffect triggers database search
+Database Query → Mock tournament dates with vote counts
+FoundTournamentDates → Dynamic radio button choices
+User Selection → Found dates | Ignore | Custom entry
+FormData Update → Tournament start/end dates
+Subtitle JSX → Clickable link to official tournament website
+```
+
 ### **Navigation Architecture**
 ```
 App.tsx → NavBar + NavRoutes
@@ -148,6 +168,23 @@ Dashboard ← → Profile (action vs information separation)
   - Automatic JSON serialization
   - Error handling with fallbacks
   - Used for form data and wizard step persistence
+
+### **Tournament Scheduling Architecture**
+- **Dynamic URL Generation**: Tournament links adapt to current date context
+  - BCA: Uses next year URL after March 15 (fetchBCAChampionshipURL)
+  - APA: Static URL structure (fetchAPAChampionshipURL)
+  - Generic getChampionshipLink() function for reusability
+- **Database Search Integration**: Automatic search triggered by useEffect when reaching tournament steps
+- **Community Verification System**: Database stores operator-confirmed dates with vote counts
+- **Flexible Choice Architecture**: Radio buttons handle found dates, ignore options, and custom entry
+
+### **React Element Interface Support**
+- **Enhanced Component Interfaces**: All wizard components support React.ReactElement in addition to strings
+  - RadioChoiceStep: subtitle can be string | React.ReactElement
+  - QuestionStep: subtitle supports React elements for rich content
+  - SimpleRadioChoice: subtitle and infoContent accept JSX
+- **Clickable Link Integration**: Tournament steps include live links to official websites
+- **JSX Content Rendering**: Components seamlessly handle both plain text and complex JSX structures
 
 ### **Quality Assurance**
 - TypeScript strict mode enabled

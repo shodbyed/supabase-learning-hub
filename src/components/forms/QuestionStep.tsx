@@ -9,7 +9,7 @@ import { InfoButton } from '../InfoButton';
 
 interface QuestionStepProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactElement;
   placeholder?: string;
   value: string;
   onChange: (value: string) => void;

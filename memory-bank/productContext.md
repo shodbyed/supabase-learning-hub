@@ -8,6 +8,9 @@ BCA Member Management System - A comprehensive platform for billiard league memb
 - **Self-Service Profile Editing**: Complete edit functionality with validation and error feedback
 - **Membership Dues Tracking**: Automated calculation and visual tracking with color-coded status indicators
 - **Authentication Integration**: Seamless connection between Supabase auth and member records
+- **League Creation & Management**: Complete wizard-based league setup with tournament scheduling
+- **Tournament Conflict Prevention**: Automated scheduling around major BCA and APA championships
+- **Community-Verified Data**: Operator collaboration on tournament dates with vote-based reliability
 - **Database Integration**: Console-based operation logging for partner integration
 
 ## User Experience Goals
@@ -15,8 +18,12 @@ BCA Member Management System - A comprehensive platform for billiard league memb
 - **Visual Clarity**: Edit icons on user-editable sections, color-coded status indicators
 - **Error Prevention**: Real-time validation with clear error messaging
 - **Success Feedback**: Detailed confirmation showing exactly what changed
+- **Guided Setup**: Step-by-step wizards with progress tracking and localStorage persistence
+- **Professional Integration**: Clickable links to official tournament websites with smart URL generation
+- **Community Trust**: Tournament date verification through operator vote counts
+- **Flexible Choices**: Multiple options for tournament scheduling (found dates, ignore, custom)
 - **Mobile Responsive**: Clean design across all device sizes
-- **Future Ready**: Structure prepared for league and tournament features
+- **Future Ready**: Reusable patterns for expanding to additional tournament organizations
 
 ## League Operator Philosophy
 
