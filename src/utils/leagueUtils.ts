@@ -58,45 +58,52 @@ export const buildLeagueName = (
   organizationName: string,
   qualifier?: string
 ): string => {
-  if (!startDate) {
-    return 'League Name Preview';
-  }
-
-  const date = new Date(startDate);
-  if (isNaN(date.getTime())) {
-    return 'League Name Preview';
-  }
-
   const parts: string[] = [];
 
-  // Game type
-  if (gameType) {
-    const gameNames = {
-      'eight_ball': '8-Ball',
-      'nine_ball': '9-Ball',
-      'ten_ball': '10-Ball'
-    };
-    parts.push(gameNames[gameType as keyof typeof gameNames] || gameType);
+  // Game type - use placeholder if missing
+  const gameNames = {
+    'eight_ball': '8-Ball',
+    'nine_ball': '9-Ball',
+    'ten_ball': '10-Ball'
+  };
+  const gameDisplay = gameType ? (gameNames[gameType as keyof typeof gameNames] || gameType) : '[Game]';
+  parts.push(gameDisplay);
+
+  // Day of week - use placeholder if no valid date
+  let dayDisplay = '[Day]';
+  if (startDate) {
+    const date = new Date(startDate);
+    if (!isNaN(date.getTime())) {
+      dayDisplay = getDayOfWeek(date);
+    }
   }
+  parts.push(dayDisplay);
 
-  // Day of week
-  parts.push(getDayOfWeek(date));
-
-  // Season and year
-  parts.push(getTimeOfYear(date));
-  parts.push(date.getFullYear().toString());
-
-  // Organization name (or venue for traveling leagues)
-  if (organizationName) {
-    parts.push(organizationName);
+  // Season and year - use placeholder if no valid date
+  let seasonDisplay = '[Season]';
+  let yearDisplay = '[Year]';
+  if (startDate) {
+    const date = new Date(startDate);
+    if (!isNaN(date.getTime())) {
+      seasonDisplay = getTimeOfYear(date);
+      yearDisplay = date.getFullYear().toString();
+    }
   }
+  parts.push(seasonDisplay);
+  parts.push(yearDisplay);
+
+  // Organization name - use placeholder if missing or error
+  const orgDisplay = (organizationName && organizationName.trim() && organizationName !== 'ORGANIZATION_NAME_ERROR')
+    ? organizationName.trim()
+    : '[Organization]';
+  parts.push(orgDisplay);
 
   // Optional qualifier
   if (qualifier && qualifier.trim()) {
     parts.push(qualifier.trim());
   }
 
-  return parts.length > 0 ? parts.join(' ') : 'League Name Preview';
+  return parts.join(' ');
 };
 
 /**

@@ -71,10 +71,14 @@ interface LeagueFormData {
   venueIds: string[]; // Array of venue IDs (for traveling leagues)
   leagueFormat: 'in_house' | 'traveling' | ''; // Single venue vs multiple venues
 
-  // Basic League Information (auto-generated from other fields)
-  leagueName: string;
-  gameType: 'eight_ball' | 'nine_ball' | 'ten_ball' | '';
+  // Basic League Information
+  gameType: string; // "8 Ball", "9 Ball", "10 Ball", or ""
   startDate: string; // ISO date string (YYYY-MM-DD)
+
+  // Derived fields from startDate (calculated once when startDate is set)
+  dayOfWeek: string; // "Tuesday", "Wednesday", etc.
+  season: string; // "Spring", "Summer", "Fall", "Winter"
+  year: number;
 
   // Optional qualifier to differentiate leagues (West Side, North Valley, Blue, Red, etc.)
   qualifier: string;
@@ -153,8 +157,8 @@ export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
 
-  // Wizard state management
-  const [currentStep, setCurrentStep] = useState(0);
+  // Wizard state management with localStorage persistence
+  const [currentStep, setCurrentStep] = useLocalStorage('league-wizard-step', 0);
   const [currentInput, setCurrentInput] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [showVenueWizard, setShowVenueWizard] = useState(false);
@@ -231,13 +235,15 @@ export const LeagueCreationWizard: React.FC = () => {
   }, []);
 
   // League form data with localStorage persistence
-  const [formData, setFormData, clearFormData] = useLocalStorage<LeagueFormData>('league-creation-wizard', {
+  const [formData, setFormData] = useLocalStorage<LeagueFormData>('league-creation-wizard', {
     selectedVenueId: '',
     venueIds: [],
     leagueFormat: '',
-    leagueName: '',
     gameType: '',
     startDate: '',
+    dayOfWeek: '',
+    season: '',
+    year: 0,
     seasonLength: 16, // default 16 weeks
     endDate: '',
     bcaNationalsStart: '',
@@ -373,6 +379,17 @@ export const LeagueCreationWizard: React.FC = () => {
       getValue: () => formData.startDate,
       setValue: (value: string) => {
         updateFormData('startDate', value);
+
+        // Calculate and save derived fields from start date
+        if (value) {
+          const date = new Date(value);
+          if (!isNaN(date.getTime())) {
+            updateFormData('dayOfWeek', getDayOfWeek(date));
+            updateFormData('season', getTimeOfYear(date));
+            updateFormData('year', date.getFullYear());
+          }
+        }
+
         // Auto-calculate end date when start date changes
         if (value && formData.seasonLength) {
           const startDate = new Date(value);
@@ -556,22 +573,22 @@ export const LeagueCreationWizard: React.FC = () => {
       type: 'choice',
       choices: [
         {
-          value: 'eight_ball',
-          label: '8-Ball',
+          value: '8 Ball',
+          label: '8 Ball',
           subtitle: 'Most popular choice',
           icon: '🎱',
           description: 'Traditional 8-ball pool - most common league format'
         },
         {
-          value: 'nine_ball',
-          label: '9-Ball',
+          value: '9 Ball',
+          label: '9 Ball',
           subtitle: 'Fastest matches',
           icon: '⚡',
           description: 'Rotation game - faster paced with shorter matches'
         },
         {
-          value: 'ten_ball',
-          label: '10-Ball',
+          value: '10 Ball',
+          label: '10 Ball',
           subtitle: 'High skill',
           icon: '🏆',
           description: 'Advanced rotation game requiring call shots',
@@ -969,18 +986,23 @@ Startup Ease:      Easy          Hard
    */
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
-      clearFormData(); // Clear localStorage data when canceling
+      // Clear localStorage
+      localStorage.removeItem('league-creation-wizard');
+      localStorage.removeItem('league-wizard-step');
       navigate('/operator-dashboard');
     }
   };
 
   /**
-   * Clear form data but stay on the wizard (restart)
+   * Clear form data and restart wizard
    */
   const handleClearForm = () => {
     if (window.confirm('Are you sure you want to clear all form data and start over?')) {
-      clearFormData();
-      setCurrentStep(0); // Reset to first step
+      // Clear localStorage
+      localStorage.removeItem('league-creation-wizard');
+      localStorage.removeItem('league-wizard-step');
+      // Refresh the page to reset everything
+      window.location.reload();
     }
   };
 
@@ -1081,8 +1103,9 @@ Startup Ease:      Easy          Hard
 
     console.groupEnd();
 
-    // Clear the form data from localStorage after successful creation
-    clearFormData();
+    // Clear localStorage after successful creation
+    localStorage.removeItem('league-creation-wizard');
+    localStorage.removeItem('league-wizard-step');
 
     // Navigate back to operator dashboard with success message
     navigate('/operator-dashboard');
@@ -1099,18 +1122,7 @@ Startup Ease:      Easy          Hard
     }
   }, [member]);
 
-  /**
-   * Auto-generate league name whenever relevant form data changes
-   */
-  useEffect(() => {
-    const generatedName = buildLeagueName(
-      formData.startDate,
-      formData.gameType,
-      getOrganizationName(),
-      formData.qualifier
-    );
-    updateFormData('leagueName', generatedName);
-  }, [formData.gameType, formData.startDate, formData.qualifier]);
+
 
   /**
    * Sync input field with current step's saved value when navigating
@@ -1173,6 +1185,7 @@ Startup Ease:      Easy          Hard
           </div>
         </div>
 
+
         {/* Main wizard content */}
         <div className="max-w-2xl mx-auto">
           {currentStepData.type === 'choice' ? (
@@ -1213,14 +1226,16 @@ Startup Ease:      Easy          Hard
         </div>
 
         {/* League Preview */}
-        {(formData.leagueName !== 'League Name Preview' || formData.startDate || formData.endDate) && (
+        {(formData.startDate || formData.endDate) && (
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="text-sm font-medium text-blue-900 mb-3">League Preview:</h3>
 
-              {formData.leagueName !== 'League Name Preview' && (
-                <p className="text-lg font-semibold text-blue-800 mb-2">{formData.leagueName}</p>
-              )}
+              <p className="text-lg font-semibold text-blue-800 mb-2">
+                <span className="text-blue-600">League Name:</span> {
+                  `${formData.gameType} ${formData.dayOfWeek} ${formData.season} ${formData.year || ''} ${getOrganizationName()}${formData.qualifier ? ` ${formData.qualifier}` : ''}`.trim()
+                }
+              </p>
 
               {formData.startDate && (
                 <p className="text-sm text-gray-700 mb-1">

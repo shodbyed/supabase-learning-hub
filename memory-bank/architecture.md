@@ -136,10 +136,18 @@ Dashboard ← → Profile (action vs information separation)
 ### **Code Organization**
 - `src/components/` - React components
 - `src/contexts/` - React context providers
-- `src/hooks/` - Custom React hooks
+- `src/hooks/` - Custom React hooks (useLocalStorage, useUserProfile)
 - `src/schemas/` - Zod validation schemas
-- `src/utils/` - Pure utility functions
+- `src/utils/` - Pure utility functions (membershipUtils, leagueUtils)
 - `memory-bank/` - Project documentation and patterns
+
+### **Custom Hooks Implementation**
+- **useLocalStorage**: Production-ready localStorage persistence
+  - Mirrors useState API exactly
+  - Handles SSR gracefully
+  - Automatic JSON serialization
+  - Error handling with fallbacks
+  - Used for form data and wizard step persistence
 
 ### **Quality Assurance**
 - TypeScript strict mode enabled
