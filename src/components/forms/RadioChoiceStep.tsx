@@ -63,9 +63,9 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   const canProceed = selectedValue && selectedValue.trim() !== '';
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="bg-white rounded-xl shadow-lg p-4">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {title}
         </h2>
 

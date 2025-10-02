@@ -1,65 +1,22 @@
 /**
- * @fileoverview League Creation Wizard - Restructured Component
- *
+ * @fileoverview League Creation Wizard
  * Multi-step wizard for league operators to create new leagues.
- * This wizard guides operators through the essential league setup process:
- *
- * WIZARD STEPS:
- * 1. Game Type Selection (8-ball, 9-ball, 10-ball)
- * 2. Start Date Selection (determines day of week)
- * 3. Optional Qualifier
- * 4. Team Format Selection (5-man vs 8-man teams) - Determines handicap system
- * 5. Review & Create
- *
- * NOTE: Venue selection moved to team creation process where team captains
- * choose their home venue when registering teams.
- *
- * DESIGN PHILOSOPHY:
- * - Focus on core league rules and format during creation
- * - Venue selection handled during team registration (more natural)
- * - Team format choice determines handicap system automatically
- * - Step-by-step approach prevents overwhelming operators
- * - Clear explanations of team formats help operators make informed decisions
- * - Validation at each step ensures complete league setup
- * - Database operations are logged but not executed (dummy operations)
- *
- * INTEGRATION POINTS:
- * - Links from OperatorDashboard "Create League" buttons
- * - Uses operator profile data for organization details
- * - Integrates with separate Venue Creation Wizard
- * - Will eventually integrate with league management system
+ * See memory-bank/leagueCreationWizard.md for detailed documentation.
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QuestionStep } from '@/components/forms/QuestionStep';
 import { RadioChoiceStep } from '@/components/forms/RadioChoiceStep';
+import { DualDateStep } from '@/components/forms/DualDateStep';
+import { formatDateSafe } from '@/components/forms/DateField';
 import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
 import { fetchBCAChampionshipURL } from '@/utils/tournamentUtils';
+import type { Venue } from '@/data/mockVenues';
+import { fetchOrganizationVenues } from '@/data/mockVenues';
 
-/**
- * Venue information interface
- * Represents a billiard hall/bar where matches can be played
- */
-interface Venue {
-  id: string;
-  name: string;
-  address: string; // Full formatted address for display
-  streetAddress: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  phone: string;
-  barBoxTables: number;
-  regulationTables: number;
-  totalTables: number;
-  mainContact?: string;
-  organizationId: string;
-  createdAt: string;
-  isActive: boolean;
-}
 
 /**
  * League data structure for the creation wizard
@@ -118,7 +75,7 @@ interface WizardStep {
   id: string;
   title: string;
   subtitle?: string | React.ReactElement;
-  type: 'input' | 'choice';
+  type: 'input' | 'choice' | 'dual_date';
   placeholder?: string;
   choices?: Array<{
     value: string;
@@ -158,6 +115,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
 
+
   // Wizard state management with localStorage persistence
   const [currentStep, setCurrentStep] = useLocalStorage('league-wizard-step', 0);
   const [currentInput, setCurrentInput] = useState('');
@@ -168,61 +126,6 @@ export const LeagueCreationWizard: React.FC = () => {
   // Organization venues - loaded from database
   const [organizationVenues, setOrganizationVenues] = useState<Venue[]>([]);
 
-  /**
-   * Fake database call to fetch organization venues
-   */
-  const fetchOrganizationVenues = async (): Promise<Venue[]> => {
-    console.log('🔍 Fetching organization venues...');
-
-    // Simulate database call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Mock venues - some organizations might have none
-    const mockVenues: Venue[] = [
-      {
-        id: 'venue_1',
-        name: 'Billiards Plaza',
-        address: '123 Main St, Phoenix, AZ 85001',
-        streetAddress: '123 Main St',
-        city: 'Phoenix',
-        state: 'AZ',
-        zipCode: '85001',
-        phone: '(602) 555-0123',
-        barBoxTables: 6,
-        regulationTables: 2,
-        totalTables: 8,
-        mainContact: 'John Manager',
-        organizationId: 'current_org_id',
-        createdAt: '2024-01-15T10:00:00Z',
-        isActive: true
-      },
-      {
-        id: 'venue_2',
-        name: 'Corner Pocket',
-        address: '456 Oak Ave, Scottsdale, AZ 85251',
-        streetAddress: '456 Oak Ave',
-        city: 'Scottsdale',
-        state: 'AZ',
-        zipCode: '85251',
-        phone: '(480) 555-0456',
-        barBoxTables: 8,
-        regulationTables: 4,
-        totalTables: 12,
-        mainContact: 'Sarah Owner',
-        organizationId: 'current_org_id',
-        createdAt: '2024-02-01T14:30:00Z',
-        isActive: true
-      }
-    ];
-
-    // Simulate different scenarios:
-    // 50% chance of having venues, 50% chance of no venues yet
-    const hasVenues = Math.random() > 0.3; // Favor having venues for demo
-    const venues = hasVenues ? mockVenues : [];
-
-    console.log(`✅ Found ${venues.length} venues for organization`);
-    return venues;
-  };
 
   /**
    * Load venues when component mounts
@@ -392,6 +295,34 @@ export const LeagueCreationWizard: React.FC = () => {
     const date = new Date(value);
     if (isNaN(date.getTime())) {
       return { isValid: false, error: 'Please enter a valid date' };
+    }
+
+    return { isValid: true };
+  };
+
+  /**
+   * Tournament date range validation - validates both start and end dates
+   */
+  const validateTournamentDateRange = (value: string): { isValid: boolean; error?: string } => {
+    const [startDate, endDate] = value.split('|');
+
+    if (!startDate || !endDate) {
+      return { isValid: false, error: 'Both start and end dates are required' };
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime())) {
+      return { isValid: false, error: 'Please enter a valid start date' };
+    }
+
+    if (isNaN(end.getTime())) {
+      return { isValid: false, error: 'Please enter a valid end date' };
+    }
+
+    if (end <= start) {
+      return { isValid: false, error: 'End date must be after start date' };
     }
 
     return { isValid: true };
@@ -713,7 +644,78 @@ BOTTOM LINE: 16 weeks is popular because it balances all these factors - enough 
       infoLabel: 'Why is this important'
     },
 
-    // Step 6: APA Nationals Start Date
+    // Step 5: BCA Custom Tournament Dates (only shown when custom is selected)
+    {
+      id: 'bca_custom_dates',
+      title: 'BCA National Championship Dates',
+      subtitle: (
+        <span>
+          Enter the start and end dates for BCA National Championships.
+          <br />
+          Verify championship dates at the{' '}
+          <a
+            href={fetchBCAChampionshipURL()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            BCA Website
+          </a>
+          .
+        </span>
+      ),
+      type: 'dual_date',
+      placeholder: 'BCA Nationals dates',
+      validator: validateTournamentDateRange,
+      getValue: () => `${formData.bcaNationalsStart}|${formData.bcaNationalsEnd}`,
+      setValue: (value: string) => {
+        const [startDate, endDate] = value.split('|');
+        if (startDate) {
+          updateFormData('bcaNationalsStart', startDate);
+          console.log('📝 CUSTOM BCA DATE: User entered start date:', startDate);
+        }
+        if (endDate) {
+          updateFormData('bcaNationalsEnd', endDate);
+          console.log('📝 CUSTOM BCA DATE: User entered end date:', endDate);
+          if (startDate && endDate) {
+            console.log('🔄 DATABASE OPERATION: Saving custom BCA tournament dates for voting');
+            console.log('📊 New entry structure:', {
+              table: 'tournament_dates',
+              data: {
+                organization: 'BCA',
+                tournament_type: 'nationals',
+                year: new Date().getFullYear(),
+                start_date: startDate,
+                end_date: endDate,
+                entered_by: member?.id,
+                vote_count: 1,
+                created_at: new Date().toISOString()
+              }
+            });
+          }
+        }
+      },
+      infoTitle: 'Why Schedule Around Major Tournaments?',
+      infoContent: (
+        <div className="space-y-4">
+          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
+
+          <div>
+            <p><strong>Scheduling during tournaments causes problems:</strong></p>
+            <ul className="list-disc ml-4 mt-2">
+              <li>Teams lose key players who travel to compete</li>
+              <li>Unnecessary forfeits when rosters are short</li>
+              <li>Complicated makeup matches later in the season</li>
+            </ul>
+          </div>
+
+          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
+        </div>
+      ),
+      infoLabel: 'Why is this important'
+    },
+
+    // Step 7: APA Nationals Start Date
     {
       id: 'apa_nationals_start',
       title: 'When are the APA National tournaments?',
@@ -875,8 +877,8 @@ Startup Ease:      Easy          Hard
       const venueChoices = organizationVenues.map(venue => ({
         value: venue.id,
         label: venue.name,
-        subtitle: `${venue.totalTables} tables • ${venue.city}, ${venue.state}`,
-        description: `📍 ${venue.address}\n📞 ${venue.phone}\n🎱 ${venue.barBoxTables} Bar Box + ${venue.regulationTables} Regulation tables`
+        subtitle: `${venue.barBoxTables + (venue.bigTables || 0)} tables • ${venue.city}, ${venue.state}`,
+        description: `📍 ${venue.address}\n📞 ${venue.phone}\n🎱 ${venue.barBoxTables} Bar Box${venue.bigTables ? ` + ${venue.bigTables} Big tables` : ''}`
       }));
 
       // Add traveling league option
@@ -978,6 +980,17 @@ Startup Ease:      Easy          Hard
       nextStep = currentStep + 1;
     }
 
+    // Skip BCA custom date step if not needed
+    if (step.id === 'bca_nationals_dates' && formData.bcaNationalsChoice !== 'custom') {
+      // Skip the BCA custom date step and go directly to APA
+      nextStep = currentStep + 2; // Skip bca_custom_dates
+    }
+
+    // Normal progression through BCA custom date step
+    if (step.id === 'bca_custom_dates') {
+      nextStep = currentStep + 1;
+    }
+
     if (nextStep < steps.length) {
       setCurrentStep(nextStep);
       setCurrentInput('');
@@ -1003,6 +1016,19 @@ Startup Ease:      Easy          Hard
         if (seasonLengthChoice !== 'custom') {
           prevStep = currentStep - 2; // Skip back over custom_season_length
         }
+      }
+
+      // If we're on APA step and BCA choice wasn't 'custom',
+      // skip back over the BCA custom date step
+      if (currentStepData.id === 'apa_nationals_start') {
+        if (formData.bcaNationalsChoice !== 'custom') {
+          prevStep = currentStep - 2; // Skip back over BCA custom date step
+        }
+      }
+
+      // If we're on BCA custom date step, normal backwards navigation
+      if (currentStepData.id === 'bca_custom_dates') {
+        prevStep = currentStep - 1;
       }
 
       // Ensure we don't go below 0
@@ -1050,7 +1076,7 @@ Startup Ease:      Easy          Hard
     console.group('🏢 LEAGUE INFORMATION');
     console.log('Game Type:', formData.gameType);
     console.log('Start Date:', formData.startDate);
-    console.log('Day of Week (derived):', formData.startDate ? new Date(formData.startDate).toLocaleDateString('en-US', { weekday: 'long' }) : 'Not set');
+    console.log('Day of Week (derived):', formData.startDate ? formatDateSafe(formData.startDate, 'long').split(',')[0] : 'Not set');
     console.log('Team Format:', formData.teamFormat);
     console.log('Handicap System:', formData.handicapSystem);
 
@@ -1208,7 +1234,7 @@ Startup Ease:      Easy          Hard
         </div>
 
         {/* Progress bar */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-2xl mx-auto">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
@@ -1237,6 +1263,46 @@ Startup Ease:      Easy          Hard
               infoLabel={currentStepData.infoLabel}
               error={error}
             />
+          ) : currentStepData.type === 'dual_date' ? (
+            <DualDateStep
+              title={currentStepData.title}
+              subtitle={currentStepData.subtitle || ''}
+              startValue={formData.bcaNationalsStart}
+              endValue={formData.bcaNationalsEnd}
+              onStartChange={(value: string) => {
+                updateFormData('bcaNationalsStart', value);
+                console.log('📝 CUSTOM BCA DATE: User entered start date:', value);
+              }}
+              onEndChange={(value: string) => {
+                updateFormData('bcaNationalsEnd', value);
+                console.log('📝 CUSTOM BCA DATE: User entered end date:', value);
+                if (formData.bcaNationalsStart && value) {
+                  console.log('🔄 DATABASE OPERATION: Saving custom BCA tournament dates for voting');
+                  console.log('📊 New entry structure:', {
+                    table: 'tournament_dates',
+                    data: {
+                      organization: 'BCA',
+                      tournament_type: 'nationals',
+                      year: new Date().getFullYear(),
+                      start_date: formData.bcaNationalsStart,
+                      end_date: value,
+                      entered_by: member?.id,
+                      vote_count: 1,
+                      created_at: new Date().toISOString()
+                    }
+                  });
+                }
+              }}
+              onNext={handleNext}
+              onPrevious={handlePrevious}
+              onCancel={handleCancel}
+              canGoBack={canGoBack}
+              isLastQuestion={isLastStep}
+              infoTitle={currentStepData.infoTitle}
+              infoContent={currentStepData.infoContent ?? undefined}
+              infoLabel={currentStepData.infoLabel}
+              error={error}
+            />
           ) : (
             <QuestionStep
               title={currentStepData.title}
@@ -1252,7 +1318,12 @@ Startup Ease:      Easy          Hard
               infoTitle={currentStepData.infoTitle}
               infoContent={currentStepData.infoContent ?? undefined}
               error={error}
-              inputType={currentStepData.id === 'start_date' ? 'date' : 'text'}
+              inputType={
+                currentStepData.id === 'start_date' ||
+                currentStepData.id === 'bca_custom_start_date' ||
+                currentStepData.id === 'bca_custom_end_date'
+                  ? 'date' : 'text'
+              }
             />
           )}
         </div>
@@ -1271,49 +1342,29 @@ Startup Ease:      Easy          Hard
 
               {formData.startDate && (
                 <p className="text-sm text-gray-700 mb-1">
-                  <span className="font-medium">Start Date:</span> {new Date(formData.startDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  <span className="font-medium">Start Date:</span> {formatDateSafe(formData.startDate, 'long')}
                 </p>
               )}
 
               {formData.endDate && (
                 <>
                   <p className="text-sm text-gray-700 mb-1">
-                    <span className="font-medium">End of Regular Season:</span> {new Date(formData.endDate).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    <span className="font-medium">End of Regular Season:</span> {formatDateSafe(formData.endDate, 'long')}
                   </p>
 
                   <p className="text-sm text-gray-700 mb-1">
                     <span className="font-medium">Week Off:</span> {(() => {
-                      const weekOff = new Date(formData.endDate);
-                      weekOff.setDate(weekOff.getDate() + 7);
-                      return weekOff.toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      });
+                      const [year, month, day] = formData.endDate.split('-');
+                      const weekOff = new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + 7);
+                      return formatDateSafe(weekOff.toISOString().split('T')[0], 'long');
                     })()}
                   </p>
 
                   <p className="text-sm text-gray-700 mb-3">
                     <span className="font-medium">Playoffs:</span> {(() => {
-                      const playoffs = new Date(formData.endDate);
-                      playoffs.setDate(playoffs.getDate() + 14);
-                      return playoffs.toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      });
+                      const [year, month, day] = formData.endDate.split('-');
+                      const playoffs = new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + 14);
+                      return formatDateSafe(playoffs.toISOString().split('T')[0], 'long');
                     })()}
                   </p>
 
@@ -1321,6 +1372,41 @@ Startup Ease:      Easy          Hard
                     (does not include holiday breaks)
                   </p>
                 </>
+              )}
+
+              {/* Tournament Scheduling Information */}
+              {formData.bcaNationalsChoice && (
+                <div className="mt-4 pt-3 border-t border-blue-200">
+                  <p className="text-sm font-medium text-blue-900 mb-2">Tournament Scheduling:</p>
+
+                  {formData.bcaNationalsChoice === 'ignore' && (
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">BCA Nationals:</span> Not scheduling around tournament dates
+                    </p>
+                  )}
+
+                  {formData.bcaNationalsChoice === 'custom' && (
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">BCA Nationals:</span> Using custom tournament dates
+                      {formData.bcaNationalsStart && formData.bcaNationalsEnd && (
+                        <span className="text-gray-600 ml-1">
+                          ({formatDateSafe(formData.bcaNationalsStart)} - {formatDateSafe(formData.bcaNationalsEnd)})
+                        </span>
+                      )}
+                    </p>
+                  )}
+
+                  {formData.bcaNationalsChoice.startsWith('found_dates_') && (
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">BCA Nationals:</span> Using community-verified dates
+                      {formData.bcaNationalsStart && formData.bcaNationalsEnd && (
+                        <span className="text-gray-600 ml-1">
+                          ({formatDateSafe(formData.bcaNationalsStart)} - {formatDateSafe(formData.bcaNationalsEnd)})
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </div>

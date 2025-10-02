@@ -51,16 +51,20 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
   return (
     <div className="space-y-4">
       {/* Title and Info */}
-      <div className="flex items-center gap-3 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {title}
-        </h3>
-        {infoTitle && infoContent && (
-          <InfoButton title={infoTitle} label={infoLabel}>
-            {infoContent}
-          </InfoButton>
-        )}
-      </div>
+      {(title || (infoTitle && infoContent)) && (
+        <div className="flex items-center gap-3 mb-6">
+          {title && (
+            <h3 className="text-lg font-semibold text-gray-900">
+              {title}
+            </h3>
+          )}
+          {infoTitle && infoContent && (
+            <InfoButton title={infoTitle} label={infoLabel}>
+              {infoContent}
+            </InfoButton>
+          )}
+        </div>
+      )}
 
       {subtitle && (
         <p className="text-gray-600 mb-6">
