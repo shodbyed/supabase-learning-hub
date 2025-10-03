@@ -5,6 +5,7 @@
 import React from 'react';
 import type { LeagueOperatorApplication } from '../schemas/leagueOperatorSchema';
 import type { ApplicationAction } from './types';
+import type { Member } from '@/types';
 import {
   leagueNameSchema,
   leagueEmailSchema,
@@ -78,7 +79,7 @@ interface QuestionConfig {
 export const getQuestionDefinitions = (
   state: LeagueOperatorApplication,
   dispatch: React.Dispatch<ApplicationAction>,
-  member: any,
+  member: Member | null,
   customAddress: string,
   setCustomAddress: (value: string) => void,
   customCity: string,

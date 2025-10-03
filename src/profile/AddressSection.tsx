@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { US_STATES } from '../constants/states';
+import type { Member } from '@/types';
 import type { AddressFormData, EditFormState } from './types';
 
 interface AddressSectionProps {
-  member: any;
+  member: Member;
   form: EditFormState<AddressFormData>;
   handlers: {
     startEdit: () => void;

@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InfoButton } from '@/components/InfoButton';
 import { nicknameInfo } from '../constants/infoContent/profileInfoContent';
+import type { Member } from '@/types';
 import type { PersonalFormData, EditFormState } from './types';
 
 interface PersonalInfoSectionProps {
-  member: any;
+  member: Member;
   form: EditFormState<PersonalFormData>;
   handlers: {
     startEdit: () => void;
