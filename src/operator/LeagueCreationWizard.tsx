@@ -3,20 +3,18 @@
  * Multi-step wizard for league operators to create new leagues.
  * See memory-bank/leagueCreationWizard.md for detailed documentation.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatDateSafe } from '@/components/forms/DateField';
 import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
 import type { Venue } from '@/data/mockVenues';
-import { fetchOrganizationVenues } from '@/data/mockVenues';
-import { useTournamentSearch } from '@/hooks/useTournamentSearch';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
-import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps';
+import { createWizardSteps, type WizardStep } from '@/data/leagueWizardSteps';
 
 
 
@@ -40,157 +38,31 @@ export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
 
-
-  // Wizard state management with localStorage persistence
-  const [currentStep, setCurrentStep] = useLocalStorage('league-wizard-step', 0);
-  const [currentInput, setCurrentInput] = useState('');
-  const [error, setError] = useState<string | undefined>(undefined);
-  const [showVenueWizard, setShowVenueWizard] = useState(false);
-  const [seasonLengthChoice, setSeasonLengthChoice] = useState<string>('16'); // Track the radio button selection
-
-  // Organization venues - loaded from database
-  const [organizationVenues, setOrganizationVenues] = useState<Venue[]>([]);
-
-
-  /**
-   * Load venues when component mounts
-   */
-  useEffect(() => {
-    const loadVenues = async () => {
-      const venues = await fetchOrganizationVenues();
-      setOrganizationVenues(venues);
-    };
-    loadVenues();
-  }, []);
-
-  // Tournament search hook for BCA/APA dates
+  // Use centralized wizard state management hook
   const {
-    foundDates: foundTournamentDates,
-    searchTournamentDates,
-    findTournamentOption
-  } = useTournamentSearch();
-
-  // League form data with localStorage persistence
-  const [formData, setFormData] = useLocalStorage<LeagueFormData>('league-creation-wizard', {
-    selectedVenueId: '',
-    venueIds: [],
-    gameType: '',
-    startDate: '',
-    dayOfWeek: '',
-    season: '',
-    year: 0,
-    seasonLength: 16, // default 16 weeks
-    endDate: '',
-    bcaNationalsChoice: '',
-    bcaNationalsStart: '',
-    bcaNationalsEnd: '',
-    apaNationalsStart: '',
-    apaNationalsEnd: '',
-    qualifier: '',
-    teamFormat: '',
-    handicapSystem: '',
-    organizationName: '',
-    organizationAddress: '',
-    organizationCity: '',
-    organizationState: '',
-    organizationZipCode: '',
-    contactEmail: '',
-    contactPhone: ''
-  });
-
-  /**
-   * Update form data for a specific field
-   */
-  const updateFormData = (field: keyof LeagueFormData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  /**
-   * Search for BCA tournament dates
-   */
-  const searchBCANationalsInDatabase = async () => {
-    await searchTournamentDates({
-      organization: 'BCA',
-      tournamentType: 'nationals'
-    });
-  };
-
-  /**
-   * Get the organization name for league naming
-   */
-  const getOrganizationName = (): string => {
-    // For now, use a placeholder. In the future, this should come from the operator's profile
-    // Using ERROR in the name ensures we catch missing organization data immediately
-    return formData.organizationName || 'ORGANIZATION_NAME_ERROR';
-  };
-
-  /**
-   * Start date validation - must be a valid future date
-   */
-  const validateStartDate = (value: string): { isValid: boolean; error?: string } => {
-    if (!value) {
-      return { isValid: false, error: 'Start date is required' };
-    }
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return { isValid: false, error: 'Please enter a valid date' };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
-
-    if (date < today) {
-      return { isValid: false, error: 'Start date must be today or in the future' };
-    }
-
-    return { isValid: true };
-  };
-
-
-  /**
-   * Tournament date validation - must be valid dates
-   */
-  const validateTournamentDate = (value: string): { isValid: boolean; error?: string } => {
-    if (!value) {
-      return { isValid: false, error: 'Tournament date is required' };
-    }
-
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return { isValid: false, error: 'Please enter a valid date' };
-    }
-
-    return { isValid: true };
-  };
-
-  /**
-   * Tournament date range validation - validates both start and end dates
-   */
-  const validateTournamentDateRange = (value: string): { isValid: boolean; error?: string } => {
-    const [startDate, endDate] = value.split('|');
-
-    if (!startDate || !endDate) {
-      return { isValid: false, error: 'Both start and end dates are required' };
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (isNaN(start.getTime())) {
-      return { isValid: false, error: 'Please enter a valid start date' };
-    }
-
-    if (isNaN(end.getTime())) {
-      return { isValid: false, error: 'Please enter a valid end date' };
-    }
-
-    if (end <= start) {
-      return { isValid: false, error: 'End date must be after start date' };
-    }
-
-    return { isValid: true };
-  };
+    currentStep,
+    currentInput,
+    error,
+    showVenueWizard,
+    seasonLengthChoice,
+    organizationVenues,
+    formData,
+    foundTournamentDates,
+    setCurrentStep,
+    setCurrentInput,
+    setError,
+    setShowVenueWizard,
+    setSeasonLengthChoice,
+    updateFormData,
+    searchBCANationalsInDatabase,
+    findTournamentOption,
+    validateStartDate,
+    validateTournamentDate,
+    validateTournamentDateRange,
+    getOrganizationName,
+    refreshVenues,
+    clearFormData
+  } = useLeagueWizard();
 
 
   /**
@@ -209,8 +81,7 @@ export const LeagueCreationWizard: React.FC = () => {
     setShowVenueWizard(false);
 
     // Refresh venue list to include new venue
-    const updatedVenues = await fetchOrganizationVenues();
-    setOrganizationVenues(updatedVenues);
+    await refreshVenues();
 
     // Auto-select the new venue
     updateFormData('selectedVenueId', newVenue.id);
@@ -418,9 +289,7 @@ export const LeagueCreationWizard: React.FC = () => {
    */
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
-      // Clear localStorage
-      localStorage.removeItem('league-creation-wizard');
-      localStorage.removeItem('league-wizard-step');
+      clearFormData();
       navigate('/operator-dashboard');
     }
   };
@@ -430,9 +299,7 @@ export const LeagueCreationWizard: React.FC = () => {
    */
   const handleClearForm = () => {
     if (window.confirm('Are you sure you want to clear all form data and start over?')) {
-      // Clear localStorage
-      localStorage.removeItem('league-creation-wizard');
-      localStorage.removeItem('league-wizard-step');
+      clearFormData();
       // Refresh the page to reset everything
       window.location.reload();
     }
@@ -522,8 +389,7 @@ export const LeagueCreationWizard: React.FC = () => {
     console.groupEnd();
 
     // Clear localStorage after successful creation
-    localStorage.removeItem('league-creation-wizard');
-    localStorage.removeItem('league-wizard-step');
+    clearFormData();
 
     // Navigate back to operator dashboard with success message
     navigate('/operator-dashboard');
@@ -538,7 +404,8 @@ export const LeagueCreationWizard: React.FC = () => {
       updateFormData('contactEmail', member.email);
       updateFormData('contactPhone', member.phone);
     }
-  }, [member]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member]); // updateFormData is stable from the hook
 
 
 
