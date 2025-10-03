@@ -26,6 +26,13 @@
 - **Utility-First Architecture**: Business logic in pure functions for testing
 - **Component Standards**: Start with bare shadcn components before custom styling
 - **Database Simulation**: Console.log operations for partner integration
+- **Type Centralization**: All reusable TypeScript types stored in `src/types/` folder
+  - **NEVER** use `any` type - always define proper interfaces
+  - Types organized by domain (member.ts, league.ts, venue.ts, tournament.ts)
+  - Single source of truth for data structures across entire codebase
+  - Import from `@/types` for convenience: `import type { Member, League } from '@/types';`
+  - Update centralized type once, changes propagate everywhere
+  - Better IntelliSense, type safety, and documentation
 - **Info Content Centralization**: All info button content stored in `src/constants/infoContent/` folder
   - **NEVER** hardcode lengthy explanations or info content directly in components
   - Content organized by feature area in separate files (`profileInfoContent.tsx`, `leagueWizardInfoContent.tsx`, etc.)
@@ -166,10 +173,17 @@ Dashboard ← → Profile (action vs information separation)
 - `src/hooks/` - Custom React hooks (useLocalStorage, useUserProfile)
 - `src/schemas/` - Zod validation schemas
 - `src/utils/` - Pure utility functions (membershipUtils, leagueUtils)
+- `src/types/` - **Centralized TypeScript type definitions**
+  - `member.ts` - Member and UserRole types
+  - `league.ts` - League, TeamFormat, HandicapSystem, GameType types
+  - `venue.ts` - Venue and VenueFormData types
+  - `tournament.ts` - Tournament, TournamentDateOption types
+  - `index.ts` - Re-exports all types for convenient importing
 - `src/constants/` - Static data and content
   - `infoContent/` - Info button content organized by feature area
     - `profileInfoContent.tsx` - Profile and member-related info
     - `leagueWizardInfoContent.tsx` - League creation wizard info
+    - `operatorApplicationInfoContent.tsx` - Operator application info
 - `memory-bank/` - Project documentation and patterns
 
 ### **Custom Hooks Implementation**
