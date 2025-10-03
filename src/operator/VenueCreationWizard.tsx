@@ -19,6 +19,7 @@
  */
 import React, { useState } from 'react';
 import { QuestionStep } from '@/components/forms/QuestionStep';
+import type { Venue } from '@/types';
 
 interface VenueFormData {
   name: string;
@@ -33,7 +34,7 @@ interface VenueFormData {
 }
 
 interface VenueCreationWizardProps {
-  onComplete: (venue: any) => void; // Called when venue is successfully created
+  onComplete: (venue: Venue) => void; // Called when venue is successfully created
   onCancel: () => void; // Called when user cancels
 }
 
@@ -73,7 +74,7 @@ export const VenueCreationWizard: React.FC<VenueCreationWizardProps> = ({
   /**
    * Fake database call to check for venue conflicts
    */
-  const checkVenueConflicts = async (streetAddress: string, city: string, state: string): Promise<{hasConflict: boolean; conflictVenue?: any}> => {
+  const checkVenueConflicts = async (streetAddress: string, city: string, state: string): Promise<{hasConflict: boolean; conflictVenue?: Venue}> => {
     const fullAddress = `${streetAddress}, ${city}, ${state}`;
     console.log('🔍 Checking for venue conflicts at address:', fullAddress);
 
