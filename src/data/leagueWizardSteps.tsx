@@ -5,6 +5,17 @@
  */
 import React from 'react';
 import { fetchBCAChampionshipURL } from '@/utils/tournamentUtils';
+import {
+  startDateInfo,
+  seasonLengthInfo,
+  customSeasonLengthInfo,
+  gameFormatInfo,
+  tournamentSchedulingInfo,
+  apaNationalsInfo,
+  tournamentCalendarInfo,
+  teamFormatInfo,
+  leagueQualifierInfo,
+} from '@/constants/infoContent/leagueWizardInfoContent';
 
 /**
  * Wizard step definition interface
@@ -144,8 +155,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           console.log('📅 CALCULATED: End date =', endDate.toISOString().split('T')[0]);
         }
       },
-      infoTitle: 'Choosing Your Start Date',
-      infoContent: 'The start date determines your league\'s day of the week and season classification. Choose a date that gives teams enough time to register and prepare.'
+      infoTitle: startDateInfo.title,
+      infoContent: startDateInfo.content
     },
 
     // Step 2: Season Length (12-20 weeks common, 6-52 custom)
@@ -181,8 +192,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           }
         }
       },
-      infoTitle: 'Season Length Guidelines',
-      infoContent: 'Most leagues run 14-16 weeks including regular season and playoffs. Shorter seasons work well for new leagues or venues testing the waters. Longer seasons provide more matches but require stronger player commitment.'
+      infoTitle: seasonLengthInfo.title,
+      infoContent: seasonLengthInfo.content
     },
 
     // Step 2b: Custom Season Length (only shown when custom is selected)
@@ -217,8 +228,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           }
         }
       },
-      infoTitle: 'Custom Season Length',
-      infoContent: 'Consider holidays, venue availability, and player commitment when choosing your season length. Include time for regular season, playoffs, and any breaks.'
+      infoTitle: customSeasonLengthInfo.title,
+      infoContent: customSeasonLengthInfo.content
     },
 
     // Step 3: Game Type Selection
@@ -252,8 +263,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       ],
       getValue: () => formData.gameType,
       setValue: (value: string) => updateFormData('gameType', value),
-      infoTitle: 'Game Format Differences',
-      infoContent: '8-ball is most popular and familiar to players. 9-ball and 10-ball are faster but require more skill. Choose based on your player base and venue preferences.'
+      infoTitle: gameFormatInfo.title,
+      infoContent: gameFormatInfo.content
     },
 
     // Step 4: BCA Nationals Tournament Scheduling
@@ -319,24 +330,9 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           console.log('✏️ CHOICE: Operator will enter custom tournament dates');
         }
       },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important'
+      infoTitle: tournamentSchedulingInfo.title,
+      infoContent: tournamentSchedulingInfo.content,
+      infoLabel: tournamentSchedulingInfo.label
     },
 
     // Step 5: BCA Custom Tournament Dates (only shown when custom is selected)
@@ -389,24 +385,9 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           }
         }
       },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important'
+      infoTitle: tournamentSchedulingInfo.title,
+      infoContent: tournamentSchedulingInfo.content,
+      infoLabel: tournamentSchedulingInfo.label
     },
 
     // Step 7: APA Nationals Start Date
@@ -419,8 +400,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       validator: validateTournamentDate,
       getValue: () => formData.apaNationalsStart,
       setValue: (value: string) => updateFormData('apaNationalsStart', value),
-      infoTitle: 'APA Nationals Scheduling',
-      infoContent: 'APA Nationals typically occur in late spring/early summer. Visit poolplayers.com for current tournament dates and locations.'
+      infoTitle: apaNationalsInfo.title,
+      infoContent: apaNationalsInfo.content
     },
 
     // Step 7: APA Nationals End Date
@@ -433,8 +414,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       validator: validateTournamentDate,
       getValue: () => formData.apaNationalsEnd,
       setValue: (value: string) => updateFormData('apaNationalsEnd', value),
-      infoTitle: 'Complete Tournament Calendar',
-      infoContent: 'Having both BCA and APA tournament dates ensures your league schedule works around all major national competitions.'
+      infoTitle: tournamentCalendarInfo.title,
+      infoContent: tournamentCalendarInfo.content
     },
 
     // Step 8: Team Format Selection - CRITICAL DECISION POINT
@@ -510,8 +491,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           console.log('✅ AUTO-SET: 8-man format → BCA standard handicap system');
         }
       },
-      infoTitle: 'Team Format Impact',
-      infoContent: 'This choice affects every aspect of your league: player requirements, match length, venue needs, and management complexity. Choose based on your venue size, player pool, and time constraints.'
+      infoTitle: teamFormatInfo.title,
+      infoContent: teamFormatInfo.content
     },
 
     // Step 9: Optional Qualifier
@@ -523,8 +504,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       placeholder: 'Enter league qualifier (optional)',
       getValue: () => formData.qualifier,
       setValue: (value: string) => updateFormData('qualifier', value),
-      infoTitle: 'League Qualifiers',
-      infoContent: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).'
+      infoTitle: leagueQualifierInfo.title,
+      infoContent: leagueQualifierInfo.content
     }
   ];
 };

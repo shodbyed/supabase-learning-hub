@@ -2,7 +2,6 @@
  * @fileoverview Profile-Related Info Button Content
  * Centralized info content for profile pages and forms
  */
-import React from 'react';
 
 /**
  * Nickname Info Content
