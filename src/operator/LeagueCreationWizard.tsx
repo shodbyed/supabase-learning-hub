@@ -5,9 +5,6 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { QuestionStep } from '@/components/forms/QuestionStep';
-import { RadioChoiceStep } from '@/components/forms/RadioChoiceStep';
-import { DualDateStep } from '@/components/forms/DualDateStep';
 import { formatDateSafe } from '@/components/forms/DateField';
 import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
@@ -18,6 +15,7 @@ import { fetchOrganizationVenues } from '@/data/mockVenues';
 import { useTournamentSearch } from '@/hooks/useTournamentSearch';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
+import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
 import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps';
 
 
@@ -616,86 +614,21 @@ export const LeagueCreationWizard: React.FC = () => {
 
         {/* Main wizard content */}
         <div className="max-w-2xl mx-auto">
-          {currentStepData.type === 'choice' ? (
-            <RadioChoiceStep
-              title={currentStepData.title}
-              subtitle={currentStepData.subtitle}
-              choices={currentStepData.choices || []}
-              selectedValue={currentStepData.getValue()}
-              onSelect={handleChoiceSelect}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              onCancel={handleCancel}
-              canGoBack={canGoBack}
-              isLastQuestion={isLastStep}
-              infoTitle={currentStepData.infoTitle}
-              infoContent={currentStepData.infoContent ?? undefined}
-              infoLabel={currentStepData.infoLabel}
-              error={error}
-            />
-          ) : currentStepData.type === 'dual_date' ? (
-            <DualDateStep
-              title={currentStepData.title}
-              subtitle={currentStepData.subtitle || ''}
-              startValue={formData.bcaNationalsStart}
-              endValue={formData.bcaNationalsEnd}
-              onStartChange={(value: string) => {
-                updateFormData('bcaNationalsStart', value);
-                console.log('📝 CUSTOM BCA DATE: User entered start date:', value);
-              }}
-              onEndChange={(value: string) => {
-                updateFormData('bcaNationalsEnd', value);
-                console.log('📝 CUSTOM BCA DATE: User entered end date:', value);
-                if (formData.bcaNationalsStart && value) {
-                  console.log('🔄 DATABASE OPERATION: Saving custom BCA tournament dates for voting');
-                  console.log('📊 New entry structure:', {
-                    table: 'tournament_dates',
-                    data: {
-                      organization: 'BCA',
-                      tournament_type: 'nationals',
-                      year: new Date().getFullYear(),
-                      start_date: formData.bcaNationalsStart,
-                      end_date: value,
-                      entered_by: member?.id,
-                      vote_count: 1,
-                      created_at: new Date().toISOString()
-                    }
-                  });
-                }
-              }}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              onCancel={handleCancel}
-              canGoBack={canGoBack}
-              isLastQuestion={isLastStep}
-              infoTitle={currentStepData.infoTitle}
-              infoContent={currentStepData.infoContent ?? undefined}
-              infoLabel={currentStepData.infoLabel}
-              error={error}
-            />
-          ) : (
-            <QuestionStep
-              title={currentStepData.title}
-              subtitle={currentStepData.subtitle || ''}
-              placeholder={currentStepData.placeholder || ''}
-              value={currentInput}
-              onChange={handleInputChange}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              onCancel={handleCancel}
-              canGoBack={canGoBack}
-              isLastQuestion={isLastStep}
-              infoTitle={currentStepData.infoTitle}
-              infoContent={currentStepData.infoContent ?? undefined}
-              error={error}
-              inputType={
-                currentStepData.id === 'start_date' ||
-                currentStepData.id === 'bca_custom_start_date' ||
-                currentStepData.id === 'bca_custom_end_date'
-                  ? 'date' : 'text'
-              }
-            />
-          )}
+          <WizardStepRenderer
+            currentStep={currentStepData}
+            isLastStep={isLastStep}
+            canGoBack={canGoBack}
+            currentInput={currentInput}
+            formData={formData}
+            member={member}
+            error={error}
+            onInputChange={handleInputChange}
+            onChoiceSelect={handleChoiceSelect}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            onCancel={handleCancel}
+            updateFormData={updateFormData}
+          />
         </div>
 
         {/* League Preview */}
