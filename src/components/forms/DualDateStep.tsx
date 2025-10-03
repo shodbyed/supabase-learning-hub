@@ -45,7 +45,7 @@ export const DualDateStep: React.FC<DualDateStepProps> = ({
   infoTitle,
   infoContent,
   infoLabel,
-  error
+  error,
 }) => {
   const [localError, setLocalError] = useState<string | undefined>(undefined);
 
@@ -82,14 +82,11 @@ export const DualDateStep: React.FC<DualDateStepProps> = ({
   const displayError = error || localError;
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex-1 flex flex-col justify-center items-center p-8">
+    <div className="flex flex-col min-h-full bg-white">
+      <div className="flex-1 flex flex-col items-center p-8">
         <div className="w-full max-w-lg">
-
           {/* Title */}
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {title}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
 
           {/* Info Button on separate line */}
           {infoTitle && infoContent && (
@@ -101,11 +98,7 @@ export const DualDateStep: React.FC<DualDateStepProps> = ({
           )}
 
           {/* Subtitle */}
-          {subtitle && (
-            <div className="text-gray-600 mb-8">
-              {subtitle}
-            </div>
-          )}
+          {subtitle && <div className="text-gray-600 mb-8">{subtitle}</div>}
 
           {/* Date Inputs */}
           <div className="space-y-6 mb-8">
@@ -158,11 +151,7 @@ export const DualDateStep: React.FC<DualDateStepProps> = ({
               </Button>
             )}
 
-            <Button
-              type="button"
-              onClick={handleNext}
-              className="flex-1"
-            >
+            <Button type="button" onClick={handleNext} className="flex-1">
               {isLastQuestion ? 'Finish' : 'Next'}
             </Button>
           </div>

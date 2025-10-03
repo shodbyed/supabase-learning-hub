@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS members (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
-  nickname VARCHAR(100),
+  nickname VARCHAR(12),
   phone VARCHAR(20) NOT NULL,
   email VARCHAR(255) NOT NULL,
   address VARCHAR(255) NOT NULL,

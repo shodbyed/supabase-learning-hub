@@ -4,7 +4,7 @@ import { US_STATES } from '../constants/states';
 export const playerFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required').trim(),
   lastName: z.string().min(1, 'Last name is required').trim(),
-  nickname: z.string().optional(),
+  nickname: z.string().max(12, 'Nickname must be 12 characters or less').optional(),
   phone: z.string()
     .min(1, 'Phone number is required')
     .transform((val) => val.replace(/\D/g, ''))

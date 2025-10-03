@@ -87,8 +87,7 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
       // Success! Clear errors and redirect
       onSuccess();
 
-      // Show success message and redirect to dashboard
-      alert('Application submitted successfully! Welcome to the league!');
+      // Redirect to dashboard
       navigate('/dashboard');
 
     } catch (error) {

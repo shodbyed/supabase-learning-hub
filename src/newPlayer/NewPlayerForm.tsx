@@ -10,6 +10,7 @@ import { formatPhoneNumber } from '../utils/formatters';
 import { usePlayerForm } from './usePlayerForm';
 import { usePlayerFormSubmission } from './usePlayerFormSubmission';
 import { TextField, SelectField } from './FormField';
+import { nicknameInfo } from '../constants/infoContent/profileInfoContent';
 
 // TODO: Future feature - Add country selection for international phone numbers
 // This would allow proper validation of international formats
@@ -69,11 +70,14 @@ export const NewPlayerForm: React.FC = () => {
 
         <TextField
           id="nickname"
-          label="Nickname (Optional)"
+          label="Nickname"
           value={state.nickname}
           onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'nickname', value })}
-          placeholder="Enter nickname"
+          placeholder="Enter nickname (max 12 characters)"
+          maxLength={12}
           error={state.errors.nickname}
+          infoTitle={nicknameInfo.title}
+          infoContent={nicknameInfo.contentWithChangeNote}
         />
 
         {/* Phone number field with real-time formatting */}

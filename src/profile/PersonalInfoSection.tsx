@@ -6,6 +6,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InfoButton } from '@/components/InfoButton';
+import { nicknameInfo } from '../constants/infoContent/profileInfoContent';
 import type { PersonalFormData, EditFormState } from './types';
 
 interface PersonalInfoSectionProps {
@@ -88,13 +90,19 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
           {/* Nickname */}
           <div>
-            <Label htmlFor="nickname">Nickname (Optional)</Label>
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="nickname">Nickname</Label>
+              <InfoButton title={nicknameInfo.title}>
+                {nicknameInfo.content}
+              </InfoButton>
+            </div>
             <Input
               id="nickname"
               type="text"
               value={form.formData.nickname}
               onChange={(e) => handlers.updateForm('nickname', e.target.value)}
-              placeholder="How you'd like to be called"
+              placeholder="Enter nickname (max 12 characters)"
+              maxLength={12}
               className={form.errors.nickname ? 'border-red-500' : ''}
             />
             {form.errors.nickname && (

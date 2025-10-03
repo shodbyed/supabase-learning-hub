@@ -2,6 +2,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InfoButton } from '@/components/InfoButton';
 
 interface BaseFieldProps {
   label: string;
@@ -16,6 +17,8 @@ interface TextFieldProps extends BaseFieldProps {
   placeholder?: string;
   type?: 'text' | 'email' | 'date';
   maxLength?: number;
+  infoTitle?: string;
+  infoContent?: React.ReactNode;
 }
 
 interface SelectFieldProps extends BaseFieldProps {
@@ -34,14 +37,23 @@ export const TextField: React.FC<TextFieldProps> = ({
   placeholder,
   type = 'text',
   maxLength,
-  required = false
+  required = false,
+  infoTitle,
+  infoContent
 }) => {
   return (
     <div>
-      <Label htmlFor={id}>
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
+      <div className="flex items-center gap-2 mb-1">
+        <Label htmlFor={id}>
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        {infoTitle && infoContent && (
+          <InfoButton title={infoTitle}>
+            {infoContent}
+          </InfoButton>
+        )}
+      </div>
       <Input
         id={id}
         type={type}

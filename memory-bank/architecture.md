@@ -26,6 +26,13 @@
 - **Utility-First Architecture**: Business logic in pure functions for testing
 - **Component Standards**: Start with bare shadcn components before custom styling
 - **Database Simulation**: Console.log operations for partner integration
+- **Info Content Centralization**: All info button content stored in `src/constants/infoContent/` folder
+  - **NEVER** hardcode lengthy explanations or info content directly in components
+  - Content organized by feature area in separate files (`profileInfoContent.tsx`, `leagueWizardInfoContent.tsx`, etc.)
+  - Each info object exports `title` and `content` (or multiple content variants)
+  - Content can be React elements for rich formatting (lists, bold, links, etc.)
+  - Single source of truth - reusable across multiple components
+  - Keeps components clean and maintainable
 
 ### **Validation & Data Management**
 - **Zod Schemas**: TypeScript-first validation in src/schemas/ directory
@@ -159,6 +166,10 @@ Dashboard ← → Profile (action vs information separation)
 - `src/hooks/` - Custom React hooks (useLocalStorage, useUserProfile)
 - `src/schemas/` - Zod validation schemas
 - `src/utils/` - Pure utility functions (membershipUtils, leagueUtils)
+- `src/constants/` - Static data and content
+  - `infoContent/` - Info button content organized by feature area
+    - `profileInfoContent.tsx` - Profile and member-related info
+    - `leagueWizardInfoContent.tsx` - League creation wizard info
 - `memory-bank/` - Project documentation and patterns
 
 ### **Custom Hooks Implementation**

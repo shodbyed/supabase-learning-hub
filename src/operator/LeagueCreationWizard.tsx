@@ -13,87 +13,13 @@ import { VenueCreationWizard } from './VenueCreationWizard';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
-import { fetchBCAChampionshipURL } from '@/utils/tournamentUtils';
 import type { Venue } from '@/data/mockVenues';
 import { fetchOrganizationVenues } from '@/data/mockVenues';
+import { useTournamentSearch } from '@/hooks/useTournamentSearch';
+import { WizardProgress } from '@/components/forms/WizardProgress';
+import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps';
 
 
-/**
- * League data structure for the creation wizard
- * Matches the hierarchy defined in LEAGUE_MANAGEMENT_PLAN.md:
- * Organization → League → Season → Team → Player
- */
-interface LeagueFormData {
-  // Venue Information (for future implementation)
-  selectedVenueId: string; // ID of selected venue or 'add_new' for new venue creation
-  venueIds: string[]; // Array of venue IDs (for traveling leagues)
-
-  // Basic League Information
-  gameType: string; // "8 Ball", "9 Ball", "10 Ball", or ""
-  startDate: string; // ISO date string (YYYY-MM-DD)
-
-  // Derived fields from startDate (calculated once when startDate is set)
-  dayOfWeek: string; // "Tuesday", "Wednesday", etc.
-  season: string; // "Spring", "Summer", "Fall", "Winter"
-  year: number;
-
-  // Optional qualifier to differentiate leagues (West Side, North Valley, Blue, Red, etc.)
-  qualifier: string;
-
-  // Season Configuration
-  seasonLength: number; // weeks (10-30, default 16)
-  endDate: string; // calculated from start date + season length
-
-  // Tournament Dates (to avoid conflicts)
-  bcaNationalsChoice: string; // Choice from radio buttons (found dates, ignore, or custom)
-  bcaNationalsStart: string;
-  bcaNationalsEnd: string;
-  apaNationalsStart: string;
-  apaNationalsEnd: string;
-
-  // Team Format (determines match structure)
-  teamFormat: '5_man' | '8_man' | '';
-
-  // Handicap System Selection
-  handicapSystem: 'custom_5man' | 'bca_standard' | '';
-
-  // Organization Details (from operator profile)
-  organizationName: string;
-  organizationAddress: string;
-  organizationCity: string;
-  organizationState: string;
-  organizationZipCode: string;
-  contactEmail: string;
-  contactPhone: string;
-}
-
-/**
- * Wizard step definition interface
- * Reuses the successful pattern from LeagueOperatorApplication
- */
-interface WizardStep {
-  id: string;
-  title: string;
-  subtitle?: string | React.ReactElement;
-  type: 'input' | 'choice' | 'dual_date';
-  placeholder?: string;
-  choices?: Array<{
-    value: string;
-    label: string;
-    subtitle?: string;
-    description?: string;
-    warning?: string;
-    icon?: string;
-    infoTitle?: string;
-    infoContent?: string;
-  }>;
-  validator?: (value: string) => { isValid: boolean; error?: string };
-  getValue: () => string;
-  setValue: (value: string) => void;
-  infoTitle?: string;
-  infoContent?: string | React.ReactElement | null;
-  infoLabel?: string;
-}
 
 /**
  * League Creation Wizard Component
@@ -138,16 +64,12 @@ export const LeagueCreationWizard: React.FC = () => {
     loadVenues();
   }, []);
 
-  // State for found tournament dates to populate radio button choices
-  const [foundTournamentDates, setFoundTournamentDates] = useState<Array<{
-    id: string;
-    label: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    voteCount: number;
-    lastConfirmed: string;
-  }>>([]);
+  // Tournament search hook for BCA/APA dates
+  const {
+    foundDates: foundTournamentDates,
+    searchTournamentDates,
+    findTournamentOption
+  } = useTournamentSearch();
 
   // League form data with localStorage persistence
   const [formData, setFormData] = useLocalStorage<LeagueFormData>('league-creation-wizard', {
@@ -185,70 +107,13 @@ export const LeagueCreationWizard: React.FC = () => {
   };
 
   /**
-   * Simulate database search for BCA nationals dates
-   * Populates radio button choices with found date ranges and vote counts
+   * Search for BCA tournament dates
    */
-  const searchBCANationalsInDatabase = () => {
-    console.log('🔍 DATABASE OPERATION: Automatically searching for BCA Nationals dates');
-
-    // Simulate the database query structure
-    const currentYear = new Date().getFullYear();
-    const searchQuery = {
-      table: 'tournament_dates',
-      where: {
-        organization: 'BCA',
-        tournament_type: 'nationals',
-        year: currentYear
-      },
-      select: ['start_date', 'end_date', 'vote_count', 'last_confirmed'],
-      orderBy: 'vote_count DESC'
-    };
-
-    console.log('📋 Query:', JSON.stringify(searchQuery, null, 2));
-
-    // Simulate multiple date entries from different operators
-    const foundOptions = [];
-
-    // Simulate 2-3 different date options with different vote counts
-    const dateOptions = [
-      {
-        start_date: `${currentYear}-02-22`,
-        end_date: `${currentYear}-02-26`,
-        vote_count: 8,
-        last_confirmed: `${currentYear}-01-15`
-      },
-      {
-        start_date: `${currentYear}-02-20`,
-        end_date: `${currentYear}-02-24`,
-        vote_count: 3,
-        last_confirmed: `${currentYear}-01-10`
-      },
-      {
-        start_date: `${currentYear}-02-25`,
-        end_date: `${currentYear}-02-28`,
-        vote_count: 1,
-        last_confirmed: `${currentYear}-01-05`
-      }
-    ];
-
-    // Randomly include 1-3 options (simulate varying amounts of data)
-    const numOptions = Math.floor(Math.random() * 3) + 1;
-
-    for (let i = 0; i < numOptions; i++) {
-      const option = dateOptions[i];
-      foundOptions.push({
-        id: `found_dates_${i}`,
-        label: `${option.start_date} to ${option.end_date}`,
-        description: `${option.vote_count} operators have confirmed these dates`,
-        startDate: option.start_date,
-        endDate: option.end_date,
-        voteCount: option.vote_count,
-        lastConfirmed: option.last_confirmed
-      });
-    }
-
-    console.log(`✅ FOUND: ${foundOptions.length} BCA Nationals date options in database:`, foundOptions);
-    setFoundTournamentDates(foundOptions);
+  const searchBCANationalsInDatabase = async () => {
+    await searchTournamentDates({
+      organization: 'BCA',
+      tournamentType: 'nationals'
+    });
   };
 
   /**
@@ -328,19 +193,6 @@ export const LeagueCreationWizard: React.FC = () => {
     return { isValid: true };
   };
 
-  /**
-   * Qualifier validation - optional but if provided, should be meaningful
-   */
-  const validateQualifier = (value: string): { isValid: boolean; error?: string } => {
-    // Qualifier is optional, so empty is valid
-    if (!value || value.trim().length === 0) {
-      return { isValid: true };
-    }
-    if (value.trim().length > 20) {
-      return { isValid: false, error: 'Qualifier must be 20 characters or less' };
-    }
-    return { isValid: true };
-  };
 
   /**
    * Handle venue addition - opens venue creation wizard
@@ -374,497 +226,19 @@ export const LeagueCreationWizard: React.FC = () => {
   };
 
   /**
-   * Wizard step definitions - Following reference code flow
-   * Order: Start Date → Season Length → Game Type → Venue → BCA Nationals → APA Nationals → Team Format → Qualifier
+   * Create wizard steps with current form data and functions
    */
-  const steps: WizardStep[] = [
-    // Step 1: Start Date (determines day of week)
-    {
-      id: 'start_date',
-      title: 'When does your season begin?',
-      subtitle: 'Choose the first match date - this determines your league day of the week',
-      type: 'input',
-      placeholder: 'Select start date',
-      validator: validateStartDate,
-      getValue: () => formData.startDate,
-      setValue: (value: string) => {
-        updateFormData('startDate', value);
-
-        // Calculate and save derived fields from start date
-        if (value) {
-          const date = new Date(value);
-          if (!isNaN(date.getTime())) {
-            updateFormData('dayOfWeek', getDayOfWeek(date));
-            updateFormData('season', getTimeOfYear(date));
-            updateFormData('year', date.getFullYear());
-          }
-        }
-
-        // Auto-calculate end date when start date changes
-        if (value && formData.seasonLength) {
-          const startDate = new Date(value);
-          const endDate = new Date(startDate);
-          endDate.setDate(startDate.getDate() + (formData.seasonLength * 7));
-          updateFormData('endDate', endDate.toISOString().split('T')[0]);
-        }
-      },
-      infoTitle: 'Season Start Date',
-      infoContent: 'This is the date of your first league night. All subsequent matches will be on the same day of the week. The day of the week will automatically be included in your league name.'
-    },
-
-    // Step 2: Season Length (12-20 weeks common, 6-52 custom)
-    {
-      id: 'season_length',
-      title: 'How many weeks long should the season be?',
-      subtitle: 'Choose a common length or select custom for 6-52 weeks',
-      type: 'choice',
-      choices: [
-        { value: '12', label: '12 weeks', subtitle: 'Compact season' },
-        { value: '14', label: '14 weeks', subtitle: 'Popular choice' },
-        { value: '16', label: '16 weeks', subtitle: 'Most common ⭐', description: 'Standard season length used by most leagues' },
-        { value: '18', label: '18 weeks', subtitle: 'Extended season' },
-        { value: '20', label: '20 weeks', subtitle: 'Long season' },
-        { value: 'custom', label: 'Custom length', subtitle: '6-52 weeks', description: 'Press Continue to choose your own custom season length' }
-      ],
-      getValue: () => seasonLengthChoice,
-      setValue: (value: string) => {
-        setSeasonLengthChoice(value);
-        if (value === 'custom') {
-          // Keep current seasonLength as starting point for custom input
-          // The actual value will be updated in the custom input step
-        } else {
-          const weeks = parseInt(value, 10);
-          updateFormData('seasonLength', weeks);
-          // Auto-calculate end date when season length changes
-          if (formData.startDate && weeks) {
-            const startDate = new Date(formData.startDate);
-            const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + (weeks * 7));
-            updateFormData('endDate', endDate.toISOString().split('T')[0]);
-          }
-        }
-      },
-      infoTitle: 'Things to keep in mind when choosing season length',
-      infoContent: `LONGER SEASONS:
-• Larger prize pools and payouts
-• Makes sandbagging less effective
-• More stable standings
-
-SHORTER SEASONS:
-• More frequent payouts
-• More engaging and exciting
-• Easier to retain less committed players
-• Less likely for runaway/locked positions in standings
-
-HOLIDAY CONSIDERATIONS:
-• Xmas/New Year near beginning or end of a season can cause issues. Try to avoid this if possible.
-
-OPERATOR WORKLOAD:
-• Each season requires administrative time even with our tools to streamline the process
-• Admin/supply fees taken from prize pools affect smaller pools more than larger ones
-
-BOTTOM LINE: 16 weeks is popular because it balances all these factors - enough time for meaningful competition without overwhelming players or operators.`,
-      infoLabel: 'Need help choosing'
-    },
-
-    // Step 2b: Custom Season Length (only shown when custom is selected)
-    {
-      id: 'custom_season_length',
-      title: 'Enter custom season length',
-      subtitle: 'How many weeks should your season be? (6-52 weeks)',
-      type: 'input',
-      placeholder: 'Enter number of weeks',
-      validator: (value: string): { isValid: boolean; error?: string } => {
-        if (!value) {
-          return { isValid: false, error: 'Season length is required' };
-        }
-
-        const weeks = parseInt(value, 10);
-        if (isNaN(weeks)) {
-          return { isValid: false, error: 'Please enter a valid number' };
-        }
-
-        if (weeks < 6 || weeks > 52) {
-          return { isValid: false, error: 'Season must be between 6 and 52 weeks' };
-        }
-
-        return { isValid: true };
-      },
-      getValue: () => {
-        // Always show the current season length as default for easy editing
-        return formData.seasonLength.toString();
-      },
-      setValue: (value: string) => {
-        const weeks = parseInt(value, 10);
-        updateFormData('seasonLength', weeks);
-        // Auto-calculate end date when season length changes
-        if (formData.startDate && weeks) {
-          const startDate = new Date(formData.startDate);
-          const endDate = new Date(startDate);
-          endDate.setDate(startDate.getDate() + (weeks * 7));
-          updateFormData('endDate', endDate.toISOString().split('T')[0]);
-        }
-      },
-      infoTitle: 'Things to keep in mind when choosing season length',
-      infoContent: `LONGER SEASONS:
-• Larger prize pools and payouts
-• Makes sandbagging less effective
-• More stable standings
-
-SHORTER SEASONS:
-• More frequent payouts
-• More engaging and exciting
-• Easier to retain less committed players
-• Less likely for runaway/locked positions in standings
-
-HOLIDAY CONSIDERATIONS:
-• Xmas/New Year near beginning or end of a season can cause issues. Try to avoid this if possible.
-
-OPERATOR WORKLOAD:
-• Each season requires administrative time even with our tools to streamline the process
-• Admin/supply fees taken from prize pools affect smaller pools more than larger ones
-
-BOTTOM LINE: 16 weeks is popular because it balances all these factors - enough time for meaningful competition without overwhelming players or operators.`
-    },
-
-    // Step 3: Game Type Selection
-    {
-      id: 'game_type',
-      title: 'What type of pool game?',
-      subtitle: 'Select the primary game format for your league',
-      type: 'choice',
-      choices: [
-        {
-          value: '8 Ball',
-          label: '8 Ball',
-          subtitle: 'Most popular choice',
-          icon: '🎱',
-          description: 'Traditional 8-ball pool - most common league format'
-        },
-        {
-          value: '9 Ball',
-          label: '9 Ball',
-          subtitle: 'Fastest matches',
-          icon: '⚡',
-          description: 'Rotation game - faster paced with shorter matches'
-        },
-        {
-          value: '10 Ball',
-          label: '10 Ball',
-          subtitle: 'High skill',
-          icon: '🏆',
-          description: 'Advanced rotation game requiring call shots',
-          warning: 'Matches take significantly longer and require higher skill level'
-        }
-      ],
-      getValue: () => formData.gameType,
-      setValue: (value: string) => updateFormData('gameType', value as typeof formData.gameType)
-    },
-
-    // Step 4: BCA Nationals Tournament Scheduling
-    {
-      id: 'bca_nationals_dates',
-      title: 'BCA National Tournament Scheduling',
-      subtitle: (
-        <span>
-          To avoid conflicts with major tournaments your players may want to attend, please select how to handle BCA Nationals dates.
-          <br />
-          Please verify championship dates at the{' '}
-          <a
-            href={fetchBCAChampionshipURL()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            BCA Website
-          </a>
-          .
-        </span>
-      ),
-      type: 'choice',
-      choices: [
-        // Dynamic choices - found dates from database search
-        ...foundTournamentDates.map(option => ({
-          value: option.id,
-          label: option.label,
-          description: option.description
-        })),
-        // Always include ignore and custom options
-        {
-          value: 'ignore',
-          label: 'Ignore BCA tournament scheduling',
-          description: 'I don\'t expect enough of my league players to travel to this tournament so I have no need to schedule my league around it'
-        },
-        {
-          value: 'custom',
-          label: 'Enter my own tournament dates',
-          description: 'I have different/updated BCA tournament dates to use for scheduling'
-        }
-      ],
-      getValue: () => formData.bcaNationalsChoice || '',
-      setValue: (value: string) => {
-        updateFormData('bcaNationalsChoice', value);
-
-        // Handle different choice types
-        if (value.startsWith('found_dates_')) {
-          // User selected a found date range - extract the dates
-          const foundOption = foundTournamentDates.find(option => option.id === value);
-          if (foundOption) {
-            updateFormData('bcaNationalsStart', foundOption.startDate);
-            updateFormData('bcaNationalsEnd', foundOption.endDate);
-            console.log('✅ SELECTED: Using community-verified dates:', foundOption);
-          }
-        } else if (value === 'ignore') {
-          // User chose to ignore tournament dates
-          updateFormData('bcaNationalsStart', '');
-          updateFormData('bcaNationalsEnd', '');
-          console.log('🚫 CHOICE: Operator chose to ignore BCA tournament scheduling');
-        } else if (value === 'custom') {
-          // User wants to enter custom dates - will be handled in next step
-          console.log('✏️ CHOICE: Operator will enter custom tournament dates');
-        }
-      },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important'
-    },
-
-    // Step 5: BCA Custom Tournament Dates (only shown when custom is selected)
-    {
-      id: 'bca_custom_dates',
-      title: 'BCA National Championship Dates',
-      subtitle: (
-        <span>
-          Enter the start and end dates for BCA National Championships.
-          <br />
-          Verify championship dates at the{' '}
-          <a
-            href={fetchBCAChampionshipURL()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            BCA Website
-          </a>
-          .
-        </span>
-      ),
-      type: 'dual_date',
-      placeholder: 'BCA Nationals dates',
-      validator: validateTournamentDateRange,
-      getValue: () => `${formData.bcaNationalsStart}|${formData.bcaNationalsEnd}`,
-      setValue: (value: string) => {
-        const [startDate, endDate] = value.split('|');
-        if (startDate) {
-          updateFormData('bcaNationalsStart', startDate);
-          console.log('📝 CUSTOM BCA DATE: User entered start date:', startDate);
-        }
-        if (endDate) {
-          updateFormData('bcaNationalsEnd', endDate);
-          console.log('📝 CUSTOM BCA DATE: User entered end date:', endDate);
-          if (startDate && endDate) {
-            console.log('🔄 DATABASE OPERATION: Saving custom BCA tournament dates for voting');
-            console.log('📊 New entry structure:', {
-              table: 'tournament_dates',
-              data: {
-                organization: 'BCA',
-                tournament_type: 'nationals',
-                year: new Date().getFullYear(),
-                start_date: startDate,
-                end_date: endDate,
-                entered_by: member?.id,
-                vote_count: 1,
-                created_at: new Date().toISOString()
-              }
-            });
-          }
-        }
-      },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important'
-    },
-
-    // Step 7: APA Nationals Start Date
-    {
-      id: 'apa_nationals_start',
-      title: 'When are the APA National tournaments?',
-      subtitle: 'Enter the start date to avoid scheduling conflicts (check APA website for current dates)',
-      type: 'input',
-      placeholder: 'APA Nationals start date',
-      validator: validateTournamentDate,
-      getValue: () => formData.apaNationalsStart,
-      setValue: (value: string) => updateFormData('apaNationalsStart', value),
-      infoTitle: 'APA Nationals Scheduling',
-      infoContent: 'APA Nationals typically occur in late spring/early summer. Visit poolplayers.com for current tournament dates and locations.'
-    },
-
-    // Step 7: APA Nationals End Date
-    {
-      id: 'apa_nationals_end',
-      title: 'APA Nationals end date',
-      subtitle: 'Enter the end date for the APA National tournaments',
-      type: 'input',
-      placeholder: 'APA Nationals end date',
-      validator: validateTournamentDate,
-      getValue: () => formData.apaNationalsEnd,
-      setValue: (value: string) => updateFormData('apaNationalsEnd', value),
-      infoTitle: 'Complete Tournament Calendar',
-      infoContent: 'Having both BCA and APA tournament dates ensures your league schedule works around all major national competitions.'
-    },
-
-    // Step 8: Team Format Selection - CRITICAL DECISION POINT
-    {
-      id: 'team_format',
-      title: 'Choose your team format',
-      subtitle: 'This determines your handicap system, match length, and player requirements',
-      type: 'choice',
-      choices: [
-        {
-          value: '5_man',
-          label: '5-Man Teams + Custom Handicap System',
-          subtitle: '⚡ Faster matches • Easier to start • Heavy handicapping',
-          description: `🎯 KEY DIFFERENCES:
-• 5 players per roster, 3 play each night
-• Double round robin: 18 games per match
-• Match time: ~2.5 hours
-• Minimum players needed: 12 total (6 per team)
-
-🏆 HANDICAP SYSTEM: Custom 5-Man Formula
-• Formula: (Wins - Losses) ÷ Weeks Played
-• Range: +2 to -2 handicap points
-• Heavy handicapping for maximum balance
-• Anti-sandbagging: Team win/loss policy
-
-✅ PROS:
-• Faster matches (28% shorter than 8-man)
-• Easier to start (need fewer players)
-• Great for smaller venues
-• Everyone gets more playing time
-• Highly competitive balance
-
-❌ CONS:
-• Non-standard format
-• Fewer total players involved
-• More complex handicap calculations`,
-          infoTitle: '5-Man System Deep Dive',
-          infoContent: 'The 5-man system with custom handicapping creates extremely competitive matches where skill gaps are heavily minimized. Perfect for casual leagues or smaller player pools.'
-        },
-        {
-          value: '8_man',
-          label: '8-Man Teams + BCA Standard Handicap',
-          subtitle: '🏅 Official BCA format • Standard everywhere • Light handicapping',
-          description: `🎯 KEY DIFFERENCES:
-• 8 players per roster, 5 play each night
-• Single round robin: 25 games per match
-• Match time: ~3.5 hours
-• Minimum players needed: 20 total (10 per team)
-
-🏆 HANDICAP SYSTEM: BCA Standard
-• Formula: Win Percentage (Wins ÷ Total Games)
-• Rolling window: Last 50 games
-• Light handicapping preserves skill advantage
-• Standard CHARTS lookup table
-
-✅ PROS:
-• Official BCA sanctioned format
-• Standard across most pool leagues
-• More players participate each week
-• Proven, time-tested system
-• Easier player transfers between leagues
-
-❌ CONS:
-• Longer matches (3.5+ hours)
-• Need more players to start
-• Skill gaps more pronounced
-• Less playing time per individual`,
-          infoTitle: 'BCA Standard System Deep Dive',
-          infoContent: 'The official BCA format used in leagues nationwide. Minimal handicapping means better players maintain their advantage, creating traditional competitive structure.'
-        }
-      ],
-      getValue: () => formData.teamFormat,
-      setValue: (value: string) => {
-        updateFormData('teamFormat', value as typeof formData.teamFormat);
-        // Auto-set handicap system based on team format
-        if (value === '5_man') {
-          updateFormData('handicapSystem', 'custom_5man');
-        } else if (value === '8_man') {
-          updateFormData('handicapSystem', 'bca_standard');
-        }
-      },
-      infoTitle: 'Team Format Comparison Chart',
-      infoContent: `
-📊 SIDE-BY-SIDE COMPARISON:
-
-                    5-MAN          8-MAN
-Players/Roster:       5              8
-Play Each Night:      3              5
-Games/Match:         18             25
-Match Duration:    2.5hrs         3.5hrs
-Min Players:         12             20
-Handicap Style:    Heavy          Light
-Skill Impact:       Low           High
-BCA Official:       No            Yes
-Startup Ease:      Easy          Hard
-
-🎯 CHOOSE 5-MAN IF:
-• You want faster, more balanced matches
-• You have a smaller player pool
-• You want maximum competitive balance
-• Venue has limited time slots
-
-🎯 CHOOSE 8-MAN IF:
-• You want official BCA sanctioning
-• You have plenty of players available
-• You prefer skill-based competition
-• You want standard league compatibility`
-    },
-
-    // Step 9: Optional Qualifier
-    {
-      id: 'qualifier',
-      title: 'League qualifier (optional)',
-      subtitle: 'Add a qualifier to differentiate your league from others with the same format',
-      type: 'input',
-      placeholder: 'e.g., "West Side", "North Valley", "Blue", "Red", "Division A"',
-      validator: validateQualifier,
-      getValue: () => formData.qualifier,
-      setValue: (value: string) => updateFormData('qualifier', value),
-      infoTitle: 'League Qualifiers',
-      infoContent: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).'
-    },
-
-  ];
+  const steps: WizardStep[] = createWizardSteps({
+    formData,
+    updateFormData,
+    foundTournamentDates,
+    findTournamentOption,
+    validateStartDate,
+    validateTournamentDate,
+    validateTournamentDateRange,
+    seasonLengthChoice,
+    setSeasonLengthChoice
+  });
 
   /**
    * Get current step with dynamic choices (venue selection, etc.)
@@ -1228,19 +602,14 @@ Startup Ease:      Easy          Hard
               Clear Form
             </button>
           </div>
-          <p className="text-gray-600">
-            Step {currentStep + 1} of {steps.length}
-          </p>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress indicator */}
         <div className="mb-8 max-w-2xl mx-auto">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
-          </div>
+          <WizardProgress
+            currentStep={currentStep}
+            totalSteps={steps.length}
+          />
         </div>
 
 
