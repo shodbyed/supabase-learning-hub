@@ -3,7 +3,7 @@
  * Multi-step wizard for league operators to create new leagues.
  * See memory-bank/leagueCreationWizard.md for detailed documentation.
  */
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatDateSafe } from '@/components/forms/DateField';
 import { VenueCreationWizard } from './VenueCreationWizard';
@@ -14,7 +14,6 @@ import type { Venue } from '@/data/mockVenues';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
-import { createWizardSteps, type WizardStep } from '@/data/leagueWizardSteps';
 
 
 
@@ -38,271 +37,12 @@ export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
 
-  // Use centralized wizard state management hook
-  const {
-    currentStep,
-    currentInput,
-    error,
-    showVenueWizard,
-    seasonLengthChoice,
-    organizationVenues,
-    formData,
-    foundTournamentDates,
-    setCurrentStep,
-    setCurrentInput,
-    setError,
-    setShowVenueWizard,
-    setSeasonLengthChoice,
-    updateFormData,
-    searchBCANationalsInDatabase,
-    findTournamentOption,
-    validateStartDate,
-    validateTournamentDate,
-    validateTournamentDateRange,
-    getOrganizationName,
-    refreshVenues,
-    clearFormData
-  } = useLeagueWizard();
-
-
   /**
    * Handle venue addition - opens venue creation wizard
    */
   const handleAddVenue = () => {
     console.log('🏢 Opening Venue Creation Wizard...');
     setShowVenueWizard(true);
-  };
-
-  /**
-   * Handle venue creation completion
-   */
-  const handleVenueCreated = async (newVenue: Venue) => {
-    console.log('✅ Venue created successfully:', newVenue);
-    setShowVenueWizard(false);
-
-    // Refresh venue list to include new venue
-    await refreshVenues();
-
-    // Auto-select the new venue
-    updateFormData('selectedVenueId', newVenue.id);
-  };
-
-  /**
-   * Handle venue creation cancellation
-   */
-  const handleVenueCanceled = () => {
-    console.log('❌ Venue creation canceled');
-    setShowVenueWizard(false);
-  };
-
-  /**
-   * Create wizard steps with current form data and functions
-   */
-  const steps: WizardStep[] = createWizardSteps({
-    formData,
-    updateFormData,
-    foundTournamentDates,
-    findTournamentOption,
-    validateStartDate,
-    validateTournamentDate,
-    validateTournamentDateRange,
-    seasonLengthChoice,
-    setSeasonLengthChoice
-  });
-
-  /**
-   * Get current step with dynamic choices (venue selection, etc.)
-   */
-  const getCurrentStep = (): WizardStep => {
-    const step = steps[currentStep];
-
-    // Dynamically populate venue choices based on organization venues
-    if (step.id === 'venue_selection') {
-      const venueChoices = organizationVenues.map(venue => ({
-        value: venue.id,
-        label: venue.name,
-        subtitle: `${venue.barBoxTables + (venue.bigTables || 0)} tables • ${venue.city}, ${venue.state}`,
-        description: `📍 ${venue.address}\n📞 ${venue.phone}\n🎱 ${venue.barBoxTables} Bar Box${venue.bigTables ? ` + ${venue.bigTables} Big tables` : ''}`
-      }));
-
-      // Add traveling league option
-      venueChoices.push({
-        value: 'traveling',
-        label: 'Traveling League',
-        subtitle: 'Multiple venues',
-        description: 'League rotates between multiple venues. Teams take turns hosting matches at different locations.'
-      });
-
-      // Add option to create new venue
-      venueChoices.push({
-        value: 'add_new',
-        label: '+ Add New Venue',
-        subtitle: 'Create a new venue',
-        description: 'Set up a new pool hall or bar for your organization.'
-      });
-
-      step.choices = venueChoices;
-    }
-
-    return step;
-  };
-
-  /**
-   * Handle input changes with validation
-   */
-  const handleInputChange = (value: string) => {
-    setCurrentInput(value);
-    setError(undefined); // Clear error when user types
-  };
-
-  /**
-   * Handle choice selection
-   */
-  const handleChoiceSelect = (choiceId: string) => {
-    const step = getCurrentStep();
-
-    // Handle special venue selection cases
-    if (step.id === 'venue_selection') {
-      if (choiceId === 'add_new') {
-        handleAddVenue();
-        return;
-      }
-    }
-
-    step.setValue(choiceId);
-    setError(undefined);
-  };
-
-  /**
-   * Save current input to form data
-   */
-  const saveCurrentInput = (): boolean => {
-    const step = getCurrentStep();
-
-    if (step.validator) {
-      const validation = step.validator(currentInput);
-      if (!validation.isValid) {
-        setError(validation.error || 'Invalid input');
-        return false;
-      }
-    }
-
-    step.setValue(currentInput);
-    setCurrentInput('');
-    return true;
-  };
-
-  /**
-   * Navigate to next step with conditional step logic
-   */
-  const handleNext = () => {
-    const step = getCurrentStep();
-
-    // For input steps, validate before proceeding
-    if (step.type === 'input') {
-      if (!saveCurrentInput()) return;
-    }
-
-    // For choice steps, ensure selection was made
-    if (step.type === 'choice' && !step.getValue()) {
-      setError('Please make a selection to continue');
-      return;
-    }
-
-    // Handle conditional step navigation
-    let nextStep = currentStep + 1;
-
-    // Skip custom season length step if not needed
-    if (step.id === 'season_length' && seasonLengthChoice !== 'custom') {
-      // Skip the custom_season_length step
-      nextStep = currentStep + 2;
-    }
-
-    // Skip custom season length step when going backwards from game_type
-    if (step.id === 'custom_season_length') {
-      // Normal progression to game_type
-      nextStep = currentStep + 1;
-    }
-
-    // Skip BCA custom date step if not needed
-    if (step.id === 'bca_nationals_dates' && formData.bcaNationalsChoice !== 'custom') {
-      // Skip the BCA custom date step and go directly to APA
-      nextStep = currentStep + 2; // Skip bca_custom_dates
-    }
-
-    // Normal progression through BCA custom date step
-    if (step.id === 'bca_custom_dates') {
-      nextStep = currentStep + 1;
-    }
-
-    if (nextStep < steps.length) {
-      setCurrentStep(nextStep);
-      setCurrentInput('');
-      setError(undefined);
-    } else {
-      handleSubmit();
-    }
-  };
-
-  /**
-   * Navigate to previous step with conditional step logic
-   */
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      let prevStep = currentStep - 1;
-
-      // Handle conditional step navigation when going backwards
-      const currentStepData = steps[currentStep];
-
-      // If we're on game_type and the previous season_length choice wasn't 'custom',
-      // skip back over the custom_season_length step
-      if (currentStepData.id === 'game_type') {
-        if (seasonLengthChoice !== 'custom') {
-          prevStep = currentStep - 2; // Skip back over custom_season_length
-        }
-      }
-
-      // If we're on APA step and BCA choice wasn't 'custom',
-      // skip back over the BCA custom date step
-      if (currentStepData.id === 'apa_nationals_start') {
-        if (formData.bcaNationalsChoice !== 'custom') {
-          prevStep = currentStep - 2; // Skip back over BCA custom date step
-        }
-      }
-
-      // If we're on BCA custom date step, normal backwards navigation
-      if (currentStepData.id === 'bca_custom_dates') {
-        prevStep = currentStep - 1;
-      }
-
-      // Ensure we don't go below 0
-      if (prevStep >= 0) {
-        setCurrentStep(prevStep);
-        setCurrentInput('');
-        setError(undefined);
-      }
-    }
-  };
-
-  /**
-   * Cancel wizard and return to operator dashboard
-   */
-  const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
-      clearFormData();
-      navigate('/operator-dashboard');
-    }
-  };
-
-  /**
-   * Clear form data and restart wizard
-   */
-  const handleClearForm = () => {
-    if (window.confirm('Are you sure you want to clear all form data and start over?')) {
-      clearFormData();
-      // Refresh the page to reset everything
-      window.location.reload();
-    }
   };
 
   /**
@@ -393,6 +133,75 @@ export const LeagueCreationWizard: React.FC = () => {
 
     // Navigate back to operator dashboard with success message
     navigate('/operator-dashboard');
+  };
+
+  // Use centralized wizard state management hook
+  const {
+    currentStep,
+    currentInput,
+    error,
+    showVenueWizard,
+    formData,
+    foundTournamentDates,
+    steps,
+    setShowVenueWizard,
+    setCurrentInput,
+    updateFormData,
+    searchBCANationalsInDatabase,
+    getCurrentStep,
+    handleInputChange,
+    handleChoiceSelect,
+    handleNext,
+    handlePrevious,
+    getOrganizationName,
+    refreshVenues,
+    clearFormData
+  } = useLeagueWizard({
+    onAddVenue: handleAddVenue,
+    onSubmit: handleSubmit
+  });
+
+  /**
+   * Handle venue creation completion
+   */
+  const handleVenueCreated = async (newVenue: Venue) => {
+    console.log('✅ Venue created successfully:', newVenue);
+    setShowVenueWizard(false);
+
+    // Refresh venue list to include new venue
+    await refreshVenues();
+
+    // Auto-select the new venue
+    updateFormData('selectedVenueId', newVenue.id);
+  };
+
+  /**
+   * Handle venue creation cancellation
+   */
+  const handleVenueCanceled = () => {
+    console.log('❌ Venue creation canceled');
+    setShowVenueWizard(false);
+  };
+
+  /**
+   * Cancel wizard and return to operator dashboard
+   */
+  const handleCancel = () => {
+    if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
+      clearFormData();
+      navigate('/operator-dashboard');
+    }
+  };
+
+  /**
+   * Clear form data and restart wizard
+   */
+  const handleClearForm = () => {
+    if (window.confirm('Are you sure you want to clear all form data and start over?')) {
+      clearFormData();
+      // Refresh the page to reset everything
+      window.location.reload();
+    }
   };
 
   /**
