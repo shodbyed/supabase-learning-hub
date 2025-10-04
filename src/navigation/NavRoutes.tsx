@@ -14,6 +14,9 @@ import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorAppli
 import { OperatorWelcome } from '../operator/OperatorWelcome';
 import { OperatorDashboard } from '../operator/OperatorDashboard';
 import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
+import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
+import { EightManFormatDetails } from '../info/EightManFormatDetails';
+import { FormatComparison } from '../info/FormatComparison';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 
 export const NavRoutes: React.FC = () => {
@@ -27,6 +30,9 @@ export const NavRoutes: React.FC = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/confirm" element={<EmailConfirmation />} />
+      <Route path="/5-man-format-details" element={<FiveManFormatDetails />} />
+      <Route path="/8-man-format-details" element={<EightManFormatDetails />} />
+      <Route path="/format-comparison" element={<FormatComparison />} />
 
       {/* Protected routes - require authentication */}
       <Route

@@ -1,11 +1,10 @@
 /**
- * @fileoverview League Preview Component
- * Displays a preview card showing the league name, dates, and tournament scheduling info
+ * @fileoverview League Preview Component (Simplified)
+ * Displays a preview card showing the league identity information
  * Used in the League Creation Wizard to show real-time preview of the league being created
  */
-import React from 'react';
 import { formatDateSafe } from './DateField';
-import type { LeagueFormData } from '@/types';
+import type { LeagueFormData } from '@/data/leagueWizardSteps.simple';
 
 interface LeaguePreviewProps {
   formData: LeagueFormData;
@@ -14,111 +13,91 @@ interface LeaguePreviewProps {
 /**
  * League Preview Component
  *
- * Shows a formatted preview of the league being created including:
- * - Generated league name
- * - Start date and end date
- * - Week off and playoffs dates
- * - Tournament scheduling information (BCA/APA nationals)
+ * Shows a formatted preview of the core league identity:
+ * - Game type
+ * - Start date (with formatted display)
+ * - Day of week
+ * - Season
+ * - Year
+ * - Optional qualifier
+ * - Team format and handicap system
  *
- * Only displays when startDate or endDate are set
+ * Only displays when enough information is available
  */
 export const LeaguePreview: React.FC<LeaguePreviewProps> = ({ formData }) => {
-  // Helper to get organization name from formData
-  const getOrganizationName = (): string => {
-    return formData.organizationName || 'ORGANIZATION_NAME_ERROR';
-  };
-
-  // Only show preview if we have date information
-  if (!formData.startDate && !formData.endDate) {
+  // Only show preview if we have at least the start date
+  if (!formData.startDate) {
     return null;
   }
 
   return (
     <div className="mt-8 max-w-2xl mx-auto">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-3">League Preview:</h3>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-sm font-medium text-blue-900 mb-4">League Preview:</h3>
 
-        <p className="text-lg font-semibold text-blue-800 mb-2">
-          <span className="text-blue-600">League Name:</span>{' '}
-          {`${formData.gameType} ${formData.dayOfWeek} ${formData.season} ${formData.year || ''} ${getOrganizationName()}${formData.qualifier ? ` ${formData.qualifier}` : ''}`.trim()}
-        </p>
+        <div className="space-y-3">
+          {/* Game Type */}
+          {formData.gameType && (
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-blue-800">Game Type:</span>{' '}
+              <span className="capitalize">{formData.gameType.replace('_', '-')}</span>
+            </p>
+          )}
 
-        {formData.startDate && (
-          <p className="text-sm text-gray-700 mb-1">
-            <span className="font-medium">Start Date:</span> {formatDateSafe(formData.startDate, 'long')}
+          {/* Start Date */}
+          <p className="text-sm text-gray-700">
+            <span className="font-medium text-blue-800">Start Date:</span>{' '}
+            {formatDateSafe(formData.startDate, 'long')}
           </p>
-        )}
 
-        {formData.endDate && (
-          <>
-            <p className="text-sm text-gray-700 mb-1">
-              <span className="font-medium">End of Regular Season:</span> {formatDateSafe(formData.endDate, 'long')}
+          {/* Day of Week */}
+          {formData.dayOfWeek && (
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-blue-800">League Day:</span>{' '}
+              {formData.dayOfWeek}
             </p>
+          )}
 
-            <p className="text-sm text-gray-700 mb-1">
-              <span className="font-medium">Week Off:</span>{' '}
-              {(() => {
-                const [year, month, day] = formData.endDate.split('-');
-                const weekOff = new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + 7);
-                return formatDateSafe(weekOff.toISOString().split('T')[0], 'long');
-              })()}
+          {/* Season */}
+          {formData.season && (
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-blue-800">Season:</span>{' '}
+              {formData.season}
             </p>
+          )}
 
-            <p className="text-sm text-gray-700 mb-1">
-              <span className="font-medium">Playoffs:</span>{' '}
-              {(() => {
-                const [year, month, day] = formData.endDate.split('-');
-                const playoffs = new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + 14);
-                return formatDateSafe(playoffs.toISOString().split('T')[0], 'long');
-              })()}
+          {/* Year */}
+          {formData.year > 0 && (
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-blue-800">Year:</span>{' '}
+              {formData.year}
             </p>
+          )}
 
-            {formData.seasonLength && (
-              <p className="text-sm text-gray-700 mb-3">
-                <span className="font-medium">Season Length:</span> {formData.seasonLength} weeks
-              </p>
-            )}
-
-            <p className="text-xs text-gray-400 italic">
-              (does not include holiday breaks)
+          {/* Qualifier */}
+          {formData.qualifier && (
+            <p className="text-sm text-gray-700">
+              <span className="font-medium text-blue-800">Qualifier:</span>{' '}
+              {formData.qualifier}
             </p>
-          </>
-        )}
+          )}
 
-        {/* Tournament Scheduling Information */}
-        {formData.bcaNationalsChoice && (
-          <div className="mt-4 pt-3 border-t border-blue-200">
-            <p className="text-sm font-medium text-blue-900 mb-2">Tournament Scheduling:</p>
-
-            {formData.bcaNationalsChoice === 'ignore' && (
+          {/* Team Format & Handicap */}
+          {formData.teamFormat && (
+            <div className="pt-3 mt-3 border-t border-blue-200">
               <p className="text-sm text-gray-700">
-                <span className="font-medium">BCA Nationals:</span> Not scheduling around tournament dates
+                <span className="font-medium text-blue-800">Team Format:</span>{' '}
+                {formData.teamFormat === '5_man' ? '5-Man Teams' : '8-Man Teams'}
               </p>
-            )}
-
-            {formData.bcaNationalsChoice === 'custom' && (
-              <p className="text-sm text-gray-700">
-                <span className="font-medium">BCA Nationals:</span> Using custom tournament dates
-                {formData.bcaNationalsStart && formData.bcaNationalsEnd && (
-                  <span className="text-gray-600 ml-1">
-                    ({formatDateSafe(formData.bcaNationalsStart)} - {formatDateSafe(formData.bcaNationalsEnd)})
-                  </span>
-                )}
+              <p className="text-sm text-gray-700 mt-1">
+                <span className="font-medium text-blue-800">Handicap System:</span>{' '}
+                {formData.handicapSystem === 'custom_5man'
+                  ? 'Custom 5-Man Handicap'
+                  : 'BCA Standard Handicap'}
               </p>
-            )}
-
-            {formData.bcaNationalsChoice.startsWith('found_dates_') && (
-              <p className="text-sm text-gray-700">
-                <span className="font-medium">BCA Nationals:</span> Using community-verified dates
-                {formData.bcaNationalsStart && formData.bcaNationalsEnd && (
-                  <span className="text-gray-600 ml-1">
-                    ({formatDateSafe(formData.bcaNationalsStart)} - {formatDateSafe(formData.bcaNationalsEnd)})
-                  </span>
-                )}
-              </p>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

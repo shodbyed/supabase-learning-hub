@@ -13,7 +13,7 @@ import {
   tournamentSchedulingInfo,
   apaNationalsInfo,
   tournamentCalendarInfo,
-  teamFormatInfo,
+  teamFormatComparisonInfo,
   leagueQualifierInfo,
 } from '@/constants/infoContent/leagueWizardInfoContent';
 
@@ -491,8 +491,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           console.log('✅ AUTO-SET: 8-man format → BCA standard handicap system');
         }
       },
-      infoTitle: teamFormatInfo.title,
-      infoContent: teamFormatInfo.content
+      infoTitle: teamFormatComparisonInfo.title,
+      infoContent: teamFormatComparisonInfo.content
     },
 
     // Step 9: Optional Qualifier

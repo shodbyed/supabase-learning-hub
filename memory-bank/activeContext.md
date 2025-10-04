@@ -2,114 +2,108 @@
 
 ## Current Work Focus
 
-### **Just Completed: BCA Tournament Scheduling System**
-**Implementation Date**: Latest update to League Creation Wizard
+### **Just Completed: 5-Man Format Detail Pages & Info System**
+**Implementation Date**: Latest session
 **Status**: ✅ **PRODUCTION READY**
 
 **What Was Built**:
-- Complete BCA nationals tournament scheduling step in League Creation Wizard
-- Automatic database search functionality triggered by useEffect when step is reached
-- Dynamic radio button choices with community-verified dates (including vote counts)
-- Clickable "BCA Website" link integration using fetchBCAChampionshipURL()
-- Generic info button content that works for both BCA and APA tournaments
-- Interface updates to support React elements in subtitle and infoContent
+- Complete 5-Man Format Details page with comprehensive handicap system explanation
+- Separate 8-Man Format Details page for traditional BCA format
+- Format Comparison page for side-by-side analysis
+- Enhanced info button system with links to detail pages
+- All pages publicly accessible for operators to review
 
 **Technical Implementation**:
-- RadioChoiceStep component updated to handle JSX in subtitle
-- QuestionStep component supports React.ReactElement in subtitle prop
-- SimpleRadioChoice component accepts React.ReactNode in infoContent
-- fetchBCAChampionshipURL() generates smart URLs based on current date
-- useEffect automatically triggers database search when BCA step is reached
-- foundTournamentDates state populates radio button choices dynamically
+- Three new public route pages: `/5-man-format-details`, `/8-man-format-details`, `/format-comparison`
+- Removed comparison table from 5-man details, replaced with navigation buttons
+- Updated info content centralization with `teamFormatComparisonInfo` export
+- Cross-navigation between all three pages with "Back" button support
+- Rich content in info buttons with clickable links to detail pages
 
 ## Recent Changes
 
-### **Interface Flexibility Enhancement**
-**Problem Solved**: Components needed to support rich content like clickable links
-**Solution**: Updated all wizard component interfaces to accept React elements
-- `subtitle?: string | React.ReactElement` in RadioChoiceStep and QuestionStep
-- `infoContent?: React.ReactNode` in SimpleRadioChoice
-- Seamless rendering of both plain text and JSX content
+### **5-Man Format Details Page Enhancements**
+**Sections Completed**:
+1. **Overview** - Key benefits with experience-based credibility statement (15 years operator experience)
+2. **How It Works** - Team structure, match format, example match night with break/rack rotation
+3. **Handicap System Explained** - Complete system documentation:
+   - Individual skill levels (+2 to -2 scale)
+   - Skill calculation formula with rounding examples
+   - 250-game rolling window for stability vs responsiveness
+   - Team handicap calculation with modifier system
+   - Games needed chart (H/C +12 to -12) in 2/3 + 1/3 column layout
+   - Detailed example calculations with explicit player breakdowns
+4. **Tie-Breaker Playoff** - Best 2-of-3 rules, winning team all get +1, losing team no change
+5. **Standings and Ranking** - Three-tier system (match wins → team points → total games won)
+6. **Why This Reduces Handicap Complaints** - 5 key reasons including handicap responsiveness
+7. **Why Players Prefer This Format** - Less crowding (6-10 people vs 10-16 people)
+8. **Benefits for League Operators** - Including "Eliminates Bias" benefit
 
-### **Tournament URL Management**
-**Problem Solved**: Tournament websites change URLs after each year's event
-**Solution**: Dynamic URL generation based on current date
-- BCA: After March 15, use next year's championship URL
-- APA: Static URL structure that doesn't change
-- Generic getChampionshipLink() function for reusability
+### **Info Content Centralization Updates**
+**Changes Made**:
+- Renamed `teamFormatInfo` to `teamFormatComparisonInfo` for clarity
+- Enhanced 8-man format info with structured "How It Works" section
+- Added crowding numbers to comparison (6-10 people vs 10-16 people)
+- All three info contents now have clickable links to detail pages
+- Consistent formatting across all format info
 
-### **Community-Verified Date System**
-**Problem Solved**: Different operators may have different tournament date information
-**Solution**: Database-driven approach with community verification
-- Operators can confirm tournament dates
-- Vote counts show reliability of date information
-- Multiple date options presented when available
-- Fallback to ignore or custom entry options
+### **Navigation Architecture**
+**Implementation**:
+- Three separate pages for focused content presentation
+- Cross-navigation buttons between all pages
+- Public routes (no authentication required)
+- "Back" button uses `navigate(-1)` for flexible return
+- Info buttons in wizard link to appropriate detail pages
 
 ## Next Steps
 
-### **🎯 IMMEDIATE: APA Tournament Scheduling Implementation**
-**Goal**: Apply the proven BCA pattern to APA tournaments
-**Required Changes**:
-- Replace "BCA" with "APA" in dialog text
-- Use fetchAPAChampionshipURL() instead of fetchBCAChampionshipURL()
-- Same radio button structure: found dates, ignore, custom entry
-- Same automatic database search triggered by useEffect
-- Same community voting and date verification system
+### **🎯 Immediate: Continue League Wizard Implementation**
+**Current Status**: Core team format info system complete
+**Next Actions**:
+- Complete any remaining wizard steps
+- Implement league creation database operations
+- Build operator dashboard with active league tracking
+- Create scheduling wizard for season/playoff dates
 
-**Implementation Pattern**:
-```typescript
-// Same structure as BCA step, just different organization
-{
-  id: 'apa_nationals_dates',
-  title: 'APA National Tournament Scheduling',
-  subtitle: (
-    <span>
-      To avoid conflicts with major tournaments your players may want to attend, please select how to handle APA Nationals dates.
-      <br />
-      Please verify championship dates at the{' '}
-      <a
-        href={fetchAPAChampionshipURL()}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 underline"
-      >
-        APA Website
-      </a>
-      .
-    </span>
-  ),
-  // ... rest same as BCA implementation
-}
-```
-
-### **Future Enhancements**
-- Extend pattern to other tournament organizations (VNEA, UPA, etc.)
-- Add tournament conflict detection in league scheduling
-- Implement tournament calendar integration
-- Create tournament notification system for operators
+### **Future Format Documentation Enhancements**
+- Add video demonstrations of match flow
+- Create printable quick reference cards for operators
+- Develop operator training materials
+- Build player onboarding guides explaining the system
 
 ## Active Decisions and Considerations
 
-### **Reusable Pattern Architecture**
-**Decision**: Build tournament scheduling as a reusable pattern
-**Rationale**: Multiple tournament organizations need identical functionality
-**Implementation**: Generic components with organization-specific configuration
+### **Educational Content Strategy**
+**Decision**: Provide exhaustive detail upfront with credibility statement
+**Rationale**: Operators need complete understanding before committing; 15 years experience provides authority
+**Implementation**: Comprehensive detail pages with acknowledgment that it's "a lot to read"
 
-### **Community-Driven Data Approach**
-**Decision**: Use operator community to verify tournament dates
-**Rationale**: Tournament schedules can change, operator input ensures accuracy
-**Implementation**: Vote-based system with fallback options
+### **Format Comparison Approach**
+**Decision**: Separate comparison page rather than inline
+**Rationale**: Allows focused comparison without cluttering individual format pages
+**Implementation**: Dedicated comparison page with quick summary cards for each format
 
-### **Interface Flexibility Strategy**
-**Decision**: Support both string and React element content in component interfaces
-**Rationale**: Enables rich content like links without component proliferation
-**Implementation**: Union types (string | React.ReactElement) with seamless rendering
+### **Public Access Philosophy**
+**Decision**: Make all format detail pages public (no login required)
+**Rationale**: Operators should be able to review system before committing to registration
+**Implementation**: Public routes in NavRoutes.tsx
+
+### **Handicap System Transparency**
+**Decision**: Explain every detail of handicap calculation with concrete examples
+**Rationale**: Transparency reduces complaints and builds operator confidence
+**Implementation**: Step-by-step examples, charts, real-world scenarios, rounding demonstrations
+
+### **Team Modifier Complexity**
+**Decision**: Show 4 different standing scenarios to explain modifier calculation
+**Rationale**: Complex concept needs multiple examples to be understood
+**Implementation**: Example standings table with 4 matchup calculations + "additional teams below" indicator
 
 ## Current Status Summary
 
-✅ **BCA Tournament Scheduling**: Complete production implementation
-🎯 **APA Tournament Scheduling**: Ready for immediate implementation using established pattern
-🔄 **Component Architecture**: Flexible interfaces supporting rich content
-📊 **Database Integration**: Mock operations with clear console logging for partner team
-🏗️ **Reusable Patterns**: Tournament scheduling pattern ready for extension to other organizations
+✅ **5-Man Format Details**: Complete comprehensive guide with all systems explained
+✅ **8-Man Format Details**: Traditional format overview complete
+✅ **Format Comparison**: Side-by-side analysis with quick summaries
+✅ **Navigation System**: Cross-page navigation with back button support
+✅ **Info Button Integration**: All wizard info buttons link to detail pages
+🔄 **League Wizard**: Format selection complete, ready for next steps
+📊 **Database Integration**: UI complete, ready for database operation implementation

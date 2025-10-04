@@ -11,7 +11,9 @@
 import {
   startDateInfo,
   gameFormatInfo,
-  teamFormatInfo,
+  teamFormatComparisonInfo,
+  fiveManFormatInfo,
+  eightManFormatInfo,
   leagueQualifierInfo,
 } from '@/constants/infoContent/leagueWizardInfoContent';
 
@@ -30,6 +32,8 @@ export interface WizardStep {
     subtitle?: string;
     description?: string;
     warning?: string;
+    infoTitle?: string;
+    infoContent?: string | React.ReactElement;
   }>;
   validator?: (value: string) => { isValid: boolean; error?: string };
   getValue: () => string;
@@ -122,24 +126,27 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         console.log('📝 LEAGUE CREATION: Start date selected:', value);
 
         if (value) {
-          const date = new Date(value);
+          // Parse date correctly to avoid timezone issues
+          // value format is "YYYY-MM-DD"
+          const [year, month, day] = value.split('-').map(Number);
+          const date = new Date(year, month - 1, day); // month is 0-indexed in JS
 
           // Calculate derived fields for league name
           const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
           const season = (() => {
-            const month = date.getMonth();
-            if (month >= 2 && month <= 4) return 'Spring';
-            if (month >= 5 && month <= 7) return 'Summer';
-            if (month >= 8 && month <= 10) return 'Fall';
+            const monthIndex = date.getMonth();
+            if (monthIndex >= 2 && monthIndex <= 4) return 'Spring';
+            if (monthIndex >= 5 && monthIndex <= 7) return 'Summer';
+            if (monthIndex >= 8 && monthIndex <= 10) return 'Fall';
             return 'Winter';
           })();
-          const year = date.getFullYear();
+          const calculatedYear = date.getFullYear();
 
           updateFormData('dayOfWeek', dayOfWeek);
           updateFormData('season', season);
-          updateFormData('year', year);
+          updateFormData('year', calculatedYear);
 
-          console.log('✅ CALCULATED: Day =', dayOfWeek, '| Season =', season, '| Year =', year);
+          console.log('✅ CALCULATED: Day =', dayOfWeek, '| Season =', season, '| Year =', calculatedYear);
         }
       },
       infoTitle: startDateInfo.title,
@@ -167,30 +174,38 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
     {
       id: 'team_format',
       title: 'What team format will this league use?',
-      subtitle: 'This determines both team size and handicap system',
+      subtitle: 'Choose the format that works best for your players and venue',
       type: 'choice',
       choices: [
         {
           value: '5_man|custom_5man',
-          label: '5-Man Teams',
-          subtitle: 'Custom Handicap System',
-          description: `✓ Faster matches (28% shorter)
-✓ Easier to start (need fewer players)
-✓ Great for smaller venues
-✓ Everyone gets more playing time
+          label: '5-Man Teams (Recommended)',
+          subtitle: 'Modern format - Faster, more engaging matches',
+          description: `⭐ RECOMMENDED - Better player experience
+✓ Faster matches - finish 28% quicker than 8-man
+✓ More action - everyone plays more games per night
+✓ Less crowded tables - only 6 players shooting at once
+✓ Easier team management - need fewer players per roster
+✓ Better for player retention - less waiting around
 ✓ 18 games per match (3v3 double round robin)
-⚠️ Requires custom handicap management`,
+✓ Handicap system highly discourages sandbagging`,
+          infoTitle: fiveManFormatInfo.title,
+          infoContent: fiveManFormatInfo.content,
         },
         {
           value: '8_man|bca_standard',
-          label: '8-Man Teams',
-          subtitle: 'BCA Standard Handicap',
-          description: `✓ Standard league format used widely
-✓ Established handicap system
-✓ Larger team rosters for flexibility
-✓ Traditional match structure
+          label: '8-Man Teams (Traditional)',
+          subtitle: 'BCA Standard - Familiar to experienced players',
+          description: `Traditional format for established leagues
+✓ BCA official handicap system
+✓ Larger rosters provide scheduling flexibility
 ✓ 25 games per match (5v5 single round robin)
-✓ Uses official BCA handicap tables`,
+✓ Familiar to players who've played BCA leagues before
+⚠️ Longer matches (average 3-4 hours)
+⚠️ More crowded - 10 players around tables
+⚠️ Less playing time per person`,
+          infoTitle: eightManFormatInfo.title,
+          infoContent: eightManFormatInfo.content,
         }
       ],
       getValue: () => formData.teamFormat ? `${formData.teamFormat}|${formData.handicapSystem}` : '',
@@ -200,9 +215,9 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         updateFormData('handicapSystem', handicapSystem as 'custom_5man' | 'bca_standard');
         console.log('📝 LEAGUE CREATION: Team format =', teamFormat, '| Handicap =', handicapSystem);
       },
-      infoTitle: teamFormatInfo.title,
-      infoContent: teamFormatInfo.content,
-      infoLabel: 'Compare formats'
+      infoTitle: teamFormatComparisonInfo.title,
+      infoContent: teamFormatComparisonInfo.content,
+      infoLabel: 'Why does this matter?'
     },
   ];
 };

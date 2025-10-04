@@ -15,7 +15,7 @@ interface RadioChoiceOption {
   warning?: string;
   icon?: string;
   infoTitle?: string;
-  infoContent?: string;
+  infoContent?: string | React.ReactElement;
 }
 
 interface RadioChoiceStepProps {

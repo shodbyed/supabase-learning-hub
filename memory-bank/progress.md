@@ -42,6 +42,27 @@
 - **Rich Content Support**: Clickable "BCA Website" link in step subtitle
 - **Generic Info Content**: Reusable info button content for tournament context
 
+### ✅ **5-Man Format Educational System (Production Ready)**
+- **Complete Detail Page**: Comprehensive guide explaining every aspect of 5-man format
+- **Handicap System Documentation**: Full explanation with examples, charts, and calculations
+  - Individual skill levels (+2 to -2 scale)
+  - Skill calculation formula with rounding examples
+  - 250-game rolling window system
+  - Team modifier based on standings (4 example scenarios)
+  - Games needed chart (H/C +12 to -12) with 2/3 + 1/3 column layout
+- **Tie-Breaker Rules**: Best 2-of-3 playoff with unique handicap scoring
+- **Standings System**: Three-tier ranking (match wins → team points → total games)
+- **Anti-Sandbagging Features**: 5 key reasons why handicap complaints are minimized
+- **Experience-Based Credibility**: 15 years operator experience statement
+- **Public Access**: All detail pages accessible without login
+
+### ✅ **Format Comparison System**
+- **Separate Pages**: Individual detail pages for 5-man and 8-man formats
+- **Comparison Page**: Side-by-side analysis with quick summary cards
+- **Cross-Navigation**: Seamless navigation between all three pages
+- **Info Button Integration**: Wizard info buttons link to detail pages
+- **Consistent Structure**: Standardized content organization across formats
+
 ### ✅ **Component Architecture with React Element Support**
 - **RadioChoiceStep**: Supports JSX in subtitle for rich content like links
 - **QuestionStep**: Handles React elements in subtitle and info content

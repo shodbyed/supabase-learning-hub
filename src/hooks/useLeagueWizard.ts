@@ -4,7 +4,7 @@
  * Custom hook that manages all state for the League Creation Wizard.
  * Handles form data, validation, step navigation, and localStorage persistence.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps.simple';
 

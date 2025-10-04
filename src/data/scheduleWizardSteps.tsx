@@ -90,7 +90,7 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
     validateTournamentDateRange,
     seasonLengthChoice,
     setSeasonLengthChoice,
-    leagueStartDate,
+    // leagueStartDate is available but not used yet - will be needed for calculating end dates
   } = params;
 
   return [
