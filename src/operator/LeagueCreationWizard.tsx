@@ -186,9 +186,6 @@ export const LeagueCreationWizard: React.FC = () => {
               Clear Form
             </button>
           </div>
-          <p className="text-gray-600 mt-2">
-            Step {currentStep + 1} of {steps.length}
-          </p>
         </div>
 
         {/* Progress indicator */}

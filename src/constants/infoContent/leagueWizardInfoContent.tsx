@@ -173,63 +173,27 @@ export const teamFormatComparisonInfo = {
   title: 'Format Comparison',
   content: (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b-2 border-gray-300">
-              <th className="text-left py-2 pr-4">Feature</th>
-              <th className="text-left py-2 px-4 bg-green-50">5-Man</th>
-              <th className="text-left py-2 pl-4">8-Man</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            <tr>
-              <td className="py-2 pr-4 font-medium">Match Length</td>
-              <td className="py-2 px-4 bg-green-50">2-2.5 hours</td>
-              <td className="py-2 pl-4">3-4 hours</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Games per Match</td>
-              <td className="py-2 px-4 bg-green-50">18 games</td>
-              <td className="py-2 pl-4">25 games</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Games per Player</td>
-              <td className="py-2 px-4 bg-green-50">6 games</td>
-              <td className="py-2 pl-4">5 games</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Players Shooting</td>
-              <td className="py-2 px-4 bg-green-50">6 total (3 vs 3)</td>
-              <td className="py-2 pl-4">10 total (5 vs 5)</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Crowding</td>
-              <td className="py-2 px-4 bg-green-50">6-10 people</td>
-              <td className="py-2 pl-4">10-16 people</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Minimum Roster</td>
-              <td className="py-2 px-4 bg-green-50">5 players</td>
-              <td className="py-2 pl-4">8 players</td>
-            </tr>
-            <tr>
-              <td className="py-2 pr-4 font-medium">Handicap System</td>
-              <td className="py-2 px-4 bg-green-50">Dynamic, auto-adjusting</td>
-              <td className="py-2 pl-4">BCA Standard</td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200">
+        <p className="font-semibold text-gray-900 mb-2">Before you choose, familiarize yourself with how each format works:</p>
+        <ul className="text-sm text-gray-700 space-y-1 ml-4 list-disc">
+          <li><strong>Extensive explanations:</strong> Click the links below for complete breakdowns of each format</li>
+          <li><strong>Quick overview:</strong> Use the info buttons next to each choice for shorter explanations</li>
+          <li><strong>Side-by-side comparison:</strong> Review both formats together to see key differences</li>
+        </ul>
       </div>
 
-      <div className="bg-blue-50 p-3 rounded-md border border-blue-200 mt-4">
+      <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+        <p className="text-sm font-semibold text-gray-900 mb-1">Decision Guide:</p>
         <p className="text-sm text-gray-700">
-          Most operators find 5-Man provides a better experience: faster matches mean happier players and better venue relationships.
+          <strong>Established league?</strong> If your league is already running with a specific format, stick with the most similar option for familiarity.
+        </p>
+        <p className="text-sm text-gray-700 mt-2">
+          <strong>New league?</strong> The 5-Man format is worth trying - it provides faster matches, better player experience, and easier management.
         </p>
       </div>
 
       <p className="text-sm text-blue-600 font-medium">
-        <a href="/format-comparison" className="underline">Click here for detailed side-by-side comparison</a>
+        <a href="/format-comparison" className="underline">For a side-by-side comparison of our 2 systems, click here</a>
       </p>
     </div>
   ),

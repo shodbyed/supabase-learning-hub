@@ -217,7 +217,7 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       },
       infoTitle: teamFormatComparisonInfo.title,
       infoContent: teamFormatComparisonInfo.content,
-      infoLabel: 'Why does this matter?'
+      infoLabel: 'How to choose'
     },
   ];
 };

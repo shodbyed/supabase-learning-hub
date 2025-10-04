@@ -25,6 +25,10 @@ import { ApplicationPreview } from '@/components/previews/ApplicationPreview';
 import { SecurityDisclaimerModal } from '@/components/modals/SecurityDisclaimerModal';
 import { SetupGuideModal } from '@/components/modals/SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
+import { useUserProfile } from '../hooks/useUserProfile';
+import { supabase } from '../supabaseClient';
+import { generateMockPaymentData } from '@/types/operator';
+import type { LeagueOperatorInsertData } from '@/types/operator';
 import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
 
 /**
@@ -43,6 +47,9 @@ import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorS
 export const LeagueOperatorApplication: React.FC = () => {
   // Navigation hook for redirecting after completion
   const navigate = useNavigate();
+
+  // Get member profile data for pre-filling operator info
+  const { member } = useUserProfile();
 
   // Get all form state and handlers from custom hook
   const {
@@ -162,97 +169,87 @@ export const LeagueOperatorApplication: React.FC = () => {
    * 4. Redirects to congratulations page
    */
   const handleSubmit = async () => {
-    // Log comprehensive application data for database operations
+    if (!member) {
+      console.error('❌ Cannot submit: No member profile found');
+      return;
+    }
+
     console.group('🎯 LEAGUE OPERATOR APPLICATION - DATABASE OPERATIONS');
 
-    console.log('📋 COMPLETE APPLICATION DATA:', state);
+    // Generate mock payment data for testing
+    const mockPayment = generateMockPaymentData();
 
-    console.group('🏢 ORGANIZATION INFORMATION');
-    console.log('Organization Name:', state.leagueName);
-    console.log('Use Profile Address:', state.useProfileAddress);
+    // Prepare data for database insertion
+    const insertData: LeagueOperatorInsertData = {
+      member_id: member.id,
+      organization_name: state.leagueName,
 
-    if (state.useProfileAddress) {
-      console.log('📍 Address Source: User Profile Address');
-    } else {
-      console.log('📍 Custom Organization Address:');
-      console.log('  Street:', state.organizationAddress);
-      console.log('  City:', state.organizationCity);
-      console.log('  State:', state.organizationState);
-      console.log('  ZIP:', state.organizationZipCode);
-    }
-    console.groupEnd();
+      // Address - copy from member profile (admin-only data)
+      organization_address: state.useProfileAddress ? member.address : state.organizationAddress || '',
+      organization_city: state.useProfileAddress ? member.city : state.organizationCity || '',
+      organization_state: state.useProfileAddress ? member.state : state.organizationState || '',
+      organization_zip_code: state.useProfileAddress ? member.zip_code : state.organizationZipCode || '',
 
-    console.group('📧 CONTACT INFORMATION');
-    console.log('Contact Disclaimer Acknowledged:', state.contactDisclaimerAcknowledged);
+      // Contact disclaimer
+      contact_disclaimer_acknowledged: state.contactDisclaimerAcknowledged || false,
 
-    console.log('📧 EMAIL SETUP:');
-    console.log('  Use Profile Email:', state.useProfileEmail);
-    if (state.useProfileEmail) {
-      console.log('  Email Source: User Profile Email');
-    } else {
-      console.log('  Custom League Email:', state.leagueEmail);
-    }
-    console.log('  Email Visibility:', state.emailVisibility);
+      // Email - pre-filled from profile but stored separately
+      league_email: state.useProfileEmail ? member.email : state.leagueEmail || '',
+      email_visibility: state.emailVisibility || 'in_app_only',
 
-    console.log('📱 PHONE SETUP:');
-    console.log('  Use Profile Phone:', state.useProfilePhone);
-    if (state.useProfilePhone) {
-      console.log('  Phone Source: User Profile Phone');
-    } else {
-      console.log('  Custom League Phone:', state.leaguePhone);
-    }
-    console.log('  Phone Visibility:', state.phoneVisibility);
-    console.groupEnd();
+      // Phone - pre-filled from profile but stored separately
+      league_phone: state.useProfilePhone ? member.phone : state.leaguePhone || '',
+      phone_visibility: state.phoneVisibility || 'in_app_only',
 
-    console.group('💳 PAYMENT INFORMATION');
-    console.log('Payment Token (SECURE):', state.paymentToken);
-    console.log('Card Last 4:', state.cardLast4);
-    console.log('Card Brand:', state.cardBrand);
-    console.log('Expiry Month:', state.expiryMonth);
-    console.log('Expiry Year:', state.expiryYear);
-    console.log('Billing ZIP:', state.billingZip);
-    console.log('Payment Verified:', state.paymentVerified);
-    console.groupEnd();
+      // Payment - use mock data for testing
+      stripe_customer_id: mockPayment.stripe_customer_id,
+      payment_method_id: mockPayment.payment_method_id,
+      card_last4: mockPayment.card_last4,
+      card_brand: mockPayment.card_brand,
+      expiry_month: mockPayment.expiry_month,
+      expiry_year: mockPayment.expiry_year,
+      billing_zip: mockPayment.billing_zip,
+      payment_verified: mockPayment.payment_verified,
+    };
 
-    console.group('🎱 VENUES (FUTURE)');
-    console.log('Venues:', state.venues);
-    console.log('Note: Venue creation will happen during league setup');
-    console.groupEnd();
+    console.group('📋 Step 1: INSERT INTO league_operators');
+    console.log('Data to insert:', insertData);
 
-    console.group('👤 LEGACY CONTACT FIELDS (UNUSED)');
-    console.log('Contact Name:', state.contactName);
-    console.log('Contact Email:', state.contactEmail);
-    console.log('Contact Phone:', state.contactPhone);
-    console.log('Note: These fields are not used in current flow');
-    console.groupEnd();
+    const { data: operatorData, error: insertError } = await supabase
+      .from('league_operators')
+      .insert([insertData])
+      .select();
 
-    console.group('🔄 NEXT DATABASE OPERATIONS');
-    console.log('1. Create league_operators record');
-    console.log('2. Store payment token securely');
-    console.log('3. Set up operator permissions/role');
-    console.log('4. Send welcome email');
-    console.log('5. Navigate to league creation flow');
-    console.groupEnd();
-
-    console.groupEnd();
-
-    // Clear saved progress since form is submitted
-    try {
-      localStorage.removeItem('leagueOperatorApplication');
-      localStorage.removeItem('leagueOperatorApplication_currentStep');
-      console.log('✅ Cleared localStorage progress data');
-    } catch (error) {
-      console.warn('⚠️ Failed to clear saved progress:', error);
+    if (insertError) {
+      console.error('❌ Failed to create operator profile:', insertError);
+      console.groupEnd();
+      console.groupEnd();
+      alert(`Failed to create operator profile: ${insertError.message}`);
+      return;
     }
 
-    console.group('🔄 ROLE UPGRADE (DUMMY OPERATION)');
-    console.log('1. Update members table: SET role = "league_operator" WHERE id = user_id');
-    console.log('2. Create league_operators record with application data');
-    console.log('3. Set up operator permissions/access levels');
-    console.log('4. Send welcome email to new league operator');
-    console.log('✅ User role upgraded: player → league_operator');
+    console.log('✅ Operator profile created:', operatorData);
     console.groupEnd();
 
+    console.group('🔄 Step 2: UPDATE members SET role = \'league_operator\'');
+
+    const { error: updateError } = await supabase
+      .from('members')
+      .update({ role: 'league_operator' })
+      .eq('id', member.id);
+
+    if (updateError) {
+      console.error('❌ Failed to update member role:', updateError);
+      console.groupEnd();
+      console.groupEnd();
+      alert(`Failed to update member role: ${updateError.message}`);
+      return;
+    }
+
+    console.log('✅ Member role updated to league_operator');
+    console.groupEnd();
+
+    console.log('🎉 SUCCESS! League operator application complete!');
     console.groupEnd();
 
     // Clear saved progress since form is submitted

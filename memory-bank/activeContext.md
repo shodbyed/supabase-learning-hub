@@ -2,8 +2,50 @@
 
 ## Current Work Focus
 
-### **Just Completed: Navigation & Link Improvements**
-**Implementation Date**: Latest session
+### **Just Completed: League Operators Database & Application Submission** 🎉
+**Implementation Date**: 2025-01-04
+**Status**: ✅ **WORKING IN LOCAL DATABASE**
+
+**What Was Built**:
+- Complete `league_operators` database table with all fields
+- Automatic database insertion on operator application submission
+- Member role upgrade from 'player' to 'league_operator'
+- Mock payment data generator for testing
+- Full TypeScript type definitions for operator data
+
+**Database Schema**:
+- Created `/database/league_operators.sql` (ready for production)
+- Table with 20+ columns including organization, contact, payment info
+- Row Level Security (RLS) policies for data protection
+- Triggers for auto-updating timestamps
+- Indexes for performance on key lookups
+- Foreign key to members table with CASCADE delete
+
+**Application Flow**:
+1. User fills out 6-step operator application form
+2. Data collected with localStorage persistence
+3. On submit: generates mock payment data (Stripe IDs)
+4. INSERT into `league_operators` table
+5. UPDATE `members.role` to 'league_operator'
+6. Navigate to operator welcome page
+7. User can now create leagues!
+
+**Key Design Decisions**:
+- **Address**: Copied from member profile at creation (admin-only, not shown to players)
+- **Email/Phone**: Separate from member profile with visibility controls
+- **Payment**: Mock data for testing (`cus_mock_...`, `pm_mock_...`)
+- **Visibility Levels**: `in_app_only` (default), `my_teams`, `anyone`, etc.
+- **In-app messaging required** for 'in_app_only' visibility to work
+
+**Files Created/Modified**:
+- `/database/league_operators.sql` - Database schema
+- `/src/types/operator.ts` - TypeScript types + mock payment generator
+- `/memory-bank/databaseSchema.md` - Complete database design documentation
+- `/memory-bank/futureFeatures.md` - In-app messaging requirements documented
+- `LeagueOperatorApplication.tsx` - Actual database insertion implemented
+
+### **Previously Completed: Navigation & Link Improvements**
+**Implementation Date**: Previous session
 **Status**: ✅ **PRODUCTION READY**
 
 **What Was Built**:
@@ -11,12 +53,6 @@
 - Removed `target="_blank"` from info content links to enable proper back navigation
 - Updated all navigation buttons to use consistent blue styling (variant="default")
 - Verified public access security for all format detail pages
-
-**Technical Implementation**:
-- Sticky back button: `fixed top-20 right-4 z-50`, `size="lg"`, blue variant
-- Info content links now navigate in same tab, preserving wizard form data in local storage
-- Bottom navigation buttons updated from outline to default variant
-- All three format pages (5-man, 8-man, comparison) accessible without login
 
 ### **Previously Completed: 5-Man Format Detail Pages & Info System**
 **Implementation Date**: Previous session
