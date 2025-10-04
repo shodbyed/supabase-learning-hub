@@ -54,7 +54,9 @@
 - **Standings System**: Three-tier ranking (match wins → team points → total games)
 - **Anti-Sandbagging Features**: 5 key reasons why handicap complaints are minimized
 - **Experience-Based Credibility**: 15 years operator experience statement
-- **Public Access**: All detail pages accessible without login
+- **Public Access**: All detail pages accessible without login (no authentication required)
+- **Navigation System**: Sticky back button (top-right, blue, size lg) on all pages
+- **Link Integration**: Info buttons in wizard navigate to detail pages in same tab
 
 ### ✅ **Format Comparison System**
 - **Separate Pages**: Individual detail pages for 5-man and 8-man formats

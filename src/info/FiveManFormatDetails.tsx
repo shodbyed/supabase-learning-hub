@@ -13,16 +13,21 @@ export const FiveManFormatDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Sticky Back Button */}
+      <div className="fixed top-20 right-4 z-50">
+        <Button
+          variant="default"
+          onClick={() => navigate(-1)}
+          size="lg"
+          className="shadow-lg"
+        >
+          ← Back
+        </Button>
+      </div>
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
-            ← Back
-          </Button>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             5-Man Team Format: Complete Guide
           </h1>
@@ -721,7 +726,7 @@ export const FiveManFormatDetails: React.FC = () => {
         {/* Navigation Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <Button
-            variant="outline"
+            variant="default"
             onClick={() => navigate('/8-man-format-details')}
             size="lg"
           >
@@ -733,16 +738,6 @@ export const FiveManFormatDetails: React.FC = () => {
             size="lg"
           >
             Compare 5-Man vs 8-Man
-          </Button>
-        </div>
-
-        <div className="text-center mt-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate(-1)}
-            size="lg"
-          >
-            ← Back to League Creation
           </Button>
         </div>
       </div>

@@ -117,7 +117,7 @@ export const fiveManFormatInfo = {
       </div>
 
       <p className="text-sm text-blue-600 font-medium">
-        <a href="/5-man-format-details" target="_blank" rel="noopener noreferrer" className="underline">Click here for complete 5-man format breakdown</a>
+        <a href="/5-man-format-details" className="underline">Click here for complete 5-man format breakdown</a>
       </p>
     </div>
   ),
@@ -159,7 +159,7 @@ export const eightManFormatInfo = {
       </div>
 
       <p className="text-sm text-blue-600 font-medium">
-        <a href="/8-man-format-details" target="_blank" rel="noopener noreferrer" className="underline">Click here for complete 8-man format breakdown</a>
+        <a href="/8-man-format-details" className="underline">Click here for complete 8-man format breakdown</a>
       </p>
     </div>
   ),
@@ -229,7 +229,7 @@ export const teamFormatComparisonInfo = {
       </div>
 
       <p className="text-sm text-blue-600 font-medium">
-        <a href="/format-comparison" target="_blank" rel="noopener noreferrer" className="underline">Click here for detailed side-by-side comparison</a>
+        <a href="/format-comparison" className="underline">Click here for detailed side-by-side comparison</a>
       </p>
     </div>
   ),
