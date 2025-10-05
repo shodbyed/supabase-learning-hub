@@ -35,13 +35,22 @@ export const OperatorDashboard: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
             <div className="text-blue-600 text-2xl mb-3">🏆</div>
             <h3 className="font-semibold text-gray-900 mb-2">Create New League</h3>
             <p className="text-sm text-gray-600 mb-4">Set up a new tournament or league</p>
             <Button asChild className="w-full" style={{ backgroundColor: '#2563eb', color: 'white' }}>
               <Link to="/create-league">Create League</Link>
+            </Button>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <div className="text-indigo-600 text-2xl mb-3">⚙️</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Organization Settings</h3>
+            <p className="text-sm text-gray-600 mb-4">Edit your contact info and address</p>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/operator-settings">Manage Organization</Link>
             </Button>
           </div>
 
@@ -69,6 +78,15 @@ export const OperatorDashboard: React.FC = () => {
             <p className="text-sm text-gray-600 mb-4">Manage your pool hall relationships</p>
             <Button variant="outline" className="w-full">
               Manage Venues
+            </Button>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+            <div className="text-teal-600 text-2xl mb-3">📋</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Manage Leagues</h3>
+            <p className="text-sm text-gray-600 mb-4">View and edit your active leagues</p>
+            <Button variant="outline" className="w-full">
+              View Leagues
             </Button>
           </div>
         </div>

@@ -133,7 +133,11 @@ Subtitle JSX → Clickable link to official tournament website
 ### **Navigation Architecture**
 ```
 App.tsx → NavBar + NavRoutes
-NavRoutes → Protected/Public route definitions
+NavRoutes → Array-based route generation
+  ├─→ publicRoutes[] → map to <Route> (10 routes)
+  ├─→ authRoutes[] → map to <ProtectedRoute requireAuth> (3 routes)
+  ├─→ memberRoutes[] → map to <ProtectedRoute requireApprovedApplication> (2 routes)
+  └─→ operatorRoutes[] → map to <ProtectedRoute requiredRole="league_operator"> (4 routes)
 NavBar → Conditional links based on auth status
 Dashboard ← → Profile (action vs information separation)
 ```
@@ -178,12 +182,26 @@ Dashboard ← → Profile (action vs information separation)
   - `league.ts` - League, TeamFormat, HandicapSystem, GameType types
   - `venue.ts` - Venue and VenueFormData types
   - `tournament.ts` - Tournament, TournamentDateOption types
+  - `operator.ts` - LeagueOperator, ContactVisibility types, mock payment generator
   - `index.ts` - Re-exports all types for convenient importing
 - `src/constants/` - Static data and content
   - `infoContent/` - Info button content organized by feature area
     - `profileInfoContent.tsx` - Profile and member-related info
     - `leagueWizardInfoContent.tsx` - League creation wizard info
     - `operatorApplicationInfoContent.tsx` - Operator application info
+- `src/navigation/` - Routing configuration
+  - `NavRoutes.tsx` - Array-based route definitions with protection levels
+- `src/operator/` - League operator features
+  - `OperatorDashboard.tsx` - Main operator dashboard
+  - `OrganizationSettings.tsx` - Operator profile management
+  - `LeagueCreationWizard.tsx` - League creation wizard
+  - `OperatorWelcome.tsx` - Post-application welcome page
+- `src/leagueOperator/` - Operator onboarding
+  - `BecomeLeagueOperator.tsx` - Operator benefits page
+  - `LeagueOperatorApplication.tsx` - 6-step application wizard
+- `database/` - SQL schema files
+  - `members.sql` - Member table schema
+  - `league_operators.sql` - League operator table schema
 - `memory-bank/` - Project documentation and patterns
 
 ### **Custom Hooks Implementation**
