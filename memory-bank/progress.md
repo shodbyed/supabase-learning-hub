@@ -125,8 +125,29 @@
   - Sidebar: Organization Settings card + Quick Stats
 - **Compact Cards**: Icon and title on same line for reduced height
 - **Active Leagues Component**: Displays created leagues with orange "Setup Needed" status
+  - Cards are fully clickable, navigate to league detail page
+  - Hover effects (border + shadow)
 - **Quick Stats Component**: Shows active leagues count (ready for more stats)
 - **Perfect Alignment**: All columns line up across rows
+
+### ✅ **League Management System - Detail Pages** 🎉
+- **League Detail Page**: Central hub for managing individual leagues
+  - Route: `/league/:leagueId` (protected, league_operator role required)
+  - Header with league name, format, dates, status badge
+  - Status section: Progress bar + Next Steps checklist + "Let's Go!" CTA button
+  - Three-column grid layout (status 2/3, CTA button 1/3)
+  - Dynamic messaging based on season count
+- **Component Architecture**: All sections extracted to reusable components
+  - **LeagueOverviewCard**: Displays game type, day, format, division, dates
+  - **SeasonsCard**: Current active season + collapsible past seasons
+    - Green-highlighted current season with dates, teams, weeks
+    - Collapsible past seasons ("5 Past Seasons" button with chevron)
+    - Empty state with "Create First Season" button
+    - Database-ready (queries commented out until seasons table exists)
+  - **TeamsCard**: Placeholder ready for teams implementation
+  - **ScheduleCard**: Placeholder ready for schedule implementation
+- **Database Integration Ready**: All components have TODO comments with database queries
+- **Season Count Checking**: Displays "first season" vs "new season" messaging appropriately
 
 ### ✅ **Tournament Utility Functions**
 - **fetchBCAChampionshipURL()**: Dynamic URL generation based on current date
@@ -147,9 +168,14 @@
 **Estimated Effort**: 1-2 hours (minimal changes to existing pattern)
 
 ### 🏗️ **League Management System**
-**Status**: Foundation complete, ready for development
+**Status**: Detail page infrastructure complete, season creation next
+**Completed**:
+- ✅ League operator dashboard with active leagues display
+- ✅ League detail page with comprehensive management hub
+- ✅ Component architecture for all league sections
+- ✅ Clickable league cards with navigation
 **Components Needed**:
-- League operator dashboard
+- Seasons database table and creation wizard
 - Team registration and management
 - Player enrollment system
 - Schedule generation and management

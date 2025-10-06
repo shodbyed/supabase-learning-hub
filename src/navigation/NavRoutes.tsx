@@ -16,6 +16,7 @@ import { OperatorDashboard } from '../operator/OperatorDashboard';
 import { OrganizationSettings } from '../operator/OrganizationSettings';
 import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
 import { LeagueRules } from '../operator/LeagueRules';
+import { LeagueDetail } from '../operator/LeagueDetail';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -55,6 +56,7 @@ const operatorRoutes = [
   { path: '/create-league', element: <LeagueCreationWizard /> },
   { path: '/operator-settings', element: <OrganizationSettings /> },
   { path: '/league-rules', element: <LeagueRules /> },
+  { path: '/league/:leagueId', element: <LeagueDetail /> },
 ];
 
 export const NavRoutes: React.FC = () => {

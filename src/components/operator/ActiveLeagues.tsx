@@ -131,9 +131,10 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
 
       <div className="space-y-4">
         {leagues.map((league) => (
-          <div
+          <Link
             key={league.id}
-            className="border-2 border-orange-300 rounded-lg p-4 hover:border-orange-400 transition-colors bg-orange-50/30"
+            to={`/league/${league.id}`}
+            className="block border-2 border-orange-300 rounded-lg p-4 hover:border-orange-400 hover:shadow-md transition-all bg-orange-50/30 cursor-pointer"
           >
             <div className="flex justify-between items-start mb-3">
               <div>
@@ -157,17 +158,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
               label="League Setup Progress"
               nextAction="Next: Create season and add teams"
             />
-
-            {/* Action buttons */}
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1">
-                Create Season
-              </Button>
-              <Button size="sm" variant="outline" className="flex-1">
-                View Details
-              </Button>
-            </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
