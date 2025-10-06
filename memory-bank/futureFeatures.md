@@ -71,13 +71,50 @@ This document captures aspirational features that would enhance the app's desira
 
 ## Analytics & Insights
 
-### Personal Analytics
+### Advanced Operator Statistics Dashboard
+**Status**: Nice to have - comprehensive stats beyond Quick Stats
+
+**Detailed Metrics**:
+- **Overall Stats**:
+  - Total weeks played (all leagues/seasons combined)
+  - Total matches played (2 teams playing = 1 match)
+  - Total games played (individual games within matches)
+  - Average matches per week
+  - Average players per league
+  - Average teams per league
+- **Game Type Breakdown**:
+  - Separate stats for 8-Ball, 9-Ball, 10-Ball
+  - Games played per type
+  - Teams per type
+  - Most popular game type
+- **Format Analysis**:
+  - 5-Man vs 8-Man breakdown
+  - Teams using each format
+  - Seasons completed per format
+- **Engagement Metrics**:
+  - Player retention rate (season to season)
+  - Average attendance per match night
+  - Most active venues
+  - Peak playing times/days
+- **Historical Trends**:
+  - League growth over time
+  - Player base expansion
+  - Seasonal patterns
+
+**Implementation Ideas**:
+- Separate "Statistics" page with detailed charts
+- Expandable sections for different stat categories
+- Date range filters (this season, all time, custom range)
+- Export to CSV for offline analysis
+- Visual charts/graphs for trends
+
+### Personal Analytics (for Players)
 - Playing pattern analysis (best days/times)
 - Opponent matchup statistics
 - Improvement trend tracking
 - Performance heatmaps by venue
 
-### League Insights
+### League Insights (for Operators)
 - League health and engagement metrics
 - Popular playing times and venues
 - Player retention analytics

@@ -2,10 +2,13 @@
  * @fileoverview OperatorDashboard Component
  * Main dashboard for league operators with access to all operator-specific features
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { supabase } from '@/supabaseClient';
+import { DashboardCard } from '@/components/operator/DashboardCard';
+import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
+import { QuickStats } from '@/components/operator/QuickStats';
 
 /**
  * OperatorDashboard Component
@@ -20,6 +23,38 @@ import { useUserProfile } from '../hooks/useUserProfile';
  */
 export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
+  const [operatorId, setOperatorId] = useState<string | null>(null);
+  const [leagueCount, setLeagueCount] = useState(0);
+
+  /**
+   * Fetch operator ID and league count on mount
+   */
+  useEffect(() => {
+    const fetchOperatorData = async () => {
+      if (!member) return;
+
+      // Get operator ID
+      const { data: operatorData } = await supabase
+        .from('league_operators')
+        .select('id')
+        .eq('member_id', member.id)
+        .single();
+
+      if (operatorData) {
+        setOperatorId(operatorData.id);
+
+        // Get league count
+        const { count } = await supabase
+          .from('leagues')
+          .select('*', { count: 'exact', head: true })
+          .eq('operator_id', operatorData.id);
+
+        setLeagueCount(count || 0);
+      }
+    };
+
+    fetchOperatorData();
+  }, [member]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -36,106 +71,74 @@ export const OperatorDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-blue-600 text-2xl mb-3">🏆</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Create New League</h3>
-            <p className="text-sm text-gray-600 mb-4">Set up a new tournament or league</p>
-            <Button asChild className="w-full" style={{ backgroundColor: '#2563eb', color: 'white' }}>
-              <Link to="/create-league">Create League</Link>
-            </Button>
-          </div>
+          <DashboardCard
+            icon="🏆"
+            iconColor="text-blue-600"
+            title="Create New League"
+            description="Set up a new tournament or league"
+            buttonText="Create League"
+            linkTo="/create-league"
+            variant="default"
+            buttonColor="#2563eb"
+          />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-indigo-600 text-2xl mb-3">⚙️</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Organization Settings</h3>
-            <p className="text-sm text-gray-600 mb-4">Edit your contact info and address</p>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/operator-settings">Manage Organization</Link>
-            </Button>
-          </div>
+          <DashboardCard
+            icon="⚙️"
+            iconColor="text-indigo-600"
+            title="Organization Settings"
+            description="Edit your contact info and address"
+            buttonText="Manage Organization"
+            linkTo="/operator-settings"
+          />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-green-600 text-2xl mb-3">👥</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Manage Players</h3>
-            <p className="text-sm text-gray-600 mb-4">View registrations and player stats</p>
-            <Button variant="outline" className="w-full">
-              View Players
-            </Button>
-          </div>
+          <DashboardCard
+            icon="👥"
+            iconColor="text-green-600"
+            title="Manage Players"
+            description="View registrations and player stats"
+            buttonText="View Players"
+            onClick={() => console.log('Manage Players - Coming soon')}
+          />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-purple-600 text-2xl mb-3">📊</div>
-            <h3 className="font-semibold text-gray-900 mb-2">League Results</h3>
-            <p className="text-sm text-gray-600 mb-4">Record matches and view standings</p>
-            <Button variant="outline" className="w-full">
-              View Results
-            </Button>
-          </div>
+          <DashboardCard
+            icon="📊"
+            iconColor="text-purple-600"
+            title="League Results"
+            description="Record matches and view standings"
+            buttonText="View Results"
+            onClick={() => console.log('League Results - Coming soon')}
+          />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-orange-600 text-2xl mb-3">🏢</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Venue Partners</h3>
-            <p className="text-sm text-gray-600 mb-4">Manage your pool hall relationships</p>
-            <Button variant="outline" className="w-full">
-              Manage Venues
-            </Button>
-          </div>
+          <DashboardCard
+            icon="🏢"
+            iconColor="text-orange-600"
+            title="Venue Partners"
+            description="Manage your pool hall relationships"
+            buttonText="Manage Venues"
+            onClick={() => console.log('Venue Partners - Coming soon')}
+          />
 
-          <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-            <div className="text-teal-600 text-2xl mb-3">📋</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Manage Leagues</h3>
-            <p className="text-sm text-gray-600 mb-4">View and edit your active leagues</p>
-            <Button variant="outline" className="w-full">
-              View Leagues
-            </Button>
-          </div>
+          <DashboardCard
+            icon="📋"
+            iconColor="text-teal-600"
+            title="Manage Leagues"
+            description="View and edit your active leagues"
+            buttonText="View Leagues"
+            onClick={() => console.log('Manage Leagues - Coming soon')}
+          />
         </div>
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Active Leagues */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Active Leagues</h3>
-
-              {/* Placeholder for when no leagues exist yet */}
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎱</div>
-                <h4 className="text-lg font-medium text-gray-900 mb-2">No Active Leagues</h4>
-                <p className="text-gray-600 mb-6">
-                  You haven't created any leagues yet. Start by creating your first league!
-                </p>
-                <Button asChild style={{ backgroundColor: '#2563eb', color: 'white' }}>
-                  <Link to="/create-league">Create Your First League</Link>
-                </Button>
-              </div>
-            </div>
+            <ActiveLeagues operatorId={operatorId} />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Stats */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Active Leagues</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Players</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Matches Played</span>
-                  <span className="font-medium">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Partner Venues</span>
-                  <span className="font-medium">0</span>
-                </div>
-              </div>
-            </div>
+            <QuickStats activeLeagues={leagueCount} />
 
             {/* Recent Activity */}
             <div className="bg-white rounded-xl shadow-sm p-6">
