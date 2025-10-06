@@ -200,10 +200,10 @@ export const teamFormatComparisonInfo = {
 };
 
 /**
- * League Qualifier Info
- * Used in: Optional league qualifier/name suffix step
+ * League Division Info
+ * Used in: Optional league division/identifier step
  */
 export const leagueQualifierInfo = {
-  title: 'League Qualifiers',
-  content: 'Optional qualifier helps distinguish your league if there are multiple leagues with the same game type and night at the same venue. Examples: location-based (West Side, Downtown), color-coded (Blue, Red), or division-based (Division A, Advanced).',
+  title: 'Division Identifiers',
+  content: 'Optional division identifier helps distinguish your league if you run multiple leagues with the same game type and night. Examples: skill-based (Beginner, Advanced), location-based (East Division, West Side), or alphabetic (Division A, Division B).',
 };

@@ -24,6 +24,7 @@ interface QuestionStepProps {
   infoTitle?: string;
   infoContent?: React.ReactNode;
   inputType?: 'text' | 'date' | 'email' | 'tel'; // New prop to specify input type
+  isSubmitting?: boolean;
 }
 
 /**
@@ -51,7 +52,8 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   isLastQuestion,
   infoTitle,
   infoContent,
-  inputType = 'text'
+  inputType = 'text',
+  isSubmitting
 }) => {
   const [autoCapitalize, setAutoCapitalize] = useState(true);
 
@@ -182,10 +184,10 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
 
             <Button
               onClick={handleNext}
-              disabled={!value.trim()}
+              disabled={!value.trim() || isSubmitting}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isLastQuestion ? 'Continue' : 'Next'}
+              {isSubmitting ? 'Submitting...' : isLastQuestion ? 'Continue' : 'Next'}
             </Button>
           </div>
         </div>

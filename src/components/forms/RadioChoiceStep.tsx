@@ -33,6 +33,7 @@ interface RadioChoiceStepProps {
   infoContent?: React.ReactNode;
   infoLabel?: string;
   error?: string;
+  isSubmitting?: boolean;
 }
 
 /**
@@ -58,7 +59,8 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   infoTitle,
   infoContent,
   infoLabel,
-  error
+  error,
+  isSubmitting
 }) => {
   const canProceed = selectedValue && selectedValue.trim() !== '';
 
@@ -111,10 +113,10 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
 
           <Button
             onClick={onNext}
-            disabled={!canProceed}
+            disabled={!canProceed || isSubmitting}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {isLastQuestion ? 'Create League' : 'Continue'}
+            {isSubmitting ? 'Creating League...' : isLastQuestion ? 'Create League' : 'Continue'}
           </Button>
         </div>
       </div>

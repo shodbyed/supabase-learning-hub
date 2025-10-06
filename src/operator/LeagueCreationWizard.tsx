@@ -6,7 +6,7 @@
  *
  * Season scheduling and team building moved to separate wizards.
  */
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
@@ -14,6 +14,8 @@ import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/lea
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
+import { supabase } from '@/supabaseClient';
+import type { LeagueInsertData, GameType, DayOfWeek, TeamFormat } from '@/types/league';
 
 /**
  * League Creation Wizard Component
@@ -29,87 +31,113 @@ import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
 export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
+  const [operatorId, setOperatorId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  /**
+   * Fetch operator ID on mount
+   */
+  useEffect(() => {
+    const fetchOperatorId = async () => {
+      if (!member) return;
+
+      const { data, error } = await supabase
+        .from('league_operators')
+        .select('id')
+        .eq('member_id', member.id)
+        .single();
+
+      if (data && !error) {
+        setOperatorId(data.id);
+      }
+    };
+
+    fetchOperatorId();
+  }, [member]);
 
   /**
    * Handle form submission - create the league in database
    */
   const handleSubmit = async () => {
-    console.group('🏆 LEAGUE CREATION - DATABASE OPERATIONS');
+    if (!operatorId) {
+      console.error('❌ No operator profile found');
+      return;
+    }
 
-    console.log('📋 COMPLETE LEAGUE DATA:', formData);
+    setIsCreating(true);
 
-    console.group('🏢 LEAGUE INFORMATION');
-    console.log('Game Type:', formData.gameType);
-    console.log('Start Date:', formData.startDate);
-    console.log('Day of Week:', formData.dayOfWeek);
-    console.log('Season:', formData.season);
-    console.log('Year:', formData.year);
-    console.log('Qualifier:', formData.qualifier || '(none)');
-    console.log('Team Format:', formData.teamFormat);
-    console.log('Handicap System:', formData.handicapSystem);
+    try {
+      console.group('🏆 LEAGUE CREATION - DATABASE OPERATIONS');
 
-    // Generate all formatted league names for database storage
-    if (formData.startDate) {
+      // Convert formData to database format
       const startDate = new Date(formData.startDate);
+      const dayOfWeek = getDayOfWeek(startDate).toLowerCase() as DayOfWeek;
+
+      // Map display game type to database format
+      const gameTypeMap: Record<string, GameType> = {
+        '8-ball': 'eight_ball',
+        '9-ball': 'nine_ball',
+        '10-ball': 'ten_ball'
+      };
+      const gameType = gameTypeMap[formData.gameType] || 'eight_ball';
+
+      const insertData: LeagueInsertData = {
+        operator_id: operatorId,
+        game_type: gameType,
+        day_of_week: dayOfWeek,
+        division: formData.qualifier || null, // UI still uses 'qualifier' field name
+        team_format: formData.teamFormat as TeamFormat,
+        league_start_date: formData.startDate, // Already in YYYY-MM-DD format
+      };
+
+      console.log('📋 League data to insert:', insertData);
+
+      // Insert into database
+      const { data: newLeague, error: insertError } = await supabase
+        .from('leagues')
+        .insert([insertData])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('❌ Error creating league:', insertError);
+        throw insertError;
+      }
+
+      console.log('✅ League created successfully!');
+      console.log('📊 New league:', newLeague);
+
+      // Generate league names for display
       const leagueComponents = {
         organizationName: 'Test Organization', // TODO: Get from operator profile
         year: startDate.getFullYear(),
         season: getTimeOfYear(startDate),
-        gameType: formData.gameType || 'eight_ball',
+        gameType: formData.gameType,
         dayOfWeek: getDayOfWeek(startDate),
         qualifier: formData.qualifier
       };
-
       const allNames = generateAllLeagueNames(leagueComponents);
 
-      console.group('📛 FORMATTED LEAGUE NAMES');
-      console.log('Database Systematic Name:', allNames.systematicName);
+      console.group('📛 FORMATTED LEAGUE NAMES (for display)');
+      console.log('Systematic Name:', allNames.systematicName);
       console.log('Player-Friendly Name:', allNames.playerFriendlyName);
       console.log('Operator Management Name:', allNames.operatorName);
       console.log('Full Display Name:', allNames.fullDisplayName);
       console.groupEnd();
+
+      console.groupEnd();
+
+      // Clear localStorage after successful creation
+      clearFormData();
+
+      // Navigate back to dashboard
+      navigate('/operator-dashboard');
+
+    } catch (error) {
+      console.error('❌ Failed to create league:', error);
+      setIsCreating(false);
+      // TODO: Show error message to user
     }
-
-    console.groupEnd();
-
-    console.group('📊 HANDICAP SYSTEM CONFIGURATION');
-    if (formData.handicapSystem === 'custom_5man') {
-      console.log('System: Custom 5-Man Double Round Robin');
-      console.log('- Formula: (Wins - Losses) ÷ Weeks Played');
-      console.log('- Handicap Range: +2 to -2');
-      console.log('- Team Handicap: Sum of 3 active players');
-      console.log('- Games per Match: 18 (3v3 double round robin)');
-    } else if (formData.handicapSystem === 'bca_standard') {
-      console.log('System: BCA Standard Handicap');
-      console.log('- Formula: Win Percentage (Wins ÷ Total Games)');
-      console.log('- Rolling Window: Last 50 games');
-      console.log('- Team Handicap: Sum of 5 active players');
-      console.log('- Games per Match: 25 (5v5 single round robin)');
-    }
-    console.groupEnd();
-
-    console.group('🔄 DATABASE OPERATIONS TO PERFORM');
-    console.log('1. INSERT INTO leagues (game_type, start_date, day_of_week, season, year, qualifier, team_format, handicap_system, operator_id)');
-    console.log('2. Return new league_id');
-    console.log('3. Create initial league_status = "created" (pending schedule)');
-    console.groupEnd();
-
-    console.group('✅ NEXT STEPS FOR LEAGUE OPERATOR');
-    console.log('1. Create schedule (season length, tournament dates)');
-    console.log('2. Add teams and players');
-    console.log('3. Generate match schedule');
-    console.groupEnd();
-
-    console.groupEnd();
-
-    // TODO: Actually save to database
-    // const newLeague = await createLeague(formData);
-
-    // Clear localStorage after successful creation
-    clearFormData();
-
-    // For now, just navigate back - in future, prompt for schedule creation
-    navigate('/operator-dashboard');
   };
 
   // Use centralized wizard state management hook
@@ -212,6 +240,7 @@ export const LeagueCreationWizard: React.FC = () => {
             onPrevious={handlePrevious}
             onCancel={handleCancel}
             updateFormData={() => {}} // Not used in simplified version
+            isSubmitting={isCreating}
           />
         </div>
 

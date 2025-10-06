@@ -2,42 +2,63 @@
 
 ## Current Work Focus
 
-### **Just Completed: Organization Settings & NavRoutes Refactoring** 🎉
+### **Just Completed: League Creation Database Integration** 🎉
 **Implementation Date**: 2025-01-05
+**Status**: ✅ **WORKING IN LOCAL DATABASE**
+
+**What Was Built**:
+- Complete `leagues` database table with proper schema
+- Full league creation wizard integration with database
+- Actual league records created in Supabase
+- Row Level Security (RLS) policies properly configured
+- Changed "qualifier" to "division" for better clarity
+- Loading states and error handling during creation
+
+**League Database Design**:
+- **Leagues Table**: Container for ongoing league concept (game type, day, division, format)
+- **Simple Schema**: Stores components, derives display names on-the-fly
+- **Best Practices**: Lowercase database values (`eight_ball`, `monday`), formatted for display
+- **Division Field**: Renamed from "qualifier" - more intuitive for operators
+- **Historical Tracking**: `league_start_date` and `created_at` for league history
+
+**RLS Policy Fix**:
+- **Initial Issue**: Policies failed because they didn't join through `members` table
+- **Auth Chain**: `auth.uid()` → `members.user_id` → `league_operators.member_id` → `leagues.operator_id`
+- **Solution**: All RLS policies now JOIN through members table to verify ownership
+- **Policies**: SELECT, INSERT, UPDATE, DELETE all check operator ownership
+- **Public Access**: Active leagues visible to all (for player discovery)
+
+**Database Operations**:
+- Wizard fetches operator_id on mount
+- Converts UI data to database format (`8-Ball` → `eight_ball`)
+- INSERT league record with all required fields
+- Clears localStorage after successful creation
+- Navigates to operator dashboard
+
+**UI Improvements**:
+- Button shows "Creating League..." during submission
+- All buttons disabled while submitting
+- Proper error handling with console logging
+- Success console logs show formatted league names
+
+**Files Created/Modified**:
+- `/database/leagues.sql` - Complete schema with fixed RLS policies
+- `/src/types/league.ts` - League, LeagueInsertData types, formatter functions
+- `/src/operator/LeagueCreationWizard.tsx` - Database integration, loading states
+- `/src/components/forms/WizardStepRenderer.tsx` - Added isSubmitting prop
+- `/src/components/forms/RadioChoiceStep.tsx` - Loading state support
+- `/src/components/forms/QuestionStep.tsx` - Loading state support
+- `/src/data/leagueWizardSteps.simple.tsx` - Changed to "division identifier"
+- `/src/constants/infoContent/leagueWizardInfoContent.tsx` - Updated division info
+
+### **Previously Completed: Organization Settings & NavRoutes Refactoring**
+**Implementation Date**: 2025-01-05 (earlier in session)
 **Status**: ✅ **PRODUCTION READY**
 
 **What Was Built**:
-- Complete Organization Settings page with independent edit sections
-- Each card (name, address, email, phone) editable separately
-- Improved UX with section-specific edit modes
-- NavRoutes refactored to use arrays and map functions
-- Dramatically reduced code repetition in routing
-
-**Organization Settings Design**:
-- **Separate Edit Sections**: Each card has its own Edit button
-- **Independent State Management**: Only one section editable at a time
-- **Section-Specific Updates**: Database updates only modified fields
-- **Professional Layout**:
-  - Organization Name card with historical name warning
-  - Mailing Address card (for BCA materials)
-  - League Contact Email card (how players contact you by email)
-  - League Contact Phone card (how players contact you by phone)
-  - Payment Information card (read-only)
-
-**NavRoutes Refactoring**:
-- **Array-Based Architecture**: Routes organized by protection level
-  - `publicRoutes` - No authentication required
-  - `authRoutes` - Require authentication only
-  - `memberRoutes` - Require authentication + approved member application
-  - `operatorRoutes` - Require league_operator role
-- **Map Functions**: Each array mapped to generate routes
-- **Cleaner Code**: Dramatically reduced repetition
-- **Easier Maintenance**: Adding new routes is now trivial
-
-**Files Modified**:
-- `/src/operator/OrganizationSettings.tsx` - Complete rewrite with separate edit sections
-- `/src/navigation/NavRoutes.tsx` - Refactored to array-based architecture
-- `/src/operator/OperatorDashboard.tsx` - Added Organization Settings button
+- Organization Settings page with per-card editing
+- NavRoutes refactored to array-based architecture
+- Dramatically reduced code repetition
 
 ### **Previously Completed: League Operators Database & Application Submission**
 **Implementation Date**: 2025-01-04
@@ -146,14 +167,14 @@
 
 ## Next Steps
 
-### **🎯 Immediate: Continue League Creation & Management**
-**Current Status**: Operator infrastructure complete, ready for league database implementation
+### **🎯 Immediate: League Management & Display**
+**Current Status**: League creation working, leagues stored in database
 **Next Actions**:
-- Design and create `leagues` database table
-- Design and create `seasons` database table
-- Implement actual league creation (write to database)
-- Build league management page (view/edit active leagues)
-- Create season scheduling and management tools
+- Build league management page (view active leagues with progress indicators)
+- Display created leagues on operator dashboard
+- Design and create `seasons` database table (when needed for season creation)
+- Build season creation wizard (separate from league creation)
+- Team registration and management
 
 ### **Future Format Documentation Enhancements**
 - Add video demonstrations of match flow

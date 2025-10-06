@@ -153,17 +153,17 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       infoContent: startDateInfo.content
     },
 
-    // Step 3: Optional Qualifier/Differentiator
+    // Step 3: Optional Division/Identifier
     {
       id: 'qualifier',
-      title: 'Add an optional league qualifier? (Optional)',
+      title: 'Add an optional division identifier? (Optional)',
       subtitle: 'Used if you run multiple leagues of the same type on the same day',
       type: 'input',
       placeholder: 'e.g., "East Division", "Beginner", "Advanced" (leave blank if not needed)',
       getValue: () => formData.qualifier,
       setValue: (value: string) => {
         updateFormData('qualifier', value.trim());
-        console.log('📝 LEAGUE CREATION: Qualifier =', value.trim() || '(none)');
+        console.log('📝 LEAGUE CREATION: Division =', value.trim() || '(none)');
       },
       infoTitle: leagueQualifierInfo.title,
       infoContent: leagueQualifierInfo.content,

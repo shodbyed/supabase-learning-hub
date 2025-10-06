@@ -41,16 +41,30 @@
 - **Error Handling**: Clear error messages and validation feedback
 - **Navigation**: Accessible from Operator Dashboard, protected route
 
-### ✅ **League Creation Wizard (Production Ready)**
-- 10-step wizard with localStorage persistence
-- Complete form data preservation across sessions
-- Smart league naming with derived fields
-- BCA tournament scheduling with automatic database search
-- Dynamic radio button choices with community-verified dates
-- Clickable links integration in wizard content
-- Team format selection with handicap system configuration
-- Venue selection (prepared for future implementation)
-- Qualifier support for league differentiation
+### ✅ **Leagues Database & Creation Integration** 🎉
+- **Database Table**: `leagues` table in local Supabase with complete schema
+- **Schema Design**: Stores components (game_type, day_of_week, division, team_format)
+- **Best Practice Naming**: Database uses lowercase (`eight_ball`, `monday`), formatted for display
+- **Division Field**: Renamed from "qualifier" for better clarity
+- **RLS Policies**: Properly configured with JOIN through members table
+  - Auth chain: `auth.uid()` → `members.user_id` → `league_operators.member_id` → `leagues.operator_id`
+  - Operators can SELECT, INSERT, UPDATE, DELETE their own leagues
+  - Public can view active leagues (for player discovery)
+- **Historical Tracking**: `league_start_date` (first match) + `created_at` (when created in system)
+- **Formatter Functions**: `formatGameType()`, `formatDayOfWeek()` for display
+
+### ✅ **League Creation Wizard (Production Ready)** 🎉
+- **4-step simplified wizard** with localStorage persistence
+- **Database Integration**: Actually creates leagues in Supabase
+- **Complete form data** preservation across sessions
+- Game type selection (8-Ball, 9-Ball, 10-Ball)
+- Start date picker (determines day of week automatically)
+- Division identifier (optional - for multiple leagues same day/type)
+- Team format selection (5-man or 8-man)
+- **Data transformation**: UI formats (`8-Ball`) → database formats (`eight_ball`)
+- **Loading states**: "Creating League..." button during submission
+- **Error handling**: Proper RLS policy validation and error display
+- **Success flow**: Clears localStorage, navigates to dashboard
 
 ### ✅ **BCA Tournament Scheduling System**
 - **Automatic Database Search**: useEffect triggers search when step is reached

@@ -26,6 +26,8 @@ interface WizardStepRendererProps {
   member: Member | null;
   /** Validation error message */
   error?: string;
+  /** Whether form is currently submitting */
+  isSubmitting?: boolean;
   /** Handler for input changes */
   onInputChange: (value: string) => void;
   /** Handler for choice selection */
@@ -54,6 +56,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
   canGoBack,
   currentInput,
   error,
+  isSubmitting,
   onInputChange,
   onChoiceSelect,
   onNext,
@@ -78,6 +81,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
         infoContent={currentStep.infoContent ?? undefined}
         infoLabel={currentStep.infoLabel}
         error={error}
+        isSubmitting={isSubmitting}
       />
     );
   }
@@ -101,6 +105,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
       infoTitle={currentStep.infoTitle}
       infoContent={currentStep.infoContent ?? undefined}
       error={error}
+      isSubmitting={isSubmitting}
       inputType={
         currentStep.id === 'start_date' ||
         currentStep.id === 'bca_custom_start_date' ||
