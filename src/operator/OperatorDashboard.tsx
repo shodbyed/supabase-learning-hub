@@ -69,26 +69,16 @@ export const OperatorDashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Main Grid - All content */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Row 1 - Quick Actions */}
           <DashboardCard
-            icon="🏆"
-            iconColor="text-blue-600"
-            title="Create New League"
-            description="Set up a new tournament or league"
-            buttonText="Create League"
-            linkTo="/create-league"
-            variant="default"
-            buttonColor="#2563eb"
-          />
-
-          <DashboardCard
-            icon="⚙️"
-            iconColor="text-indigo-600"
-            title="Organization Settings"
-            description="Edit your contact info and address"
-            buttonText="Manage Organization"
-            linkTo="/operator-settings"
+            icon="💬"
+            iconColor="text-purple-600"
+            title="Messaging"
+            description="Send messages and announcements"
+            buttonText="Open Messages"
+            onClick={() => console.log('Messaging - Coming soon')}
           />
 
           <DashboardCard
@@ -101,15 +91,6 @@ export const OperatorDashboard: React.FC = () => {
           />
 
           <DashboardCard
-            icon="📊"
-            iconColor="text-purple-600"
-            title="League Results"
-            description="Record matches and view standings"
-            buttonText="View Results"
-            onClick={() => console.log('League Results - Coming soon')}
-          />
-
-          <DashboardCard
             icon="🏢"
             iconColor="text-orange-600"
             title="Venue Partners"
@@ -118,25 +99,21 @@ export const OperatorDashboard: React.FC = () => {
             onClick={() => console.log('Venue Partners - Coming soon')}
           />
 
-          <DashboardCard
-            icon="📋"
-            iconColor="text-teal-600"
-            title="Manage Leagues"
-            description="View and edit your active leagues"
-            buttonText="View Leagues"
-            onClick={() => console.log('Manage Leagues - Coming soon')}
-          />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Active Leagues */}
+          {/* Row 2 - Active Leagues (2 cols) and Sidebar (1 col) */}
           <div className="lg:col-span-2">
             <ActiveLeagues operatorId={operatorId} />
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
+            <DashboardCard
+              icon="⚙️"
+              iconColor="text-indigo-600"
+              title="Organization Settings"
+              description="Edit your contact info and address"
+              buttonText="Manage Organization"
+              linkTo="/operator-settings"
+            />
+
             {/* Quick Stats */}
             <QuickStats activeLeagues={leagueCount} />
 

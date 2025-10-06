@@ -49,8 +49,10 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
-      <div className={`${iconColor} text-2xl mb-3`}>{icon}</div>
-      <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
+      <div className="flex items-center gap-3 mb-2">
+        <div className={`${iconColor} text-2xl`}>{icon}</div>
+        <h3 className="font-semibold text-gray-900">{title}</h3>
+      </div>
       <p className="text-sm text-gray-600 mb-4">{description}</p>
 
       {linkTo ? (

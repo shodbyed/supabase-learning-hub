@@ -27,19 +27,22 @@
 - **Professional UX**: Clear error handling and success feedback
 
 ### ✅ **Organization Settings Management** 🎉
-- **Complete Profile Editor**: Full CRUD operations for operator organization profile
-- **Independent Edit Sections**: Each card (name, address, email, phone) editable separately
-- **Section-Specific Updates**: Only modified fields sent to database
-- **Professional Layout**: Five cards with clear purpose descriptions
-  - Organization Name (with historical league name warning)
-  - Mailing Address (for BCA materials)
-  - League Contact Email (how players contact you by email)
-  - League Contact Phone (how players contact you by phone)
-  - Payment Information (read-only display)
-- **Visibility Controls**: Email and phone have separate visibility dropdowns
-- **Database Integration**: Real-time updates to `league_operators` table
-- **Error Handling**: Clear error messages and validation feedback
-- **Navigation**: Accessible from Operator Dashboard, protected route
+- **Card-Based Overview**: Two-card layout showing org info and league rules
+- **Organization Info Card**: Displays all org details with "Edit Info" button
+  - Organization name, mailing address, contact email, contact phone
+  - Future ready for detailed edit page implementation
+- **League Rules Card**: Links to dedicated League Rules page
+- **Professional Layout**: Consistent with dashboard card style
+- **Navigation**: Accessible from dashboard sidebar, protected route
+
+### ✅ **League Rules Page** 🎉
+- **Official BCA Rules**: Links to 8-Ball, 9-Ball, and 10-Ball official rules
+  - TODO: Current links need updating (require extra click + PDF download)
+  - Future: Direct PDF links or in-app hosting for better UX
+- **House Rules Preview**: Coming soon section with example optional rules
+  - Call pocket requirements, push-out allowances, coaching restrictions
+  - Time limits per shot, break requirements
+- **Navigation**: Back button to Organization Settings
 
 ### ✅ **Leagues Database & Creation Integration** 🎉
 - **Database Table**: `leagues` table in local Supabase with complete schema
@@ -110,10 +113,20 @@
   - `publicRoutes` - No authentication required (10 routes)
   - `authRoutes` - Authentication only (3 routes)
   - `memberRoutes` - Authentication + approved member application (2 routes)
-  - `operatorRoutes` - League operator role required (4 routes)
+  - `operatorRoutes` - League operator role required (5 routes including /league-rules)
 - **Map Functions**: Each array mapped to generate route components
 - **Reduced Repetition**: Dramatically cleaner code, easier to maintain
 - **Scalability**: Adding new routes is now simple - just add to appropriate array
+
+### ✅ **Operator Dashboard Refinements** 🎉
+- **Grid Layout**: Perfect alignment using CSS Grid (`lg:grid-cols-3`)
+- **Row 1**: 3 quick action cards (Messaging, Manage Players, Venue Partners)
+- **Row 2**: Active Leagues (2 cols) + Sidebar (1 col)
+  - Sidebar: Organization Settings card + Quick Stats
+- **Compact Cards**: Icon and title on same line for reduced height
+- **Active Leagues Component**: Displays created leagues with orange "Setup Needed" status
+- **Quick Stats Component**: Shows active leagues count (ready for more stats)
+- **Perfect Alignment**: All columns line up across rows
 
 ### ✅ **Tournament Utility Functions**
 - **fetchBCAChampionshipURL()**: Dynamic URL generation based on current date

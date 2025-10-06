@@ -125,7 +125,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Your Active Leagues</h3>
         <Button asChild size="sm" style={{ backgroundColor: '#2563eb', color: 'white' }}>
-          <Link to="/create-league">+ New League</Link>
+          <Link to="/create-league">Create New League</Link>
         </Button>
       </div>
 
