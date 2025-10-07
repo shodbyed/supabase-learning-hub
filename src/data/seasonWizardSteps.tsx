@@ -22,6 +22,7 @@ export interface SeasonFormData {
   bcaStartDate: string;        // ISO date string
   bcaEndDate: string;          // ISO date string
   bcaIgnored: boolean;         // Whether to ignore BCA dates
+  apaChoice: string;           // Choice ID: 'ignore', 'custom', or database option ID
   apaStartDate: string;        // ISO date string
   apaEndDate: string;          // ISO date string
   apaIgnored: boolean;         // Whether to ignore APA dates
@@ -61,7 +62,8 @@ export function getSeasonWizardSteps(
   defaultStartDate?: string,
   _leagueDayOfWeek?: string,
   onDayOfWeekChange?: (newDay: string, newDate: string) => void,
-  bcaDateOptions?: ChampionshipDateOption[]
+  bcaDateOptions?: ChampionshipDateOption[],
+  apaDateOptions?: ChampionshipDateOption[]
 ): SeasonWizardStep[] {
   const STORAGE_KEY = `season-creation-${leagueId}`;
 
@@ -79,6 +81,7 @@ export function getSeasonWizardSteps(
       bcaStartDate: '',
       bcaEndDate: '',
       bcaIgnored: false,
+      apaChoice: '',
       apaStartDate: '',
       apaEndDate: '',
       apaIgnored: false,
@@ -91,6 +94,180 @@ export function getSeasonWizardSteps(
     const newData = { ...formData, ...updates };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
     Object.assign(formData, newData);
+  };
+
+  /**
+   * Helper function to generate championship date selection steps
+   * Creates two steps: choice selection and custom date entry
+   */
+  const createChampionshipSteps = (
+    organization: 'BCA' | 'APA',
+    dateOptions: ChampionshipDateOption[] | undefined,
+    websiteURL: string
+  ): SeasonWizardStep[] => {
+    const orgLower = organization.toLowerCase();
+    const choiceField = `${orgLower}Choice` as keyof SeasonFormData;
+    const startField = `${orgLower}StartDate` as keyof SeasonFormData;
+    const endField = `${orgLower}EndDate` as keyof SeasonFormData;
+    const ignoredField = `${orgLower}Ignored` as keyof SeasonFormData;
+
+    return [
+      // Choice step
+      {
+        id: choiceField,
+        title: `${organization} National Tournament Scheduling`,
+        subtitle: (dateOptions && dateOptions.length > 0) ? (
+          <>
+            To avoid conflicts with major tournaments your players may want to attend, please select how to handle {organization} Nationals dates.
+            <br />
+            Please verify championship dates at the{' '}
+            <a
+              href={websiteURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {organization} Website
+            </a>
+            .
+          </>
+        ) : (
+          <>
+            <strong>Help us build the community database!</strong>
+            <br />
+            No championship dates have been submitted yet. Please verify the dates at the{' '}
+            <a
+              href={websiteURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {organization} Website
+            </a>
+            {' '}and enter them below. Your submission helps other operators avoid scheduling conflicts.
+          </>
+        ),
+        type: 'choice' as const,
+        choices: [
+          // Dynamic choices from database (only if they exist)
+          ...(dateOptions || []).map(option => ({
+            value: option.id,
+            label: `${option.start_date} to ${option.end_date}`,
+            subtitle: option.dev_verified
+              ? '✓ Verified dates'
+              : `${option.vote_count} operator${option.vote_count > 1 ? 's' : ''} confirmed`,
+          })),
+          // Always include ignore and custom options
+          {
+            value: 'ignore',
+            label: 'Skip - I don\'t need to avoid this tournament',
+            subtitle: 'I don\'t expect my players to attend this tournament',
+          },
+          {
+            value: 'custom',
+            label: dateOptions && dateOptions.length > 0
+              ? 'Enter my own tournament dates'
+              : 'Enter verified championship dates',
+            subtitle: dateOptions && dateOptions.length > 0
+              ? `I have different/updated ${organization} tournament dates`
+              : 'Help us by verifying and submitting the official dates',
+          },
+        ],
+        getValue: () => (formData[choiceField] as string) || '',
+        setValue: (value: string) => {
+          saveData({ [choiceField]: value } as any);
+
+          // Handle different choice types
+          if (value === 'ignore') {
+            saveData({
+              [ignoredField]: true,
+              [startField]: '',
+              [endField]: ''
+            } as any);
+          } else if (value === 'custom') {
+            // User will enter dates in next step
+            saveData({ [ignoredField]: false } as any);
+          } else {
+            // User selected a found date option
+            const selectedOption = dateOptions?.find(opt => opt.id === value);
+            if (selectedOption) {
+              saveData({
+                [ignoredField]: false,
+                [startField]: selectedOption.start_date,
+                [endField]: selectedOption.end_date
+              } as any);
+            }
+          }
+        },
+        infoTitle: 'Why Schedule Around Major Tournaments?',
+        infoContent: (
+          <div className="space-y-4">
+            <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
+
+            <div>
+              <p><strong>Scheduling during tournaments causes problems:</strong></p>
+              <ul className="list-disc ml-4 mt-2">
+                <li>Teams lose key players who travel to compete</li>
+                <li>Unnecessary forfeits when rosters are short</li>
+                <li>Complicated makeup matches later in the season</li>
+              </ul>
+            </div>
+
+            <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
+          </div>
+        ),
+        infoLabel: 'Why is this important',
+      },
+
+      // Custom date entry step
+      {
+        id: `${orgLower}CustomDates`,
+        title: `${organization} National Championship Dates`,
+        subtitle: (
+          <>
+            Enter the start and end dates for {organization} National Championships.
+            <br />
+            Verify championship dates at the{' '}
+            <a
+              href={websiteURL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {organization} Website
+            </a>
+            .
+          </>
+        ),
+        type: 'dual-date' as const,
+        getValue: () => `${(formData[startField] as string) || ''}|${(formData[endField] as string) || ''}`,
+        setValue: (value: string) => {
+          const [startDate, endDate] = value.split('|');
+          saveData({
+            [startField]: startDate || '',
+            [endField]: endDate || ''
+          } as any);
+        },
+        infoTitle: 'Why Schedule Around Major Tournaments?',
+        infoContent: (
+          <div className="space-y-4">
+            <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
+
+            <div>
+              <p><strong>Scheduling during tournaments causes problems:</strong></p>
+              <ul className="list-disc ml-4 mt-2">
+                <li>Teams lose key players who travel to compete</li>
+                <li>Unnecessary forfeits when rosters are short</li>
+                <li>Complicated makeup matches later in the season</li>
+              </ul>
+            </div>
+
+            <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
+          </div>
+        ),
+        infoLabel: 'Why is this important',
+      },
+    ];
   };
 
   const allSteps: SeasonWizardStep[] = [
@@ -184,183 +361,19 @@ export function getSeasonWizardSteps(
       infoContent: seasonLengthInfo.content,
     },
 
-    // Step 3: BCA Championship Date Selection
-    {
-      id: 'bcaChoice',
-      title: 'BCA National Tournament Scheduling',
-      subtitle: (
-        <>
-          To avoid conflicts with major tournaments your players may want to attend, please select how to handle BCA Nationals dates.
-          <br />
-          Please verify championship dates at the{' '}
-          <a
-            href={fetchBCAChampionshipURL()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            BCA Website
-          </a>
-          .
-        </>
-      ),
-      type: 'choice',
-      choices: [
-        // Dynamic choices from database
-        ...(bcaDateOptions || []).map(option => ({
-          value: option.id,
-          label: `${option.start_date} to ${option.end_date}`,
-          subtitle: option.dev_verified
-            ? '✓ Verified dates'
-            : `${option.vote_count} operator${option.vote_count > 1 ? 's' : ''} confirmed`,
-        })),
-        // Always include ignore and custom options
-        {
-          value: 'ignore',
-          label: 'Ignore BCA tournament scheduling',
-          subtitle: 'I don\'t expect my players to attend this tournament',
-        },
-        {
-          value: 'custom',
-          label: 'Enter my own tournament dates',
-          subtitle: 'I have different/updated BCA tournament dates',
-        },
-      ],
-      getValue: () => formData.bcaChoice || '',
-      setValue: (value: string) => {
-        saveData({ bcaChoice: value });
+    // Step 3 & 3b: BCA Championship Date Selection (choice + custom dates)
+    ...createChampionshipSteps('BCA', bcaDateOptions, fetchBCAChampionshipURL()),
 
-        // Handle different choice types
-        if (value === 'ignore') {
-          saveData({
-            bcaIgnored: true,
-            bcaStartDate: '',
-            bcaEndDate: ''
-          });
-        } else if (value === 'custom') {
-          // User will enter dates in next step
-          saveData({ bcaIgnored: false });
-        } else {
-          // User selected a found date option
-          const selectedOption = bcaDateOptions?.find(opt => opt.id === value);
-          if (selectedOption) {
-            saveData({
-              bcaIgnored: false,
-              bcaStartDate: selectedOption.start_date,
-              bcaEndDate: selectedOption.end_date
-            });
-          }
-        }
-      },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important',
-    },
-
-    // Step 3b: BCA Custom Championship Dates (only shown when custom is selected)
-    {
-      id: 'bcaCustomDates',
-      title: 'BCA National Championship Dates',
-      subtitle: (
-        <>
-          Enter the start and end dates for BCA National Championships.
-          <br />
-          Verify championship dates at the{' '}
-          <a
-            href={fetchBCAChampionshipURL()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            BCA Website
-          </a>
-          .
-        </>
-      ),
-      type: 'dual-date',
-      getValue: () => `${formData.bcaStartDate || ''}|${formData.bcaEndDate || ''}`,
-      setValue: (value: string) => {
-        const [startDate, endDate] = value.split('|');
-        saveData({
-          bcaStartDate: startDate || '',
-          bcaEndDate: endDate || ''
-        });
-      },
-      infoTitle: 'Why Schedule Around Major Tournaments?',
-      infoContent: (
-        <div className="space-y-4">
-          <p><strong>Many players want to compete in BCA and APA Championships.</strong> These tournaments represent the highest level of pool competition.</p>
-
-          <div>
-            <p><strong>Scheduling during tournaments causes problems:</strong></p>
-            <ul className="list-disc ml-4 mt-2">
-              <li>Teams lose key players who travel to compete</li>
-              <li>Unnecessary forfeits when rosters are short</li>
-              <li>Complicated makeup matches later in the season</li>
-            </ul>
-          </div>
-
-          <p><strong>If any of your players might attend these championships, schedule around them.</strong> This supports player growth and keeps your league running smoothly.</p>
-        </div>
-      ),
-      infoLabel: 'Why is this important',
-    },
-
-    // Step 4: APA Championship Dates
-    {
-      id: 'apaStartDate',
-      title: 'APA National Championship Dates',
-      subtitle: (
-        <>
-          Enter the start and end dates for APA National Championships.
-          <br />
-          Verify championship dates at the{' '}
-          <a
-            href={fetchAPAChampionshipURL()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            APA Website
-          </a>
-          .
-        </>
-      ),
-      type: 'dual-date',
-      getValue: () => `${formData.apaStartDate || ''}|${formData.apaEndDate || ''}`,
-      setValue: (value: string) => {
-        const [startDate, endDate] = value.split('|');
-        saveData({
-          apaStartDate: startDate || '',
-          apaEndDate: endDate || ''
-        });
-      },
-      infoTitle: 'APA Championship Scheduling',
-      infoContent:
-        'The APA National Championship is typically held in August. You can choose to skip league nights during this week to allow your players to attend. If this doesn\'t apply to your league, you can ignore these dates.',
-    },
+    // Step 4 & 4b: APA Championship Date Selection (choice + custom dates)
+    ...createChampionshipSteps('APA', apaDateOptions, fetchAPAChampionshipURL()),
   ];
 
   // Show custom season length step only when custom flag is set
   const shouldShowCustomSeasonLength = formData.isCustomLength === true;
 
-  // Show BCA custom dates step only when 'custom' is selected
+  // Show BCA/APA custom dates steps only when 'custom' is selected
   const shouldShowBCACustomDates = formData.bcaChoice === 'custom';
+  const shouldShowAPACustomDates = formData.apaChoice === 'custom';
 
   return allSteps.filter(step => {
     if (step.id === 'customSeasonLength') {
@@ -368,6 +381,9 @@ export function getSeasonWizardSteps(
     }
     if (step.id === 'bcaCustomDates') {
       return shouldShowBCACustomDates;
+    }
+    if (step.id === 'apaCustomDates') {
+      return shouldShowAPACustomDates;
     }
     return true;
   });
@@ -379,4 +395,5 @@ export function getSeasonWizardSteps(
 export function clearSeasonCreationData(leagueId: string): void {
   const STORAGE_KEY = `season-creation-${leagueId}`;
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(`season-wizard-step-${leagueId}`);
 }

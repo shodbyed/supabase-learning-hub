@@ -38,9 +38,14 @@ export const SeasonCreationWizard: React.FC = () => {
   const [league, setLeague] = useState<League | null>(null);
   const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
   const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
+  const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(() => {
+    // Restore current step from localStorage
+    const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
+    return stored ? parseInt(stored, 10) : 0;
+  });
   const [isCreating, setIsCreating] = useState(false);
   const [_refreshKey, setRefreshKey] = useState(0); // Force re-render when form data changes
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -86,9 +91,12 @@ export const SeasonCreationWizard: React.FC = () => {
         // For now, simulate no existing seasons
         setExistingSeasons([]);
 
-        // Fetch BCA championship date options
+        // Fetch championship date options for both BCA and APA
         const bcaDates = await fetchChampionshipDateOptions('BCA');
         setBcaDateOptions(bcaDates);
+
+        const apaDates = await fetchChampionshipDateOptions('APA');
+        setApaDateOptions(apaDates);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load league information');
@@ -209,7 +217,8 @@ export const SeasonCreationWizard: React.FC = () => {
     defaultStartDate,
     league.day_of_week,
     handleDayOfWeekChange,
-    bcaDateOptions
+    bcaDateOptions,
+    apaDateOptions
   );
 
   // Wrap setValue to trigger re-render
@@ -237,14 +246,18 @@ export const SeasonCreationWizard: React.FC = () => {
     }
 
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
     }
   };
 
   const handleBack = () => {
     setValidationError(null);
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      const newStep = currentStep - 1;
+      setCurrentStep(newStep);
+      localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
     }
   };
 
@@ -264,6 +277,11 @@ export const SeasonCreationWizard: React.FC = () => {
       // Submit BCA championship dates to database if custom dates were entered
       if (formData.bcaChoice === 'custom' && formData.bcaStartDate && formData.bcaEndDate) {
         await submitChampionshipDates('BCA', formData.bcaStartDate, formData.bcaEndDate);
+      }
+
+      // Submit APA championship dates to database if custom dates were entered
+      if (formData.apaChoice === 'custom' && formData.apaStartDate && formData.apaEndDate) {
+        await submitChampionshipDates('APA', formData.apaStartDate, formData.apaEndDate);
       }
 
       // Calculate end date using timezone-safe parsing
@@ -395,7 +413,7 @@ export const SeasonCreationWizard: React.FC = () => {
           {currentStepData.type === 'choice' && currentStepData.choices && (
             <SimpleRadioChoice
               title=""
-              subtitle={currentStepData.subtitle}
+              subtitle=""
               choices={currentStepData.choices}
               selectedValue={currentStepData.getValue()}
               onSelect={(value) => currentStepData.setValue(value)}
