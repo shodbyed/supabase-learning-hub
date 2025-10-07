@@ -2,6 +2,59 @@
 
 ## Current Work Focus
 
+### **In Progress: Season Creation Wizard with Championship Dates & Holiday System** 🚧
+**Implementation Date**: 2025-01-07
+**Status**: 🔄 **ACTIVE DEVELOPMENT**
+
+**Current Phase**: Data collection for season planning
+- ✅ Championship dates system (BCA/APA) with community voting database
+- ✅ Reusable helper function for both BCA and APA championship steps
+- ⏳ Holiday selection using `date-holidays` package (NEXT)
+- ⏳ Initial season schedule generation
+- ⏳ Conflict detection and resolution
+
+**What's Been Built**:
+- **Championship Dates Database** (`championship_date_options` table):
+  - Community voting system (vote_count tracking)
+  - Dev verification flag for authoritative dates
+  - Auto-filters past dates, shows only relevant year
+  - Unique constraint prevents duplicate entries
+  - Year-aware tournament URLs (BCA updates after March 15, APA after August)
+
+- **Reusable Championship Steps** (`createChampionshipSteps()` helper):
+  - Generates choice + custom date entry steps for any organization
+  - Both BCA and APA use identical code (DRY principle)
+  - Empty state encourages first submission to build community database
+  - Choice options: found dates (sorted by votes), skip tournament, enter custom
+  - Custom dates submitted to database when season is created
+
+- **Wizard Persistence**:
+  - Current step saved to localStorage (survives page navigation)
+  - Form data persists across sessions
+  - Users can navigate away to check tournament websites and return
+
+**Season Creation Flow** (Multi-Step Process):
+1. ✅ **Collect Basic Info**: Start date, season length, championship dates
+2. ⏳ **Collect Holidays**: Using `date-holidays` package for US holidays
+3. ⏳ **Generate Initial Schedule**: All weeks from start to end date
+4. ⏳ **Show Conflicts**: Holidays + championships that fall on league nights
+5. ⏳ **Resolve Conflicts**: Skip week or ignore for each conflict
+6. ⏳ **Finalize Season**: Adjusted schedule with skipped weeks
+
+**Key Technical Decisions**:
+- Championship dates are data collection only (not season creation yet)
+- `date-holidays` npm package installed for fetching US national holidays
+- Season will calculate week-by-week schedule AFTER all data is collected
+- Conflicts resolved interactively before final season creation
+
+**Files Created/Modified**:
+- `/database/championship_date_options.sql` - Community voting table
+- `/src/utils/tournamentUtils.ts` - Database query/submission functions
+- `/src/data/seasonWizardSteps.tsx` - Reusable championship steps helper
+- `/src/operator/SeasonCreationWizard.tsx` - Wizard step persistence
+- `/src/types/season.ts` - Type definitions for season data
+- `package.json` - Added `date-holidays@3.26.1` dependency
+
 ### **Just Completed: League Management System - Detail Page & Components** 🎉
 **Implementation Date**: 2025-01-06
 **Status**: ✅ **PRODUCTION READY**
