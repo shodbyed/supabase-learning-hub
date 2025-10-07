@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
+import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
@@ -70,8 +71,9 @@ export const LeagueCreationWizard: React.FC = () => {
       console.group('🏆 LEAGUE CREATION - DATABASE OPERATIONS');
 
       // Convert formData to database format
-      const startDate = new Date(formData.startDate);
-      const dayOfWeek = getDayOfWeek(startDate).toLowerCase() as DayOfWeek;
+      const startDate = parseLocalDate(formData.startDate);
+      const dayOfWeekName = getDayOfWeekName(formData.startDate);
+      const dayOfWeek = dayOfWeekName.toLowerCase() as DayOfWeek;
 
       // Map display game type to database format
       const gameTypeMap: Record<string, GameType> = {
@@ -113,7 +115,7 @@ export const LeagueCreationWizard: React.FC = () => {
         year: startDate.getFullYear(),
         season: getTimeOfYear(startDate),
         gameType: formData.gameType,
-        dayOfWeek: getDayOfWeek(startDate),
+        dayOfWeek: dayOfWeekName,
         qualifier: formData.qualifier
       };
       const allNames = generateAllLeagueNames(leagueComponents);

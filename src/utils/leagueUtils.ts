@@ -5,6 +5,7 @@
  * league name generation, and date calculations.
  * Based on reference code patterns from globalFunctions.ts and dateFunctions.ts
  */
+import { parseLocalDate, getDayOfWeekName } from './formatters';
 
 /**
  * Determines the season based on a date
@@ -72,9 +73,10 @@ export const buildLeagueName = (
   // Day of week - use placeholder if no valid date
   let dayDisplay = '[Day]';
   if (startDate) {
-    const date = new Date(startDate);
-    if (!isNaN(date.getTime())) {
-      dayDisplay = getDayOfWeek(date);
+    try {
+      dayDisplay = typeof startDate === 'string' ? getDayOfWeekName(startDate) : getDayOfWeek(startDate);
+    } catch (e) {
+      dayDisplay = '[Day]';
     }
   }
   parts.push(dayDisplay);
@@ -83,10 +85,13 @@ export const buildLeagueName = (
   let seasonDisplay = '[Season]';
   let yearDisplay = '[Year]';
   if (startDate) {
-    const date = new Date(startDate);
-    if (!isNaN(date.getTime())) {
+    try {
+      const date = typeof startDate === 'string' ? parseLocalDate(startDate) : startDate;
       seasonDisplay = getTimeOfYear(date);
       yearDisplay = date.getFullYear().toString();
+    } catch (e) {
+      seasonDisplay = '[Season]';
+      yearDisplay = '[Year]';
     }
   }
   parts.push(seasonDisplay);

@@ -166,3 +166,59 @@ export const getCardBrand = (cardNumber: string): string => {
   if (/^6/.test(number)) return 'discover';
   return 'unknown';
 };
+
+/**
+ * Convert ISO date string (YYYY-MM-DD) to local date object without timezone offset
+ *
+ * IMPORTANT: HTML date inputs and Postgres DATE fields use YYYY-MM-DD format
+ * without timezone info. When you create a Date object from this string using
+ * `new Date('2024-01-15')`, JavaScript treats it as UTC midnight, which may be
+ * the previous day in your local timezone.
+ *
+ * This function creates a Date object in the local timezone so the day number
+ * matches the ISO string.
+ *
+ * @param isoDate - ISO date string (YYYY-MM-DD)
+ * @returns Date object in local timezone representing that calendar date
+ */
+export const parseLocalDate = (isoDate: string): Date => {
+  const [year, month, day] = isoDate.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+/**
+ * Convert Date object to ISO date string (YYYY-MM-DD) using local timezone
+ *
+ * This ensures the string represents the calendar date in the user's timezone,
+ * not UTC. Use this when saving dates to the database or setting input values.
+ *
+ * @param date - Date object
+ * @returns ISO date string (YYYY-MM-DD) in local timezone
+ */
+export const formatLocalDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * Get day of week from ISO date string, handling timezone correctly
+ *
+ * @param isoDate - ISO date string (YYYY-MM-DD)
+ * @returns Day of week (0 = Sunday, 6 = Saturday)
+ */
+export const getDayOfWeek = (isoDate: string): number => {
+  return parseLocalDate(isoDate).getDay();
+};
+
+/**
+ * Get day of week name from ISO date string
+ *
+ * @param isoDate - ISO date string (YYYY-MM-DD)
+ * @returns Day name (e.g., "Monday", "Tuesday")
+ */
+export const getDayOfWeekName = (isoDate: string): string => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[getDayOfWeek(isoDate)];
+};

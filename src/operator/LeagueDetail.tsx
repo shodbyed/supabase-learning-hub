@@ -181,7 +181,7 @@ export const LeagueDetail: React.FC = () => {
               }
             </p>
             <button
-              onClick={() => console.log('Create season - Coming soon')}
+              onClick={() => navigate(`/league/${league.id}/create-season`)}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Let's Go!
@@ -195,7 +195,7 @@ export const LeagueDetail: React.FC = () => {
         {/* Seasons Section */}
         <SeasonsCard
           leagueId={league.id}
-          onCreateSeason={() => console.log('Create season - Coming soon')}
+          onCreateSeason={() => navigate(`/league/${league.id}/create-season`)}
         />
 
         {/* Teams Section */}

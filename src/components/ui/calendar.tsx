@@ -5,6 +5,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './button';
 import { Card } from './card';
+import { parseLocalDate, formatLocalDate } from '@/utils/formatters';
 
 interface CalendarProps {
   value?: string; // ISO date string (YYYY-MM-DD)
@@ -31,10 +32,10 @@ export const Calendar: React.FC<CalendarProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    value ? new Date(value) : null
+    value ? parseLocalDate(value) : null
   );
   const [viewDate, setViewDate] = useState<Date>(
-    value ? new Date(value) : new Date()
+    value ? parseLocalDate(value) : new Date()
   );
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -56,21 +57,17 @@ export const Calendar: React.FC<CalendarProps> = ({
   }, [isOpen]);
 
 
-  const formatISODate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
-  };
-
   const handleDateSelect = (day: number) => {
     const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
     setSelectedDate(newDate);
-    onChange(formatISODate(newDate));
+    onChange(formatLocalDate(newDate));
     setIsOpen(false);
   };
 
   // Sync view date when manual input changes
   useEffect(() => {
     if (value && selectedDate) {
-      const inputDate = new Date(value);
+      const inputDate = parseLocalDate(value);
       if (inputDate.getMonth() !== viewDate.getMonth() || inputDate.getFullYear() !== viewDate.getFullYear()) {
         setViewDate(inputDate);
       }
@@ -116,7 +113,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     if (disabled) return true;
 
     const checkDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    const checkDateISO = formatISODate(checkDate);
+    const checkDateISO = formatLocalDate(checkDate);
 
     if (minDate && checkDateISO < minDate) return true;
     if (maxDate && checkDateISO > maxDate) return true;
@@ -161,7 +158,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             const newValue = e.target.value;
             onChange(newValue);
             if (newValue) {
-              setSelectedDate(new Date(newValue));
+              setSelectedDate(parseLocalDate(newValue));
             } else {
               setSelectedDate(null);
             }

@@ -171,7 +171,17 @@ flowchart TD
 
 - **Dev Server Management**: When restarting the dev server, kill the existing process but then ask the user to manually run `pnpm run dev` in their terminal rather than running it automatically. The background execution doesn't always start a new instance properly for the user.
 
-- **Database Operations**: Unless otherwise specified, implement UI functionality that console.logs database operations instead of making actual database calls. The user's partner handles database queries separately for both web and mobile apps. Show the data structure and format needed for database operations via console.log, and provide UI feedback as if the operation succeeded.
+- **Database Operations**: Implement full database operations using Supabase. The user has a local Supabase instance. The user's partner will mirror these database calls for the mobile app, but the web app should have complete, working database functionality. Most operator/management features are web-only and won't be needed in the mobile app (which focuses on scorekeeping).
+
+- **Date Input Component**: ALWAYS use the `Calendar` component from `@/components/ui/calendar` for all date inputs. Never use plain `<input type="date">` elements. The Calendar component provides a clickable calendar icon that opens a visual date picker popup, which is the required UX pattern for this project.
+
+- **Timezone-Safe Date Handling**: ALWAYS use the date utility functions from `@/utils/formatters` when working with dates:
+  - `parseLocalDate(isoDate)` - Convert ISO string to Date object in local timezone (prevents off-by-one day errors)
+  - `formatLocalDate(date)` - Convert Date object to ISO string in local timezone
+  - `getDayOfWeek(isoDate)` - Get day number (0-6) from ISO string
+  - `getDayOfWeekName(isoDate)` - Get day name from ISO string
+  - NEVER use `new Date('2024-01-15')` directly - it uses UTC which causes timezone bugs
+  - NEVER use `date.toISOString().split('T')[0]` - use `formatLocalDate()` instead
 
 The format is flexible - focus on capturing valuable insights that help me work more effectively with you and the project. Think of memory-bank folder as a living document that grows smarter as we work together.
 

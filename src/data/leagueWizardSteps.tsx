@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { fetchBCAChampionshipURL } from '@/utils/tournamentUtils';
+import { parseLocalDate, formatLocalDate, getDayOfWeekName } from '@/utils/formatters';
 import {
   startDateInfo,
   seasonLengthInfo,
@@ -130,13 +131,12 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         console.log('📝 LEAGUE CREATION: Start date selected:', value);
 
         if (value) {
-          const date = new Date(value);
-          const startDate = new Date(value);
-          const endDate = new Date(startDate);
-          endDate.setDate(startDate.getDate() + (formData.seasonLength * 7));
+          const date = parseLocalDate(value);
+          const endDate = new Date(date);
+          endDate.setDate(date.getDate() + (formData.seasonLength * 7));
 
           // Calculate derived fields (day of week, season, year)
-          const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+          const dayOfWeek = getDayOfWeekName(value);
           const season = (() => {
             const month = date.getMonth();
             if (month >= 2 && month <= 4) return 'Spring';
@@ -149,10 +149,10 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           updateFormData('dayOfWeek', dayOfWeek);
           updateFormData('season', season);
           updateFormData('year', year);
-          updateFormData('endDate', endDate.toISOString().split('T')[0]);
+          updateFormData('endDate', formatLocalDate(endDate));
 
           console.log('✅ CALCULATED: Day =', dayOfWeek, '| Season =', season, '| Year =', year);
-          console.log('📅 CALCULATED: End date =', endDate.toISOString().split('T')[0]);
+          console.log('📅 CALCULATED: End date =', formatLocalDate(endDate));
         }
       },
       infoTitle: startDateInfo.title,
@@ -184,11 +184,11 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
 
           // Recalculate end date if start date exists
           if (formData.startDate) {
-            const startDate = new Date(formData.startDate);
+            const startDate = parseLocalDate(formData.startDate);
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + (parseInt(value) * 7));
-            updateFormData('endDate', endDate.toISOString().split('T')[0]);
-            console.log('📅 UPDATED: End date =', endDate.toISOString().split('T')[0]);
+            updateFormData('endDate', formatLocalDate(endDate));
+            console.log('📅 UPDATED: End date =', formatLocalDate(endDate));
           }
         }
       },
@@ -220,11 +220,11 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
 
           // Recalculate end date if start date exists
           if (formData.startDate) {
-            const startDate = new Date(formData.startDate);
+            const startDate = parseLocalDate(formData.startDate);
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + (weeks * 7));
-            updateFormData('endDate', endDate.toISOString().split('T')[0]);
-            console.log('📅 UPDATED: End date =', endDate.toISOString().split('T')[0]);
+            updateFormData('endDate', formatLocalDate(endDate));
+            console.log('📅 UPDATED: End date =', formatLocalDate(endDate));
           }
         }
       },
