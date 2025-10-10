@@ -128,12 +128,19 @@ export function calculateEndDate(startDate: Date, seasonLength: number): Date {
 }
 
 /**
+ * Conflict severity levels based on proximity to league night
+ */
+export type ConflictSeverity = 'critical' | 'high' | 'medium' | 'low';
+
+/**
  * Conflict flag for schedule conflicts (holidays or championships)
  */
 export interface ConflictFlag {
   type: 'holiday' | 'championship';
   name: string;
   reason: string;
+  severity: ConflictSeverity;  // Visual indicator of conflict importance
+  daysAway: number;            // Days between conflict date and league night
 }
 
 /**

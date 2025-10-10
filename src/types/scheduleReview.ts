@@ -22,6 +22,12 @@ export interface ScheduleReviewProps {
   bcaChampionship?: ChampionshipEvent;
   /** APA championship dates */
   apaChampionship?: ChampionshipEvent;
+  /**
+   * Current play week number (locks editing of earlier weeks)
+   * TODO: Will be fetched from database in future (e.g., SELECT MAX(week_number) FROM match_results)
+   * For new seasons, pass 0 to allow all weeks to be edited
+   */
+  currentPlayWeek?: number;
   /** Callback when schedule is modified */
   onScheduleChange: (updatedSchedule: WeekEntry[]) => void;
   /** Callback when user confirms final schedule */
@@ -40,6 +46,11 @@ export interface ScheduleWeekRowProps {
   index: number;
   /** Callback when insert/remove week-off is clicked */
   onToggleWeekOff: (index: number) => void;
+  /**
+   * Current play week number (locks editing of earlier weeks)
+   * Weeks with weekName "Week 1", "Week 2", etc. that are <= currentPlayWeek will be locked
+   */
+  currentPlayWeek?: number;
 }
 
 /**

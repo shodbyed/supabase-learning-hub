@@ -60,46 +60,87 @@ export function fetchHolidaysForSeason(startDate: Date, seasonLength: number): H
 }
 
 /**
- * Check if a holiday name indicates a travel holiday (Christmas or New Year)
- * These affect all leagues regardless of day of week
+ * Check if a holiday/conflict is a travel holiday that affects the entire week
+ * Travel holidays: Christmas, New Year's, BCA, APA, Thanksgiving (for Wed-Sun leagues)
  */
-function isTravelHoliday(holidayName: string): boolean {
-  const name = holidayName.toLowerCase();
-  return name.includes('christmas') || name.includes('new year');
+export function isTravelHoliday(conflictName: string, leagueDayOfWeek?: string): boolean {
+  const name = conflictName.toLowerCase();
+
+  // Christmas and New Year's always travel holidays
+  if (name.includes('christmas') || name.includes('new year')) {
+    return true;
+  }
+
+  // BCA and APA championships are travel holidays
+  if (name.includes('bca') || name.includes('apa')) {
+    return true;
+  }
+
+  // Thanksgiving only for Wed-Sun leagues
+  if (name.includes('thanksgiving') && leagueDayOfWeek) {
+    const leagueDay = leagueDayToNumber(leagueDayOfWeek);
+    return leagueDay === 0 || leagueDay >= 3; // Sunday or Wed-Sat
+  }
+
+  return false;
 }
 
 /**
- * Check if holiday is Thanksgiving
- * Always on Thursday, affects Wed/Thu/Fri/Sat/Sun leagues (travel days)
+ * Extract each occurrence of league night from a date range
+ * Used to split multi-week championships into individual week conflicts
+ *
+ * @param startDate - Championship start date
+ * @param endDate - Championship end date
+ * @param leagueDayOfWeek - Day of week league plays (e.g., 'tuesday')
+ * @param championshipName - Name for the conflict (e.g., 'BCA National Tournament')
+ * @returns Array of Holiday objects, one for each league night in the range
  */
-function isThanksgiving(holidayName: string): boolean {
-  return holidayName.toLowerCase().includes('thanksgiving');
-}
+export function extractLeagueNights(
+  startDate: string,
+  endDate: string,
+  leagueDayOfWeek: string,
+  championshipName: string
+): Holiday[] {
+  const start = parseLocalDate(startDate);
+  const end = parseLocalDate(endDate);
+  const leagueDay = leagueDayToNumber(leagueDayOfWeek);
 
-/**
- * Check if holiday is typically observed on Monday
- * Memorial Day, Labor Day, MLK Day, Presidents Day
- */
-function isMondayHoliday(holidayName: string): boolean {
-  const name = holidayName.toLowerCase();
-  return (
-    name.includes('memorial day') ||
-    name.includes('labor day') ||
-    name.includes('martin luther king') ||
-    name.includes('presidents') ||
-    name.includes("president's day")
-  );
-}
+  const leagueNights: Holiday[] = [];
+  let weekNumber = 1;
 
-/**
- * Get day of week from a date (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
- */
-function getDayOfWeek(date: Date): number {
-  return date.getDay();
+  // Find first league night in range
+  let currentDate = new Date(start);
+  const startDay = currentDate.getDay();
+
+  // Calculate days until first league night
+  let daysUntilLeagueNight = leagueDay - startDay;
+  if (daysUntilLeagueNight < 0) {
+    daysUntilLeagueNight += 7;
+  }
+
+  currentDate.setDate(currentDate.getDate() + daysUntilLeagueNight);
+
+  // Extract each league night until past end date
+  while (currentDate <= end) {
+    const dateStr = currentDate.toISOString().split('T')[0] + ' 00:00:00';
+    leagueNights.push({
+      date: dateStr,
+      name: `${championshipName} Week ${weekNumber}`,
+      start: dateStr,
+      end: dateStr,
+      type: 'championship'
+    });
+
+    weekNumber++;
+    currentDate.setDate(currentDate.getDate() + 7); // Next week
+  }
+
+  return leagueNights;
 }
 
 /**
  * Convert league day string to day number
+ * Used internally by extractLeagueNights and isTravelHoliday
  */
 function leagueDayToNumber(day: string): number {
   const dayMap: Record<string, number> = {
@@ -112,88 +153,6 @@ function leagueDayToNumber(day: string): number {
     saturday: 6,
   };
   return dayMap[day.toLowerCase()] ?? 1; // Default to Monday if not found
-}
-
-/**
- * Check if holiday is within ±1 day of league night
- */
-function isWithinOneDayOfLeagueNight(holidayDate: Date, leagueDayOfWeek: string): boolean {
-  const holidayDay = getDayOfWeek(holidayDate);
-  const leagueDay = leagueDayToNumber(leagueDayOfWeek);
-
-  // Check if holiday is on league night or ±1 day
-  const diff = Math.abs(holidayDay - leagueDay);
-  return diff <= 1 || diff >= 6; // 6 handles wrap-around (Sunday=0, Saturday=6)
-}
-
-/**
- * Smart flagging logic - determines if a holiday should be flagged for a specific league week
- *
- * @param holidayDate - Date of the holiday
- * @param holidayName - Name of the holiday
- * @param leagueDayOfWeek - Day of week league plays on (e.g., 'tuesday')
- * @param weekDate - The specific week date being checked
- * @returns Object with shouldFlag boolean and reason string
- */
-export function shouldFlagHoliday(
-  holidayDate: Date,
-  holidayName: string,
-  leagueDayOfWeek: string,
-  weekDate: Date
-): { shouldFlag: boolean; reason: string } {
-  // Calculate days between holiday and week date
-  const daysDiff = Math.abs(Math.floor((holidayDate.getTime() - weekDate.getTime()) / (1000 * 60 * 60 * 24)));
-
-  // TRAVEL HOLIDAYS - Flag if within same week (±3 days to cover the week)
-  if (isTravelHoliday(holidayName)) {
-    if (daysDiff <= 3) {
-      return {
-        shouldFlag: true,
-        reason: 'Travel holiday - affects entire week',
-      };
-    }
-    return { shouldFlag: false, reason: '' };
-  }
-
-  // THANKSGIVING - Flag Wed/Thu/Fri/Sat/Sun leagues if within same week
-  if (isThanksgiving(holidayName)) {
-    if (daysDiff <= 3) {
-      const leagueDay = leagueDayToNumber(leagueDayOfWeek);
-      // Wednesday (3) through Sunday (0) - noting Sunday wraps to 0
-      if (leagueDay === 0 || leagueDay >= 3) {
-        return {
-          shouldFlag: true,
-          reason: 'Thanksgiving week - travel holiday',
-        };
-      }
-    }
-    return { shouldFlag: false, reason: '' };
-  }
-
-  // MONDAY HOLIDAYS - Flag Mon/Tue leagues only if within ±1 day
-  if (isMondayHoliday(holidayName)) {
-    if (daysDiff <= 1) {
-      const leagueDay = leagueDayToNumber(leagueDayOfWeek);
-      if (leagueDay === 1 || leagueDay === 2) {
-        // Monday or Tuesday
-        return {
-          shouldFlag: true,
-          reason: 'Monday holiday - affects Mon/Tue leagues',
-        };
-      }
-    }
-    return { shouldFlag: false, reason: '' };
-  }
-
-  // OTHER HOLIDAYS - Flag if within ±1 day of league night
-  if (daysDiff <= 1 && isWithinOneDayOfLeagueNight(holidayDate, leagueDayOfWeek)) {
-    return {
-      shouldFlag: true,
-      reason: 'Holiday within 1 day of league night',
-    };
-  }
-
-  return { shouldFlag: false, reason: '' };
 }
 
 /**

@@ -16,6 +16,8 @@ interface ScheduleReviewTableProps {
   schedule: WeekEntry[];
   /** Callback when insert/remove week-off is clicked */
   onToggleWeekOff: (index: number) => void;
+  /** Current play week number (locks editing of earlier weeks) */
+  currentPlayWeek?: number;
 }
 
 /**
@@ -27,6 +29,7 @@ interface ScheduleReviewTableProps {
 export const ScheduleReviewTable: React.FC<ScheduleReviewTableProps> = ({
   schedule,
   onToggleWeekOff,
+  currentPlayWeek,
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -57,6 +60,7 @@ export const ScheduleReviewTable: React.FC<ScheduleReviewTableProps> = ({
               week={week}
               index={index}
               onToggleWeekOff={onToggleWeekOff}
+              currentPlayWeek={currentPlayWeek}
             />
           ))}
         </tbody>

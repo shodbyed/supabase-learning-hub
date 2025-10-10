@@ -24,11 +24,38 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
   week,
   index,
   onToggleWeekOff,
+  currentPlayWeek,
 }) => {
   const hasConflicts = week.conflicts.length > 0;
   const isWeekOff = week.type === 'week-off';
   const isPlayoffs = week.type === 'playoffs';
   const isSeasonEndBreak = week.weekName === 'Season End Break';
+
+  /**
+   * Helper function to extract play week number from weekName
+   * E.g., "Week 3" -> 3, "Christmas" -> null
+   */
+  const getPlayWeekNumber = (weekName: string): number | null => {
+    const match = weekName.match(/^Week (\d+)$/);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
+  // Determine if this week is locked (already played)
+  const playWeekNumber = getPlayWeekNumber(week.weekName);
+  const isWeekLocked =
+    playWeekNumber !== null &&
+    currentPlayWeek !== undefined &&
+    playWeekNumber <= currentPlayWeek;
+
+  // Determine highest severity conflict
+  const highestSeverity = hasConflicts
+    ? week.conflicts.reduce((highest, conflict) => {
+        const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+        return severityOrder[conflict.severity] < severityOrder[highest]
+          ? conflict.severity
+          : highest;
+      }, week.conflicts[0].severity)
+    : null;
 
   // Format date for display using timezone-safe parsing
   const displayDate = parseLocalDate(week.date).toLocaleDateString('en-US', {
@@ -60,7 +87,20 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
         {isWeekOff ? (
           <span className="text-gray-500 text-sm">🚫 Week Off</span>
         ) : hasConflicts ? (
-          <span className="text-orange-600 font-medium">⚠️ Conflict</span>
+          <>
+            {highestSeverity === 'critical' && (
+              <span className="text-red-600 font-medium">🔴 Critical</span>
+            )}
+            {highestSeverity === 'high' && (
+              <span className="text-orange-600 font-medium">🟠 High</span>
+            )}
+            {highestSeverity === 'medium' && (
+              <span className="text-yellow-600 font-medium">🟡 Medium</span>
+            )}
+            {highestSeverity === 'low' && (
+              <span className="text-blue-600 font-medium">🔵 Low</span>
+            )}
+          </>
         ) : (
           <span className="text-green-600 font-medium">✓ Play</span>
         )}
@@ -79,19 +119,25 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
 
       {/* Actions */}
       <td className="py-3 px-4">
-        <Button
-          variant={isWeekOff ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => onToggleWeekOff(index)}
-        >
-          {isSeasonEndBreak
-            ? 'Remove Season End Break'
-            : isPlayoffs
-            ? 'Insert Season End Break'
-            : isWeekOff
-            ? 'Remove Week Off'
-            : 'Insert Week Off'}
-        </Button>
+        {isWeekLocked ? (
+          <span className="text-gray-400 text-sm flex items-center gap-1">
+            🔒 Week Completed
+          </span>
+        ) : (
+          <Button
+            variant={isWeekOff ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onToggleWeekOff(index)}
+          >
+            {isSeasonEndBreak
+              ? 'Remove Season End Break'
+              : isPlayoffs
+              ? 'Insert Season End Break'
+              : isWeekOff
+              ? 'Remove Week Off'
+              : 'Insert Week Off'}
+          </Button>
+        )}
       </td>
     </tr>
   );
