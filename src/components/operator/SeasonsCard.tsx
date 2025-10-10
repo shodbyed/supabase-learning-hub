@@ -3,7 +3,6 @@
  * Displays current active season and past seasons for a league
  */
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/supabaseClient';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SeasonsCardProps {

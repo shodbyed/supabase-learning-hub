@@ -113,9 +113,10 @@ export const ChampionshipDateStep: React.FC<ChampionshipDateStepProps> = ({
         <div className="mt-6">
           <InfoButton
             title={infoTitle}
-            content={infoContent}
             label={infoLabel}
-          />
+          >
+            {infoContent}
+          </InfoButton>
         </div>
       )}
     </div>

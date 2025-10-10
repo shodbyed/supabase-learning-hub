@@ -3,7 +3,7 @@
  * Wizard step for selecting a single date
  */
 import React from 'react';
-import { InfoButton } from './InfoButton';
+import { InfoButton } from '../InfoButton';
 
 interface DateStepProps {
   value: string;                          // ISO date string
@@ -38,9 +38,10 @@ export const DateStep: React.FC<DateStepProps> = ({
         <div className="mt-6">
           <InfoButton
             title={infoTitle}
-            content={infoContent}
             label={infoLabel}
-          />
+          >
+            {infoContent}
+          </InfoButton>
         </div>
       )}
     </div>

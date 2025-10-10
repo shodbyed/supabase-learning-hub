@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
-import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
+import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';

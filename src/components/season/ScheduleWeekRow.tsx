@@ -7,6 +7,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ConflictBadge } from './ConflictBadge';
+import { getHighestSeverity } from '@/utils/conflictDetectionUtils';
 import { parseLocalDate } from '@/utils/formatters';
 import type { ScheduleWeekRowProps } from '@/types/scheduleReview';
 
@@ -48,14 +49,7 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
     playWeekNumber <= currentPlayWeek;
 
   // Determine highest severity conflict
-  const highestSeverity = hasConflicts
-    ? week.conflicts.reduce((highest, conflict) => {
-        const severityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-        return severityOrder[conflict.severity] < severityOrder[highest]
-          ? conflict.severity
-          : highest;
-      }, week.conflicts[0].severity)
-    : null;
+  const highestSeverity = getHighestSeverity(week.conflicts);
 
   // Format date for display using timezone-safe parsing
   const displayDate = parseLocalDate(week.date).toLocaleDateString('en-US', {

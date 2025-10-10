@@ -18,9 +18,10 @@ import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions, submitChampionshipDates, type ChampionshipDateOption } from '@/utils/tournamentUtils';
 import { generateSchedule } from '@/utils/scheduleUtils';
-import { fetchHolidaysForSeason, isTravelHoliday, extractLeagueNights } from '@/utils/holidayUtils';
+import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
+import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
 import type { League } from '@/types/league';
-import type { Season, SeasonInsertData, WeekEntry, ConflictFlag, ConflictSeverity, ChampionshipEvent, Holiday } from '@/types/season';
+import type { Season, SeasonInsertData, WeekEntry, ChampionshipEvent } from '@/types/season';
 import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
@@ -154,125 +155,26 @@ export const SeasonCreationWizard: React.FC = () => {
 
       // Fetch holidays for the season
       const holidays = fetchHolidaysForSeason(startDate, seasonLength);
-      console.log('📅 Fetched holidays:', holidays);
-      console.log('📅 League day of week:', leagueDayOfWeek);
 
-      // Add conflict detection using unified logic
-      // Build conflict list: holidays + championship league nights
-      const allConflicts: Holiday[] = [...holidays];
+      // Build championship event objects for conflict detection
+      const bcaChampionshipEvent: ChampionshipEvent | undefined =
+        !formData.bcaIgnored && formData.bcaStartDate && formData.bcaEndDate
+          ? { start: formData.bcaStartDate, end: formData.bcaEndDate, ignored: false }
+          : undefined;
 
-      // Extract BCA championship league nights
-      if (!formData.bcaIgnored && formData.bcaStartDate && formData.bcaEndDate) {
-        const bcaWeeks = extractLeagueNights(
-          formData.bcaStartDate,
-          formData.bcaEndDate,
-          leagueDayOfWeek,
-          'BCA National Tournament'
-        );
-        allConflicts.push(...bcaWeeks);
-      }
+      const apaChampionshipEvent: ChampionshipEvent | undefined =
+        !formData.apaIgnored && formData.apaStartDate && formData.apaEndDate
+          ? { start: formData.apaStartDate, end: formData.apaEndDate, ignored: false }
+          : undefined;
 
-      // Extract APA championship league nights
-      if (!formData.apaIgnored && formData.apaStartDate && formData.apaEndDate) {
-        const apaWeeks = extractLeagueNights(
-          formData.apaStartDate,
-          formData.apaEndDate,
-          leagueDayOfWeek,
-          'APA National Tournament'
-        );
-        allConflicts.push(...apaWeeks);
-      }
-
-      // Two-pass approach: find closest league night for each conflict
-
-      // Pass 1: For each conflict, find all weeks within 4 days and determine closest
-      const conflictToClosestWeek = new Map<string, number>(); // conflict date -> closest week index
-
-      allConflicts.forEach((conflict) => {
-        const conflictDateStr = conflict.date.split(' ')[0];
-        const conflictDate = parseLocalDate(conflictDateStr);
-
-        let closestWeekIndex = -1;
-        let closestDistance = Infinity;
-
-        initialSchedule.forEach((week, weekIndex) => {
-          const weekDate = parseLocalDate(week.date);
-          const daysAway = Math.floor((conflictDate.getTime() - weekDate.getTime()) / (1000 * 60 * 60 * 24));
-          const absDaysAway = Math.abs(daysAway);
-
-          // Only consider weeks within 4 days
-          if (absDaysAway > 4) return;
-
-          // Track closest week (if tie, prefer week BEFORE the holiday)
-          if (absDaysAway < closestDistance || (absDaysAway === closestDistance && daysAway > 0)) {
-            closestDistance = absDaysAway;
-            closestWeekIndex = weekIndex;
-          }
-        });
-
-        if (closestWeekIndex !== -1) {
-          conflictToClosestWeek.set(conflictDateStr, closestWeekIndex);
-        }
-      });
-
-      // Pass 2: Build conflicts array for each week
-      const scheduleWithConflicts = initialSchedule.map((week, weekIndex) => {
-        const conflicts: ConflictFlag[] = [];
-        const weekDate = parseLocalDate(week.date);
-
-        // Check all conflicts that selected this week as closest
-        allConflicts.forEach((conflict) => {
-          const conflictDateStr = conflict.date.split(' ')[0];
-
-          // Only add conflict if this is the closest week
-          if (conflictToClosestWeek.get(conflictDateStr) !== weekIndex) return;
-
-          const conflictDate = parseLocalDate(conflictDateStr);
-          const daysAway = Math.floor((conflictDate.getTime() - weekDate.getTime()) / (1000 * 60 * 60 * 24));
-          const absDaysAway = Math.abs(daysAway);
-
-          // Determine severity
-          let severity: ConflictSeverity;
-          const isTravel = isTravelHoliday(conflict.name, leagueDayOfWeek);
-
-          if (isTravel && absDaysAway <= 4) {
-            // Travel holidays are always critical within 4 days
-            severity = 'critical';
-          } else if (absDaysAway === 0) {
-            severity = 'critical';
-          } else if (absDaysAway === 1) {
-            severity = 'high';
-          } else if (absDaysAway === 2) {
-            severity = 'medium';
-          } else {
-            // 3-4 days
-            severity = 'low';
-          }
-
-          // Format timing description with day of week
-          let timingDesc: string;
-          if (absDaysAway === 0) {
-            timingDesc = 'same day';
-          } else {
-            const dayOfWeek = conflictDate.toLocaleDateString('en-US', { weekday: 'long' });
-            if (daysAway > 0) {
-              timingDesc = `${dayOfWeek} ${absDaysAway} day${absDaysAway > 1 ? 's' : ''} after`;
-            } else {
-              timingDesc = `${dayOfWeek} ${absDaysAway} day${absDaysAway > 1 ? 's' : ''} before`;
-            }
-          }
-
-          conflicts.push({
-            type: conflict.type === 'championship' ? 'championship' : 'holiday',
-            name: `${conflict.name} (${timingDesc})`,
-            reason: isTravel ? 'Travel week - plan for reduced attendance' : `${absDaysAway} day${absDaysAway !== 1 ? 's' : ''} from league night`,
-            severity,
-            daysAway: absDaysAway,
-          });
-        });
-
-        return { ...week, conflicts };
-      });
+      // Detect conflicts using shared utility
+      const scheduleWithConflicts = detectScheduleConflicts(
+        initialSchedule,
+        holidays,
+        bcaChampionshipEvent,
+        apaChampionshipEvent,
+        leagueDayOfWeek
+      );
 
       // Save data to state for ScheduleReview component
       setSchedule(scheduleWithConflicts);

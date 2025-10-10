@@ -4,7 +4,6 @@
  * Used in the League Creation Wizard to show real-time preview of the league being created
  */
 import { formatDateSafe } from './DateField';
-import { generateAllLeagueNames, getTimeOfYear, getDayOfWeek } from '@/utils/leagueUtils';
 import type { LeagueFormData } from '@/data/leagueWizardSteps.simple';
 
 interface LeaguePreviewProps {
