@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/supabaseClient';
 import type { League } from '@/types/league';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { parseLocalDate } from '@/utils/formatters';
 import { LeagueProgressBar } from './LeagueProgressBar';
 
 interface ActiveLeaguesProps {
@@ -143,7 +144,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
                 </h4>
                 <p className="text-sm text-gray-600">
                   {league.team_format === '5_man' ? '5-Man Format' : '8-Man Format'} •
-                  Started {new Date(league.league_start_date).toLocaleDateString()}
+                  Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
                 </p>
               </div>
               <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">

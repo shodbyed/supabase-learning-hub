@@ -5,6 +5,7 @@
 import React from 'react';
 import type { League } from '@/types/league';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { parseLocalDate } from '@/utils/formatters';
 
 interface LeagueOverviewCardProps {
   /** League data to display */
@@ -48,7 +49,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
         <div>
           <h3 className="text-sm font-medium text-gray-600 mb-2">League Start Date</h3>
           <p className="text-gray-900">
-            {new Date(league.league_start_date).toLocaleDateString()}
+            {parseLocalDate(league.league_start_date).toLocaleDateString()}
           </p>
         </div>
         <div>

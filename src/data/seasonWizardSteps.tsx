@@ -35,7 +35,7 @@ export interface SeasonWizardStep {
   id: string; // Allow any string for step IDs
   title: string;
   subtitle?: string | React.ReactElement;
-  type: 'date' | 'choice' | 'dual-date' | 'input' | 'review';
+  type: 'date' | 'choice' | 'dual-date' | 'input' | 'review' | 'schedule-review';
   placeholder?: string;
   inputType?: string;
   min?: number;
@@ -366,6 +366,16 @@ export function getSeasonWizardSteps(
 
     // Step 4 & 4b: APA Championship Date Selection (choice + custom dates)
     ...createChampionshipSteps('APA', apaDateOptions, fetchAPAChampionshipURL()),
+
+    // Step 5: Schedule Review
+    {
+      id: 'scheduleReview',
+      title: 'Review Schedule',
+      subtitle: 'Review your season schedule for conflicts',
+      type: 'schedule-review',
+      getValue: () => '',
+      setValue: () => {},
+    },
   ];
 
   // Show custom season length step only when custom flag is set
@@ -386,7 +396,7 @@ export function getSeasonWizardSteps(
       return shouldShowAPACustomDates;
     }
     return true;
-  });
+  }) as SeasonWizardStep[];
 }
 
 /**

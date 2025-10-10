@@ -10,6 +10,7 @@ import { supabase } from '@/supabaseClient';
 import { ArrowLeft } from 'lucide-react';
 import type { League } from '@/types/league';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { parseLocalDate } from '@/utils/formatters';
 import { LeagueProgressBar } from '@/components/operator/LeagueProgressBar';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { SeasonsCard } from '@/components/operator/SeasonsCard';
@@ -138,7 +139,7 @@ export const LeagueDetail: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900">{getLeagueName(league)}</h1>
               <p className="text-gray-600 mt-1">
                 {league.team_format === '5_man' ? '5-Man Format' : '8-Man Format'} •
-                Started {new Date(league.league_start_date).toLocaleDateString()}
+                Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
               </p>
             </div>
             <span className="px-4 py-2 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">

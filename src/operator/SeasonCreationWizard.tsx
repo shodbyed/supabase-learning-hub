@@ -14,10 +14,13 @@ import { WizardProgress } from '@/components/forms/WizardProgress';
 import { DayOfWeekWarningModal } from '@/components/modals/DayOfWeekWarningModal';
 import { DualDateStep } from '@/components/forms/DualDateStep';
 import { SimpleRadioChoice } from '@/components/forms/SimpleRadioChoice';
+import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions, submitChampionshipDates, type ChampionshipDateOption } from '@/utils/tournamentUtils';
+import { generateSchedule } from '@/utils/scheduleUtils';
+import { fetchHolidaysForSeason, shouldFlagHoliday } from '@/utils/holidayUtils';
 import type { League } from '@/types/league';
-import type { Season, SeasonInsertData } from '@/types/season';
+import type { Season, SeasonInsertData, WeekEntry, ConflictFlag, ChampionshipEvent } from '@/types/season';
 import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
@@ -55,6 +58,11 @@ export const SeasonCreationWizard: React.FC = () => {
     newDay: string;
     newDate: string;
   } | null>(null);
+  const [schedule, setSchedule] = useState<WeekEntry[]>([]);
+  const [seasonStartDate, setSeasonStartDate] = useState<string>('');
+  const [holidays, setHolidays] = useState<any[]>([]);
+  const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
+  const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
 
   /**
    * Fetch league and existing seasons
@@ -107,6 +115,149 @@ export const SeasonCreationWizard: React.FC = () => {
 
     fetchData();
   }, [leagueId]);
+
+  /**
+   * Generate schedule when reaching schedule-review step
+   */
+  useEffect(() => {
+    if (!league || !leagueId || loading) return;
+
+    const steps = getSeasonWizardSteps(
+      leagueId,
+      existingSeasons.length > 0,
+      existingSeasons.length > 0 ? undefined : league.league_start_date,
+      league.day_of_week,
+      () => {},
+      bcaDateOptions,
+      apaDateOptions
+    );
+
+    const currentStepData = steps[currentStep];
+
+    if (currentStepData?.type === 'schedule-review') {
+      // Get form data from localStorage
+      const stored = localStorage.getItem(`season-creation-${leagueId}`);
+      if (!stored) return;
+
+      const formData: SeasonFormData = JSON.parse(stored);
+
+      // Generate initial schedule
+      const startDate = parseLocalDate(formData.startDate);
+      const seasonLength = parseInt(formData.seasonLength);
+      const leagueDayOfWeek = formatDayOfWeek(league.day_of_week);
+
+      const initialSchedule = generateSchedule(
+        startDate,
+        leagueDayOfWeek,
+        seasonLength
+      );
+
+      // Fetch holidays for the season
+      const holidays = fetchHolidaysForSeason(startDate, seasonLength);
+      console.log('📅 Fetched holidays:', holidays);
+      console.log('📅 League day of week:', leagueDayOfWeek);
+
+      // Add conflict detection
+      const scheduleWithConflicts = initialSchedule.map((week) => {
+        const conflicts: ConflictFlag[] = [];
+        const weekDate = parseLocalDate(week.date);
+
+        // Check holidays - only check holidays within 7 days of the week to reduce noise
+        holidays.forEach((holiday) => {
+          // Holiday dates from date-holidays package include timestamp, extract just the date part
+          const holidayDateStr = holiday.date.split(' ')[0]; // "2025-12-25 00:00:00" -> "2025-12-25"
+          const holidayDate = parseLocalDate(holidayDateStr);
+          const daysDiff = Math.abs(Math.floor((holidayDate.getTime() - weekDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+          // Skip holidays that are more than 7 days away from this week
+          if (daysDiff > 7) return;
+
+          const flagResult = shouldFlagHoliday(holidayDate, holiday.name, leagueDayOfWeek, weekDate);
+
+          console.log(`Checking ${holiday.name} (${holiday.date}) against week ${week.date}:`, {
+            holidayDate: holidayDate.toDateString(),
+            weekDate: weekDate.toDateString(),
+            daysDiff,
+            shouldFlag: flagResult.shouldFlag,
+            reason: flagResult.reason
+          });
+
+          if (flagResult.shouldFlag) {
+            // Format holiday date with day of week
+            const holidayDayOfWeek = holidayDate.toLocaleDateString('en-US', { weekday: 'short' });
+            const holidayDateStr = holidayDate.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric'
+            });
+
+            conflicts.push({
+              type: 'holiday',
+              name: `${holiday.name} (${holidayDayOfWeek}, ${holidayDateStr})`,
+              reason: flagResult.reason,
+            });
+          }
+        });
+
+        // Check BCA championship
+        if (!formData.bcaIgnored && formData.bcaStartDate && formData.bcaEndDate) {
+          const bcaStart = parseLocalDate(formData.bcaStartDate);
+          const bcaEnd = parseLocalDate(formData.bcaEndDate);
+
+          if (weekDate >= bcaStart && weekDate <= bcaEnd) {
+            conflicts.push({
+              type: 'championship',
+              name: 'BCA National Tournament',
+              reason: 'League night falls during BCA championships',
+            });
+          }
+        }
+
+        // Check APA championship
+        if (!formData.apaIgnored && formData.apaStartDate && formData.apaEndDate) {
+          const apaStart = parseLocalDate(formData.apaStartDate);
+          const apaEnd = parseLocalDate(formData.apaEndDate);
+
+          if (weekDate >= apaStart && weekDate <= apaEnd) {
+            conflicts.push({
+              type: 'championship',
+              name: 'APA National Tournament',
+              reason: 'League night falls during APA championships',
+            });
+          }
+        }
+
+        return { ...week, conflicts };
+      });
+
+      // Save data to state for ScheduleReview component
+      setSchedule(scheduleWithConflicts);
+      setSeasonStartDate(formData.startDate);
+      setHolidays(holidays);
+
+      // Set championship data
+      if (!formData.bcaIgnored && formData.bcaStartDate && formData.bcaEndDate) {
+        setBcaChampionship({
+          start: formData.bcaStartDate,
+          end: formData.bcaEndDate,
+          ignored: false,
+        });
+      } else {
+        setBcaChampionship(undefined);
+      }
+
+      if (!formData.apaIgnored && formData.apaStartDate && formData.apaEndDate) {
+        setApaChampionship({
+          start: formData.apaStartDate,
+          end: formData.apaEndDate,
+          ignored: false,
+        });
+      } else {
+        setApaChampionship(undefined);
+      }
+
+      console.log('📅 Generated schedule with conflicts:', scheduleWithConflicts);
+    }
+  }, [currentStep, league, leagueId, loading, existingSeasons, bcaDateOptions, apaDateOptions]);
 
   if (loading) {
     return (
@@ -222,13 +373,13 @@ export const SeasonCreationWizard: React.FC = () => {
   );
 
   // Wrap setValue to trigger re-render
-  const currentStepData = {
+  const currentStepData = steps[currentStep] ? {
     ...steps[currentStep],
     setValue: (value: string) => {
-      steps[currentStep].setValue(value);
+      steps[currentStep]?.setValue(value);
       setRefreshKey(prev => prev + 1); // Trigger re-render
     }
-  };
+  } : null;
 
   const handleNext = () => {
     // Clear previous validation error
@@ -236,7 +387,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
     // If current step has a validator, run it
     const currentStepData = steps[currentStep];
-    if (currentStepData.validator) {
+    if (currentStepData?.validator) {
       const value = currentStepData.getValue();
       const result = currentStepData.validator(value);
       if (!result.isValid) {
@@ -337,6 +488,8 @@ export const SeasonCreationWizard: React.FC = () => {
 
       // Clear localStorage
       clearSeasonCreationData(leagueId);
+      localStorage.removeItem('season-schedule-review'); // Clear schedule review data
+      localStorage.removeItem('season-blackout-weeks'); // Clear blackout weeks data
 
       // Navigate back to league detail page
       navigate(`/league/${leagueId}`);
@@ -350,7 +503,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className={`container mx-auto px-4 ${steps[currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
         {/* Header */}
         <div className="mb-8">
           <button
@@ -374,6 +527,8 @@ export const SeasonCreationWizard: React.FC = () => {
               onClick={() => {
                 if (confirm('Clear all form data and start over?')) {
                   clearSeasonCreationData(leagueId);
+                  localStorage.removeItem('season-schedule-review');
+                  localStorage.removeItem('season-blackout-weeks');
                   window.location.reload();
                 }
               }}
@@ -387,10 +542,27 @@ export const SeasonCreationWizard: React.FC = () => {
         {/* Progress Bar */}
         <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
 
-        {/* Step Content */}
-        <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
-          {/* Title and subtitle (hidden for dual-date steps which render their own) */}
-          {currentStepData.type !== 'dual-date' && (
+        {/* Guard against missing step data */}
+        {!currentStepData ? (
+          <div className="text-center text-gray-600">Loading step...</div>
+        ) : steps[currentStep]?.type === 'schedule-review' ? (
+          <ScheduleReview
+            schedule={schedule}
+            leagueDayOfWeek={formatDayOfWeek(league?.day_of_week || 'tuesday')}
+            seasonStartDate={seasonStartDate}
+            holidays={holidays}
+            bcaChampionship={bcaChampionship}
+            apaChampionship={apaChampionship}
+            onScheduleChange={setSchedule}
+            onConfirm={handleCreateSeason}
+            onBack={handleBack}
+          />
+        ) : (
+          <>
+            {/* Step Content */}
+            <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
+              {/* Title and subtitle (hidden for dual-date steps which render their own) */}
+              {currentStepData.type !== 'dual-date' && (
             <>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {currentStepData.title}
@@ -467,7 +639,37 @@ export const SeasonCreationWizard: React.FC = () => {
               infoLabel={currentStepData.infoLabel}
             />
           )}
-        </div>
+            </div>
+
+            {/* Navigation Buttons (hidden for dual-date and schedule-review steps which have their own buttons) */}
+            {!(steps[currentStep]?.type === 'dual-date' || (steps[currentStep]?.type as string) === 'schedule-review') && (
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={currentStep === 0 || isCreating}
+                >
+                  Back
+                </Button>
+
+                {currentStep < steps.length - 1 ? (
+                  <Button onClick={handleNext} disabled={isCreating}>
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleCreateSeason}
+                    disabled={isCreating}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isCreating ? 'Creating Season...' : 'Create Season'}
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
+        )
+        }
 
         {/* Warning Modal for Day of Week Changes */}
         {dayOfWeekWarning && (
@@ -478,33 +680,6 @@ export const SeasonCreationWizard: React.FC = () => {
             onAccept={handleAcceptDayChange}
             onCancel={handleCancelDayChange}
           />
-        )}
-
-        {/* Navigation Buttons (hidden for dual-date steps which have their own buttons) */}
-        {currentStepData.type !== 'dual-date' && (
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 0 || isCreating}
-            >
-              Back
-            </Button>
-
-            {currentStep < steps.length - 1 ? (
-              <Button onClick={handleNext} disabled={isCreating}>
-                Next
-              </Button>
-            ) : (
-              <Button
-                onClick={handleCreateSeason}
-                disabled={isCreating}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isCreating ? 'Creating Season...' : 'Create Season'}
-              </Button>
-            )}
-          </div>
         )}
       </div>
     </div>

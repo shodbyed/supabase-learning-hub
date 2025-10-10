@@ -128,6 +128,26 @@ export function calculateEndDate(startDate: Date, seasonLength: number): Date {
 }
 
 /**
+ * Conflict flag for schedule conflicts (holidays or championships)
+ */
+export interface ConflictFlag {
+  type: 'holiday' | 'championship';
+  name: string;
+  reason: string;
+}
+
+/**
+ * Week entry in the season schedule
+ */
+export interface WeekEntry {
+  weekNumber: number;      // Sequential calendar position: 1, 2, 3, 4...
+  weekName: string;        // Display label: "Week 1", "Halloween", "Playoffs"
+  date: string;            // ISO date string (YYYY-MM-DD)
+  type: 'regular' | 'playoffs' | 'week-off';
+  conflicts: ConflictFlag[];
+}
+
+/**
  * Format date to ISO string for database storage (timezone-safe)
  */
 export function formatDateForDB(date: Date): string {
