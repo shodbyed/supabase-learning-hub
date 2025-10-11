@@ -394,7 +394,7 @@ export const SeasonCreationWizard: React.FC = () => {
         league.division
       );
 
-      // Build insert data
+      // Build insert data (holidays and championships NOT stored - fetched on-demand)
       const insertData: SeasonInsertData = {
         league_id: leagueId,
         season_name: seasonName,
@@ -402,41 +402,91 @@ export const SeasonCreationWizard: React.FC = () => {
         end_date: formatDateForDB(endDate),
         season_length: parseInt(formData.seasonLength),
         status: 'upcoming',
-        bca_championship: formData.bcaIgnored || !formData.bcaStartDate || !formData.bcaEndDate
-          ? undefined
-          : {
-              start: formData.bcaStartDate,
-              end: formData.bcaEndDate,
-              ignored: formData.bcaIgnored,
-            },
-        apa_championship: formData.apaIgnored || !formData.apaStartDate || !formData.apaEndDate
-          ? undefined
-          : {
-              start: formData.apaStartDate,
-              end: formData.apaEndDate,
-              ignored: formData.apaIgnored,
-            },
-        // TODO: Fetch and add holidays when we have that functionality
-        holidays: [],
       };
 
-      console.log('Creating season:', insertData);
+      console.log('🔄 Creating season:', insertData);
+      console.log('🏆 Championship dates (not stored, baked into schedule):', {
+        bca: formData.bcaIgnored ? 'ignored' : `${formData.bcaStartDate} - ${formData.bcaEndDate}`,
+        apa: formData.apaIgnored ? 'ignored' : `${formData.apaStartDate} - ${formData.apaEndDate}`,
+      });
 
-      // TODO: Uncomment when seasons table exists
-      // const { data: newSeason, error } = await supabase
-      //   .from('seasons')
-      //   .insert([insertData])
-      //   .select()
-      //   .single();
-      //
-      // if (error) throw error;
-      //
-      // console.log('✅ Season created successfully:', newSeason);
+      let seasonId: string | null = null;
+
+      try {
+        // Step 1: Insert season record
+        const { data: newSeason, error: seasonError } = await supabase
+          .from('seasons')
+          .insert([insertData])
+          .select()
+          .single();
+
+        if (seasonError) throw seasonError;
+
+        seasonId = newSeason.id;
+        console.log('✅ Season created:', seasonId);
+
+        // Step 2: Get final schedule from state and blackout weeks from localStorage
+        const blackoutWeeksStored = localStorage.getItem('season-blackout-weeks');
+        const blackoutWeeks = blackoutWeeksStored ? JSON.parse(blackoutWeeksStored) : [];
+
+        // Combine schedule and blackouts into single array for season_weeks table
+        // Map UI types to database types:
+        // - 'week-off' from schedule generator → 'season_end_break'
+        // - 'week-off' from blackoutWeeks → 'blackout'
+        const scheduleWeeks = schedule.map(week => ({
+          season_id: seasonId,
+          scheduled_date: week.date,
+          week_name: week.weekName,
+          week_type: week.type === 'week-off' ? 'season_end_break' : week.type, // Map week-off to season_end_break
+          week_completed: false,
+          notes: null,
+        }));
+
+        const blackoutWeeksData = blackoutWeeks.map((week: any) => ({
+          season_id: seasonId,
+          scheduled_date: week.date,
+          week_name: week.weekName,
+          week_type: 'blackout' as const, // Blackout weeks are always type 'blackout'
+          week_completed: false,
+          notes: null,
+        }));
+
+        // Deduplicate by date (blackout takes precedence over schedule)
+        const allWeeks = [...blackoutWeeksData, ...scheduleWeeks].reduce((acc, week) => {
+          const existing = acc.find((w: any) => w.scheduled_date === week.scheduled_date);
+          if (!existing) {
+            acc.push(week);
+          }
+          return acc;
+        }, [] as typeof scheduleWeeks);
+
+        console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table (deduplicated)');
+
+        // Step 3: Batch insert all weeks
+        const { error: weeksError } = await supabase
+          .from('season_weeks')
+          .insert(allWeeks);
+
+        if (weeksError) {
+          console.error('❌ Failed to insert weeks, rolling back season creation');
+          throw weeksError;
+        }
+
+        console.log('✅ Season schedule saved:', allWeeks.length, 'weeks');
+      } catch (weeksInsertError) {
+        // Rollback: Delete the season if weeks insertion failed
+        if (seasonId) {
+          console.log('🔄 Rolling back - deleting season:', seasonId);
+          await supabase.from('seasons').delete().eq('id', seasonId);
+          console.log('✅ Rollback complete - season deleted');
+        }
+        throw weeksInsertError;
+      }
 
       // Clear localStorage
       clearSeasonCreationData(leagueId);
-      localStorage.removeItem('season-schedule-review'); // Clear schedule review data
-      localStorage.removeItem('season-blackout-weeks'); // Clear blackout weeks data
+      localStorage.removeItem('season-schedule-review');
+      localStorage.removeItem('season-blackout-weeks');
 
       // Navigate back to league detail page
       navigate(`/league/${leagueId}`);

@@ -1,5 +1,7 @@
 -- Seasons Table
--- Represents a pool league season with dates, holidays, and schedule information
+-- Represents a pool league season with basic metadata
+-- Schedule weeks stored in separate season_weeks table
+-- Holidays and championships fetched on-demand during schedule editing
 
 CREATE TABLE IF NOT EXISTS seasons (
   -- Primary identification
@@ -16,14 +18,6 @@ CREATE TABLE IF NOT EXISTS seasons (
 
   -- Status
   status VARCHAR(20) NOT NULL DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'active', 'completed', 'cancelled')),
-
-  -- Holiday and event tracking (stored as JSONB for flexibility)
-  holidays JSONB DEFAULT '[]'::jsonb,
-  bca_championship JSONB, -- {start: date, end: date, ignored: boolean}
-  apa_championship JSONB, -- {start: date, end: date, ignored: boolean}
-
-  -- Schedule data (will be generated after teams are added)
-  schedule JSONB DEFAULT '{}'::jsonb,
 
   -- Season completion tracking
   season_completed BOOLEAN DEFAULT false,
@@ -113,10 +107,9 @@ CREATE POLICY "Public can view active seasons"
   USING (status = 'active');
 
 -- Comments for documentation
-COMMENT ON TABLE seasons IS 'Pool league seasons with dates, holidays, and schedule information';
+COMMENT ON TABLE seasons IS 'Pool league seasons with basic metadata. Schedule weeks stored in season_weeks table. Holidays and championships fetched on-demand during editing.';
 COMMENT ON COLUMN seasons.season_name IS 'Auto-generated name like "Fall 2025 Monday 8-Ball"';
 COMMENT ON COLUMN seasons.season_length IS 'Number of weeks in the season (10-52)';
-COMMENT ON COLUMN seasons.holidays IS 'Array of national holidays that may affect scheduling';
-COMMENT ON COLUMN seasons.bca_championship IS 'BCA championship dates and ignore flag';
-COMMENT ON COLUMN seasons.apa_championship IS 'APA championship dates and ignore flag';
-COMMENT ON COLUMN seasons.schedule IS 'Generated schedule with matchups and dates';
+COMMENT ON COLUMN seasons.start_date IS 'First possible league play date';
+COMMENT ON COLUMN seasons.end_date IS 'Last possible league play date (including playoffs)';
+COMMENT ON COLUMN seasons.season_completed IS 'True when entire season is finished';

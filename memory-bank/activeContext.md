@@ -2,371 +2,194 @@
 
 ## Current Work Focus
 
-### **In Progress: Season Creation Wizard with Championship Dates & Holiday System** 🚧
-**Implementation Date**: 2025-01-07
-**Status**: 🔄 **ACTIVE DEVELOPMENT**
-
-**Current Phase**: Data collection for season planning
-- ✅ Championship dates system (BCA/APA) with community voting database
-- ✅ Reusable helper function for both BCA and APA championship steps
-- ⏳ Holiday selection using `date-holidays` package (NEXT)
-- ⏳ Initial season schedule generation
-- ⏳ Conflict detection and resolution
-
-**What's Been Built**:
-- **Championship Dates Database** (`championship_date_options` table):
-  - Community voting system (vote_count tracking)
-  - Dev verification flag for authoritative dates
-  - Auto-filters past dates, shows only relevant year
-  - Unique constraint prevents duplicate entries
-  - Year-aware tournament URLs (BCA updates after March 15, APA after August)
-
-- **Reusable Championship Steps** (`createChampionshipSteps()` helper):
-  - Generates choice + custom date entry steps for any organization
-  - Both BCA and APA use identical code (DRY principle)
-  - Empty state encourages first submission to build community database
-  - Choice options: found dates (sorted by votes), skip tournament, enter custom
-  - Custom dates submitted to database when season is created
-
-- **Wizard Persistence**:
-  - Current step saved to localStorage (survives page navigation)
-  - Form data persists across sessions
-  - Users can navigate away to check tournament websites and return
-
-**Season Creation Flow** (Multi-Step Process):
-1. ✅ **Collect Basic Info**: Start date, season length, championship dates
-2. ⏳ **Collect Holidays**: Using `date-holidays` package for US holidays
-3. ⏳ **Generate Initial Schedule**: All weeks from start to end date
-4. ⏳ **Show Conflicts**: Holidays + championships that fall on league nights
-5. ⏳ **Resolve Conflicts**: Skip week or ignore for each conflict
-6. ⏳ **Finalize Season**: Adjusted schedule with skipped weeks
-
-**Key Technical Decisions**:
-- Championship dates are data collection only (not season creation yet)
-- `date-holidays` npm package installed for fetching US national holidays
-- Season will calculate week-by-week schedule AFTER all data is collected
-- Conflicts resolved interactively before final season creation
-
-**Files Created/Modified**:
-- `/database/championship_date_options.sql` - Community voting table
-- `/src/utils/tournamentUtils.ts` - Database query/submission functions
-- `/src/data/seasonWizardSteps.tsx` - Reusable championship steps helper
-- `/src/operator/SeasonCreationWizard.tsx` - Wizard step persistence
-- `/src/types/season.ts` - Type definitions for season data
-- `package.json` - Added `date-holidays@3.26.1` dependency
-
-### **Just Completed: League Management System - Detail Page & Components** 🎉
-**Implementation Date**: 2025-01-06
-**Status**: ✅ **PRODUCTION READY**
+### **✅ COMPLETED: Season Creation Database Schema & Wizard Integration** 🎉
+**Implementation Date**: 2025-01-11
+**Status**: ✅ **PRODUCTION READY - TESTED IN LOCAL DATABASE**
 
 **What Was Built**:
-- League Detail Page - comprehensive management hub for individual leagues
-- Clickable league cards that navigate to detail page
-- Component-based architecture for all league sections
-- SeasonsCard with current/past season display and collapsible view
-- Dynamic season count checking for context-aware messaging
+- Complete database schema for season scheduling with normalized table structure
+- Season creation wizard now saves to database (seasons + season_weeks tables)
+- Unified season_weeks table storing all calendar dates (regular, blackouts, playoffs, breaks)
+- Transaction-like rollback behavior if weeks insertion fails
+- Successful test: Created season with 20 weeks in local Supabase
 
-**League Detail Page Architecture**:
-- **Header**: League name, format, dates, status badge
-- **Status Section**: Progress bar + Next Steps checklist + "Let's Go!" CTA (3-column grid)
-- **League Overview**: Extracted to LeagueOverviewCard component
-- **Seasons Section**: SeasonsCard component with current + collapsible past seasons
-- **Teams Section**: TeamsCard placeholder ready for implementation
-- **Schedule Section**: ScheduleCard placeholder ready for implementation
+**Database Architecture**:
+- **seasons table**: Simple metadata (season_name, dates, length, status)
+  - Removed holidays/championships columns - fetched on-demand
+  - Each season just tracks basic info
 
-**Clickable League Cards**:
-- Removed action buttons from ActiveLeagues component
-- Entire card wrapped in Link to `/league/:leagueId`
-- Added hover effects (border color + shadow)
-- Clean navigation experience
-
-**Component Architecture**:
-- **LeagueOverviewCard**: Displays all league details (game type, day, format, division, dates)
-- **SeasonsCard**:
-  - Shows current active season in green-highlighted card with details
-  - Collapsible past seasons section showing count ("5 Past Seasons")
-  - Empty state with "Create First Season" button
-  - Database-ready with commented SQL query for when seasons table exists
-  - Checks season count to display "first season" vs "new season" messaging
-- **TeamsCard**: Placeholder with empty state, ready for teams implementation
-- **ScheduleCard**: Placeholder with empty state, ready for schedule implementation
-
-**Database Integration Preparation**:
-- Season count fetching ready (commented out until seasons table exists)
-- All components accept `leagueId` prop for database queries
-- TODO comments mark where to uncomment database code
-
-**Files Created/Modified**:
-- `/src/components/operator/ActiveLeagues.tsx` - Made cards clickable with Link wrapper
-- `/src/operator/LeagueDetail.tsx` - NEW FILE - League management hub
-- `/src/components/operator/LeagueOverviewCard.tsx` - NEW FILE - League info display
-- `/src/components/operator/SeasonsCard.tsx` - NEW FILE - Current/past seasons with collapsible view
-- `/src/components/operator/TeamsCard.tsx` - NEW FILE - Teams placeholder
-- `/src/components/operator/ScheduleCard.tsx` - NEW FILE - Schedule placeholder
-- `/src/navigation/NavRoutes.tsx` - Added `/league/:leagueId` route
-
-### **Previously Completed: Dashboard & Organization Settings Refinements** 🎉
-**Implementation Date**: 2025-01-05
-**Status**: ✅ **PRODUCTION READY**
-
-**What Was Built**:
-- Dashboard layout improvements with perfect grid alignment
-- DashboardCard component updated with icon/title on same line (more compact)
-- Organization Settings restructured to card-based overview
-- League Rules page created with BCA rules links and house rules preview
-- Removed League Rules from dashboard (now inside Organization Settings)
-- Dashboard now has 3 quick action cards + Organization Settings + Quick Stats in perfect grid
-
-**Dashboard Architecture**:
-- **Row 1**: 3 cards (Messaging, Manage Players, Venue Partners) in grid
-- **Row 2**: Active Leagues (2/3 width) + Sidebar (1/3 width)
-- **Sidebar Contains**: Organization Settings card + Quick Stats
-- **Grid Layout**: Using CSS Grid (`lg:grid-cols-3`) for perfect alignment
-- **Compact Cards**: Icon and title on same line, reducing card height
-
-**Organization Settings Redesign**:
-- **Overview Page**: Card-based layout similar to dashboard style
-- **Organization Info Card**: Displays org name, address, email, phone with "Edit Info" button
-- **League Rules Card**: Links to `/league-rules` page for BCA rules and house rules
-- **Future Ready**: "Edit Info" button ready for detailed edit page implementation
-
-**League Rules Page**:
-- **Official BCA Rules**: Links to 8-Ball, 9-Ball, and 10-Ball rules
-- **TODO**: Current links go to bca-pool.com/page/rules which requires another click + PDF download
-- **Future**: Need direct PDF links or consider hosting rules in-app
-- **House Rules Section**: Preview of coming feature with examples (call pocket, coaching, time limits, etc.)
-- **Navigation**: Back button to Organization Settings
-
-**Files Created/Modified**:
-- `/src/components/operator/DashboardCard.tsx` - Icon/title on same line
-- `/src/operator/OperatorDashboard.tsx` - Grid layout with 3 + 2 structure
-- `/src/operator/OrganizationSettings.tsx` - Complete restructure to card overview
-- `/src/operator/LeagueRules.tsx` - NEW FILE - BCA rules and house rules page
-- `/src/navigation/NavRoutes.tsx` - Added `/league-rules` route
-
-### **Previously Completed: League Creation Database Integration** 🎉
-**Implementation Date**: 2025-01-05
-**Status**: ✅ **WORKING IN LOCAL DATABASE**
-
-**What Was Built**:
-- Complete `leagues` database table with proper schema
-- Full league creation wizard integration with database
-- Actual league records created in Supabase
-- Row Level Security (RLS) policies properly configured
-- Changed "qualifier" to "division" for better clarity
-- Loading states and error handling during creation
-
-**League Database Design**:
-- **Leagues Table**: Container for ongoing league concept (game type, day, division, format)
-- **Simple Schema**: Stores components, derives display names on-the-fly
-- **Best Practices**: Lowercase database values (`eight_ball`, `monday`), formatted for display
-- **Division Field**: Renamed from "qualifier" - more intuitive for operators
-- **Historical Tracking**: `league_start_date` and `created_at` for league history
-
-**RLS Policy Fix**:
-- **Initial Issue**: Policies failed because they didn't join through `members` table
-- **Auth Chain**: `auth.uid()` → `members.user_id` → `league_operators.member_id` → `leagues.operator_id`
-- **Solution**: All RLS policies now JOIN through members table to verify ownership
-- **Policies**: SELECT, INSERT, UPDATE, DELETE all check operator ownership
-- **Public Access**: Active leagues visible to all (for player discovery)
-
-**Database Operations**:
-- Wizard fetches operator_id on mount
-- Converts UI data to database format (`8-Ball` → `eight_ball`)
-- INSERT league record with all required fields
-- Clears localStorage after successful creation
-- Navigates to operator dashboard
-
-**UI Improvements**:
-- Button shows "Creating League..." during submission
-- All buttons disabled while submitting
-- Proper error handling with console logging
-- Success console logs show formatted league names
-
-**Files Created/Modified**:
-- `/database/leagues.sql` - Complete schema with fixed RLS policies
-- `/src/types/league.ts` - League, LeagueInsertData types, formatter functions
-- `/src/operator/LeagueCreationWizard.tsx` - Database integration, loading states
-- `/src/components/forms/WizardStepRenderer.tsx` - Added isSubmitting prop
-- `/src/components/forms/RadioChoiceStep.tsx` - Loading state support
-- `/src/components/forms/QuestionStep.tsx` - Loading state support
-- `/src/data/leagueWizardSteps.simple.tsx` - Changed to "division identifier"
-- `/src/constants/infoContent/leagueWizardInfoContent.tsx` - Updated division info
-
-### **Previously Completed: Organization Settings & NavRoutes Refactoring**
-**Implementation Date**: 2025-01-05 (earlier in session)
-**Status**: ✅ **PRODUCTION READY**
-
-**What Was Built**:
-- Organization Settings page with per-card editing
-- NavRoutes refactored to array-based architecture
-- Dramatically reduced code repetition
-
-### **Previously Completed: League Operators Database & Application Submission**
-**Implementation Date**: 2025-01-04
-**Status**: ✅ **WORKING IN LOCAL DATABASE**
-
-**What Was Built**:
-- Complete `league_operators` database table with all fields
-- Automatic database insertion on operator application submission
-- Member role upgrade from 'player' to 'league_operator'
-- Mock payment data generator for testing
-- Full TypeScript type definitions for operator data
-
-**Database Schema**:
-- Created `/database/league_operators.sql` (ready for production)
-- Table with 20+ columns including organization, contact, payment info
-- Row Level Security (RLS) policies for data protection
-- Triggers for auto-updating timestamps
-- Indexes for performance on key lookups
-- Foreign key to members table with CASCADE delete
-
-**Application Flow**:
-1. User fills out 6-step operator application form
-2. Data collected with localStorage persistence
-3. On submit: generates mock payment data (Stripe IDs)
-4. INSERT into `league_operators` table
-5. UPDATE `members.role` to 'league_operator'
-6. Navigate to operator welcome page
-7. User can now create leagues!
+- **season_weeks table**: Unified calendar storage
+  - Each row = one calendar date
+  - `week_type`: 'regular' | 'blackout' | 'playoffs' | 'season_end_break'
+  - `week_completed`: Boolean for locking past weeks from editing
+  - `scheduled_date`: Primary sort key (no week_number needed)
+  - Blackout weeks visible to users with reason displayed
 
 **Key Design Decisions**:
-- **Address**: Copied from member profile at creation (admin-only, not shown to players)
-- **Email/Phone**: Separate from member profile with visibility controls
-- **Payment**: Mock data for testing (`cus_mock_...`, `pm_mock_...`)
-- **Visibility Levels**: `in_app_only` (default), `my_teams`, `anyone`, etc.
-- **In-app messaging required** for 'in_app_only' visibility to work
+1. **One Table for All Weeks**: Regular + blackouts + playoffs all in season_weeks
+   - User sees full calendar including skipped dates with reasons
+   - Easy add/remove blackouts by inserting/deleting rows
+   - Sortable by date, no artificial week numbering
+
+2. **Fetch Holidays/Championships On-Demand**: Not stored in seasons table
+   - Operator re-evaluates skip/play decision each edit session
+   - Championships can change - always fetch latest
+   - Final decision baked into season_weeks as blackout rows or absence
+
+3. **week_completed Column**: Fast locking mechanism
+   - Boolean check prevents editing past weeks
+   - Updated when all matches for week are scored
+   - No need to query match_results table for every week
+
+4. **Rollback Protection**: Manual transaction-like behavior
+   - If weeks insertion fails, season record is deleted
+   - Either both succeed or neither exists in database
+   - Console logs show rollback process
+
+**Type Mapping Fix**:
+- UI uses `type: 'week-off'` generically
+- Database expects specific types: 'season_end_break' | 'blackout'
+- Wizard maps: schedule week-offs → 'season_end_break', blackout week-offs → 'blackout'
+
+**Deduplication**:
+- Schedule and blackoutWeeks kept separate in UI
+- Deduplicated before database insert (blackout takes precedence)
+- Prevents unique constraint violations on (season_id, scheduled_date)
 
 **Files Created/Modified**:
-- `/database/league_operators.sql` - Database schema
-- `/src/types/operator.ts` - TypeScript types + mock payment generator
-- `/memory-bank/databaseSchema.md` - Complete database design documentation
-- `/memory-bank/futureFeatures.md` - In-app messaging requirements documented
-- `LeagueOperatorApplication.tsx` - Actual database insertion implemented
+- `/database/seasons.sql` - Clean seasons table (no schedule/holidays/championships)
+- `/database/season_weeks.sql` - Unified calendar table with week_type and week_completed
+- `/database/README_DATABASE_INTEGRATION.md` - Complete integration guide for partner
+- `/src/types/season.ts` - Updated Season and SeasonWeek interfaces
+- `/src/operator/SeasonCreationWizard.tsx` - Full database integration with rollback
+- `/memory-bank/databaseSchema.md` - Updated with new schema design
 
-### **Previously Completed: Navigation & Link Improvements**
-**Implementation Date**: Previous session
+**Test Results**:
+```
+✅ Season created: 2b860873-2a78-4417-b7ca-cd52de9c8a03
+🔄 Inserting 20 weeks into season_weeks table (deduplicated)
+✅ Season schedule saved: 20 weeks
+```
+
+**Next Steps**:
+- Commit and push database schema files
+- Update memory bank documentation
+- Ready for team creation and schedule display features
+
+### **Previously Completed: Schedule Conflict Detection Refactoring** 🎉
+**Implementation Date**: 2025-01-10
 **Status**: ✅ **PRODUCTION READY**
 
 **What Was Built**:
-- Fixed sticky back button positioning and styling on all format detail pages
-- Removed `target="_blank"` from info content links to enable proper back navigation
-- Updated all navigation buttons to use consistent blue styling (variant="default")
-- Verified public access security for all format detail pages
+- Extracted ~180 lines of duplicated conflict detection logic into shared utilities
+- Created centralized constants for magic numbers and severity ordering
+- Broke complex functions into small, testable, single-purpose helpers
+- Two-pass algorithm for "closest league night only" conflict detection
 
-### **Previously Completed: 5-Man Format Detail Pages & Info System**
-**Implementation Date**: Previous session
-**Status**: ✅ **PRODUCTION READY**
+**DRY Violation Eliminated**:
+- Before: ScheduleReview.tsx and SeasonCreationWizard.tsx had duplicate code
+- After: Single source of truth in `/src/utils/conflictDetectionUtils.ts`
+- Impact: Bug fixes now only needed once, testing burden halved
 
-**What Was Built**:
-- Complete 5-Man Format Details page with comprehensive handicap system explanation
-- Separate 8-Man Format Details page for traditional BCA format
-- Format Comparison page for side-by-side analysis
-- Enhanced info button system with links to detail pages
-- All pages publicly accessible for operators to review
+**Files Created/Modified**:
+- `/src/constants/scheduleConflicts.ts` - CONFLICT_DETECTION_THRESHOLD_DAYS, SEVERITY_ORDER, STORAGE_KEYS
+- `/src/utils/conflictDetectionUtils.ts` - 6 helper functions (detectScheduleConflicts, buildConflictList, etc.)
+- `/src/components/season/ScheduleReview.tsx` - Reduced from ~140 lines to ~20 lines
+- `/src/components/season/ScheduleWeekRow.tsx` - Uses getHighestSeverity() helper
+- `/src/operator/SeasonCreationWizard.tsx` - Uses shared conflict detection
 
-**Technical Implementation**:
-- Three new public route pages: `/5-man-format-details`, `/8-man-format-details`, `/format-comparison`
-- Removed comparison table from 5-man details, replaced with navigation buttons
-- Updated info content centralization with `teamFormatComparisonInfo` export
-- Cross-navigation between all three pages with browser history back support
-- Rich content in info buttons with clickable links to detail pages
+### **Previously Completed: Season Creation Wizard with Championship Dates & Holiday System**
+**Implementation Date**: 2025-01-07
+**Status**: ✅ **WIZARD COMPLETE, DATABASE INTEGRATION COMPLETE**
+
+**What's Been Built**:
+- Championship dates system (BCA/APA) with community voting database
+- Holiday selection using `date-holidays` package
+- Initial season schedule generation with blackout weeks
+- Conflict detection and interactive resolution
+- Schedule review with editable weeks
+- Full wizard flow from start to database save
 
 ## Recent Changes
 
-### **5-Man Format Details Page Enhancements**
-**Sections Completed**:
-1. **Overview** - Key benefits with experience-based credibility statement (15 years operator experience)
-2. **How It Works** - Team structure, match format, example match night with break/rack rotation
-3. **Handicap System Explained** - Complete system documentation:
-   - Individual skill levels (+2 to -2 scale)
-   - Skill calculation formula with rounding examples
-   - 250-game rolling window for stability vs responsiveness
-   - Team handicap calculation with modifier system
-   - Games needed chart (H/C +12 to -12) in 2/3 + 1/3 column layout
-   - Detailed example calculations with explicit player breakdowns
-4. **Tie-Breaker Playoff** - Best 2-of-3 rules, winning team all get +1, losing team no change
-5. **Standings and Ranking** - Three-tier system (match wins → team points → total games won)
-6. **Why This Reduces Handicap Complaints** - 5 key reasons including handicap responsiveness
-7. **Why Players Prefer This Format** - Less crowding (6-10 people vs 10-16 people)
-8. **Benefits for League Operators** - Including "Eliminates Bias" benefit
+### **Database Schema Simplification**
+**Key Changes**:
+- Removed `holidays`, `bca_championship`, `apa_championship` from seasons table
+- These are fetched on-demand during schedule creation/editing
+- Operator re-evaluates skip/play decision each time they edit
+- Final decision baked into season_weeks as blackout rows
 
-### **Info Content Centralization Updates**
-**Changes Made**:
-- Renamed `teamFormatInfo` to `teamFormatComparisonInfo` for clarity
-- Enhanced 8-man format info with structured "How It Works" section
-- Added crowding numbers to comparison (6-10 people vs 10-16 people)
-- All three info contents now have clickable links to detail pages
-- Consistent formatting across all format info
-
-### **Navigation Architecture**
-**Implementation**:
-- Three separate pages for focused content presentation
-- Cross-navigation buttons between all pages
-- Public routes (no authentication required)
-- "Back" button uses `navigate(-1)` for flexible return
-- Info buttons in wizard link to appropriate detail pages
+### **Season Weeks Unified Design**
+**Architecture**:
+- One table for everything: regular weeks, blackouts, playoffs, season-end breaks
+- User sees full calendar sorted by date
+- Blackout weeks show reason ("Thanksgiving", "Venue Closed")
+- Easy to add/remove blackouts without regenerating entire schedule
 
 ## Next Steps
 
-### **🎯 Immediate: Season Creation System**
-**Current Status**: League detail page infrastructure complete, ready for season creation
-**Next Actions**:
-- Design and create `seasons` database table schema
-  - Fields: league_id, season_name, start_date, end_date, week_count, status, etc.
-  - RLS policies for operator access
-- Build season creation wizard/form
-  - Season naming (e.g., "Fall 2025", "Season 1")
-  - Start and end dates
-  - Number of weeks
-  - Break weeks/holidays handling
-- Wire up "Let's Go!" and "Create Season" buttons to season wizard
-- Uncomment database queries in SeasonsCard component
-- Update league progress indicators based on season existence
-- Team registration and management (after season exists)
+### **🎯 Immediate: Commit Database Schema**
+- [database/seasons.sql](database/seasons.sql)
+- [database/season_weeks.sql](database/season_weeks.sql)
+- [database/README_DATABASE_INTEGRATION.md](database/README_DATABASE_INTEGRATION.md)
+- Updated TypeScript types and wizard integration
 
-### **Future Format Documentation Enhancements**
-- Add video demonstrations of match flow
-- Create printable quick reference cards for operators
-- Develop operator training materials
-- Build player onboarding guides explaining the system
+### **🔜 Team Creation System**
+**Next Major Feature**:
+- Design teams database table
+- Team registration wizard
+- Link teams to seasons
+- Home venue assignment
+- Captain/player roster management
+
+### **🔜 Schedule Display**
+**After Teams Exist**:
+- Load season schedule from season_weeks table
+- Display full calendar to users
+- Show blackout weeks with reasons
+- Week completion status
+- Navigation to match scoring (future)
 
 ## Active Decisions and Considerations
 
-### **Educational Content Strategy**
-**Decision**: Provide exhaustive detail upfront with credibility statement
-**Rationale**: Operators need complete understanding before committing; 15 years experience provides authority
-**Implementation**: Comprehensive detail pages with acknowledgment that it's "a lot to read"
+### **Unified Calendar vs Separate Tables**
+**Decision**: One unified season_weeks table for all week types
+**Rationale**:
+- User wants to see full calendar including blackouts
+- Simplifies display logic (one query, sort by date)
+- Easy add/remove blackouts (just insert/delete rows)
+- Same structure for all week types (flexible, queryable)
 
-### **Format Comparison Approach**
-**Decision**: Separate comparison page rather than inline
-**Rationale**: Allows focused comparison without cluttering individual format pages
-**Implementation**: Dedicated comparison page with quick summary cards for each format
+### **Store Championships or Fetch On-Demand?**
+**Decision**: Fetch on-demand, don't store in seasons table
+**Rationale**:
+- Championship dates subject to change (operator needs latest data)
+- Operator re-evaluates skip/play decision during each edit session
+- Final decision baked into season_weeks (blackout or absence)
+- Keeps seasons table simple and focused
 
-### **Public Access Philosophy**
-**Decision**: Make all format detail pages public (no login required)
-**Rationale**: Operators should be able to review system before committing to registration
-**Implementation**: Public routes in NavRoutes.tsx
+### **Week Numbering Strategy**
+**Decision**: No week_number column, sort by scheduled_date
+**Rationale**:
+- Date is natural sort key
+- No artificial week numbering to maintain
+- Blackout weeks have dates but no week numbers
+- Simpler schema, easier queries
 
-### **Handicap System Transparency**
-**Decision**: Explain every detail of handicap calculation with concrete examples
-**Rationale**: Transparency reduces complaints and builds operator confidence
-**Implementation**: Step-by-step examples, charts, real-world scenarios, rounding demonstrations
-
-### **Team Modifier Complexity**
-**Decision**: Show 4 different standing scenarios to explain modifier calculation
-**Rationale**: Complex concept needs multiple examples to be understood
-**Implementation**: Example standings table with 4 matchup calculations + "additional teams below" indicator
+### **Week Completion Tracking**
+**Decision**: Boolean column on season_weeks table
+**Rationale**:
+- Fast check for locking past weeks (no join to match_results)
+- Set to true when all matches scored
+- UI disables editing for completed weeks
+- Prevents accidental changes to finished weeks
 
 ## Current Status Summary
 
-✅ **5-Man Format Details**: Complete comprehensive guide with all systems explained
-✅ **8-Man Format Details**: Traditional format overview complete
-✅ **Format Comparison**: Side-by-side analysis with quick summaries
-✅ **Navigation System**: Cross-page navigation with back button support
-✅ **Info Button Integration**: All wizard info buttons link to detail pages
-✅ **League Operator System**: Complete database integration and profile management
-✅ **Organization Settings**: Full CRUD operations for operator profile
-✅ **NavRoutes Architecture**: Array-based routing with minimal repetition
-🔄 **League Creation**: Wizard UI complete, ready for database implementation
-🔄 **League Management**: Dashboard ready, needs active league tracking
+✅ **Database Schema**: Complete, tested, production-ready
+✅ **Season Creation Wizard**: Full database integration working
+✅ **Conflict Detection**: Refactored, tested, DRY principle applied
+✅ **Schedule Generation**: Working with blackouts and playoffs
+✅ **Transaction Safety**: Rollback on failure prevents orphaned records
+🔄 **Team Creation**: Next major feature to implement
+🔄 **Schedule Display**: Waiting for teams to exist

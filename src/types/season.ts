@@ -32,6 +32,8 @@ export interface ChampionshipEvent {
 
 /**
  * Season database record
+ * Note: Schedule weeks are stored in separate season_weeks table
+ * Holidays and championships fetched on-demand during schedule editing
  */
 export interface Season {
   id: string;
@@ -41,26 +43,31 @@ export interface Season {
   end_date: string;            // ISO date string
   season_length: number;       // Number of weeks (10-52)
   status: SeasonStatus;
-  holidays: Holiday[];
-  bca_championship: ChampionshipEvent | null;
-  apa_championship: ChampionshipEvent | null;
-  schedule: Record<string, ScheduleEntry>;
   season_completed: boolean;
   created_at: string;
   updated_at: string;
 }
 
 /**
- * Schedule entry for a specific date
+ * Season week database record
+ * Unified table storing all calendar dates: regular weeks, blackouts, season-end breaks, playoffs
+ * Sort by scheduled_date to display full season calendar
  */
-export interface ScheduleEntry {
-  title: string;           // "Week 1", "Holiday", "BCA Championship", etc.
-  league_play: boolean;    // Whether league plays on this date
-  matchup_id?: string;     // ID of matchup if league_play is true
+export interface SeasonWeek {
+  id: string;
+  season_id: string;
+  scheduled_date: string;      // ISO date string - sort by this
+  week_name: string;           // "Week 1", "Thanksgiving", "Playoffs"
+  week_type: 'regular' | 'blackout' | 'playoffs' | 'season_end_break';
+  week_completed: boolean;     // Prevents editing past weeks
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
  * Data needed to create a new season
+ * Note: Holidays and championships NOT stored - fetched on-demand during editing
  */
 export interface SeasonInsertData {
   league_id: string;
@@ -69,9 +76,6 @@ export interface SeasonInsertData {
   end_date: string;
   season_length: number;
   status?: SeasonStatus;
-  holidays?: Holiday[];
-  bca_championship?: ChampionshipEvent;
-  apa_championship?: ChampionshipEvent;
 }
 
 /**

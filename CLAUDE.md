@@ -171,7 +171,7 @@ flowchart TD
 
 - **Dev Server Management**: When restarting the dev server, kill the existing process but then ask the user to manually run `pnpm run dev` in their terminal rather than running it automatically. The background execution doesn't always start a new instance properly for the user.
 
-- **Database Operations**: Implement full database operations using Supabase. The user has a local Supabase instance. The user's partner will mirror these database calls for the mobile app, but the web app should have complete, working database functionality. Most operator/management features are web-only and won't be needed in the mobile app (which focuses on scorekeeping).
+- **Database Operations**: This project uses a local Supabase instance for development. When creating database schema changes, provide SQL migration files in the `/database` folder with complete documentation. The user and their partner will run these SQL files on their local Supabase instance to create/modify tables. For UI components, implement full database operations using the Supabase client (`@/supabaseClient`). The user's partner will mirror these database calls for the mobile app, but the web app should have complete, working database functionality. Most operator/management features are web-only and won't be needed in the mobile app (which focuses on scorekeeping).
 
 - **Code Display in Chat**: NEVER show code blocks in chat responses unless explicitly requested by the user. Describe what changes are being made or what the plan is, but do not paste code snippets into the conversation. Code should only appear in file edits via tools, not in chat messages.
 
