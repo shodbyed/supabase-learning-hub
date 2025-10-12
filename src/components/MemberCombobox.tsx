@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import type { Member } from '@/types/member';
-import { getPlayerDisplayNumber } from '@/types/member';
+import { getPlayerDisplayName } from '@/types/member';
 
 interface MemberComboboxProps {
   /** List of members to choose from */
@@ -67,20 +67,10 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
   // Filter members based on search query
   const filteredMembers = searchQuery
     ? members.filter((member) => {
-        const playerNumber = getPlayerDisplayNumber(member);
-        const searchValue = `${member.first_name} ${member.last_name} ${playerNumber}`.toLowerCase();
+        const searchValue = getPlayerDisplayName(member).toLowerCase();
         return searchValue.includes(searchQuery.toLowerCase());
       })
     : members;
-
-  /**
-   * Format member display name with player number
-   * Shows: FirstName LastName PlayerNumber
-   */
-  const formatMemberLabel = (member: Member): string => {
-    const playerNumber = getPlayerDisplayNumber(member);
-    return `${member.first_name} ${member.last_name} ${playerNumber}`;
-  };
 
   return (
     <div className={className}>
@@ -100,7 +90,7 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
           >
             <span className="truncate">
               {selectedMember
-                ? formatMemberLabel(selectedMember)
+                ? getPlayerDisplayName(selectedMember)
                 : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -130,7 +120,7 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
                         setOpen(false);
                       }}
                     >
-                      {formatMemberLabel(member)}
+                      {getPlayerDisplayName(member)}
                       <Check
                         className={`ml-auto h-4 w-4 ${
                           member.id === value ? 'opacity-100' : 'opacity-0'

@@ -4,7 +4,7 @@
  * Modal form for creating and editing teams.
  * Allows operators to set team name, captain, home venue, and roster players.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { InfoButton } from '@/components/InfoButton';
+import { useRosterEditor } from '@/hooks/useRosterEditor';
 import type { Member } from '@/types/member';
-import type { Venue } from '@/types/venue';
+import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamFormat } from '@/types/league';
-
-interface LeagueVenue {
-  id: string;
-  venue_id: string;
-  available_total_tables: number;
-}
 
 interface TeamEditorModalProps {
   /** League ID for the team */
@@ -89,68 +84,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [teamName, setTeamName] = useState(existingTeam?.team_name || defaultTeamName);
   const [captainId, setCaptainId] = useState(existingTeam?.captain_id || '');
   const [homeVenueId, setHomeVenueId] = useState(existingTeam?.home_venue_id || defaultVenueId);
-  const [playerIds, setPlayerIds] = useState<string[]>(Array(rosterSize).fill(''));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Load existing roster when editing
-   */
-  useEffect(() => {
-    if (!existingTeam) return;
-
-    const loadRoster = async () => {
-      try {
-        const { data: rosterData, error: rosterError } = await supabase
-          .from('team_players')
-          .select('member_id, is_captain')
-          .eq('team_id', existingTeam.id)
-          .order('is_captain', { ascending: false });
-
-        if (rosterError) throw rosterError;
-
-        // Filter out captain, get just the other players
-        const nonCaptainPlayers = rosterData?.filter(p => !p.is_captain).map(p => p.member_id) || [];
-
-        // Fill the roster array with existing players, pad with empty strings
-        const filledRoster = [...nonCaptainPlayers];
-        while (filledRoster.length < rosterSize - 1) {
-          filledRoster.push('');
-        }
-
-        setPlayerIds(filledRoster.slice(0, rosterSize - 1));
-      } catch (err) {
-        console.error('Error loading roster:', err);
-        setError('Failed to load existing roster');
-      }
-    };
-
-    loadRoster();
-  }, [existingTeam, rosterSize]);
-
-  /**
-   * Update player at specific roster index
-   */
-  const handlePlayerChange = (index: number, memberId: string) => {
-    const newPlayerIds = [...playerIds];
-    newPlayerIds[index] = memberId;
-    setPlayerIds(newPlayerIds);
-
-    // Clear error first
-    setError(null);
-
-    // Validate for duplicates immediately
-    if (memberId) {
-      const selectedPlayers = newPlayerIds.filter(id => id !== '');
-      const uniquePlayers = new Set(selectedPlayers);
-
-      if (selectedPlayers.length !== uniquePlayers.size) {
-        setError('Cannot select the same player multiple times');
-      } else if (selectedPlayers.includes(captainId)) {
-        setError('Captain is automatically added to roster - do not select them again as a player');
-      }
-    }
-  };
+  // Use roster editor hook for roster management
+  const {
+    playerIds,
+    rosterError,
+    handlePlayerChange,
+    validateRoster,
+    clearRosterError,
+    getAllPlayerIds,
+  } = useRosterEditor({
+    rosterSize,
+    captainId,
+    existingTeamId: existingTeam?.id,
+  });
 
   /**
    * Validate form data
@@ -159,19 +108,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     if (!teamName.trim()) return 'Team name is required';
     if (!captainId) return 'Captain is required';
 
-    // Check for duplicate players
-    const selectedPlayers = playerIds.filter(id => id !== '');
-    const uniquePlayers = new Set(selectedPlayers);
-    if (selectedPlayers.length !== uniquePlayers.size) {
-      return 'Cannot select the same player multiple times';
-    }
-
-    // Check if captain is also in roster
-    if (selectedPlayers.includes(captainId)) {
-      return 'Captain is automatically added to roster - do not select them again as a player';
-    }
-
-    return null;
+    // Validate roster using hook
+    return validateRoster();
   };
 
   /**
@@ -211,8 +149,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
         if (deleteError) throw deleteError;
 
-        // Insert new roster
-        const rosterPlayers = [captainId, ...playerIds.filter(id => id !== '')];
+        // Insert new roster using hook's helper
+        const rosterPlayers = getAllPlayerIds();
         const rosterData = rosterPlayers.map((memberId) => ({
           team_id: existingTeam.id,
           member_id: memberId,
@@ -248,8 +186,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
         console.log('🎱 Team created:', newTeam);
 
-        // Prepare roster data (captain + selected players)
-        const rosterPlayers = [captainId, ...playerIds.filter(id => id !== '')];
+        // Prepare roster data using hook's helper
+        const rosterPlayers = getAllPlayerIds();
         const rosterData = rosterPlayers.map((memberId) => ({
           team_id: newTeam.id,
           member_id: memberId,
@@ -331,13 +269,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
         {/* Form */}
         <div className="p-6 space-y-6">
-          {/* Error message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
-
           {/* Team Name */}
           <div>
             <Label>Team Name</Label>
@@ -347,6 +278,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               onChange={(e) => {
                 setTeamName(e.target.value);
                 setError(null);
+                clearRosterError();
               }}
               placeholder="Team 1"
             />
@@ -403,16 +335,25 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-          <Button variant="outline" onClick={onCancel} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={saving}>
-            {saving
-              ? (isEditing ? 'Saving...' : 'Creating Team...')
-              : (isEditing ? 'Save Changes' : 'Create Team')
-            }
-          </Button>
+        <div className="p-6 border-t border-gray-200 bg-gray-50">
+          {/* Error message */}
+          {(error || rosterError) && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-red-800 text-sm font-medium">{error || rosterError}</p>
+            </div>
+          )}
+
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={onCancel} disabled={saving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={saving}>
+              {saving
+                ? (isEditing ? 'Saving...' : 'Creating Team...')
+                : (isEditing ? 'Save Changes' : 'Create Team')
+              }
+            </Button>
+          </div>
         </div>
       </div>
     </div>

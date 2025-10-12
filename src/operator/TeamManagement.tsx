@@ -6,54 +6,21 @@
  * 2. Create and manage teams
  * 3. Assign captains and build rosters
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft, Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOperatorId } from '@/hooks/useOperatorId';
+import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { VenueLimitModal } from './VenueLimitModal';
 import { TeamEditorModal } from './TeamEditorModal';
 import { InfoButton } from '@/components/InfoButton';
-import type { League } from '@/types/league';
-import type { Venue } from '@/types/venue';
-import type { Team } from '@/types/team';
-import type { Member } from '@/types/member';
-
-interface LeagueVenue {
-  id: string;
-  league_id: string;
-  venue_id: string;
-  available_bar_box_tables: number;
-  available_regulation_tables: number;
-  available_total_tables: number;
-}
-
-interface TeamWithDetails extends Team {
-  captain?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    system_player_number: number;
-    bca_member_number: string | null;
-  };
-  team_players?: Array<{
-    count?: number;
-    member_id?: string;
-    is_captain?: boolean;
-    members?: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      system_player_number: number;
-      bca_member_number: string | null;
-    };
-  }>;
-  venue?: {
-    id: string;
-    name: string;
-  };
-}
+import { TeamCard } from '@/components/TeamCard';
+import { VenueListItem } from '@/components/VenueListItem';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import type { Venue, LeagueVenue } from '@/types/venue';
+import type { TeamWithQueryDetails } from '@/types/team';
 
 /**
  * TeamManagement Component
@@ -67,20 +34,27 @@ export const TeamManagement: React.FC = () => {
   const navigate = useNavigate();
   const { operatorId, loading: operatorLoading } = useOperatorId();
 
-  const [league, setLeague] = useState<League | null>(null);
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [leagueVenues, setLeagueVenues] = useState<LeagueVenue[]>([]);
-  const [teams, setTeams] = useState<TeamWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use custom hook for all data fetching
+  const {
+    league,
+    venues,
+    leagueVenues,
+    teams,
+    members,
+    seasonId,
+    previousSeasonId,
+    loading,
+    error,
+    refreshTeams,
+    setLeagueVenues,
+  } = useTeamManagement(operatorId, leagueId);
+
+  // UI state
   const [assigningVenue, setAssigningVenue] = useState<string | null>(null);
   const [selectingAll, setSelectingAll] = useState(false);
   const [limitModalVenue, setLimitModalVenue] = useState<{ venue: Venue; leagueVenue: LeagueVenue } | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [seasonId, setSeasonId] = useState<string | null>(null);
   const [showTeamEditor, setShowTeamEditor] = useState(false);
-  const [editingTeam, setEditingTeam] = useState<TeamWithDetails | null>(null);
-  const [previousSeasonId, setPreviousSeasonId] = useState<string | null>(null);
+  const [editingTeam, setEditingTeam] = useState<TeamWithQueryDetails | null>(null);
   const [importingTeams, setImportingTeams] = useState(false);
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -144,148 +118,6 @@ export const TeamManagement: React.FC = () => {
       setSelectingAll(false);
     }
   };
-
-  /**
-   * Fetch league, venues, and teams
-   */
-  useEffect(() => {
-    if (!operatorId || !leagueId) return;
-
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Fetch league
-        const { data: leagueData, error: leagueError } = await supabase
-          .from('leagues')
-          .select('*')
-          .eq('id', leagueId)
-          .single();
-
-        if (leagueError) throw leagueError;
-        setLeague(leagueData);
-
-        // Fetch operator's venues
-        const { data: venuesData, error: venuesError } = await supabase
-          .from('venues')
-          .select('*')
-          .eq('created_by_operator_id', operatorId)
-          .eq('is_active', true)
-          .order('name');
-
-        if (venuesError) throw venuesError;
-        setVenues(venuesData || []);
-
-        // Fetch league's assigned venues
-        const { data: leagueVenuesData, error: leagueVenuesError } = await supabase
-          .from('league_venues')
-          .select('*')
-          .eq('league_id', leagueId);
-
-        if (leagueVenuesError) throw leagueVenuesError;
-        setLeagueVenues(leagueVenuesData || []);
-
-        // Fetch teams with captain info, roster details, and venue
-        const { data: teamsData, error: teamsError} = await supabase
-          .from('teams')
-          .select(`
-            *,
-            captain:members!captain_id(
-              id,
-              first_name,
-              last_name,
-              system_player_number,
-              bca_member_number
-            ),
-            team_players(
-              member_id,
-              is_captain,
-              members(
-                id,
-                first_name,
-                last_name,
-                system_player_number,
-                bca_member_number
-              )
-            ),
-            venue:venues(
-              id,
-              name
-            )
-          `)
-          .eq('league_id', leagueId)
-          .order('created_at', { ascending: false });
-
-        if (teamsError) throw teamsError;
-        setTeams(teamsData || []);
-
-        // Fetch all members (for captain/player selection)
-        // Note: Not filtering by role - anyone in the members table can be selected
-        // Future: Add isPlayer boolean column to allow members to opt out
-        const { data: membersData, error: membersError } = await supabase
-          .from('members')
-          .select('*')
-          .order('last_name', { ascending: true });
-
-        if (membersError) throw membersError;
-        setMembers(membersData || []);
-
-        // Fetch current season for this league (upcoming or active)
-        const { data: seasonData, error: seasonError } = await supabase
-          .from('seasons')
-          .select('id, created_at')
-          .eq('league_id', leagueId)
-          .in('status', ['upcoming', 'active'])
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (seasonError) throw seasonError;
-        setSeasonId(seasonData?.id || null);
-
-        // Fetch previous season (most recent completed season)
-        if (seasonData) {
-          const { data: prevSeasonData, error: prevSeasonError } = await supabase
-            .from('seasons')
-            .select('id')
-            .eq('league_id', leagueId)
-            .eq('status', 'completed')
-            .lt('created_at', seasonData.created_at)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (prevSeasonError) {
-            console.error('Error fetching previous season:', prevSeasonError);
-          } else {
-            setPreviousSeasonId(prevSeasonData?.id || null);
-          }
-        }
-
-        // Debug logging
-        console.log('📊 Team Management Data:', {
-          leagueId: leagueId,
-          leagueVenues: leagueVenuesData?.length || 0,
-          teams: teamsData?.length || 0,
-          members: membersData?.length || 0,
-          seasonId: seasonData?.id || 'No active season',
-          seasonFound: !!seasonData
-        });
-
-        if (!seasonData) {
-          console.warn('⚠️ No season found for league:', leagueId, '- Please create a season first');
-        }
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [operatorId, leagueId]);
 
   /**
    * Check if a venue is assigned to the league
@@ -491,46 +323,8 @@ export const TeamManagement: React.FC = () => {
     setShowTeamEditor(false);
     setEditingTeam(null);
 
-    // Refresh teams list
-    if (!leagueId) return;
-
-    try {
-      const { data: teamsData, error: teamsError } = await supabase
-        .from('teams')
-        .select(`
-          *,
-          captain:members!captain_id(
-            id,
-            first_name,
-            last_name,
-            system_player_number,
-            bca_member_number
-          ),
-          team_players(
-            member_id,
-            is_captain,
-            members(
-              id,
-              first_name,
-              last_name,
-              system_player_number,
-              bca_member_number
-            )
-          ),
-          venue:venues(
-            id,
-            name
-          )
-        `)
-        .eq('league_id', leagueId)
-        .order('created_at', { ascending: false });
-
-      if (teamsError) throw teamsError;
-      setTeams(teamsData || []);
-      console.log('✅ Teams list refreshed');
-    } catch (err) {
-      console.error('Error refreshing teams:', err);
-    }
+    // Refresh teams list using hook function
+    await refreshTeams();
   };
 
   /**
@@ -550,39 +344,8 @@ export const TeamManagement: React.FC = () => {
 
       console.log('✅ Team deleted successfully');
 
-      // Refresh teams list
-      const { data: teamsData, error: teamsError } = await supabase
-        .from('teams')
-        .select(`
-          *,
-          captain:members!captain_id(
-            id,
-            first_name,
-            last_name,
-            system_player_number,
-            bca_member_number
-          ),
-          team_players(
-            member_id,
-            is_captain,
-            members(
-              id,
-              first_name,
-              last_name,
-              system_player_number,
-              bca_member_number
-            )
-          ),
-          venue:venues(
-            id,
-            name
-          )
-        `)
-        .eq('league_id', leagueId!)
-        .order('created_at', { ascending: false });
-
-      if (teamsError) throw teamsError;
-      setTeams(teamsData || []);
+      // Refresh teams list using hook function
+      await refreshTeams();
     } catch (err) {
       console.error('❌ Error deleting team:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete team');
@@ -757,36 +520,15 @@ export const TeamManagement: React.FC = () => {
                   const availableTables = leagueVenue?.available_total_tables ?? venue.total_tables;
 
                   return (
-                    <div
+                    <VenueListItem
                       key={venue.id}
-                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={assigned}
-                        onChange={() => handleToggleVenue(venue)}
-                        disabled={assigningVenue === venue.id}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {venue.name}
-                        </p>
-                      </div>
-                      {assigned && (
-                        <>
-                          <span className="text-xs text-gray-600">
-                            {availableTables} of {venue.total_tables}
-                          </span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenLimitModal(venue)}
-                          >
-                            Limit
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                      venue={venue}
+                      isAssigned={assigned}
+                      isToggling={assigningVenue === venue.id}
+                      availableTables={availableTables}
+                      onToggle={() => handleToggleVenue(venue)}
+                      onLimitClick={() => handleOpenLimitModal(venue)}
+                    />
                   );
                 })}
               </div>
@@ -840,110 +582,22 @@ export const TeamManagement: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {teams.map((team) => {
-                  const captain = team.captain;
-                  const rosterPlayers = team.team_players?.filter(tp => tp.members) || [];
-                  const rosterCount = rosterPlayers.length;
-                  const captainName = captain
-                    ? `${captain.first_name} ${captain.last_name}`
-                    : 'Unknown';
-                  // Use BCA number if available, otherwise system player number
-                  const playerNumber = captain?.bca_member_number || `P-${String(captain?.system_player_number || 0).padStart(5, '0')}`;
-                  const displayNumber = playerNumber ? `#${playerNumber}` : '';
-                  const isExpanded = expandedTeams.has(team.id);
-
-                  return (
-                    <div
-                      key={team.id}
-                      className="border border-gray-200 rounded-lg overflow-hidden"
-                    >
-                      {/* Team Header */}
-                      <div className="p-4 flex items-start gap-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleTeamExpansion(team.id)}
-                          className="shrink-0"
-                        >
-                          {isExpanded ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">{team.team_name}</h3>
-                          <p className="text-sm text-gray-600">
-                            Captain: {captainName} {displayNumber} • Roster: {rosterCount}/{team.roster_size}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setEditingTeam(team);
-                              setShowTeamEditor(true);
-                            }}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setDeletingTeamId(team.id);
-                              setShowDeleteConfirm(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Expanded Details */}
-                      {isExpanded && (
-                        <div className="px-4 pb-4 pt-2 border-t border-gray-200 bg-gray-50">
-                          {/* Home Venue */}
-                          <div className="mb-3">
-                            <p className="text-xs font-semibold text-gray-700 uppercase mb-1">Home Venue</p>
-                            <p className="text-sm text-gray-900">
-                              {team.venue?.name || 'No venue assigned'}
-                            </p>
-                          </div>
-
-                          {/* Roster */}
-                          <div>
-                            <p className="text-xs font-semibold text-gray-700 uppercase mb-2">Roster</p>
-                            {rosterPlayers.length > 0 ? (
-                              <ul className="space-y-1">
-                                {rosterPlayers.map((tp) => {
-                                  const member = tp.members;
-                                  if (!member) return null;
-
-                                  const memberNumber = member.bca_member_number ||
-                                    `P-${String(member.system_player_number).padStart(5, '0')}`;
-
-                                  return (
-                                    <li key={tp.member_id} className="text-sm text-gray-900 flex items-center gap-2">
-                                      <span>{member.first_name} {member.last_name} #{memberNumber}</span>
-                                      {tp.is_captain && (
-                                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                                          Captain
-                                        </span>
-                                      )}
-                                    </li>
-                                  );
-                                })}
-                              </ul>
-                            ) : (
-                              <p className="text-sm text-gray-500 italic">No players assigned</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {teams.map((team) => (
+                  <TeamCard
+                    key={team.id}
+                    team={team}
+                    isExpanded={expandedTeams.has(team.id)}
+                    onToggleExpand={() => toggleTeamExpansion(team.id)}
+                    onEdit={() => {
+                      setEditingTeam(team);
+                      setShowTeamEditor(true);
+                    }}
+                    onDelete={() => {
+                      setDeletingTeamId(team.id);
+                      setShowDeleteConfirm(true);
+                    }}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -986,40 +640,16 @@ export const TeamManagement: React.FC = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => {
+          <ConfirmDialog
+            title="Delete Team?"
+            message="Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone."
+            confirmText="Delete Team"
+            onConfirm={handleDeleteTeam}
+            onCancel={() => {
               setShowDeleteConfirm(false);
               setDeletingTeamId(null);
             }}
-          >
-            <div
-              className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-lg font-bold text-gray-900 mb-3">Delete Team?</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setDeletingTeamId(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteTeam}
-                >
-                  Delete Team
-                </Button>
-              </div>
-            </div>
-          </div>
+          />
         )}
       </div>
     </div>

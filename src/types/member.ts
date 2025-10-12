@@ -53,3 +53,27 @@ export function getPlayerDisplayName(member: Member): string {
   const playerNumber = getPlayerDisplayNumber(member);
   return `${fullName} ${playerNumber}`;
 }
+
+/**
+ * Partial member object from database queries (captain/roster lookups)
+ * Only includes fields needed for display purposes
+ */
+export interface PartialMember {
+  id: string;
+  first_name: string;
+  last_name: string;
+  system_player_number: number;
+  bca_member_number: string | null;
+}
+
+/**
+ * Format player number for partial member objects from queries
+ * Shows BCA number if available, otherwise system player number
+ * Example: "#BCA-123456" or "#P-00042"
+ */
+export function formatPartialMemberNumber(member: PartialMember): string {
+  if (member.bca_member_number) {
+    return `#BCA-${member.bca_member_number}`;
+  }
+  return `#P-${String(member.system_player_number).padStart(5, '0')}`;
+}

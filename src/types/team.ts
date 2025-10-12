@@ -91,6 +91,36 @@ export interface TeamWithDetails extends Team {
 }
 
 /**
+ * Team with full nested query data from Supabase
+ * Used when querying teams with captain, roster, and venue details
+ */
+export interface TeamWithQueryDetails extends Team {
+  captain?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    system_player_number: number;
+    bca_member_number: string | null;
+  };
+  team_players?: Array<{
+    count?: number;
+    member_id?: string;
+    is_captain?: boolean;
+    members?: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      system_player_number: number;
+      bca_member_number: string | null;
+    };
+  }>;
+  venue?: {
+    id: string;
+    name: string;
+  };
+}
+
+/**
  * Utility function to format team record for display
  */
 export function formatTeamRecord(team: Team): string {

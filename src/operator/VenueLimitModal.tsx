@@ -10,16 +10,7 @@ import { supabase } from '@/supabaseClient';
 import { X, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import type { Venue } from '@/types/venue';
-
-interface LeagueVenue {
-  id: string;
-  league_id: string;
-  venue_id: string;
-  available_bar_box_tables: number;
-  available_regulation_tables: number;
-  available_total_tables: number;
-}
+import type { Venue, LeagueVenue } from '@/types/venue';
 
 interface VenueLimitModalProps {
   /** The venue being configured */
