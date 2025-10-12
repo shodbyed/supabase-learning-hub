@@ -426,6 +426,14 @@ export const TeamManagement: React.FC = () => {
                 Assign venues and create teams for your league
               </p>
             </div>
+            {teams.length > 0 && (
+              <Button
+                size="lg"
+                onClick={() => navigate(`/league/${leagueId}`)}
+              >
+                Teams Setup Complete
+              </Button>
+            )}
           </div>
         </div>
 
@@ -581,27 +589,41 @@ export const TeamManagement: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {teams.map((team) => (
-                  <TeamCard
-                    key={team.id}
-                    team={team}
-                    isExpanded={expandedTeams.has(team.id)}
-                    onToggleExpand={() => toggleTeamExpansion(team.id)}
-                    onEdit={() => {
-                      setEditingTeam(team);
-                      setShowTeamEditor(true);
-                    }}
-                    onDelete={() => {
-                      setDeletingTeamId(team.id);
-                      setShowDeleteConfirm(true);
-                    }}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {teams.map((team) => (
+                    <TeamCard
+                      key={team.id}
+                      team={team}
+                      isExpanded={expandedTeams.has(team.id)}
+                      onToggleExpand={() => toggleTeamExpansion(team.id)}
+                      onEdit={() => {
+                        setEditingTeam(team);
+                        setShowTeamEditor(true);
+                      }}
+                      onDelete={() => {
+                        setDeletingTeamId(team.id);
+                        setShowDeleteConfirm(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
+
+        {/* Completion Actions - Outside cards for better visibility */}
+        {teams.length > 0 && (
+          <div className="flex justify-center gap-4 mt-6">
+            <Button
+              size="lg"
+              onClick={() => navigate(`/league/${leagueId}`)}
+            >
+              Teams Setup Complete
+            </Button>
+          </div>
+        )}
 
         {/* Venue Limit Modal */}
         {limitModalVenue && (
