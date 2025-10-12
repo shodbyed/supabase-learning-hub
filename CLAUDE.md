@@ -161,7 +161,16 @@ flowchart TD
 
 - **Best Practices Over Convenience**: When the user asks for something that conflicts with software engineering best practices, I should push back respectfully and explain the best practice approach. Provide clear reasoning with pros/cons, real-world examples, and performance implications. The user wants to learn and make informed decisions, not receive "yes man" responses. In the end, the user has final say, but they always want to know the correct way to do something first. **The user is learning and wants to be taught, not blindly agreed with.**
 
-- **shadcn/ui Component Usage**: Always start with bare bones shadcn components first, without adding custom styles or classes. Discuss styling additions after the basic functionality is working. This ensures we use the design system properly before customizing.
+- **shadcn/ui Component Usage**: **CRITICAL - USE SHADCN COMPONENTS FOR EVERYTHING.** Always use shadcn/ui components for ALL UI elements to maintain consistency throughout the application. This includes:
+  - `Button` from `@/components/ui/button` for ALL buttons (never use `<button>` elements)
+  - `Input` from `@/components/ui/input` for ALL text inputs (never use `<input>` elements)
+  - `Label` from `@/components/ui/label` for ALL form labels (never use `<label>` elements)
+  - `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` from `@/components/ui/select` for ALL dropdowns (never use `<select>` elements)
+  - `Card`, `CardHeader`, `CardTitle`, `CardContent` from `@/components/ui/card` for card layouts
+  - Other shadcn components as appropriate
+  - Start with bare bones shadcn components first, without adding custom styles or classes
+  - Discuss styling additions after the basic functionality is working
+  - This ensures consistent design system usage across the entire application
 
 - **Git Workflow Reminders**: User often forgets to commit and push at regular intervals. Proactively remind user to commit and push after successful checkpoints, feature completions, or when significant progress has been made. Ask "Should we commit these changes?" when appropriate.
 

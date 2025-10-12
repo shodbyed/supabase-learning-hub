@@ -188,6 +188,17 @@ This document captures aspirational features that would enhance the app's desira
 
 **Note**: This feature should be designed after core league management is working. May require role-based access control (RBAC) system and permission framework.
 
+## Scheduling Resources
+
+### Team Matchup Schedules
+**Resource**: bowl.com/league-schedules
+
+This website provides perfect team scheduling PDFs for leagues ranging from 4 teams to 48 teams. These pre-made round-robin schedules handle team matchup rotations properly.
+
+**Status**: Not yet implemented - resource saved for when we build team matchup scheduling system
+
+**Use Case**: When generating league schedules, we'll need to determine which teams play each other each week. Rather than building complex scheduling algorithms, we can reference these proven schedules.
+
 ## Integration Opportunities
 
 ### Third-Party Services

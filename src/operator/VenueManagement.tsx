@@ -7,8 +7,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil } from 'lucide-react';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
+import { Button } from '@/components/ui/button';
 import type { Venue } from '@/types/venue';
 
 /**
@@ -22,6 +23,7 @@ export const VenueManagement: React.FC = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
   const [operatorId, setOperatorId] = useState<string | null>(null);
 
   /**
@@ -81,11 +83,26 @@ export const VenueManagement: React.FC = () => {
   }, []);
 
   /**
-   * Handle successful venue creation
+   * Handle successful venue creation or update
    */
-  const handleVenueCreated = (newVenue: Venue) => {
-    setVenues(prev => [newVenue, ...prev]);
+  const handleVenueCreated = (venue: Venue) => {
+    if (editingVenue) {
+      // Update existing venue in list
+      setVenues(prev => prev.map(v => v.id === venue.id ? venue : v));
+    } else {
+      // Add new venue to list
+      setVenues(prev => [venue, ...prev]);
+    }
     setShowModal(false);
+    setEditingVenue(null);
+  };
+
+  /**
+   * Open modal to edit existing venue
+   */
+  const handleEditVenue = (venue: Venue) => {
+    setEditingVenue(venue);
+    setShowModal(true);
   };
 
   if (loading) {
@@ -103,13 +120,14 @@ export const VenueManagement: React.FC = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate('/operator-dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="mb-4"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
-          </button>
+          </Button>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Manage Venues</h1>
@@ -117,13 +135,10 @@ export const VenueManagement: React.FC = () => {
                 Add and manage venues where your leagues play
               </p>
             </div>
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              <Plus className="h-5 w-5" />
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="h-5 w-5 mr-2" />
               Add Venue
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -135,21 +150,26 @@ export const VenueManagement: React.FC = () => {
             <p className="text-gray-600 mb-6">
               Add your first venue to start organizing league play locations.
             </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
+            <Button onClick={() => setShowModal(true)}>
               Add First Venue
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.map((venue) => (
               <div
                 key={venue.id}
-                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow relative"
               >
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <Button
+                  onClick={() => handleEditVenue(venue)}
+                  className="absolute top-4 right-4"
+                  aria-label="Edit venue"
+                  size="default"
+                >
+                  <Pencil className="h-5 w-5" />
+                </Button>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2 pr-10">
                   {venue.name}
                 </h3>
                 <div className="text-sm text-gray-600 space-y-1 mb-4">
@@ -172,19 +192,23 @@ export const VenueManagement: React.FC = () => {
                   </div>
                 </div>
                 <div className="mt-4 text-xs text-gray-500">
-                  Capacity: ~{venue.total_tables} home teams
+                  Capacity: {venue.total_tables} teams travel or {venue.total_tables * 2} teams in-house
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Venue Creation Modal */}
+        {/* Venue Creation/Edit Modal */}
         {showModal && operatorId && (
           <VenueCreationModal
             operatorId={operatorId}
             onSuccess={handleVenueCreated}
-            onCancel={() => setShowModal(false)}
+            onCancel={() => {
+              setShowModal(false);
+              setEditingVenue(null);
+            }}
+            existingVenue={editingVenue}
           />
         )}
       </div>

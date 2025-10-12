@@ -9,14 +9,22 @@ import React, { useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { X } from 'lucide-react';
 import type { VenueFormData, VenueInsertData, Venue } from '@/types/venue';
+import { US_STATES } from '@/constants/states';
+import { formatPhoneNumber } from '@/utils/formatters';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 interface VenueCreationModalProps {
   /** Operator ID who is creating the venue */
   operatorId: string;
-  /** Called when venue is successfully created */
+  /** Called when venue is successfully created or updated */
   onSuccess: (venue: Venue) => void;
   /** Called when user cancels or closes modal */
   onCancel: () => void;
+  /** Existing venue data for editing (optional) */
+  existingVenue?: Venue | null;
 }
 
 /**
@@ -31,17 +39,20 @@ interface VenueCreationModalProps {
 export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
   operatorId,
   onSuccess,
-  onCancel
+  onCancel,
+  existingVenue
 }) => {
+  const isEditing = !!existingVenue;
+
   const [formData, setFormData] = useState<VenueFormData>({
-    name: '',
-    street_address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    phone: '',
-    bar_box_tables: 0,
-    regulation_tables: 0
+    name: existingVenue?.name || '',
+    street_address: existingVenue?.street_address || '',
+    city: existingVenue?.city || '',
+    state: existingVenue?.state || '',
+    zip_code: existingVenue?.zip_code || '',
+    phone: existingVenue?.phone || '',
+    bar_box_tables: existingVenue?.bar_box_tables || 0,
+    regulation_tables: existingVenue?.regulation_tables || 0
   });
 
   const [saving, setSaving] = useState(false);
@@ -79,7 +90,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
   };
 
   /**
-   * Save venue to database
+   * Save venue to database (create or update)
    */
   const handleSave = async () => {
     // Validate
@@ -93,43 +104,71 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     setError(null);
 
     try {
-      // Prepare insert data
-      const insertData: VenueInsertData = {
-        created_by_operator_id: operatorId,
-        name: formData.name.trim(),
-        street_address: formData.street_address.trim(),
-        city: formData.city.trim(),
-        state: formData.state.trim().toUpperCase(),
-        zip_code: formData.zip_code.trim(),
-        phone: formData.phone.trim(),
-        bar_box_tables: formData.bar_box_tables,
-        regulation_tables: formData.regulation_tables,
-        // Optional fields - null if not provided
-        proprietor_name: formData.proprietor_name?.trim() || null,
-        proprietor_phone: formData.proprietor_phone?.trim() || null,
-        league_contact_name: formData.league_contact_name?.trim() || null,
-        league_contact_phone: formData.league_contact_phone?.trim() || null,
-        league_contact_email: formData.league_contact_email?.trim() || null,
-        website: formData.website?.trim() || null,
-        business_hours: formData.business_hours?.trim() || null,
-        notes: formData.notes?.trim() || null
-      };
+      if (isEditing && existingVenue) {
+        // UPDATE existing venue
+        const updateData = {
+          name: formData.name.trim(),
+          street_address: formData.street_address.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim().toUpperCase(),
+          zip_code: formData.zip_code.trim(),
+          phone: formData.phone.trim(),
+          bar_box_tables: formData.bar_box_tables,
+          regulation_tables: formData.regulation_tables,
+        };
 
-      console.log('🏢 Creating venue:', insertData);
+        console.log('✏️ Updating venue:', updateData);
 
-      const { data: newVenue, error: dbError } = await supabase
-        .from('venues')
-        .insert([insertData])
-        .select()
-        .single();
+        const { data: updatedVenue, error: dbError } = await supabase
+          .from('venues')
+          .update(updateData)
+          .eq('id', existingVenue.id)
+          .select()
+          .single();
 
-      if (dbError) throw dbError;
+        if (dbError) throw dbError;
 
-      console.log('✅ Venue created:', newVenue);
-      onSuccess(newVenue);
+        console.log('✅ Venue updated:', updatedVenue);
+        onSuccess(updatedVenue);
+      } else {
+        // INSERT new venue
+        const insertData: VenueInsertData = {
+          created_by_operator_id: operatorId,
+          name: formData.name.trim(),
+          street_address: formData.street_address.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim().toUpperCase(),
+          zip_code: formData.zip_code.trim(),
+          phone: formData.phone.trim(),
+          bar_box_tables: formData.bar_box_tables,
+          regulation_tables: formData.regulation_tables,
+          // Optional fields - null if not provided
+          proprietor_name: formData.proprietor_name?.trim() || null,
+          proprietor_phone: formData.proprietor_phone?.trim() || null,
+          league_contact_name: formData.league_contact_name?.trim() || null,
+          league_contact_phone: formData.league_contact_phone?.trim() || null,
+          league_contact_email: formData.league_contact_email?.trim() || null,
+          website: formData.website?.trim() || null,
+          business_hours: formData.business_hours?.trim() || null,
+          notes: formData.notes?.trim() || null
+        };
+
+        console.log('🏢 Creating venue:', insertData);
+
+        const { data: newVenue, error: dbError } = await supabase
+          .from('venues')
+          .insert([insertData])
+          .select()
+          .single();
+
+        if (dbError) throw dbError;
+
+        console.log('✅ Venue created:', newVenue);
+        onSuccess(newVenue);
+      }
     } catch (err) {
-      console.error('❌ Error creating venue:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create venue');
+      console.error('❌ Error saving venue:', err);
+      setError(err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'create'} venue`);
     } finally {
       setSaving(false);
     }
@@ -156,7 +195,9 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Add New Venue</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {isEditing ? 'Edit Venue' : 'Add New Venue'}
+          </h2>
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -177,71 +218,71 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
 
           {/* Venue Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Label>
               Venue Name <span className="text-red-500">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="text"
               value={formData.name}
               onChange={(e) => updateField('name', e.target.value)}
               placeholder="Sam's Billiards"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Address */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Label>
                 Street Address <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={formData.street_address}
                 onChange={(e) => updateField('street_address', e.target.value)}
                 placeholder="123 Main Street"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Label>
                 City <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={formData.city}
                 onChange={(e) => updateField('city', e.target.value)}
                 placeholder="Springfield"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label>
                   State <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.state}
-                  onChange={(e) => updateField('state', e.target.value)}
-                  placeholder="IL"
-                  maxLength={2}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
-                />
+                </Label>
+                <Select value={formData.state} onValueChange={(value) => updateField('state', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state} value={state}>
+                        {state}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Label>
                   Zip Code <span className="text-red-500">*</span>
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={formData.zip_code}
                   onChange={(e) => updateField('zip_code', e.target.value)}
                   placeholder="62701"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -249,43 +290,44 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Label>
               Phone Number <span className="text-red-500">*</span>
-            </label>
-            <input
+            </Label>
+            <Input
               type="tel"
               value={formData.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
-              placeholder="(555) 123-4567"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => {
+                const formatted = formatPhoneNumber(e.target.value);
+                updateField('phone', formatted);
+              }}
+              placeholder="123-456-7890"
+              maxLength={12}
             />
           </div>
 
           {/* Table Counts */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Label>
                 Bar-Box Tables (7ft) <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="number"
                 min="0"
                 value={formData.bar_box_tables}
                 onChange={(e) => updateField('bar_box_tables', parseInt(e.target.value) || 0)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Label>
                 Regulation Tables (9ft) <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="number"
                 min="0"
                 value={formData.regulation_tables}
                 onChange={(e) => updateField('regulation_tables', parseInt(e.target.value) || 0)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -295,7 +337,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
               <strong>Total Tables:</strong> {formData.bar_box_tables + formData.regulation_tables}
               <br />
               <span className="text-xs">
-                Capacity: Approximately {formData.bar_box_tables + formData.regulation_tables} home teams can use this venue
+                Capacity: {formData.bar_box_tables + formData.regulation_tables} teams travel or {(formData.bar_box_tables + formData.regulation_tables) * 2} teams in-house
               </span>
             </p>
           </div>
@@ -307,20 +349,22 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-          <button
+          <Button
+            variant="outline"
             onClick={onCancel}
             disabled={saving}
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Creating...' : 'Create Venue'}
-          </button>
+            {saving
+              ? (isEditing ? 'Updating...' : 'Creating...')
+              : (isEditing ? 'Update Venue' : 'Create Venue')
+            }
+          </Button>
         </div>
       </div>
     </div>
