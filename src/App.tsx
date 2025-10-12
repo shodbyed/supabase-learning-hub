@@ -17,7 +17,8 @@ const NavigationWrapper: React.FC = () => {
 
   // Show OperatorNavBar for operator routes
   const isOperatorRoute = location.pathname.startsWith('/operator') ||
-                         location.pathname.startsWith('/create-league');
+                         location.pathname.startsWith('/create-league') ||
+                         location.pathname.startsWith('/league/');
 
   return isOperatorRoute ? <OperatorNavBar /> : <NavBar />;
 };

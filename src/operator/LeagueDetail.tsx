@@ -179,7 +179,7 @@ export const LeagueDetail: React.FC = () => {
               }
             </p>
             <button
-              onClick={() => navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : '/venues')}
+              onClick={() => navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : `/league/${league.id}/manage-teams`)}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Let's Go!

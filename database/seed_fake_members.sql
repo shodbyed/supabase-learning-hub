@@ -121,7 +121,7 @@ INSERT INTO members (first_name, last_name, nickname, phone, email, address, cit
 ('Walter', 'Zamora', 'Walt', '941-555-1001', 'walter.zamora@example.com', '10001 Main St', 'Sarasota', 'FL', '34236', '1985-10-15', 'player', '123452'),
 ('Ann', 'Montes', NULL, '941-555-1002', 'ann.montes@example.com', '10002 Tamiami Trail', 'Sarasota', 'FL', '34231', '1992-02-27', 'player', NULL),
 ('Ralph', 'Duarte', NULL, '941-555-1003', 'ralph.duarte@example.com', '10003 Fruitville Rd', 'Sarasota', 'FL', '34232', '1988-06-10', 'player', NULL),
-('Janice', 'Quiroz', 'Jan', '941-555-1004', janice.quiroz@example.com', '10004 Bee Ridge Rd', 'Sarasota', 'FL', '34233', '1993-10-22', 'player', '234562'),
+('Janice', 'Quiroz', 'Jan', '941-555-1004', 'janice.quiroz@example.com', '10004 Bee Ridge Rd', 'Sarasota', 'FL', '34233', '1993-10-22', 'player', '234562'),
 ('Roger', 'Barajas', NULL, '941-555-1005', 'roger.barajas@example.com', '10005 Clark Rd', 'Sarasota', 'FL', '34233', '1987-01-04', 'player', NULL),
 ('Marie', 'Velazquez', NULL, '941-555-1006', 'marie.velazquez@example.com', '10006 Stickney Point Rd', 'Sarasota', 'FL', '34231', '1991-05-18', 'player', NULL),
 ('Jack', 'Camacho', NULL, '941-555-1007', 'jack.camacho@example.com', '10007 Siesta Dr', 'Sarasota', 'FL', '34242', '1986-09-30', 'player', '345672'),

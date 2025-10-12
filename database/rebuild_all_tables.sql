@@ -7,6 +7,8 @@
 -- =====================================================
 
 -- Drop all tables in reverse dependency order
+DROP TABLE IF EXISTS team_players CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
 DROP TABLE IF EXISTS league_venues CASCADE;
 DROP TABLE IF EXISTS venues CASCADE;
 DROP TABLE IF EXISTS venue_owners CASCADE;
@@ -739,6 +741,252 @@ CREATE POLICY "Public can view active league venues"
       SELECT 1 FROM leagues
       WHERE leagues.id = league_id
       AND leagues.status = 'active'
+    )
+  );
+
+-- =====================================================
+-- 10. TEAMS TABLE
+-- =====================================================
+
+CREATE TABLE teams (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  season_id UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  league_id UUID NOT NULL REFERENCES leagues(id) ON DELETE CASCADE,
+  captain_id UUID NOT NULL REFERENCES members(id) ON DELETE RESTRICT,
+  home_venue_id UUID REFERENCES venues(id) ON DELETE SET NULL,
+
+  team_name VARCHAR(100) NOT NULL,
+  roster_size INT NOT NULL CHECK (roster_size IN (5, 8)),
+
+  wins INT DEFAULT 0 CHECK (wins >= 0),
+  losses INT DEFAULT 0 CHECK (losses >= 0),
+  ties INT DEFAULT 0 CHECK (ties >= 0),
+  points INT DEFAULT 0 CHECK (points >= 0),
+  games_won INT DEFAULT 0 CHECK (games_won >= 0),
+  games_lost INT DEFAULT 0 CHECK (games_lost >= 0),
+
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'withdrawn', 'forfeited')),
+
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_teams_season ON teams(season_id);
+CREATE INDEX idx_teams_league ON teams(league_id);
+CREATE INDEX idx_teams_captain ON teams(captain_id);
+CREATE INDEX idx_teams_venue ON teams(home_venue_id);
+CREATE INDEX idx_teams_status ON teams(status);
+
+CREATE OR REPLACE FUNCTION update_teams_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER teams_updated_at
+  BEFORE UPDATE ON teams
+  FOR EACH ROW
+  EXECUTE FUNCTION update_teams_updated_at();
+
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Operators can view own league teams"
+  ON teams FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM leagues
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE leagues.id = league_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can create teams in own leagues"
+  ON teams FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM leagues
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE leagues.id = league_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can update own league teams"
+  ON teams FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM leagues
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE leagues.id = league_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Captains can update their team"
+  ON teams FOR UPDATE
+  USING (
+    captain_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can delete own league teams"
+  ON teams FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM leagues
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE leagues.id = league_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Public can view active league teams"
+  ON teams FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM leagues
+      WHERE leagues.id = league_id
+      AND leagues.status = 'active'
+    )
+  );
+
+-- =====================================================
+-- 11. TEAM PLAYERS TABLE
+-- =====================================================
+
+CREATE TABLE team_players (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  season_id UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+
+  is_captain BOOLEAN DEFAULT FALSE,
+
+  individual_wins INT DEFAULT 0 CHECK (individual_wins >= 0),
+  individual_losses INT DEFAULT 0 CHECK (individual_losses >= 0),
+  skill_level INT CHECK (skill_level >= 1 AND skill_level <= 9),
+
+  status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'dropped')),
+
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  UNIQUE(team_id, member_id)
+);
+
+CREATE INDEX idx_team_players_team ON team_players(team_id);
+CREATE INDEX idx_team_players_member ON team_players(member_id);
+CREATE INDEX idx_team_players_season ON team_players(season_id);
+CREATE INDEX idx_team_players_captain ON team_players(team_id, is_captain);
+
+CREATE OR REPLACE FUNCTION update_team_players_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER team_players_updated_at
+  BEFORE UPDATE ON team_players
+  FOR EACH ROW
+  EXECUTE FUNCTION update_team_players_updated_at();
+
+ALTER TABLE team_players ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Operators can view own league team players"
+  ON team_players FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN leagues ON teams.league_id = leagues.id
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE teams.id = team_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can add players to own league teams"
+  ON team_players FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN leagues ON teams.league_id = leagues.id
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE teams.id = team_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can update own league team players"
+  ON team_players FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN leagues ON teams.league_id = leagues.id
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE teams.id = team_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Operators can remove players from own league teams"
+  ON team_players FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN leagues ON teams.league_id = leagues.id
+      JOIN league_operators ON leagues.operator_id = league_operators.id
+      JOIN members ON league_operators.member_id = members.id
+      WHERE teams.id = team_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Captains can add players to their team"
+  ON team_players FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN members ON teams.captain_id = members.id
+      WHERE teams.id = team_id
+      AND members.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Captains can remove players from their team"
+  ON team_players FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN members AS captain ON teams.captain_id = captain.id
+      JOIN members AS player ON team_players.member_id = player.id
+      WHERE teams.id = team_id
+      AND captain.user_id = auth.uid()
+      AND player.id != captain.id
+    )
+  );
+
+CREATE POLICY "Public can view active league team players"
+  ON team_players FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM teams
+      JOIN leagues ON teams.league_id = leagues.id
+      WHERE teams.id = team_id
+      AND leagues.status = 'active'
+      AND team_players.status = 'active'
     )
   );
 
