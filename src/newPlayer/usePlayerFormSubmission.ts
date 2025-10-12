@@ -31,7 +31,6 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
       lastName: state.lastName,
       nickname: state.nickname,
       phone: state.phone,
-      email: state.email,
       address: state.address,
       city: state.city,
       state: state.state,
@@ -61,15 +60,13 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
         last_name: capitalizeWords(result.data.lastName),
         nickname: result.data.nickname ? capitalizeWords(result.data.nickname) : null,
         phone: formatFinalPhoneNumber(result.data.phone),
-        email: result.data.email.toLowerCase(),
+        email: user.email?.toLowerCase() || '', // Use email from authenticated user
         address: capitalizeWords(result.data.address),
         city: capitalizeWords(result.data.city),
         state: result.data.state,
         zip_code: result.data.zipCode,
         date_of_birth: result.data.dateOfBirth,
         role: 'player' as const, // Default role for new members
-        pool_hall_ids: [], // Empty array for new members
-        league_operator_ids: [], // Empty array for new members
       };
 
       // Insert member data into Supabase

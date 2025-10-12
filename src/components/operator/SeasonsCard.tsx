@@ -4,6 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
 
 interface SeasonsCardProps {
   /** League ID to fetch seasons for */
@@ -45,26 +46,20 @@ export const SeasonsCard: React.FC<SeasonsCardProps> = ({ leagueId, onCreateSeas
     const fetchSeasons = async () => {
       setLoading(true);
 
-      // TODO: Once seasons table exists, uncomment this:
-      // try {
-      //   const { data, error } = await supabase
-      //     .from('seasons')
-      //     .select('*')
-      //     .eq('league_id', leagueId)
-      //     .order('start_date', { ascending: false });
-      //
-      //   if (error) throw error;
-      //   setSeasons(data || []);
-      // } catch (err) {
-      //   console.error('Error fetching seasons:', err);
-      // } finally {
-      //   setLoading(false);
-      // }
+      try {
+        const { data, error } = await supabase
+          .from('seasons')
+          .select('*')
+          .eq('league_id', leagueId)
+          .order('start_date', { ascending: false });
 
-      // For now, simulate empty state (no seasons table yet)
-      console.log('Fetching seasons for league:', leagueId);
-      setSeasons([]);
-      setLoading(false);
+        if (error) throw error;
+        setSeasons(data || []);
+      } catch (err) {
+        console.error('Error fetching seasons:', err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchSeasons();

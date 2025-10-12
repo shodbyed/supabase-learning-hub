@@ -26,10 +26,30 @@ export interface Member {
   zip_code: string;
   date_of_birth: string; // ISO date string
   role: UserRole;
-  pool_hall_ids: number[]; // Array of associated pool hall IDs
-  league_operator_ids: number[]; // Array of league operator IDs user is associated with
-  membership_paid_date?: string; // ISO date string when membership was last paid
-  bca_member_number?: string; // Official BCA member number, null until assigned
+  system_player_number: number; // System-generated player ID (always assigned)
+  bca_member_number: string | null; // Official BCA member number (null until assigned)
+  membership_paid_date: string | null; // ISO date string when membership was last paid
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
+}
+
+/**
+ * Helper function to get display player number
+ * Shows BCA number if available, otherwise system player number
+ */
+export function getPlayerDisplayNumber(member: Member): string {
+  if (member.bca_member_number) {
+    return `#BCA-${member.bca_member_number}`;
+  }
+  return `#P-${String(member.system_player_number).padStart(5, '0')}`;
+}
+
+/**
+ * Helper function to get display name with player number
+ * Example: "John Smith #BCA-123456" or "John Smith #P-00042"
+ */
+export function getPlayerDisplayName(member: Member): string {
+  const fullName = `${member.first_name} ${member.last_name}`;
+  const playerNumber = getPlayerDisplayNumber(member);
+  return `${fullName} ${playerNumber}`;
 }

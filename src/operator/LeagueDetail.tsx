@@ -60,15 +60,12 @@ export const LeagueDetail: React.FC = () => {
 
         setLeague(data);
 
-        // TODO: Once seasons table exists, fetch season count
-        // const { count } = await supabase
-        //   .from('seasons')
-        //   .select('*', { count: 'exact', head: true })
-        //   .eq('league_id', leagueId);
-        // setSeasonCount(count || 0);
-
-        // For now, hardcode to 0 (no seasons table yet)
-        setSeasonCount(0);
+        // Fetch season count
+        const { count } = await supabase
+          .from('seasons')
+          .select('*', { count: 'exact', head: true })
+          .eq('league_id', leagueId);
+        setSeasonCount(count || 0);
       } catch (err) {
         console.error('Error fetching league:', err);
         setError('Failed to load league details');
@@ -155,14 +152,14 @@ export const LeagueDetail: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">League Status</h2>
             <LeagueProgressBar
               status="setup"
-              progress={25}
+              progress={seasonCount > 0 ? 50 : 25}
               label="League Setup Progress"
-              nextAction="Next: Create season and add teams"
+              nextAction={seasonCount > 0 ? "Next: Add teams to your season" : "Next: Create season and add teams"}
             />
             <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-semibold text-blue-900 mb-2">Next Steps</h3>
               <ol className="list-decimal list-inside text-blue-800 space-y-1">
-                <li>Create your first season (set dates and weeks)</li>
+                <li className={seasonCount > 0 ? 'line-through opacity-50' : ''}>Create your first season (set dates and weeks)</li>
                 <li>Add teams to the season</li>
                 <li>Enroll players on each team</li>
                 <li>Generate the schedule</li>
@@ -178,11 +175,11 @@ export const LeagueDetail: React.FC = () => {
             <p className="text-sm text-gray-600 mb-6 text-center">
               {seasonCount === 0
                 ? 'Create your first season to get started'
-                : 'Create a new season for this league'
+                : 'Manage venues and teams for your league'
               }
             </p>
             <button
-              onClick={() => navigate(`/league/${league.id}/create-season`)}
+              onClick={() => navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : '/venues')}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Let's Go!

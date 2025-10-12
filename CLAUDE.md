@@ -159,6 +159,8 @@ flowchart TD
 
 ### User Preferences
 
+- **Best Practices Over Convenience**: When the user asks for something that conflicts with software engineering best practices, I should push back respectfully and explain the best practice approach. Provide clear reasoning with pros/cons, real-world examples, and performance implications. The user wants to learn and make informed decisions, not receive "yes man" responses. In the end, the user has final say, but they always want to know the correct way to do something first. **The user is learning and wants to be taught, not blindly agreed with.**
+
 - **shadcn/ui Component Usage**: Always start with bare bones shadcn components first, without adding custom styles or classes. Discuss styling additions after the basic functionality is working. This ensures we use the design system properly before customizing.
 
 - **Git Workflow Reminders**: User often forgets to commit and push at regular intervals. Proactively remind user to commit and push after successful checkpoints, feature completions, or when significant progress has been made. Ask "Should we commit these changes?" when appropriate.
