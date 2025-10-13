@@ -1,0 +1,275 @@
+/**
+ * @fileoverview Schedule Setup Component
+ *
+ * Allows league operators to assign schedule positions to teams and generate
+ * the full season schedule. Supports random shuffle or manual position assignment.
+ */
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { InfoButton } from '@/components/InfoButton';
+import { Shuffle, Lock } from 'lucide-react';
+import { assignRandomPositions, generateSchedule } from '@/utils/scheduleGenerator';
+import { hasMatchupTable } from '@/utils/matchupTables';
+import type { TeamWithQueryDetails } from '@/types/team';
+
+interface ScheduleSetupProps {
+  /** Season ID to generate schedule for */
+  seasonId: string;
+  /** Teams in the league */
+  teams: TeamWithQueryDetails[];
+  /** Called when schedule is successfully generated */
+  onSuccess: () => void;
+  /** Called to cancel setup */
+  onCancel: () => void;
+}
+
+interface TeamPosition {
+  id: string;
+  team_name: string;
+  home_venue_id: string | null;
+  schedule_position: number;
+}
+
+/**
+ * ScheduleSetup Component
+ *
+ * Two-step process:
+ * 1. Assign positions to teams (random shuffle or manual)
+ * 2. Generate schedule based on positions
+ *
+ * Automatically adds a BYE team if team count is odd.
+ */
+export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
+  seasonId,
+  teams,
+  onSuccess,
+  onCancel,
+}) => {
+  const needsByeTeam = teams.length % 2 !== 0;
+  const effectiveTeamCount = needsByeTeam ? teams.length + 1 : teams.length;
+  const hasTable = hasMatchupTable(effectiveTeamCount);
+
+  // Initialize with sequential positions
+  const [teamPositions, setTeamPositions] = useState<TeamPosition[]>(() => {
+    const positions = teams.map((team, index) => ({
+      id: team.id,
+      team_name: team.team_name,
+      home_venue_id: team.home_venue_id,
+      schedule_position: index + 1,
+    }));
+
+    // Add BYE team if needed
+    if (needsByeTeam) {
+      positions.push({
+        id: 'BYE',
+        team_name: 'BYE',
+        home_venue_id: null,
+        schedule_position: teams.length + 1,
+      });
+    }
+
+    return positions;
+  });
+
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Randomly shuffle team positions
+   */
+  const handleShuffle = () => {
+    const shuffled = assignRandomPositions(teamPositions);
+    setTeamPositions(shuffled);
+    setError(null);
+  };
+
+  /**
+   * Update a team's position manually
+   */
+  const handlePositionChange = (teamId: string, newPosition: number) => {
+    // Validate position
+    if (newPosition < 1 || newPosition > effectiveTeamCount) {
+      return;
+    }
+
+    setTeamPositions((prev) => {
+      const updated = [...prev];
+      const teamIndex = updated.findIndex((t) => t.id === teamId);
+      const oldPosition = updated[teamIndex].schedule_position;
+
+      // Swap positions with team at new position
+      const swapIndex = updated.findIndex(
+        (t) => t.schedule_position === newPosition
+      );
+
+      if (swapIndex !== -1) {
+        updated[swapIndex].schedule_position = oldPosition;
+      }
+
+      updated[teamIndex].schedule_position = newPosition;
+
+      // Sort by position
+      return updated.sort((a, b) => a.schedule_position - b.schedule_position);
+    });
+
+    setError(null);
+  };
+
+  /**
+   * Generate the schedule
+   */
+  const handleGenerateSchedule = async () => {
+    if (!hasTable) {
+      setError(`No matchup table available for ${effectiveTeamCount} teams`);
+      return;
+    }
+
+    setGenerating(true);
+    setError(null);
+
+    try {
+      const result = await generateSchedule({
+        seasonId,
+        teams: teamPositions,
+      });
+
+      if (!result.success) {
+        setError(result.error || 'Failed to generate schedule');
+        return;
+      }
+
+      console.log(`✅ Generated ${result.matchesCreated} matches`);
+      onSuccess();
+    } catch (err) {
+      console.error('Error generating schedule:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate schedule');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  if (!hasTable) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Schedule Generation Not Available
+        </h2>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-yellow-800 text-sm">
+            No matchup table is available for {effectiveTeamCount} teams.
+            Schedule generation requires a pre-defined round-robin matchup table.
+          </p>
+        </div>
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={onCancel}>
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Assign Team Schedule Positions
+        </h2>
+        <p className="text-sm text-gray-600 mb-3">
+          Assign each team a position number (1-{effectiveTeamCount}). These positions
+          determine matchups throughout the season.
+        </p>
+        <InfoButton
+          title="How Schedule Positions Work"
+          label="Learn More"
+        >
+          <p className="mb-2">
+            Schedule positions determine which teams play each other each week based on
+            pre-calculated round-robin matchup tables.
+          </p>
+          <p className="mb-2">
+            <strong>Random Assignment:</strong> Use "Shuffle" to randomly assign positions.
+            This ensures no bias in matchups.
+          </p>
+          <p>
+            <strong>Manual Assignment:</strong> Enter position numbers manually if you want
+            specific teams in certain positions (e.g., keeping rivalries apart early in season).
+          </p>
+        </InfoButton>
+      </div>
+
+      {/* Shuffle Button */}
+      <div className="mb-4">
+        <Button
+          variant="outline"
+          onClick={handleShuffle}
+          disabled={generating}
+        >
+          <Shuffle className="h-4 w-4 mr-2" />
+          Shuffle Teams
+        </Button>
+      </div>
+
+      {/* Team Position List */}
+      <div className="mb-6 space-y-2">
+        {teamPositions.map((team) => (
+          <div
+            key={team.id}
+            className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
+          >
+            <div className="w-20">
+              <Label className="text-xs text-gray-600">Position</Label>
+              <Input
+                type="number"
+                min={1}
+                max={effectiveTeamCount}
+                value={team.schedule_position}
+                onChange={(e) =>
+                  handlePositionChange(team.id, parseInt(e.target.value))
+                }
+                disabled={generating || team.id === 'BYE'}
+                className="text-center font-mono"
+              />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-gray-900">
+                {team.team_name}
+                {team.id === 'BYE' && (
+                  <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                    Auto-added for odd team count
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <p className="text-red-800 text-sm font-medium">{error}</p>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+        <Button variant="outline" onClick={onCancel} disabled={generating}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleGenerateSchedule}
+          disabled={generating}
+          size="lg"
+        >
+          <Lock className="h-4 w-4 mr-2" />
+          {generating ? 'Generating Schedule...' : 'Lock Positions & Generate Schedule'}
+        </Button>
+      </div>
+    </div>
+  );
+};
