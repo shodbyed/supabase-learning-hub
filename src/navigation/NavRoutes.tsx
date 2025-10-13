@@ -13,95 +13,104 @@ import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
 import { OperatorWelcome } from '../operator/OperatorWelcome';
 import { OperatorDashboard } from '../operator/OperatorDashboard';
+import { OrganizationSettings } from '../operator/OrganizationSettings';
 import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
+import { LeagueRules } from '../operator/LeagueRules';
+import { LeagueDetail } from '../operator/LeagueDetail';
+import { SeasonCreationWizard } from '../operator/SeasonCreationWizard';
+import { VenueManagement } from '../operator/VenueManagement';
+import { TeamManagement } from '../operator/TeamManagement';
+import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
+import { EightManFormatDetails } from '../info/EightManFormatDetails';
+import { FormatComparison } from '../info/FormatComparison';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+
+// Public routes - no authentication required
+const publicRoutes = [
+  { path: '/', element: <Home /> },
+  { path: '/about', element: <About /> },
+  { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
+  { path: '/forgot-password', element: <ForgotPassword /> },
+  { path: '/reset-password', element: <ResetPassword /> },
+  { path: '/confirm', element: <EmailConfirmation /> },
+  { path: '/5-man-format-details', element: <FiveManFormatDetails /> },
+  { path: '/8-man-format-details', element: <EightManFormatDetails /> },
+  { path: '/format-comparison', element: <FormatComparison /> },
+];
+
+// Protected routes - require authentication only
+const authRoutes = [
+  { path: '/new-player', element: <NewPlayerForm /> },
+  { path: '/become-league-operator', element: <BecomeLeagueOperator /> },
+  { path: '/league-operator-application', element: <LeagueOperatorApplication /> },
+];
+
+// Protected routes - require authentication + approved member application
+const memberRoutes = [
+  { path: '/dashboard', element: <Dashboard /> },
+  { path: '/profile', element: <Profile /> },
+];
+
+// Protected routes - require league_operator role
+const operatorRoutes = [
+  { path: '/operator-welcome', element: <OperatorWelcome /> },
+  { path: '/operator-dashboard', element: <OperatorDashboard /> },
+  { path: '/create-league', element: <LeagueCreationWizard /> },
+  { path: '/operator-settings', element: <OrganizationSettings /> },
+  { path: '/league-rules', element: <LeagueRules /> },
+  { path: '/league/:leagueId', element: <LeagueDetail /> },
+  { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
+  { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
+  { path: '/venues', element: <VenueManagement /> },
+];
 
 export const NavRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/confirm" element={<EmailConfirmation />} />
+      {publicRoutes.map(({ path, element }) => (
+        <Route key={path} path={path} element={element} />
+      ))}
 
       {/* Protected routes - require authentication */}
-      <Route
-        path="/new-player"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <NewPlayerForm />
-          </ProtectedRoute>
-        }
-      />
+      {authRoutes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute requireAuth={true}>
+              {element}
+            </ProtectedRoute>
+          }
+        />
+      ))}
 
       {/* Protected routes - require authentication + member record */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/become-league-operator"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <BecomeLeagueOperator />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/league-operator-application"
-        element={
-          <ProtectedRoute requireAuth={true}>
-            <LeagueOperatorApplication />
-          </ProtectedRoute>
-        }
-      />
+      {memberRoutes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+              {element}
+            </ProtectedRoute>
+          }
+        />
+      ))}
 
       {/* League Operator Routes - Require league_operator role */}
-      <Route
-        path="/operator-welcome"
-        element={
-          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
-            <OperatorWelcome />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/operator-dashboard"
-        element={
-          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
-            <OperatorDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/create-league"
-        element={
-          <ProtectedRoute requireAuth={true} requiredRole="league_operator">
-            <LeagueCreationWizard />
-          </ProtectedRoute>
-        }
-      />
+      {operatorRoutes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+              {element}
+            </ProtectedRoute>
+          }
+        />
+      ))}
     </Routes>
   );
 };

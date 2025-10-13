@@ -11,8 +11,25 @@
 
 ### 🎯 CURRENT PRIORITY: League Builder System
 **Goal**: Enable approved league operators to create and configure their leagues
-**Status**: Ready to begin development
+**Status**: ✅ **IN PROGRESS** - League Creation Wizard active development
 **Context**: Foundation is complete - now building the actual league management tools
+
+### ✅ COMPLETED: League Creation Wizard (Production Ready)
+- **10-Step Wizard Flow**: Start Date → Season Length → Game Type → BCA Nationals → APA Nationals → Team Format → Qualifier → Preview → Create
+- **Full localStorage Persistence**: Form data AND current step preserved across page refreshes/browser restarts
+- **Smart League Naming**: Separate state fields (dayOfWeek, season, year) with on-demand name generation
+- **Automatic Data Cleanup**: localStorage cleared on completion, cancellation, or manual clear
+- **Clean Architecture**: No constant name regeneration, efficient state management
+- **Enhanced UX**: InfoButton labels, conditional navigation, manual clear functionality
+
+### ✅ COMPLETED: BCA Tournament Scheduling System (Latest Update)
+- **Automatic Database Search**: useEffect triggers search for BCA nationals dates when step is reached
+- **Dynamic Radio Button Choices**: Found date ranges with vote counts, ignore option, and custom entry
+- **Clickable Link Integration**: Subtitle with live "BCA Website" link using fetchBCAChampionshipURL()
+- **Generic Info Content**: Reusable info button content that works for both BCA and APA tournaments
+- **Smart URL Generation**: Tournament links adapt based on current date (post-March 15 uses next year)
+- **Community-Verified Dates**: Database search shows multiple date options with operator vote counts
+- **Flexible Choice Handling**: Radio buttons support found dates, ignore scheduling, or custom date entry
 
 ## Major Completed Features
 
@@ -88,10 +105,12 @@
 
 ### **Form System Patterns**
 - Multi-step forms with progress tracking and validation
-- Reusable components (ContactInfoExposure, VisibilityChoiceCard)
+- **localStorage Persistence**: Automatic form state preservation using useLocalStorage hook
+- Reusable components (ContactInfoExposure, VisibilityChoiceCard, InfoButton with labels)
 - Progressive disclosure UX for complex options
 - Real-time validation with clear error messaging
 - Secure payment tokenization practices
+- **Conditional Navigation**: Dynamic step flow based on user selections (custom season length)
 
 ### **Component Architecture**
 - Utility functions in src/utils/ for business logic
@@ -105,6 +124,24 @@
 - Structured data output for easy database integration
 - Token-based security for sensitive information (payment)
 - UI-first development with database operations clearly documented
+- **League Name Generation**: Multiple formatted names for different user contexts
+
+### **localStorage Persistence System (Production Implementation)**
+- **useLocalStorage Hook**: Simple, reliable hook that mirrors useState API
+- **Dual Persistence**: Both form data ('league-creation-wizard') and current step ('league-wizard-step')
+- **Smart Initialization**: Reads localStorage on mount, falls back to defaults gracefully
+- **Automatic Saving**: useEffect saves to localStorage on every state change
+- **Complete Cleanup**: localStorage cleared on completion, cancellation, or manual clear
+- **State Synchronization**: localStorage and React state always in perfect sync
+- **Tested Architecture**: Debugged through multiple iterations to ensure reliability
+
+### **League Naming Architecture (Optimized)**
+- **Separate State Fields**: dayOfWeek, season, year calculated once when start date set
+- **Display Values Stored**: gameType stores "8 Ball", "9 Ball", "10 Ball" directly (no conversion)
+- **On-Demand Generation**: League name computed in preview, not constantly regenerated
+- **Clean Template**: `${gameType} ${dayOfWeek} ${season} ${year} ${organization}${qualifier}`
+- **Database Names**: Final formatted names generated only when needed for database operations
+- **Performance**: No useEffect loops, no timing issues, no constant regeneration
 
 ### **UX Patterns**
 - Role-based interface differences (member vs operator)
@@ -112,9 +149,22 @@
 - Professional payment and security messaging
 - Accessible form interactions with keyboard navigation
 
-## Ready for League Builder Development
+## Ready for APA Tournament Implementation
 
-✅ **Foundation Complete**: All operator onboarding systems working
-✅ **Patterns Established**: Reusable components and consistent architecture
+✅ **BCA Pattern Complete**: Tournament scheduling system fully implemented and tested
+✅ **Reusable Architecture**: RadioChoiceStep, QuestionStep, and SimpleRadioChoice support React elements
+✅ **Interface Flexibility**: Components handle both string and JSX content seamlessly
+🚀 **Next Phase**: Apply BCA pattern to APA tournaments with minimal changes
+
+### **Immediate Next Task: APA Tournament Scheduling**
+**Goal**: Implement APA tournament scheduling using the established BCA pattern
+**Changes Needed**:
+- Replace "BCA" with "APA" in dialog text
+- Use fetchAPAChampionshipURL() instead of fetchBCAChampionshipURL()
+- Same radio button structure: found dates, ignore, custom entry
+- Same automatic database search triggered by useEffect
+- Same community voting and date verification system
+
+✅ **Foundation Complete**: All operator onboarding and league creation systems working
+✅ **Patterns Established**: Reusable components and consistent architecture with React element support
 ✅ **Database Ready**: Clear logging and integration points documented
-🚀 **Next Phase**: Build league creation and management tools

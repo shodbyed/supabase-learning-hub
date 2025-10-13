@@ -109,27 +109,16 @@ export const Profile: React.FC = () => {
         <SuccessMessage message={successMessage} />
 
         <div className="space-y-6">
-          {/* Account Details Section (Read-Only) */}
+          {/* Membership Status Section (Read-Only) */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <span className="text-sm font-medium text-gray-500">User ID</span>
-                <p className="text-gray-900 font-mono">{user.id}</p>
-              </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Membership Status</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <span className="text-sm font-medium text-gray-500">BCA Member Number</span>
                 <p className="text-gray-900 font-mono">
                   {member.bca_member_number || 'Not assigned'}
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Membership Status Section (Read-Only) */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Membership Status</h3>
-            <div className="space-y-4">
               <div>
                 <span className="text-sm font-medium text-gray-500">Dues Status</span>
                 <div className="flex items-center mt-1">

@@ -5,7 +5,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/useUser';
-import { useUserProfile, type UserRole } from '../hooks/useUserProfile';
+import { useUserProfile } from '../hooks/useUserProfile';
+import type { UserRole } from '@/types';
 
 /**
  * Props for the ProtectedRoute component

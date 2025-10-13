@@ -7,7 +7,6 @@ const initialState: FormState = {
   lastName: '',
   nickname: '',
   phone: '',
-  email: '',
   address: '',
   city: '',
   state: '',

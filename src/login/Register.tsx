@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
@@ -9,26 +9,31 @@ import { CardAction, CardFooter } from '@/components/ui/card';
 import { LoginCard } from './LoginCard';
 
 export const Register: React.FC = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setLoading(true);
     setMessage('');
+    setIsSuccess(false);
 
     // Basic validation
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
+      setIsSuccess(false);
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
       setMessage('Password must be at least 6 characters');
+      setIsSuccess(false);
       setLoading(false);
       return;
     }
@@ -41,12 +46,17 @@ export const Register: React.FC = () => {
 
     if (error) {
       setMessage(`Error: ${error.message}`);
+      setIsSuccess(false);
       setLoading(false);
     } else {
-      setMessage(
-        'Registration successful! Please check your email and click the confirmation link to be automatically logged in.'
-      );
+      setMessage('Registration successful! Redirecting to login...');
+      setIsSuccess(true);
       setLoading(false);
+
+      // Navigate to login after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     }
   };
 
@@ -91,10 +101,14 @@ export const Register: React.FC = () => {
           <Button
             type="submit"
             disabled={loading}
-            message={message}
           >
             {loading ? 'Creating Account...' : 'Register'}
           </Button>
+          {message && (
+            <p className={`text-sm mt-2 ${isSuccess ? 'text-green-600' : 'text-red-500'}`}>
+              {message}
+            </p>
+          )}
         </CardAction>
       </form>
       <CardFooter className="mt-4 text-sm flex justify-around w-full">

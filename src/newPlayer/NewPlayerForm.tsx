@@ -10,6 +10,8 @@ import { formatPhoneNumber } from '../utils/formatters';
 import { usePlayerForm } from './usePlayerForm';
 import { usePlayerFormSubmission } from './usePlayerFormSubmission';
 import { TextField, SelectField } from './FormField';
+import { nicknameInfo } from '../constants/infoContent/profileInfoContent';
+import { DateField } from '@/components/forms/DateField';
 
 // TODO: Future feature - Add country selection for international phone numbers
 // This would allow proper validation of international formats
@@ -69,11 +71,14 @@ export const NewPlayerForm: React.FC = () => {
 
         <TextField
           id="nickname"
-          label="Nickname (Optional)"
+          label="Nickname"
           value={state.nickname}
           onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'nickname', value })}
-          placeholder="Enter nickname"
+          placeholder="Enter nickname (max 12 characters)"
+          maxLength={12}
           error={state.errors.nickname}
+          infoTitle={nicknameInfo.title}
+          infoContent={nicknameInfo.contentWithChangeNote}
         />
 
         {/* Phone number field with real-time formatting */}
@@ -92,16 +97,7 @@ export const NewPlayerForm: React.FC = () => {
           required
         />
 
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          value={state.email}
-          onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'email', value })}
-          placeholder="Enter email address"
-          error={state.errors.email}
-          required
-        />
+        {/* Email is automatically pulled from auth user - no need to enter it */}
 
         <TextField
           id="address"
@@ -143,12 +139,11 @@ export const NewPlayerForm: React.FC = () => {
           required
         />
 
-        <TextField
-          id="dateOfBirth"
+        <DateField
           label="Date of Birth"
-          type="date"
           value={state.dateOfBirth}
           onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'dateOfBirth', value })}
+          placeholder="Select date of birth"
           error={state.errors.dateOfBirth}
           required
         />

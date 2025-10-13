@@ -159,7 +159,18 @@ flowchart TD
 
 ### User Preferences
 
-- **shadcn/ui Component Usage**: Always start with bare bones shadcn components first, without adding custom styles or classes. Discuss styling additions after the basic functionality is working. This ensures we use the design system properly before customizing.
+- **Best Practices Over Convenience**: When the user asks for something that conflicts with software engineering best practices, I should push back respectfully and explain the best practice approach. Provide clear reasoning with pros/cons, real-world examples, and performance implications. The user wants to learn and make informed decisions, not receive "yes man" responses. In the end, the user has final say, but they always want to know the correct way to do something first. **The user is learning and wants to be taught, not blindly agreed with.**
+
+- **shadcn/ui Component Usage**: **CRITICAL - USE SHADCN COMPONENTS FOR EVERYTHING.** Always use shadcn/ui components for ALL UI elements to maintain consistency throughout the application. This includes:
+  - `Button` from `@/components/ui/button` for ALL buttons (never use `<button>` elements)
+  - `Input` from `@/components/ui/input` for ALL text inputs (never use `<input>` elements)
+  - `Label` from `@/components/ui/label` for ALL form labels (never use `<label>` elements)
+  - `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` from `@/components/ui/select` for ALL dropdowns (never use `<select>` elements)
+  - `Card`, `CardHeader`, `CardTitle`, `CardContent` from `@/components/ui/card` for card layouts
+  - Other shadcn components as appropriate
+  - Start with bare bones shadcn components first, without adding custom styles or classes
+  - Discuss styling additions after the basic functionality is working
+  - This ensures consistent design system usage across the entire application
 
 - **Git Workflow Reminders**: User often forgets to commit and push at regular intervals. Proactively remind user to commit and push after successful checkpoints, feature completions, or when significant progress has been made. Ask "Should we commit these changes?" when appropriate.
 
@@ -171,7 +182,19 @@ flowchart TD
 
 - **Dev Server Management**: When restarting the dev server, kill the existing process but then ask the user to manually run `pnpm run dev` in their terminal rather than running it automatically. The background execution doesn't always start a new instance properly for the user.
 
-- **Database Operations**: Unless otherwise specified, implement UI functionality that console.logs database operations instead of making actual database calls. The user's partner handles database queries separately for both web and mobile apps. Show the data structure and format needed for database operations via console.log, and provide UI feedback as if the operation succeeded.
+- **Database Operations**: This project uses a local Supabase instance for development. When creating database schema changes, provide SQL migration files in the `/database` folder with complete documentation. The user and their partner will run these SQL files on their local Supabase instance to create/modify tables. For UI components, implement full database operations using the Supabase client (`@/supabaseClient`). The user's partner will mirror these database calls for the mobile app, but the web app should have complete, working database functionality. Most operator/management features are web-only and won't be needed in the mobile app (which focuses on scorekeeping).
+
+- **Code Display in Chat**: NEVER show code blocks in chat responses unless explicitly requested by the user. Describe what changes are being made or what the plan is, but do not paste code snippets into the conversation. Code should only appear in file edits via tools, not in chat messages.
+
+- **Date Input Component**: ALWAYS use the `Calendar` component from `@/components/ui/calendar` for all date inputs. Never use plain `<input type="date">` elements. The Calendar component provides a clickable calendar icon that opens a visual date picker popup, which is the required UX pattern for this project.
+
+- **Timezone-Safe Date Handling**: ALWAYS use the date utility functions from `@/utils/formatters` when working with dates:
+  - `parseLocalDate(isoDate)` - Convert ISO string to Date object in local timezone (prevents off-by-one day errors)
+  - `formatLocalDate(date)` - Convert Date object to ISO string in local timezone
+  - `getDayOfWeek(isoDate)` - Get day number (0-6) from ISO string
+  - `getDayOfWeekName(isoDate)` - Get day name from ISO string
+  - NEVER use `new Date('2024-01-15')` directly - it uses UTC which causes timezone bugs
+  - NEVER use `date.toISOString().split('T')[0]` - use `formatLocalDate()` instead
 
 The format is flexible - focus on capturing valuable insights that help me work more effectively with you and the project. Think of memory-bank folder as a living document that grows smarter as we work together.
 

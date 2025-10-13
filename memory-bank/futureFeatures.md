@@ -4,17 +4,42 @@ This document captures aspirational features that would enhance the app's desira
 
 ## Social & Community Features
 
+### In-App Messaging System (Required for Contact Privacy)
+**Status**: Needed for MVP - supports "in_app_only" contact visibility
+
+**Core Requirements**:
+- Basic one-to-one messaging between users
+- Group messaging (operator to all teams, captain to team members, etc.)
+- Message threading/conversations
+- Notification system (in-app and email notification of new messages)
+- Simple, no-frills design
+
+**Use Cases**:
+- Operator with "in_app_only" email/phone → players can message them through app
+- Captain can message entire team
+- Operator can broadcast message to all teams in a league
+- Players can contact each other without sharing personal contact info
+
+**Technical Needs**:
+- `messages` table (id, sender_id, recipient_id, content, thread_id, timestamps)
+- `message_threads` table (id, participants[], last_message_at)
+- `group_messages` table (id, sender_id, group_type, group_id, content)
+- Message read/unread status tracking
+- Push notification integration
+
+**Note**: This is **essential infrastructure**, not a "nice to have". Without it, operators who choose "in_app_only" visibility cannot be contacted.
+
 ### Player Stats & Achievements
 - Personal skill progression tracking
 - Achievement badges and milestones
 - Historical match performance analytics
 - Skill rating evolution over time
 
-### Community Engagement
-- Player-to-player messaging system
+### Community Engagement (Future - Beyond Messaging)
 - League discussion boards/forums
 - Photo sharing from matches and tournaments
 - Player spotlights and featured stories
+- Social media-style activity feeds
 
 ## Gamification & Engagement
 
@@ -46,13 +71,50 @@ This document captures aspirational features that would enhance the app's desira
 
 ## Analytics & Insights
 
-### Personal Analytics
+### Advanced Operator Statistics Dashboard
+**Status**: Nice to have - comprehensive stats beyond Quick Stats
+
+**Detailed Metrics**:
+- **Overall Stats**:
+  - Total weeks played (all leagues/seasons combined)
+  - Total matches played (2 teams playing = 1 match)
+  - Total games played (individual games within matches)
+  - Average matches per week
+  - Average players per league
+  - Average teams per league
+- **Game Type Breakdown**:
+  - Separate stats for 8-Ball, 9-Ball, 10-Ball
+  - Games played per type
+  - Teams per type
+  - Most popular game type
+- **Format Analysis**:
+  - 5-Man vs 8-Man breakdown
+  - Teams using each format
+  - Seasons completed per format
+- **Engagement Metrics**:
+  - Player retention rate (season to season)
+  - Average attendance per match night
+  - Most active venues
+  - Peak playing times/days
+- **Historical Trends**:
+  - League growth over time
+  - Player base expansion
+  - Seasonal patterns
+
+**Implementation Ideas**:
+- Separate "Statistics" page with detailed charts
+- Expandable sections for different stat categories
+- Date range filters (this season, all time, custom range)
+- Export to CSV for offline analysis
+- Visual charts/graphs for trends
+
+### Personal Analytics (for Players)
 - Playing pattern analysis (best days/times)
 - Opponent matchup statistics
 - Improvement trend tracking
 - Performance heatmaps by venue
 
-### League Insights
+### League Insights (for Operators)
 - League health and engagement metrics
 - Popular playing times and venues
 - Player retention analytics
@@ -94,6 +156,48 @@ This document captures aspirational features that would enhance the app's desira
 - **Viral Marketing Potential**: Players will share amazing AI calls on social media
 - **Professional Credibility**: Elevates casual leagues to semi-professional level
 - **Revenue Stream**: Premium feature or pay-per-analysis model
+
+## League Operator Management Features
+
+### Assistant Operators System
+**Status**: Future consideration - not yet designed
+
+**Concept**: Allow main operators to delegate certain administrative tasks to trusted assistants
+
+**Key Requirements** (to be determined):
+- Main operator can assign assistant operators to help manage their leagues
+- Assistant permissions system (what they CAN do vs what they CAN'T do)
+- Main operator retains full control and payment responsibility
+- Clear permission boundaries and audit trail
+
+**Open Questions**:
+- Can an assistant work for multiple main operators?
+- What specific permissions should assistants have?
+  - Enter match scores?
+  - Approve team registrations?
+  - Edit schedules?
+  - View financial reports?
+  - Communicate with players?
+- What should assistants NOT be able to do?
+  - Create new leagues?
+  - Handle payments?
+  - Delete leagues/seasons?
+  - Remove teams?
+- Does main operator grant individual permissions, or do all assistants have same fixed permissions?
+- How is assistant access revoked?
+
+**Note**: This feature should be designed after core league management is working. May require role-based access control (RBAC) system and permission framework.
+
+## Scheduling Resources
+
+### Team Matchup Schedules
+**Resource**: bowl.com/league-schedules
+
+This website provides perfect team scheduling PDFs for leagues ranging from 4 teams to 48 teams. These pre-made round-robin schedules handle team matchup rotations properly.
+
+**Status**: Not yet implemented - resource saved for when we build team matchup scheduling system
+
+**Use Case**: When generating league schedules, we'll need to determine which teams play each other each week. Rather than building complex scheduling algorithms, we can reference these proven schedules.
 
 ## Integration Opportunities
 

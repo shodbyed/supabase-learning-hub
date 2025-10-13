@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatPhoneNumber } from '../utils/formatters';
+import type { Member } from '@/types';
 import type { ContactFormData, EditFormState } from './types';
 
 interface ContactInfoSectionProps {
-  member: any;
+  member: Member;
   form: EditFormState<ContactFormData>;
   handlers: {
     startEdit: () => void;

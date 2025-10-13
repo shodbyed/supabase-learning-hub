@@ -15,17 +15,18 @@ interface SimpleChoiceOption {
   warning?: string;
   icon?: string;
   infoTitle?: string;
-  infoContent?: string;
+  infoContent?: string | React.ReactElement;
 }
 
 interface SimpleRadioChoiceProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactElement;
   choices: SimpleChoiceOption[];
   selectedValue?: string;
   onSelect: (value: string) => void;
   infoTitle?: string;
   infoContent?: React.ReactNode;
+  infoLabel?: string;
 }
 
 /**
@@ -43,22 +44,27 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
   selectedValue,
   onSelect,
   infoTitle,
-  infoContent
+  infoContent,
+  infoLabel
 }) => {
 
   return (
     <div className="space-y-4">
       {/* Title and Info */}
-      <div className="flex items-center gap-3 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {title}
-        </h3>
-        {infoTitle && infoContent && (
-          <InfoButton title={infoTitle}>
-            {infoContent}
-          </InfoButton>
-        )}
-      </div>
+      {(title || (infoTitle && infoContent)) && (
+        <div className="flex items-center gap-3 mb-6">
+          {title && (
+            <h3 className="text-lg font-semibold text-gray-900">
+              {title}
+            </h3>
+          )}
+          {infoTitle && infoContent && (
+            <InfoButton title={infoTitle} label={infoLabel}>
+              {infoContent}
+            </InfoButton>
+          )}
+        </div>
+      )}
 
       {subtitle && (
         <p className="text-gray-600 mb-6">
@@ -67,9 +73,21 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
       )}
 
       {/* Simple Choice List */}
-      <div className="space-y-2 mb-6">
+      <div className="space-y-6 mb-6">
         {choices.map((choice) => (
-          <div key={choice.value}>
+          <div key={choice.value} className="space-y-2">
+            {/* Prominent info button above choice */}
+            {choice.infoTitle && choice.infoContent && (
+              <div className="flex items-center gap-2 px-1">
+                <InfoButton title={choice.infoTitle}>
+                  {choice.infoContent}
+                </InfoButton>
+                <span className="text-sm font-medium text-gray-700">
+                  {choice.label} Explanation
+                </span>
+              </div>
+            )}
+
             {selectedValue === choice.value ? (
               // Selected: Show as card with blue background
               <Card
@@ -108,15 +126,6 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
                         </span>
                       )}
                     </div>
-
-                    {/* Optional info button for individual choice */}
-                    {choice.infoTitle && choice.infoContent && (
-                      <div className="flex-shrink-0">
-                        <InfoButton title={choice.infoTitle}>
-                          {choice.infoContent}
-                        </InfoButton>
-                      </div>
-                    )}
                   </div>
 
                   {/* Explanation appears inside the selected card */}
@@ -174,15 +183,6 @@ export const SimpleRadioChoice: React.FC<SimpleRadioChoiceProps> = ({
                       </span>
                     )}
                   </div>
-
-                  {/* Optional info button for individual choice */}
-                  {choice.infoTitle && choice.infoContent && (
-                    <div className="flex-shrink-0">
-                      <InfoButton title={choice.infoTitle}>
-                        {choice.infoContent}
-                      </InfoButton>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

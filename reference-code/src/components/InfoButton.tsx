@@ -27,6 +27,7 @@ export const InfoButton = ({ infoBlurbKey = 'sample' }: InfoButtonProps) => {
 
   return (
     <div>
+      <div>title goes here</div>
       <FaQuestionCircle
         style={{ color: 'blue', background: 'white', borderRadius: '50%' }}
         size={size}

@@ -15,7 +15,7 @@ export interface FormState {
 
   // Contact information
   phone: string; // US format: XXX-XXX-XXXX
-  email: string;
+  // email is pulled from auth user, not form state
 
   // Address information
   address: string; // Street address
@@ -35,7 +35,6 @@ export interface FormState {
     lastName?: string;
     nickname?: string;
     phone?: string;
-    email?: string;
     address?: string;
     city?: string;
     state?: string;

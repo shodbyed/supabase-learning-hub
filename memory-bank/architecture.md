@@ -26,6 +26,20 @@
 - **Utility-First Architecture**: Business logic in pure functions for testing
 - **Component Standards**: Start with bare shadcn components before custom styling
 - **Database Simulation**: Console.log operations for partner integration
+- **Type Centralization**: All reusable TypeScript types stored in `src/types/` folder
+  - **NEVER** use `any` type - always define proper interfaces
+  - Types organized by domain (member.ts, league.ts, venue.ts, tournament.ts)
+  - Single source of truth for data structures across entire codebase
+  - Import from `@/types` for convenience: `import type { Member, League } from '@/types';`
+  - Update centralized type once, changes propagate everywhere
+  - Better IntelliSense, type safety, and documentation
+- **Info Content Centralization**: All info button content stored in `src/constants/infoContent/` folder
+  - **NEVER** hardcode lengthy explanations or info content directly in components
+  - Content organized by feature area in separate files (`profileInfoContent.tsx`, `leagueWizardInfoContent.tsx`, etc.)
+  - Each info object exports `title` and `content` (or multiple content variants)
+  - Content can be React elements for rich formatting (lists, bold, links, etc.)
+  - Single source of truth - reusable across multiple components
+  - Keeps components clean and maintainable
 
 ### **Validation & Data Management**
 - **Zod Schemas**: TypeScript-first validation in src/schemas/ directory
@@ -96,10 +110,34 @@ membershipUtils → Status calculations → UI styling
 Edit Forms → Console.log → Database operation simulation
 ```
 
+### **League Creation Wizard Flow**
+```
+LeagueCreationWizard → WizardStep[] definitions
+WizardStep → QuestionStep | RadioChoiceStep (based on type)
+RadioChoiceStep → SimpleRadioChoice → InfoButton
+QuestionStep → Calendar | Input field → InfoButton
+Tournament Steps → tournamentUtils → Dynamic URL generation
+Database Search → useEffect trigger → foundTournamentDates state
+```
+
+### **Tournament Scheduling Flow**
+```
+BCA/APA Step Reached → useEffect triggers database search
+Database Query → Mock tournament dates with vote counts
+FoundTournamentDates → Dynamic radio button choices
+User Selection → Found dates | Ignore | Custom entry
+FormData Update → Tournament start/end dates
+Subtitle JSX → Clickable link to official tournament website
+```
+
 ### **Navigation Architecture**
 ```
 App.tsx → NavBar + NavRoutes
-NavRoutes → Protected/Public route definitions
+NavRoutes → Array-based route generation
+  ├─→ publicRoutes[] → map to <Route> (10 routes)
+  ├─→ authRoutes[] → map to <ProtectedRoute requireAuth> (3 routes)
+  ├─→ memberRoutes[] → map to <ProtectedRoute requireApprovedApplication> (2 routes)
+  └─→ operatorRoutes[] → map to <ProtectedRoute requiredRole="league_operator"> (4 routes)
 NavBar → Conditional links based on auth status
 Dashboard ← → Profile (action vs information separation)
 ```
@@ -136,10 +174,60 @@ Dashboard ← → Profile (action vs information separation)
 ### **Code Organization**
 - `src/components/` - React components
 - `src/contexts/` - React context providers
-- `src/hooks/` - Custom React hooks
+- `src/hooks/` - Custom React hooks (useLocalStorage, useUserProfile)
 - `src/schemas/` - Zod validation schemas
-- `src/utils/` - Pure utility functions
+- `src/utils/` - Pure utility functions (membershipUtils, leagueUtils)
+- `src/types/` - **Centralized TypeScript type definitions**
+  - `member.ts` - Member and UserRole types
+  - `league.ts` - League, TeamFormat, HandicapSystem, GameType types
+  - `venue.ts` - Venue and VenueFormData types
+  - `tournament.ts` - Tournament, TournamentDateOption types
+  - `operator.ts` - LeagueOperator, ContactVisibility types, mock payment generator
+  - `index.ts` - Re-exports all types for convenient importing
+- `src/constants/` - Static data and content
+  - `infoContent/` - Info button content organized by feature area
+    - `profileInfoContent.tsx` - Profile and member-related info
+    - `leagueWizardInfoContent.tsx` - League creation wizard info
+    - `operatorApplicationInfoContent.tsx` - Operator application info
+- `src/navigation/` - Routing configuration
+  - `NavRoutes.tsx` - Array-based route definitions with protection levels
+- `src/operator/` - League operator features
+  - `OperatorDashboard.tsx` - Main operator dashboard
+  - `OrganizationSettings.tsx` - Operator profile management
+  - `LeagueCreationWizard.tsx` - League creation wizard
+  - `OperatorWelcome.tsx` - Post-application welcome page
+- `src/leagueOperator/` - Operator onboarding
+  - `BecomeLeagueOperator.tsx` - Operator benefits page
+  - `LeagueOperatorApplication.tsx` - 6-step application wizard
+- `database/` - SQL schema files
+  - `members.sql` - Member table schema
+  - `league_operators.sql` - League operator table schema
 - `memory-bank/` - Project documentation and patterns
+
+### **Custom Hooks Implementation**
+- **useLocalStorage**: Production-ready localStorage persistence
+  - Mirrors useState API exactly
+  - Handles SSR gracefully
+  - Automatic JSON serialization
+  - Error handling with fallbacks
+  - Used for form data and wizard step persistence
+
+### **Tournament Scheduling Architecture**
+- **Dynamic URL Generation**: Tournament links adapt to current date context
+  - BCA: Uses next year URL after March 15 (fetchBCAChampionshipURL)
+  - APA: Static URL structure (fetchAPAChampionshipURL)
+  - Generic getChampionshipLink() function for reusability
+- **Database Search Integration**: Automatic search triggered by useEffect when reaching tournament steps
+- **Community Verification System**: Database stores operator-confirmed dates with vote counts
+- **Flexible Choice Architecture**: Radio buttons handle found dates, ignore options, and custom entry
+
+### **React Element Interface Support**
+- **Enhanced Component Interfaces**: All wizard components support React.ReactElement in addition to strings
+  - RadioChoiceStep: subtitle can be string | React.ReactElement
+  - QuestionStep: subtitle supports React elements for rich content
+  - SimpleRadioChoice: subtitle and infoContent accept JSX
+- **Clickable Link Integration**: Tournament steps include live links to official websites
+- **JSX Content Rendering**: Components seamlessly handle both plain text and complex JSX structures
 
 ### **Quality Assurance**
 - TypeScript strict mode enabled

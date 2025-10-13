@@ -5,12 +5,20 @@
 import React from 'react';
 import type { LeagueOperatorApplication } from '../schemas/leagueOperatorSchema';
 import type { ApplicationAction } from './types';
+import type { Member } from '@/types';
 import {
   leagueNameSchema,
   leagueEmailSchema,
   leaguePhoneSchema,
 } from '../schemas/leagueOperatorSchema';
 import { ContactInfoExposure } from '@/components/privacy/ContactInfoExposure';
+import {
+  organizationNameInfo,
+  addressPrivacyInfo,
+  emailContactInfo,
+  phoneContactInfo,
+  paymentInfoInfo,
+} from '@/constants/infoContent/operatorApplicationInfoContent';
 import {
   formatLeagueName,
   formatCity,
@@ -71,7 +79,7 @@ interface QuestionConfig {
 export const getQuestionDefinitions = (
   state: LeagueOperatorApplication,
   dispatch: React.Dispatch<ApplicationAction>,
-  member: any,
+  member: Member | null,
   customAddress: string,
   setCustomAddress: (value: string) => void,
   customCity: string,
@@ -107,26 +115,8 @@ export const getQuestionDefinitions = (
     getValue: () => state.leagueName,
     setValue: (value: string) =>
       dispatch({ type: 'SET_LEAGUE_NAME', payload: value }),
-    infoTitle: 'Organization vs Individual Leagues',
-    infoContent: (
-      <div className="space-y-2">
-        <p>
-          <strong>Organization Name:</strong> "Ed's BCA Leagues"
-        </p>
-        <p>
-          <strong>Individual Leagues:</strong>
-        </p>
-        <ul className="ml-4 space-y-1">
-          <li>• Tuesday Night 8-Ball West Side</li>
-          <li>• Wednesday Night 9-Ball East Side</li>
-          <li>• Friday Mixed Tournament League</li>
-        </ul>
-        <p className="mt-3 text-xs text-blue-600">
-          You'll create the specific leagues later. This is just your
-          organization name.
-        </p>
-      </div>
-    ),
+    infoTitle: organizationNameInfo.title,
+    infoContent: organizationNameInfo.content,
   },
 
   // Question 2: Profile Address Choice
@@ -263,22 +253,8 @@ export const getQuestionDefinitions = (
       const boolValue = value === 'yes';
       dispatch({ type: 'SET_USE_PROFILE_ADDRESS', payload: boolValue });
     },
-    infoTitle: 'Address Privacy',
-    infoContent: (
-      <div className="space-y-2 text-sm">
-        <p>
-          This address will be used for official league correspondence and may
-          be visible to players in your leagues.
-        </p>
-        <p>
-          <strong>Profile Address:</strong> Uses your existing member address
-        </p>
-        <p>
-          <strong>New Address:</strong> Enter a different business address for
-          your organization
-        </p>
-      </div>
-    ),
+    infoTitle: addressPrivacyInfo.title,
+    infoContent: addressPrivacyInfo.content,
   },
 
   // Question 3: Contact Disclaimer
@@ -492,25 +468,8 @@ export const getQuestionDefinitions = (
       const boolValue = value === 'profile';
       dispatch({ type: 'SET_USE_PROFILE_EMAIL', payload: boolValue });
     },
-    infoTitle: 'Email Contact Method',
-    infoContent: (
-      <div className="space-y-2 text-sm">
-        <p>
-          This email will be used for league-related communication and may
-          be visible to players in your leagues.
-        </p>
-        <p>
-          <strong>Profile Email:</strong> Uses your existing member email
-        </p>
-        <p>
-          <strong>New Email:</strong> Enter a dedicated league email address
-        </p>
-        <p className="mt-3 text-xs text-blue-600">
-          Consider using a dedicated league email for better organization
-          and privacy protection.
-        </p>
-      </div>
-    ),
+    infoTitle: emailContactInfo.title,
+    infoContent: emailContactInfo.content,
   },
 
   // Question 5: League Phone Number
@@ -650,25 +609,8 @@ export const getQuestionDefinitions = (
       const boolValue = value === 'profile';
       dispatch({ type: 'SET_USE_PROFILE_PHONE', payload: boolValue });
     },
-    infoTitle: 'Phone Contact Method',
-    infoContent: (
-      <div className="space-y-2 text-sm">
-        <p>
-          This phone number will be used for league-related communication and may
-          be visible to players in your leagues.
-        </p>
-        <p>
-          <strong>Profile Phone:</strong> Uses your existing member phone number
-        </p>
-        <p>
-          <strong>New Phone:</strong> Enter a dedicated league phone number
-        </p>
-        <p className="mt-3 text-xs text-blue-600">
-          Consider using a dedicated league phone for better organization
-          and privacy protection.
-        </p>
-      </div>
-    ),
+    infoTitle: phoneContactInfo.title,
+    infoContent: phoneContactInfo.content,
   },
 
   // Question 6: Payment Information
@@ -721,25 +663,7 @@ export const getQuestionDefinitions = (
     setValue: () => {
       // Payment verification handled by the verify button
     },
-    infoTitle: 'Why We Need Payment Info',
-    infoContent: (
-      <div className="space-y-2 text-sm">
-        <p>
-          Payment information is required to prevent spam and ensure serious
-          league operators join the platform.
-        </p>
-        <p>
-          <strong>Security:</strong> We use Stripe's secure tokenization - your card
-          number is never stored on our servers.
-        </p>
-        <p>
-          <strong>No Immediate Charges:</strong> We only verify the card is valid.
-          Billing begins when you create your first league.
-        </p>
-        <p className="mt-3 text-xs text-blue-600">
-          You can update payment information anytime from your dashboard.
-        </p>
-      </div>
-    ),
+    infoTitle: paymentInfoInfo.title,
+    infoContent: paymentInfoInfo.content,
   },
 ];

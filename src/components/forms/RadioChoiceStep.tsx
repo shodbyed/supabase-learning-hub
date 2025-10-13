@@ -15,12 +15,12 @@ interface RadioChoiceOption {
   warning?: string;
   icon?: string;
   infoTitle?: string;
-  infoContent?: string;
+  infoContent?: string | React.ReactElement;
 }
 
 interface RadioChoiceStepProps {
   title: string;
-  subtitle?: string;
+  subtitle?: string | React.ReactElement;
   choices: RadioChoiceOption[];
   selectedValue?: string;
   onSelect: (value: string) => void;
@@ -31,7 +31,9 @@ interface RadioChoiceStepProps {
   isLastQuestion: boolean;
   infoTitle?: string;
   infoContent?: React.ReactNode;
+  infoLabel?: string;
   error?: string;
+  isSubmitting?: boolean;
 }
 
 /**
@@ -56,14 +58,16 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   isLastQuestion,
   infoTitle,
   infoContent,
-  error
+  infoLabel,
+  error,
+  isSubmitting
 }) => {
   const canProceed = selectedValue && selectedValue.trim() !== '';
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="bg-white rounded-xl shadow-lg p-4">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
           {title}
         </h2>
 
@@ -76,6 +80,7 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
           onSelect={onSelect}
           infoTitle={infoTitle}
           infoContent={infoContent}
+          infoLabel={infoLabel}
         />
 
         {/* Error message */}
@@ -108,10 +113,10 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
 
           <Button
             onClick={onNext}
-            disabled={!canProceed}
+            disabled={!canProceed || isSubmitting}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {isLastQuestion ? 'Create League' : 'Continue'}
+            {isSubmitting ? 'Creating League...' : isLastQuestion ? 'Create League' : 'Continue'}
           </Button>
         </div>
       </div>

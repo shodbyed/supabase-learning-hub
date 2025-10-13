@@ -1,0 +1,172 @@
+/**
+ * @fileoverview League Operator Type Definitions (Simplified)
+ * TypeScript interfaces for league operator profiles and related data
+ * Updated: 2025-01-04 - Removed use_profile_* flags, simplified structure
+ */
+
+/**
+ * Contact visibility levels for operator contact information
+ * Determines who can see email/phone in the application
+ */
+export type ContactVisibility =
+  | 'in_app_only'         // Only visible when logged into app (default)
+  | 'my_organization'     // Visible to others in same organization
+  | 'my_team_captains'    // Visible to team captains in operator's leagues
+  | 'my_teams'            // Visible to all players in operator's leagues
+  | 'anyone';             // Publicly visible (league directory, search, etc.)
+
+/**
+ * League Operator Profile
+ * Maps to league_operators table in database
+ * Stores operator business information and contact details
+ */
+export interface LeagueOperator {
+  // Identity
+  id: string;
+  member_id: string;  // References members.id
+
+  // Organization Information
+  organization_name: string;
+
+  // Address (Administrative Only - Copied from member profile at creation)
+  // NOT shown to players - only for admins, BCA, legal/tax
+  organization_address: string;
+  organization_city: string;
+  organization_state: string;
+  organization_zip_code: string;
+
+  // Contact Disclaimer
+  contact_disclaimer_acknowledged: boolean;
+
+  // Email (League Contact - Separate from member profile)
+  // Pre-filled from member profile, but stored independently
+  league_email: string;
+  email_visibility: ContactVisibility;
+
+  // Phone (League Contact - Separate from member profile)
+  // Pre-filled from member profile, but stored independently
+  league_phone: string;
+  phone_visibility: ContactVisibility;
+
+  // Payment Information (Required for operators)
+  stripe_customer_id: string;   // Stripe customer ID
+  payment_method_id: string;    // Stripe payment method ID
+  card_last4: string;           // Last 4 digits for display
+  card_brand: string;           // visa, mastercard, amex, discover, etc.
+  expiry_month: number;         // 1-12
+  expiry_year: number;          // 2025+
+  billing_zip: string;
+  payment_verified: boolean;
+
+  // Timestamps
+  created_at: string;  // ISO timestamp
+  updated_at: string;  // ISO timestamp
+}
+
+/**
+ * Operator with Member Data
+ * Combined view with member information for display
+ */
+export interface OperatorWithMember extends LeagueOperator {
+  member: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip_code: string;
+  };
+}
+
+/**
+ * Operator Contact Info (Resolved for Display)
+ * Helper type with formatted contact information
+ */
+export interface ResolvedOperatorContact {
+  // Organization
+  organization_name: string;
+
+  // Address (admin only - not shown to players)
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+
+  // Contact (with visibility controls)
+  email: string;
+  email_visibility: ContactVisibility;
+  phone: string;
+  phone_visibility: ContactVisibility;
+
+  // Display helpers
+  formatted_address: string;  // "123 Main St, City, ST 12345"
+  formatted_phone: string;    // "(555) 123-4567"
+}
+
+/**
+ * Database Insert Data for League Operator
+ * Prepared data ready for INSERT into league_operators table
+ */
+export interface LeagueOperatorInsertData {
+  member_id: string;
+  organization_name: string;
+
+  // Address (copied from member profile)
+  organization_address: string;
+  organization_city: string;
+  organization_state: string;
+  organization_zip_code: string;
+
+  // Contact disclaimer
+  contact_disclaimer_acknowledged: boolean;
+
+  // Email (pre-filled from profile, stored separately)
+  league_email: string;
+  email_visibility: ContactVisibility;
+
+  // Phone (pre-filled from profile, stored separately)
+  league_phone: string;
+  phone_visibility: ContactVisibility;
+
+  // Payment (required)
+  stripe_customer_id: string;
+  payment_method_id: string;
+  card_last4: string;
+  card_brand: string;
+  expiry_month: number;
+  expiry_year: number;
+  billing_zip: string;
+  payment_verified: boolean;
+}
+
+/**
+ * Mock Payment Data Generator
+ * Creates realistic-looking Stripe IDs for testing
+ */
+export function generateMockPaymentData(): {
+  stripe_customer_id: string;
+  payment_method_id: string;
+  card_last4: string;
+  card_brand: string;
+  expiry_month: number;
+  expiry_year: number;
+  billing_zip: string;
+  payment_verified: boolean;
+} {
+  // Generate random 16-character hex string for IDs
+  const randomHex = () => Math.random().toString(36).substring(2, 18).padEnd(16, '0');
+
+  return {
+    stripe_customer_id: `cus_mock_${randomHex()}`,
+    payment_method_id: `pm_mock_${randomHex()}`,
+    card_last4: '4242',  // Stripe test card
+    card_brand: 'visa',
+    expiry_month: 12,
+    expiry_year: 2027,
+    billing_zip: '12345',
+    payment_verified: true
+  };
+}
