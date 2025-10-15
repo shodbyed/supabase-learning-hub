@@ -270,8 +270,10 @@ export const LeagueOperatorApplication: React.FC = () => {
    * For input questions: saves current input first, then navigates
    * For choice questions: just navigates (choice is already saved)
    * For last question: submits the application
+   *
+   * @param formattedValue - Optional pre-formatted value from QuestionStep (respects autoCapitalize checkbox)
    */
-  const handleContinue = () => {
+  const handleContinue = (formattedValue?: string) => {
     if (isLastQuestion) {
       handleSubmit();
       return;
@@ -279,7 +281,7 @@ export const LeagueOperatorApplication: React.FC = () => {
 
     // For input questions, save current input before proceeding
     if (currentQuestion.type !== 'choice') {
-      const success = handleSaveCurrentInput();
+      const success = handleSaveCurrentInput(formattedValue);
       if (!success) return; // Don't proceed if validation failed
     }
 

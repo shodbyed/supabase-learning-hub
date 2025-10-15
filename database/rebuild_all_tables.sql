@@ -36,7 +36,7 @@ CREATE TABLE members (
   -- Personal information
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
-  nickname VARCHAR(12),
+  nickname VARCHAR(12) NOT NULL, -- Auto-generated if user doesn't provide one
   phone VARCHAR(20) NOT NULL,
   email VARCHAR(255) NOT NULL,
 
@@ -995,16 +995,17 @@ CREATE POLICY "Public can view active league team players"
 -- =====================================================
 
 -- Members: Allow operators to view members in same state (for captain selection)
-CREATE POLICY "Operators can view members in same state"
-  ON members FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM league_operators
-      JOIN members AS op_member ON league_operators.member_id = op_member.id
-      WHERE op_member.user_id = auth.uid()
-      AND op_member.state = members.state
-    )
-  );
+-- NOTE: This policy is disabled to avoid infinite recursion
+-- TODO: Implement this functionality using a different approach (e.g., application-level filtering)
+-- CREATE POLICY "Operators can view members in same state"
+--   ON members FOR SELECT
+--   USING (
+--     EXISTS (
+--       SELECT 1 FROM league_operators
+--       WHERE league_operators.member_id = (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1)
+--       AND (SELECT state FROM members WHERE id = league_operators.member_id LIMIT 1) = members.state
+--     )
+--   );
 
 -- =====================================================
 -- REBUILD COMPLETE

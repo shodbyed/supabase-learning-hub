@@ -1,5 +1,6 @@
 import { playerFormSchema } from '../schemas/playerSchema';
 import { capitalizeWords, formatFinalPhoneNumber } from '../utils/formatters';
+import { generateNickname } from '../utils/nicknameGenerator';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../context/useUser';
 import { useNavigate } from 'react-router-dom';
@@ -54,11 +55,20 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
       onLoading(true);
 
       // Format the data for database insertion
+      const formattedFirstName = capitalizeWords(result.data.firstName);
+      const formattedLastName = capitalizeWords(result.data.lastName);
+
+      // Generate nickname if not provided
+      // If user left nickname blank, auto-generate one based on their name
+      const finalNickname = result.data.nickname
+        ? capitalizeWords(result.data.nickname)
+        : generateNickname(formattedFirstName, formattedLastName);
+
       const memberData = {
         user_id: user.id, // Link to authenticated user
-        first_name: capitalizeWords(result.data.firstName),
-        last_name: capitalizeWords(result.data.lastName),
-        nickname: result.data.nickname ? capitalizeWords(result.data.nickname) : null,
+        first_name: formattedFirstName,
+        last_name: formattedLastName,
+        nickname: finalNickname, // Always has a value now (user-provided or auto-generated)
         phone: formatFinalPhoneNumber(result.data.phone),
         email: user.email?.toLowerCase() || '', // Use email from authenticated user
         address: capitalizeWords(result.data.address),
@@ -81,11 +91,17 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
         return;
       }
 
-      // Success! Clear errors and redirect
+      console.log('✅ Member record created successfully');
+
+      // Success! Clear errors
       onSuccess();
 
-      // Redirect to dashboard
-      navigate('/dashboard');
+      console.log('🔄 Navigating to dashboard...');
+
+      // Force a full page reload to dashboard
+      // This ensures UserProvider refetches the session and the new member record is loaded
+      // Using window.location instead of navigate() ensures the entire app state refreshes
+      window.location.href = '/dashboard';
 
     } catch (error) {
       // Handle unexpected errors

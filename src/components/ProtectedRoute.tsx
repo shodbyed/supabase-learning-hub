@@ -60,11 +60,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Second check: Role-based access control
   if (requiredRole && member?.role !== requiredRole) {
-    // Smart redirect based on user's actual role
-    if (member?.role === 'player') {
-      return <Navigate to="/dashboard" replace />; // Players go to their dashboard
+    // Developers have access to all roles
+    if (member?.role === 'developer') {
+      // Allow developers through
+    } else if (member?.role === 'player') {
+      // Players redirected to their dashboard
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      // Other mismatched roles get unauthorized page
+      return <Navigate to="/unauthorized" replace />;
     }
-    return <Navigate to="/unauthorized" replace />; // Other roles get unauthorized page
   }
 
   // Third check: Application completion requirement

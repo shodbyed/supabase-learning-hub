@@ -20,6 +20,7 @@ import type { Member, UserRole } from '@/types';
  * @returns {Member | null} member - The user's member record or null if not found
  * @returns {boolean} loading - True while fetching member data
  * @returns {string | null} error - Error message if fetch fails
+ * @returns {function} refreshProfile - Manually refresh member data from database
  * @returns {function} hasRole - Check if user has specific role
  * @returns {function} canAccessLeagueOperatorFeatures - Check league operator permissions
  * @returns {function} canAccessDeveloperFeatures - Check developer permissions
@@ -31,53 +32,61 @@ export const useUserProfile = () => {
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    // Reset state if user is not authenticated
+  /**
+   * Fetch member record from database based on authenticated user ID
+   * This establishes the connection between auth user and application data
+   */
+  const fetchMember = async () => {
     if (!user) {
       setMember(null);
       setLoading(false);
       return;
     }
 
-    /**
-     * Fetch member record from database based on authenticated user ID
-     * This establishes the connection between auth user and application data
-     */
-    const fetchMember = async () => {
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
 
-        // Query the members table for a record matching the authenticated user
-        const { data, error } = await supabase
-          .from('members')
-          .select('*')
-          .eq('user_id', user.id)
-          .single(); // Expect exactly one record
+      // Query the members table for a record matching the authenticated user
+      const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('user_id', user.id)
+        .single(); // Expect exactly one record
 
-        if (error) {
-          // PGRST116 = no rows returned, meaning user hasn't completed application
-          if (error.code === 'PGRST116') {
-            setMember(null); // User needs to complete member application
-          } else {
-            // Other database errors (network, permissions, etc.)
-            console.error('Error fetching member:', error);
-            setError(error.message);
-          }
+      if (error) {
+        // PGRST116 = no rows returned, meaning user hasn't completed application
+        if (error.code === 'PGRST116') {
+          setMember(null); // User needs to complete member application
         } else {
-          // Successfully found member record
-          setMember(data);
+          // Other database errors (network, permissions, etc.)
+          console.error('Error fetching member:', error);
+          setError(error.message);
         }
-      } catch (err) {
-        // Handle unexpected errors (network issues, etc.)
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+      } else {
+        // Successfully found member record
+        setMember(data);
       }
-    };
+    } catch (err) {
+      // Handle unexpected errors (network issues, etc.)
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchMember();
-  }, [user]); // Re-run when user authentication status changes
+  }, [user, refreshTrigger]); // Re-run when user authentication status changes OR refreshTrigger changes
+
+  /**
+   * Manually refresh the member profile from the database
+   * Useful after creating/updating member records
+   */
+  const refreshProfile = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   // Utility functions for role and permission checking
 
@@ -102,6 +111,7 @@ export const useUserProfile = () => {
     member,
     loading,
     error,
+    refreshProfile,
     hasRole,
     canAccessLeagueOperatorFeatures,
     canAccessDeveloperFeatures,

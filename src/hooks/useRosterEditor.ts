@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
+import type { TeamWithQueryDetails } from '@/types/team';
 
 interface UseRosterEditorParams {
   /** Size of the roster (5 or 8) */
@@ -15,6 +16,10 @@ interface UseRosterEditorParams {
   captainId: string;
   /** Existing team to edit (optional) */
   existingTeamId?: string;
+  /** All teams in the current season to check for cross-team duplicates */
+  allTeams?: TeamWithQueryDetails[];
+  /** Season ID to ensure we only check teams in the same season */
+  seasonId: string;
 }
 
 interface UseRosterEditorReturn {
@@ -39,7 +44,7 @@ interface UseRosterEditorReturn {
  *
  * Manages:
  * - Player selection state (array of player IDs)
- * - Duplicate player detection
+ * - Duplicate player detection (within team and across teams)
  * - Captain-in-roster validation
  * - Loading existing roster when editing
  *
@@ -50,10 +55,45 @@ export function useRosterEditor({
   rosterSize,
   captainId,
   existingTeamId,
+  allTeams = [],
+  seasonId,
 }: UseRosterEditorParams): UseRosterEditorReturn {
   const [playerIds, setPlayerIds] = useState<string[]>(Array(rosterSize - 1).fill(''));
   const [rosterError, setRosterError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  /**
+   * Check if a player is on another team in the SAME SEASON (excluding the current team being edited)
+   * Returns the team name if found, null otherwise
+   *
+   * Note: Players CAN be on teams in different seasons/leagues - this only checks the current season
+   */
+  const getPlayerTeamName = (memberId: string): string | null => {
+    if (!memberId) return null;
+
+    for (const team of allTeams) {
+      // Skip the team we're currently editing
+      if (team.id === existingTeamId) continue;
+
+      // Only check teams in the same season
+      if (team.season_id !== seasonId) continue;
+
+      // Check if player is captain
+      if (team.captain_id === memberId) {
+        return team.team_name;
+      }
+
+      // Check if player is on roster
+      const isOnRoster = team.team_players?.some(
+        (tp) => tp.member_id === memberId
+      );
+      if (isOnRoster) {
+        return team.team_name;
+      }
+    }
+
+    return null;
+  };
 
   /**
    * Load existing roster when editing a team
@@ -113,6 +153,12 @@ export function useRosterEditor({
         setRosterError('Cannot select the same player multiple times');
       } else if (selectedPlayers.includes(captainId)) {
         setRosterError('Captain is automatically added to roster - do not select them again as a player');
+      } else {
+        // Check if player is on another team
+        const teamName = getPlayerTeamName(memberId);
+        if (teamName) {
+          setRosterError(`This player is already on "${teamName}"`);
+        }
       }
     }
   };
@@ -132,6 +178,20 @@ export function useRosterEditor({
     // Check if captain is also in roster
     if (selectedPlayers.includes(captainId)) {
       return 'Captain is automatically added to roster - do not select them again as a player';
+    }
+
+    // Check if captain is on another team
+    const captainTeamName = getPlayerTeamName(captainId);
+    if (captainTeamName) {
+      return `Captain is already on "${captainTeamName}"`;
+    }
+
+    // Check if any players are on other teams
+    for (const playerId of selectedPlayers) {
+      const teamName = getPlayerTeamName(playerId);
+      if (teamName) {
+        return `A player is already on "${teamName}"`;
+      }
     }
 
     return null;

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/shodb/personal/**)",
+      "Bash(pnpm run typecheck)",
+      "Bash(pnpm run build)",
+      "Bash(pnpm run lint)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

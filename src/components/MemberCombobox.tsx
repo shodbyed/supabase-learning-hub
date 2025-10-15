@@ -5,7 +5,7 @@
  * Uses shadcn Command + Popover composition for autocomplete functionality.
  */
 import React, { useState } from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -35,6 +35,8 @@ interface MemberComboboxProps {
   label?: string;
   /** Disable the combobox */
   disabled?: boolean;
+  /** Show clear button to remove selection */
+  showClear?: boolean;
   /** Additional CSS classes */
   className?: string;
 }
@@ -52,6 +54,7 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
   placeholder = 'Select member...',
   label,
   disabled = false,
+  showClear = false,
   className = '',
 }) => {
   const [open, setOpen] = useState(false);
@@ -64,13 +67,20 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
     console.warn('MemberCombobox opened but no members available');
   }
 
-  // Filter members based on search query
-  const filteredMembers = searchQuery
+  // Filter and sort members alphabetically by last name, then first name
+  const filteredMembers = (searchQuery
     ? members.filter((member) => {
         const searchValue = getPlayerDisplayName(member).toLowerCase();
         return searchValue.includes(searchQuery.toLowerCase());
       })
-    : members;
+    : members
+  ).sort((a, b) => {
+    // Sort by last name first
+    const lastNameCompare = a.last_name.localeCompare(b.last_name);
+    if (lastNameCompare !== 0) return lastNameCompare;
+    // If last names are the same, sort by first name
+    return a.first_name.localeCompare(b.first_name);
+  });
 
   return (
     <div className={className}>
@@ -79,23 +89,24 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
           {label}
         </label>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            role="combobox"
-            aria-expanded={open}
-            disabled={disabled}
-            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span className="truncate">
-              {selectedMember
-                ? getPlayerDisplayName(selectedMember)
-                : placeholder}
-            </span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </button>
-        </PopoverTrigger>
+      <div className="flex gap-2">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              role="combobox"
+              aria-expanded={open}
+              disabled={disabled}
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span className="truncate">
+                {selectedMember
+                  ? getPlayerDisplayName(selectedMember)
+                  : placeholder}
+              </span>
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </button>
+          </PopoverTrigger>
         <PopoverContent className="w-[400px] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
@@ -134,6 +145,18 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
           </Command>
         </PopoverContent>
       </Popover>
+      {showClear && value && (
+        <button
+          type="button"
+          onClick={() => onValueChange('')}
+          disabled={disabled}
+          className="flex h-10 items-center justify-center px-3 rounded-md border border-input bg-background hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          title="Clear selection"
+        >
+          <X className="h-4 w-4 text-gray-600" />
+        </button>
+      )}
+      </div>
     </div>
   );
 };

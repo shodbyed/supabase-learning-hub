@@ -19,6 +19,7 @@ import { InfoButton } from '@/components/InfoButton';
 import { TeamCard } from '@/components/TeamCard';
 import { VenueListItem } from '@/components/VenueListItem';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { AllPlayersRosterCard } from '@/components/AllPlayersRosterCard';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
 
@@ -542,6 +543,11 @@ export const TeamManagement: React.FC = () => {
               </div>
             )}
             </div>
+
+            {/* All Players Roster Card */}
+            {teams.length > 0 && (
+              <AllPlayersRosterCard teams={teams} />
+            )}
           </div>
 
           {/* Teams Section - Main Right Area */}
@@ -644,6 +650,7 @@ export const TeamManagement: React.FC = () => {
             venues={venues}
             leagueVenues={leagueVenues}
             members={members}
+            allTeams={teams}
             defaultTeamName={generateDefaultTeamName()}
             existingTeam={editingTeam ? {
               id: editingTeam.id,
