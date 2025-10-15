@@ -2,7 +2,117 @@
 
 ## Current Work Focus
 
-### **✅ COMPLETED: Season Creation Database Schema & Wizard Integration** 🎉
+### **✅ COMPLETED: Schedule Display & Match Generation System** 🎉
+**Implementation Date**: 2025-01-15
+**Status**: ✅ **PRODUCTION READY - FULL WORKFLOW COMPLETE**
+
+**What Was Built**:
+- Complete schedule display page showing all week types (regular, playoffs, blackouts, breaks)
+- Schedule generator refactored into testable single-responsibility functions
+- Match generation with venue-specific table numbering
+- Clear schedule functionality for regeneration
+- Accept schedule button to activate season and complete league setup
+
+**Key Features Implemented**:
+
+1. **Schedule Display Page** ([SeasonSchedulePage.tsx](../src/operator/SeasonSchedulePage.tsx))
+   - Displays ALL week types (not just regular weeks)
+   - Visual styling for different week types:
+     - Playoffs: Purple background
+     - Breaks: Yellow background with "BREAK" badge
+     - Blackouts: Normal styling (no badge per user request)
+   - Venue display with "Venue TBD" for unassigned venues
+   - Venue-specific table numbering (each venue counts tables independently)
+   - Shows "Matchups TBD" for playoff weeks
+
+2. **Schedule Generator Refactor** ([scheduleGenerator.ts](../src/utils/scheduleGenerator.ts))
+   - Broke monolithic function into 6 single-responsibility functions:
+     - `validateTeams()` - Validates teams array
+     - `fetchSeasonWeeks()` - Fetches regular season weeks only
+     - `buildTeamPositionMap()` - Creates position-to-team lookup
+     - `generateWeekMatches()` - Generates matches for a single week
+     - `generateAllMatches()` - Orchestrates match generation for entire season
+     - `insertMatches()` - Inserts match records into database
+   - Main `generateSchedule()` function now orchestrates these helpers
+   - More testable, maintainable, and easier to debug
+
+3. **Venue-Specific Table Numbering**
+   - `calculateTableNumbers()` function computes table numbers per venue within each week
+   - Example: Week 1 has 5 matches (3 at Venue A, 2 at Venue B)
+     - Venue A: Tables 1, 2, 3
+     - Venue B: Tables 1, 2
+   - Table numbers only shown when venue is assigned
+
+4. **Clear Schedule Functionality**
+   - `clearSchedule()` function deletes all matches for a season
+   - Returns count of deleted matches
+   - Allows operators to regenerate schedule if needed
+
+5. **Accept Schedule & Complete Setup**
+   - "Accept Schedule & Complete Setup" button finalizes league creation
+   - Updates season status from `'upcoming'` to `'active'`
+   - Navigates user back to league dashboard
+   - Completes the entire league generation workflow
+
+**Navigation Flow**:
+```
+League Creation Wizard → Season Creation → Team Management → Schedule Setup →
+Schedule Generation → Schedule Display → Accept Schedule → League Dashboard (Active)
+```
+
+**Database Integration**:
+- Matches table stores all generated matchups
+- Links to season_weeks, teams, and venues tables
+- RLS policies ensure operators can only access their own league's matches
+- Season status updated to 'active' when schedule is accepted
+
+**Files Modified**:
+- `/src/operator/SeasonSchedulePage.tsx` - Complete schedule display with accept/clear functionality
+- `/src/utils/scheduleGenerator.ts` - Refactored into testable functions, added clearSchedule()
+- `/src/operator/ScheduleSetupPage.tsx` - Wrapper page for schedule generation
+- `/src/navigation/NavRoutes.tsx` - Added schedule routes
+
+**Known Issues to Address Next**:
+1. **Week 17 + Playoffs Duplication**: Season wizard creating both "Week 17" AND a separate "Playoffs" week
+   - Should only have one playoff week
+   - Need to fix season creation logic
+
+2. **Blackout Week Names**: Week names include parenthetical warnings like "Thanksgiving (Monday 2 days before)"
+   - These warnings should not be stored in the database
+   - Need to clean up week name generation in season wizard
+
+**User Experience Improvements**:
+- Season schedule subtitle shows only season name (removed redundant league name)
+- Playoff weeks clearly marked with purple background and "Matchups TBD" message
+- Blackout weeks display cleanly without badges or red coloring
+- Clear confirmation dialogs for both clearing and accepting schedule
+
+---
+
+### **🎯 NEXT: Fix Season Week Storage Issues**
+**Priority**: High
+**Focus**: Season Creation Wizard data quality issues
+
+**Problems Identified**:
+1. **Duplicate Playoff Week**
+   - System creating "Week 17" (marked as regular) AND "Playoffs" week
+   - Should only have 16 regular weeks + 1 playoff week for a 16-week season
+   - Issue in [scheduleUtils.ts](../src/utils/scheduleUtils.ts) or wizard logic
+
+2. **Week Name Pollution**
+   - Blackout week names storing UI warnings: "Thanksgiving (Monday 2 days before)"
+   - These parenthetical notes should be UI-only, not database values
+   - Need to separate display text from stored data in [SeasonCreationWizard.tsx](../src/operator/SeasonCreationWizard.tsx)
+
+**Investigation Needed**:
+- Review [scheduleUtils.ts](../src/utils/scheduleUtils.ts) `generateSchedule()` function
+- Check how `seasonLength` parameter is being used
+- Verify week type assignment logic
+- Clean up week name generation to remove conflict warnings before database insert
+
+---
+
+### **Previously Completed: Season Creation Database Schema & Wizard Integration** 🎉
 **Implementation Date**: 2025-01-11
 **Status**: ✅ **PRODUCTION READY - TESTED IN LOCAL DATABASE**
 
@@ -64,17 +174,7 @@
 - `/src/operator/SeasonCreationWizard.tsx` - Full database integration with rollback
 - `/memory-bank/databaseSchema.md` - Updated with new schema design
 
-**Test Results**:
-```
-✅ Season created: 2b860873-2a78-4417-b7ca-cd52de9c8a03
-🔄 Inserting 20 weeks into season_weeks table (deduplicated)
-✅ Season schedule saved: 20 weeks
-```
-
-**Next Steps**:
-- Commit and push database schema files
-- Update memory bank documentation
-- Ready for team creation and schedule display features
+---
 
 ### **Previously Completed: Schedule Conflict Detection Refactoring** 🎉
 **Implementation Date**: 2025-01-10
@@ -98,57 +198,7 @@
 - `/src/components/season/ScheduleWeekRow.tsx` - Uses getHighestSeverity() helper
 - `/src/operator/SeasonCreationWizard.tsx` - Uses shared conflict detection
 
-### **Previously Completed: Season Creation Wizard with Championship Dates & Holiday System**
-**Implementation Date**: 2025-01-07
-**Status**: ✅ **WIZARD COMPLETE, DATABASE INTEGRATION COMPLETE**
-
-**What's Been Built**:
-- Championship dates system (BCA/APA) with community voting database
-- Holiday selection using `date-holidays` package
-- Initial season schedule generation with blackout weeks
-- Conflict detection and interactive resolution
-- Schedule review with editable weeks
-- Full wizard flow from start to database save
-
-## Recent Changes
-
-### **Database Schema Simplification**
-**Key Changes**:
-- Removed `holidays`, `bca_championship`, `apa_championship` from seasons table
-- These are fetched on-demand during schedule creation/editing
-- Operator re-evaluates skip/play decision each time they edit
-- Final decision baked into season_weeks as blackout rows
-
-### **Season Weeks Unified Design**
-**Architecture**:
-- One table for everything: regular weeks, blackouts, playoffs, season-end breaks
-- User sees full calendar sorted by date
-- Blackout weeks show reason ("Thanksgiving", "Venue Closed")
-- Easy to add/remove blackouts without regenerating entire schedule
-
-## Next Steps
-
-### **🎯 Immediate: Commit Database Schema**
-- [database/seasons.sql](database/seasons.sql)
-- [database/season_weeks.sql](database/season_weeks.sql)
-- [database/README_DATABASE_INTEGRATION.md](database/README_DATABASE_INTEGRATION.md)
-- Updated TypeScript types and wizard integration
-
-### **🔜 Team Creation System**
-**Next Major Feature**:
-- Design teams database table
-- Team registration wizard
-- Link teams to seasons
-- Home venue assignment
-- Captain/player roster management
-
-### **🔜 Schedule Display**
-**After Teams Exist**:
-- Load season schedule from season_weeks table
-- Display full calendar to users
-- Show blackout weeks with reasons
-- Week completion status
-- Navigation to match scoring (future)
+---
 
 ## Active Decisions and Considerations
 
@@ -184,12 +234,26 @@
 - UI disables editing for completed weeks
 - Prevents accidental changes to finished weeks
 
+### **Venue-Specific Table Numbering**
+**Decision**: Calculate table numbers per venue within each week
+**Rationale**:
+- Multiple venues can host matches simultaneously
+- Each venue needs independent table numbering (Table 1, Table 2, etc.)
+- Calculated on display, not stored in database
+- More flexible for venue changes
+
+---
+
 ## Current Status Summary
 
 ✅ **Database Schema**: Complete, tested, production-ready
 ✅ **Season Creation Wizard**: Full database integration working
 ✅ **Conflict Detection**: Refactored, tested, DRY principle applied
-✅ **Schedule Generation**: Working with blackouts and playoffs
-✅ **Transaction Safety**: Rollback on failure prevents orphaned records
-🔄 **Team Creation**: Next major feature to implement
-🔄 **Schedule Display**: Waiting for teams to exist
+✅ **Schedule Generation**: Refactored into testable functions
+✅ **Schedule Display**: Complete with all week types, venue-specific tables
+✅ **Match Generation**: Working with proper team position mapping
+✅ **Clear Schedule**: Allows regeneration of matches
+✅ **Accept Schedule**: Activates season and completes league setup
+✅ **League Creation Flow**: End-to-end workflow complete
+🔄 **Season Week Storage**: Next - fix duplicate playoff week and clean week names
+🔜 **Mobile App**: Partner will mirror database operations for scorekeeping

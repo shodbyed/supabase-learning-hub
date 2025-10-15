@@ -20,6 +20,8 @@ import { LeagueDetail } from '../operator/LeagueDetail';
 import { SeasonCreationWizard } from '../operator/SeasonCreationWizard';
 import { VenueManagement } from '../operator/VenueManagement';
 import { TeamManagement } from '../operator/TeamManagement';
+import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
+import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -62,6 +64,8 @@ const operatorRoutes = [
   { path: '/league/:leagueId', element: <LeagueDetail /> },
   { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
   { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
+  { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
+  { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
   { path: '/venues', element: <VenueManagement /> },
 ];
 

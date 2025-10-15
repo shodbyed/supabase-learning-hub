@@ -3,7 +3,6 @@ import { capitalizeWords, formatFinalPhoneNumber } from '../utils/formatters';
 import { generateNickname } from '../utils/nicknameGenerator';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../context/useUser';
-import { useNavigate } from 'react-router-dom';
 import type { FormState } from './types';
 
 interface UsePlayerFormSubmissionProps {
@@ -15,7 +14,6 @@ interface UsePlayerFormSubmissionProps {
 
 export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }: UsePlayerFormSubmissionProps) => {
   const { user } = useUser();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
