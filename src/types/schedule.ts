@@ -134,3 +134,35 @@ export interface TeamWithPosition {
   home_venue_id: string | null;
   schedule_position: number;
 }
+
+/**
+ * Season week data
+ */
+export interface SeasonWeek {
+  id: string;
+  scheduled_date: string;
+  week_name: string;
+  week_type: string;
+  week_completed: boolean;
+}
+
+/**
+ * Extended match details with venue location
+ */
+export interface MatchWithVenueDetails extends MatchWithDetails {
+  scheduled_venue?: {
+    id: string;
+    name: string;
+    street_address: string;
+    city: string;
+    state: string;
+  } | null;
+}
+
+/**
+ * Week schedule data - week with all its matches
+ */
+export interface WeekSchedule {
+  week: SeasonWeek;
+  matches: MatchWithDetails[];
+}
