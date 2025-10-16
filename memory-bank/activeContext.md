@@ -2,6 +2,96 @@
 
 ## Current Work Focus
 
+### **✅ COMPLETED: League Detail Page Redesign & Schedule Generation Protection** 🎉
+**Implementation Date**: 2025-01-16
+**Status**: ✅ **PRODUCTION READY**
+
+**What Was Built**:
+- Complete redesign of League Detail page with at-a-glance information cards
+- Schedule generation duplicate prevention with modal confirmation
+- Expandable team rows showing captain and venue contact information
+- Real-time schedule status display with upcoming weeks and holidays
+
+**Key Features Implemented**:
+
+1. **League Overview Card Redesign** ([LeagueOverviewCard.tsx](../src/components/operator/LeagueOverviewCard.tsx))
+   - Removed redundant individual fields (game type, league night, etc.)
+   - Now displays only current active season information
+   - Shows season name, dates, team count, week count, and team format (5-Man/8-Man)
+   - Removed duplicate SeasonsCard component from page
+   - Compact display taking up less space
+
+2. **Teams Card Enhancement** ([TeamsCard.tsx](../src/components/operator/TeamsCard.tsx))
+   - Table layout with columns: Team Name, Captain, Venue
+   - Clickable rows with chevron indicators for expansion
+   - Expanded state shows:
+     - Captain phone number (clickable `tel:` link)
+     - Captain email (clickable `mailto:` link)
+     - Venue phone number (clickable `tel:` link)
+     - Venue full address (street, city, state)
+   - Query enhanced to fetch captain phone, email, and venue details
+   - Phone numbers formatted as (XXX) XXX-XXXX
+   - Single "Manage Teams" button (removed redundant Manage Venues button)
+
+3. **Schedule Card Redesign** ([ScheduleCard.tsx](../src/components/operator/ScheduleCard.tsx))
+   - Summary row showing:
+     - Weeks completed vs total (e.g., "3/12 played")
+     - Season start date (Week 1)
+     - Playoffs date (or "Not scheduled")
+   - Two-card layout displaying:
+     - **Upcoming Weeks Card**: Next 3 weeks with dates
+     - **Next Holiday Card**: Upcoming blackout date
+   - Console logging added to debug week type distribution
+   - Schedule status prevents "Create Schedule" button after first week is played
+
+4. **Schedule Generation Duplicate Prevention** ([ScheduleSetup.tsx](../src/operator/ScheduleSetup.tsx))
+   - Pre-check before generating schedule
+   - Modal dialog if schedule already exists showing:
+     - Number of existing matches
+     - "Keep Existing" button (navigates to schedule view)
+     - "Create New" button (deletes old schedule and generates fresh one)
+   - Prevents accidental duplicate match creation
+   - Uses `clearSchedule()` function to clean up before regeneration
+   - Added `skipExistingCheck` parameter to generation function
+
+5. **Team Management Venue Creation** ([TeamManagement.tsx](../src/operator/TeamManagement.tsx))
+   - "New" button added to League Venues section header
+   - VenueCreationModal integrated for inline venue creation
+   - No navigation away from team management page
+   - Venues refresh after creation
+
+**Critical Bug Fixed**:
+- **Duplicate Match Generation**: Previously, navigating back to schedule setup would create duplicate matches
+- Now checks for existing matches and prompts user with clear options
+- Protects data integrity throughout the schedule generation flow
+
+**Database Query Enhancements**:
+- `fetchTeamsWithDetails()` now includes captain phone, email
+- `fetchTeamsWithDetails()` now includes venue phone, street_address, city, state
+- Type definitions updated in [team.ts](../src/types/team.ts) for TeamWithQueryDetails
+
+**Known Issue Identified**:
+- **❗ CRITICAL: Blackout Weeks Replacing Regular Weeks**
+  - Problem: When inserting blackout dates, they replace regular weeks instead of being inserted between them
+  - Example: 16-week season showing only 12 regular weeks + 4 blackouts (should be 16 regular + 4 blackouts = 20 total)
+  - Missing weeks: Week 4, Week 6, Week 10, Week 11 (replaced by blackouts)
+  - Impact: Schedule generation creates matches for wrong number of weeks
+  - Console log added showing: 12 regular, 4 blackout, 1 season_end_break, 1 playoffs = 18 total (missing 2 weeks)
+  - **Next Priority**: Fix season creation logic to INSERT blackouts between regular weeks, not REPLACE them
+
+**Files Modified**:
+- `/src/components/operator/LeagueOverviewCard.tsx` - Redesigned to show only current season
+- `/src/components/operator/TeamsCard.tsx` - Table layout with expandable contact info
+- `/src/components/operator/ScheduleCard.tsx` - Two-card layout with summary row
+- `/src/operator/ScheduleSetup.tsx` - Added duplicate prevention modal
+- `/src/operator/TeamManagement.tsx` - Added venue creation integration
+- `/src/operator/LeagueDetail.tsx` - Removed SeasonsCard, updated imports
+- `/src/utils/scheduleGenerator.ts` - Added `skipExistingCheck` parameter and check
+- `/src/utils/teamQueries.ts` - Enhanced to fetch captain and venue contact info
+- `/src/types/team.ts` - Updated TeamWithQueryDetails interface
+
+---
+
 ### **✅ COMPLETED: Schedule Display & Match Generation System** 🎉
 **Implementation Date**: 2025-01-15
 **Status**: ✅ **PRODUCTION READY - FULL WORKFLOW COMPLETE**

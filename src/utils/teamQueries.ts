@@ -28,6 +28,8 @@ export async function fetchTeamsWithDetails(leagueId: string) {
         id,
         first_name,
         last_name,
+        phone,
+        email,
         system_player_number,
         bca_member_number
       ),
@@ -44,7 +46,11 @@ export async function fetchTeamsWithDetails(leagueId: string) {
       ),
       venue:venues(
         id,
-        name
+        name,
+        phone,
+        street_address,
+        city,
+        state
       )
     `)
     .eq('league_id', leagueId)
