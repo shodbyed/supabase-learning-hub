@@ -150,28 +150,94 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
         console.log('🎱 Team updated:', existingTeam.id);
 
-        // Delete existing roster
-        const { error: deleteError } = await supabase
+        // Get current roster to handle captain separately
+        const { data: currentRoster } = await supabase
           .from('team_players')
-          .delete()
+          .select('member_id, is_captain')
           .eq('team_id', existingTeam.id);
 
-        if (deleteError) throw deleteError;
+        console.log('📋 Current roster:', currentRoster);
+
+        // If captain variant, captain row cannot be deleted by RLS policy
+        // So we need to update the captain row instead of delete/insert
+        if (isCaptainVariant && currentRoster) {
+          const captainRow = currentRoster.find(r => r.is_captain);
+
+          if (captainRow) {
+            // Update captain's is_captain flag if needed
+            await supabase
+              .from('team_players')
+              .update({ is_captain: captainRow.member_id === captainId })
+              .eq('team_id', existingTeam.id)
+              .eq('member_id', captainRow.member_id);
+          }
+
+          // Delete only non-captain rows (these CAN be deleted by captain)
+          const { error: deleteError } = await supabase
+            .from('team_players')
+            .delete()
+            .eq('team_id', existingTeam.id)
+            .neq('member_id', captainRow?.member_id || '');
+
+          if (deleteError) {
+            console.error('Delete error:', deleteError);
+            throw deleteError;
+          }
+
+          console.log('🗑️ Non-captain roster deleted');
+        } else {
+          // Operator variant - can delete all rows
+          const { data: deletedData, error: deleteError } = await supabase
+            .from('team_players')
+            .delete()
+            .eq('team_id', existingTeam.id)
+            .select();
+
+          if (deleteError) {
+            console.error('Delete error:', deleteError);
+            throw deleteError;
+          }
+
+          console.log('🗑️ Existing roster deleted:', deletedData?.length || 0, 'rows');
+        }
 
         // Insert new roster using hook's helper
         const rosterPlayers = getAllPlayerIds();
-        const rosterData = rosterPlayers.map((memberId) => ({
+        console.log('👥 Inserting roster players:', rosterPlayers);
+        console.log('👤 Captain ID:', captainId);
+
+        // Remove duplicates
+        const uniqueRosterPlayers = [...new Set(rosterPlayers)];
+
+        // Filter out captain if captain variant and they already exist
+        let playersToInsert = uniqueRosterPlayers;
+        if (isCaptainVariant && currentRoster) {
+          const captainRow = currentRoster.find(r => r.is_captain);
+          if (captainRow) {
+            playersToInsert = uniqueRosterPlayers.filter(id => id !== captainRow.member_id);
+            console.log('🔄 Skipping captain insert (already exists)');
+          }
+        }
+
+        const rosterData = playersToInsert.map((memberId) => ({
           team_id: existingTeam.id,
           member_id: memberId,
           season_id: seasonId,
           is_captain: memberId === captainId,
         }));
 
-        const { error: rosterError } = await supabase
-          .from('team_players')
-          .insert(rosterData);
+        console.log('📝 Roster data to insert:', rosterData);
 
-        if (rosterError) throw rosterError;
+        if (rosterData.length > 0) {
+          const { error: rosterError } = await supabase
+            .from('team_players')
+            .insert(rosterData);
+
+          if (rosterError) {
+            console.error('Insert error:', rosterError);
+            throw rosterError;
+          }
+        }
 
         console.log('✅ Team updated successfully');
       } else {

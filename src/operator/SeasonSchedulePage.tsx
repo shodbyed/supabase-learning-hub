@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Calendar, MapPin, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -120,6 +120,8 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
 export const SeasonSchedulePage: React.FC = () => {
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromPlayer = searchParams.get('from') === 'player';
 
   const [schedule, setSchedule] = useState<WeekSchedule[]>([]);
   const [seasonName, setSeasonName] = useState<string>('');
@@ -127,6 +129,7 @@ export const SeasonSchedulePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [isOperator, setIsOperator] = useState(false);
 
   /**
    * Handle accepting the schedule
@@ -185,6 +188,46 @@ export const SeasonSchedulePage: React.FC = () => {
       setClearing(false);
     }
   };
+
+  /**
+   * Check if current user is an operator for this league
+   */
+  useEffect(() => {
+    const checkOperatorStatus = async () => {
+      if (!leagueId) return;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsOperator(false);
+          return;
+        }
+
+        // Check if user is operator for this league
+        const { data, error } = await supabase
+          .from('leagues')
+          .select(`
+            operator_id,
+            league_operators!inner(
+              member_id,
+              members!inner(
+                user_id
+              )
+            )
+          `)
+          .eq('id', leagueId)
+          .eq('league_operators.members.user_id', user.id)
+          .single();
+
+        setIsOperator(!!data && !error);
+      } catch (err) {
+        console.error('Error checking operator status:', err);
+        setIsOperator(false);
+      }
+    };
+
+    checkOperatorStatus();
+  }, [leagueId]);
 
   /**
    * Fetch schedule data
@@ -284,14 +327,26 @@ export const SeasonSchedulePage: React.FC = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/league/${leagueId}`)}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to League
-          </Button>
+          {isOperator && !fromPlayer && (
+            <Button
+              variant="ghost"
+              onClick={() => navigate(`/league/${leagueId}`)}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to League
+            </Button>
+          )}
+          {(!isOperator || fromPlayer) && (
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/my-teams')}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to My Teams
+            </Button>
+          )}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Season Schedule</h1>
@@ -299,7 +354,7 @@ export const SeasonSchedulePage: React.FC = () => {
                 {seasonName}
               </p>
             </div>
-            {schedule.length > 0 && (
+            {isOperator && !fromPlayer && schedule.length > 0 && (
               <div className="flex gap-3">
                 <Button
                   variant="destructive"

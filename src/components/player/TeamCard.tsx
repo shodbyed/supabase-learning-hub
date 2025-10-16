@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { Link } from 'react-router-dom';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 
 interface Captain {
   id: string;
@@ -79,6 +80,12 @@ export function TeamCard({
   showEditButton = false,
   onEditClick
 }: TeamCardProps) {
+  // Calculate team readiness
+  const minRoster = rosterSize === 5 ? 3 : 5; // 3/5 or 5/8
+  const hasVenue = venue !== null;
+  const hasMinRoster = players.length >= minRoster;
+  const isReady = hasVenue && hasMinRoster;
+
   // Filter out captain from roster (already shown separately)
   const nonCaptainPlayers = players.filter(p => !p.is_captain);
 
@@ -123,6 +130,30 @@ export function TeamCard({
             </button>
           )}
         </div>
+
+        {/* Team Readiness Indicator */}
+        {showEditButton && (
+          <div className={`mt-4 p-3 rounded-lg border ${isReady ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+            <div className="flex items-start gap-2">
+              {isReady ? (
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+              )}
+              <div className="flex-1">
+                <p className={`text-sm font-semibold ${isReady ? 'text-green-900' : 'text-yellow-900'}`}>
+                  {isReady ? 'Team Ready for Play' : 'Team Setup Incomplete'}
+                </p>
+                {!isReady && (
+                  <ul className="text-sm text-yellow-800 mt-1 space-y-1">
+                    {!hasVenue && <li>• Home venue required</li>}
+                    {!hasMinRoster && <li>• Minimum {minRoster} players required ({players.length}/{rosterSize} currently)</li>}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Home Venue */}
@@ -172,7 +203,7 @@ export function TeamCard({
 
       {/* Action Buttons */}
       <CardFooter className="flex gap-3 pt-4">
-        <Link to={`/league/${leagueId}/season/${seasonId}/schedule`} className="flex-1">
+        <Link to={`/league/${leagueId}/season/${seasonId}/schedule?from=player`} className="flex-1">
           <Button variant="outline" className="w-full">
             View Schedule
           </Button>
