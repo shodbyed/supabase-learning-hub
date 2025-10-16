@@ -35,11 +35,17 @@ export const LeagueDetail: React.FC = () => {
 
   const [league, setLeague] = useState<League | null>(null);
   const [seasonCount, setSeasonCount] = useState(0);
+  const [teamCount, setTeamCount] = useState(0);
+  const [playerCount, setPlayerCount] = useState(0);
+  const [scheduleExists, setScheduleExists] = useState(false);
+  const [activeSeason, setActiveSeason] = useState<any | null>(null);
+  const [completedWeeksCount, setCompletedWeeksCount] = useState(0);
+  const [totalWeeksCount, setTotalWeeksCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Fetch league details and season count on mount
+   * Fetch league details, season count, team count, player count, and schedule status on mount
    */
   useEffect(() => {
     const fetchLeague = async () => {
@@ -61,11 +67,72 @@ export const LeagueDetail: React.FC = () => {
         setLeague(data);
 
         // Fetch season count
-        const { count } = await supabase
+        const { count: seasonCountResult } = await supabase
           .from('seasons')
           .select('*', { count: 'exact', head: true })
           .eq('league_id', leagueId);
-        setSeasonCount(count || 0);
+        setSeasonCount(seasonCountResult || 0);
+
+        // Fetch active season (if any)
+        const { data: activeSeasonData } = await supabase
+          .from('seasons')
+          .select('*')
+          .eq('league_id', leagueId)
+          .eq('status', 'active')
+          .single();
+
+        if (activeSeasonData) {
+          setActiveSeason(activeSeasonData);
+
+          // Get week counts for the active season
+          const { count: totalWeeks } = await supabase
+            .from('season_weeks')
+            .select('*', { count: 'exact', head: true })
+            .eq('season_id', activeSeasonData.id)
+            .eq('week_type', 'regular'); // Only count regular play weeks
+
+          const { count: completedWeeks } = await supabase
+            .from('season_weeks')
+            .select('*', { count: 'exact', head: true })
+            .eq('season_id', activeSeasonData.id)
+            .eq('week_type', 'regular')
+            .eq('week_completed', true);
+
+          setTotalWeeksCount(totalWeeks || 0);
+          setCompletedWeeksCount(completedWeeks || 0);
+        }
+
+        // Fetch team count
+        const { count: teamCountResult } = await supabase
+          .from('teams')
+          .select('*', { count: 'exact', head: true })
+          .eq('league_id', leagueId);
+        setTeamCount(teamCountResult || 0);
+
+        // Fetch player count (through team_players join)
+        const { count: playerCountResult } = await supabase
+          .from('team_players')
+          .select('teams!inner(league_id)', { count: 'exact', head: true })
+          .eq('teams.league_id', leagueId);
+        setPlayerCount(playerCountResult || 0);
+
+        // Check if schedule exists (schedule = matches have been generated for this league's season)
+        // First get the season IDs for this league, then check if any matches exist
+        const { data: seasonData } = await supabase
+          .from('seasons')
+          .select('id')
+          .eq('league_id', leagueId);
+
+        if (seasonData && seasonData.length > 0) {
+          const seasonIds = seasonData.map(s => s.id);
+          const { count: matchesCountResult } = await supabase
+            .from('matches')
+            .select('*', { count: 'exact', head: true })
+            .in('season_id', seasonIds);
+          setScheduleExists((matchesCountResult || 0) > 0);
+        } else {
+          setScheduleExists(false);
+        }
       } catch (err) {
         console.error('Error fetching league:', err);
         setError('Failed to load league details');
@@ -76,6 +143,44 @@ export const LeagueDetail: React.FC = () => {
 
     fetchLeague();
   }, [leagueId]);
+
+  /**
+   * Calculate progress percentage
+   * - If active season exists: Show weeks completed / total weeks
+   * - Otherwise: Show setup progress (0-100% based on setup tasks)
+   */
+  const calculateProgress = (): number => {
+    // If there's an active season, show season progress
+    if (activeSeason && totalWeeksCount > 0) {
+      return Math.round((completedWeeksCount / totalWeeksCount) * 100);
+    }
+
+    // Otherwise show setup progress
+    let progress = 0;
+    if (seasonCount > 0) progress += 20; // Season created
+    if (teamCount > 0) progress += 20; // Teams added
+    if (playerCount > 0) progress += 20; // Players enrolled
+    if (scheduleExists) progress += 20; // Schedule generated
+    // Final step is "ready to start" which happens when all above are done
+    if (seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists) {
+      progress += 20; // All done!
+    }
+    return progress;
+  };
+
+  /**
+   * Check if league setup is complete (all required steps done)
+   */
+  const isSetupComplete = (): boolean => {
+    return seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists;
+  };
+
+  /**
+   * Check if league is currently in an active season
+   */
+  const isInSession = (): boolean => {
+    return activeSeason !== null;
+  };
 
   /**
    * Generate display name for league
@@ -139,9 +244,19 @@ export const LeagueDetail: React.FC = () => {
                 Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
               </p>
             </div>
-            <span className="px-4 py-2 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
-              Setup Needed
-            </span>
+            {isInSession() ? (
+              <span className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                In Session
+              </span>
+            ) : isSetupComplete() ? (
+              <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                Ready to Play
+              </span>
+            ) : (
+              <span className="px-4 py-2 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
+                Setup Needed
+              </span>
+            )}
           </div>
         </div>
 
@@ -149,22 +264,53 @@ export const LeagueDetail: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Progress and Next Steps - 2 columns */}
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">League Status</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              {isInSession() ? 'Season Status' : 'League Status'}
+            </h2>
             <LeagueProgressBar
-              status="setup"
-              progress={seasonCount > 0 ? 50 : 25}
-              label="League Setup Progress"
-              nextAction={seasonCount > 0 ? "Next: Add teams to your season" : "Next: Create season and add teams"}
+              status={isInSession() ? "active" : isSetupComplete() ? "active" : "setup"}
+              progress={calculateProgress()}
+              label={isInSession() ? "Season Progress" : "League Setup Progress"}
+              nextAction={
+                isInSession()
+                  ? `Week ${completedWeeksCount} of ${totalWeeksCount} completed`
+                  : seasonCount === 0 ? "Next: Create your first season" :
+                    teamCount === 0 ? "Next: Add teams to your season" :
+                    playerCount === 0 ? "Next: Enroll players on each team" :
+                    !scheduleExists ? "Next: Generate the schedule" :
+                    "All set! You're ready to start!"
+              }
             />
             <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Next Steps</h3>
-              <ol className="list-decimal list-inside text-blue-800 space-y-1">
-                <li className={seasonCount > 0 ? 'line-through opacity-50' : ''}>Create your first season (set dates and weeks)</li>
-                <li>Add teams to the season</li>
-                <li>Enroll players on each team</li>
-                <li>Generate the schedule</li>
-                <li>You're ready to start!</li>
-              </ol>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                {isInSession() ? 'Season Management' : 'Next Steps'}
+              </h3>
+              {isInSession() ? (
+                <ul className="list-disc list-inside text-blue-800 space-y-1">
+                  <li>Enter scores after each week's matches</li>
+                  <li>View standings and player statistics</li>
+                  <li>Manage schedule changes and makeup matches</li>
+                  <li>Prepare for playoffs when season ends</li>
+                </ul>
+              ) : (
+                <ol className="list-decimal list-inside text-blue-800 space-y-1">
+                  <li className={seasonCount > 0 ? 'line-through opacity-50' : ''}>
+                    Create your first season (set dates and weeks)
+                  </li>
+                  <li className={teamCount > 0 ? 'line-through opacity-50' : ''}>
+                    Add teams to the season
+                  </li>
+                  <li className={playerCount > 0 ? 'line-through opacity-50' : ''}>
+                    Enroll players on each team
+                  </li>
+                  <li className={scheduleExists ? 'line-through opacity-50' : ''}>
+                    Generate the schedule
+                  </li>
+                  <li className={seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists ? 'line-through opacity-50' : ''}>
+                    You're ready to start!
+                  </li>
+                </ol>
+              )}
             </div>
           </div>
 
