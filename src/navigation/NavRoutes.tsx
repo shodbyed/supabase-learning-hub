@@ -22,6 +22,7 @@ import { VenueManagement } from '../operator/VenueManagement';
 import { TeamManagement } from '../operator/TeamManagement';
 import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
 import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
+import { Messages } from '../pages/Messages';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -52,6 +53,7 @@ const authRoutes = [
 const memberRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/profile', element: <Profile /> },
+  { path: '/messages', element: <Messages /> },
 ];
 
 // Protected routes - require league_operator role

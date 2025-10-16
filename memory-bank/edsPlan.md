@@ -1,75 +1,50 @@
-=============FINISH LEAGUE WIZARDS===============
+==== Message System ======
 
-1. Team builder
-2. Scheduler
-3. Wizard dashboard
+## Design Decisions Made (2025-01-16)
 
--- FINISH TEAM BUILDER WIZARD
+### UI Approach: Full Page (not modal)
+- Messaging deserves dedicated space for readability
+- Less confusing for tech-averse users
+- Better mobile experience for future app
+- Route: `/messages`
 
-    ======left off.  fixing the error handling in the add new team modal.   moving the error near the create team button to be more visible.
+### Layout: Simplified Slack Style
+```
+Two-column layout:
+- Left: Conversation list with search
+- Right: Selected conversation messages + input box
+```
+No channels, @mentions, or reactions initially - keep it simple
 
-    8. optimize
-    make sure components follow
-    Kiss
-    Dry
-    small single responsibility
-    reusable
-    easily testable
+### New Message Flow
+- [+ New] button opens modal
+- Search bar + filter tabs: All | My Leagues | My Teams
+- Click user → creates/opens conversation
+- Familiar pattern (like phone texting)
 
--- Add the scheduler
-description: the schedule will contain the match ups between the teams for each week of the season. this will not only need to be displayed but used by the website create scoring mechanisms users to document their games/matches. each week teams will play
+### Navigation
+- Envelope icon in navbar with unread badge
+- Optional: Dashboard card showing recent messages
 
-    actual 4 team schedule
-    export const fourTeamSchedule = [
+### Message Types
+1. **Group Chats**: Back-and-forth conversations (everyone can reply)
+2. **Announcements**: No-reply messages (from operators/captains only)
 
-{ week: 1, matches: [[1, 2], [3, 4]] },
-{ week: 2, matches: [[3, 1], [4, 2]] },
-{ week: 3, matches: [[2, 3], [1, 4]] },
-{ week: 4, matches: [[3, 4], [2, 1]] },
-{ week: 5, matches: [[4, 2], [1, 3]] },
-{ week: 6, matches: [[1, 4], [3, 2]] },
-{ week: 7, matches: [[2, 1], [4, 3]] },
-{ week: 8, matches: [[1, 3], [2, 4]] },
-{ week: 9, matches: [[3, 2], [4, 1]] },
-{ week: 10, matches: [[4, 3], [1, 2]] },
-{ week: 11, matches: [[2, 4], [3, 1]] },
-{ week: 12, matches: [[4, 1], [2, 3]] },
-];
-week 1 would be team 1 vs team 2 and team 3 vs team 4 etc.  
-first number is home team 2nd number is away. (week 13 would start over at week 1) 1. schedulers
-decide shape for schedulers to be stored in
-decide if (blank) schedulers should be stored in the code or in the database
-i have schedulers that will accommodate between 4 and 48 teams. 2. convert schedulers from PDF to correct code shape 3. bye team
-if {# of teams} is odd add a bye team to allow for seamless scheduling 4. randomize order
-assign them numbers 1 to {# of teams} randomly to teams 5. scheduler
-figure out an appropriate way to merge the scheduler with the teams and weeks.
+## Original Requirements
 
-    6. display schedule
-        (this should be a reusable component as it will be used several places in the website)
-        find an appropriate way to display the schedule for the league that is adaptive and intuitive
-        we will need several "views" of the schedule depending on user needs
+The message system should be global meaning any user should be able to message any other user. searching for those users may be difficult so we should have ways to limit who they have to scroll thru. maybe filters like global(all) my organization (they may be a part of more than one). my league (again maybe more than one) my teams.
 
-        single line per date (bare bones)
-        {date} 1 vs 2, 3 vs 4
-        {date} 3 vs 1, 4 vs 2  etc with team list
-        Team 1 {Team name}
-        Team 2 {Team name}
+1. first we want to get a simple message system ui in place.
+   this should be similar to all the other ones out there lets not reinvent the wheel
+2. it will need to be able to handle group chats and announcement type messages(no reply from devs, operators and maybe captains)
 
-        expanded (more explanatory)
-        {date}
-        Mav's (home) vs Bucks @ {venue}
-        Sun's (home) vs Tigers @ {venue}
-        {date}
-        Sun's (home) vs Mav's @ {venue} ... etc
+future features
+one button groups like a captains chat(operator included?) for a specific season. a team chat. season active players things like this
 
-        team view
-        schedule for Mav's
-        {date} Bucks @ {venue} (home)
-        {date} Suns @ {venue} (away)
+    notifications to phone(maybe just for the phone app i don't know if a website can send notifications to a phone without some doing)
 
-    7. connect to database
-        write sql to create tables needed
-        write teams, and schedule too database
+    features: real time notifications, message history threads and reply (don't think we need read receipts yet perhaps a future feature)
+
 
     8. optimize
         make sure components follow
