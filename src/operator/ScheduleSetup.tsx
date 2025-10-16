@@ -6,12 +6,13 @@
  */
 
 import React, { useState } from 'react';
+import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InfoButton } from '@/components/InfoButton';
 import { Shuffle, Lock } from 'lucide-react';
-import { assignRandomPositions, generateSchedule } from '@/utils/scheduleGenerator';
+import { assignRandomPositions, generateSchedule, clearSchedule } from '@/utils/scheduleGenerator';
 import { hasMatchupTable } from '@/utils/matchupTables';
 import type { TeamWithQueryDetails } from '@/types/team';
 
@@ -76,6 +77,8 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
 
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showExistingScheduleModal, setShowExistingScheduleModal] = useState(false);
+  const [existingMatchCount, setExistingMatchCount] = useState(0);
 
   /**
    * Randomly shuffle team positions
@@ -119,7 +122,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
   };
 
   /**
-   * Generate the schedule
+   * Check if schedule already exists before generating
    */
   const handleGenerateSchedule = async () => {
     if (!hasTable) {
@@ -131,9 +134,47 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
     setError(null);
 
     try {
+      // Check if schedule already exists
+      const { count: existingMatches, error: countError } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', seasonId);
+
+      if (countError) {
+        setError(`Error checking for existing schedule: ${countError.message}`);
+        setGenerating(false);
+        return;
+      }
+
+      if (existingMatches && existingMatches > 0) {
+        // Schedule exists - show modal
+        setExistingMatchCount(existingMatches);
+        setShowExistingScheduleModal(true);
+        setGenerating(false);
+        return;
+      }
+
+      // No existing schedule - generate normally
+      await performScheduleGeneration();
+    } catch (err) {
+      console.error('Error generating schedule:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate schedule');
+      setGenerating(false);
+    }
+  };
+
+  /**
+   * Actually perform the schedule generation
+   */
+  const performScheduleGeneration = async () => {
+    setGenerating(true);
+    setError(null);
+
+    try {
       const result = await generateSchedule({
         seasonId,
         teams: teamPositions,
+        skipExistingCheck: true, // Skip the check since we already did it
       });
 
       if (!result.success) {
@@ -149,6 +190,43 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
     } finally {
       setGenerating(false);
     }
+  };
+
+  /**
+   * Delete existing schedule and create new one
+   */
+  const handleReplaceSchedule = async () => {
+    setShowExistingScheduleModal(false);
+    setGenerating(true);
+    setError(null);
+
+    try {
+      // Clear existing schedule
+      const clearResult = await clearSchedule(seasonId);
+
+      if (!clearResult.success) {
+        setError(clearResult.error || 'Failed to clear existing schedule');
+        setGenerating(false);
+        return;
+      }
+
+      console.log(`🗑️ Cleared ${clearResult.matchesDeleted} existing matches`);
+
+      // Generate new schedule
+      await performScheduleGeneration();
+    } catch (err) {
+      console.error('Error replacing schedule:', err);
+      setError(err instanceof Error ? err.message : 'Failed to replace schedule');
+      setGenerating(false);
+    }
+  };
+
+  /**
+   * Keep existing schedule and navigate away
+   */
+  const handleKeepSchedule = () => {
+    setShowExistingScheduleModal(false);
+    onSuccess();
   };
 
   if (!hasTable) {
@@ -270,6 +348,38 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
           {generating ? 'Generating Schedule...' : 'Lock Positions & Generate Schedule'}
         </Button>
       </div>
+
+      {/* Existing Schedule Modal */}
+      {showExistingScheduleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+              Schedule Already Exists
+            </h3>
+            <p className="text-gray-700 mb-4">
+              A schedule with {existingMatchCount} matches already exists for this season.
+            </p>
+            <p className="text-sm text-gray-600 mb-6">
+              Would you like to keep the existing schedule or create a new one? Creating a new schedule will delete all existing matches.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleKeepSchedule}
+                className="flex-1"
+              >
+                Keep Existing
+              </Button>
+              <Button
+                onClick={handleReplaceSchedule}
+                className="flex-1"
+              >
+                Create New
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ import { useOperatorId } from '@/hooks/useOperatorId';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { VenueLimitModal } from './VenueLimitModal';
 import { TeamEditorModal } from './TeamEditorModal';
+import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { InfoButton } from '@/components/InfoButton';
 import { TeamCard } from '@/components/TeamCard';
 import { VenueListItem } from '@/components/VenueListItem';
@@ -60,6 +61,7 @@ export const TeamManagement: React.FC = () => {
   const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
+  const [showVenueCreation, setShowVenueCreation] = useState(false);
 
   /**
    * Check if all venues are assigned
@@ -379,6 +381,17 @@ export const TeamManagement: React.FC = () => {
     return `Team ${teamNumber}`;
   };
 
+  /**
+   * Handle successful venue creation
+   * Refreshes the venues list from the hook
+   */
+  const handleVenueCreated = () => {
+    setShowVenueCreation(false);
+    // The useTeamManagement hook will automatically refresh venues
+    // when the component re-renders
+    window.location.reload(); // Simple refresh for now
+  };
+
   const isLoading = operatorLoading || loading;
 
   if (isLoading) {
@@ -492,7 +505,15 @@ export const TeamManagement: React.FC = () => {
 
             {/* Venue Assignment Section */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">League Venues</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-900">League Venues</h2>
+                {venues.length > 0 && (
+                  <Button size="sm" variant="outline" onClick={() => setShowVenueCreation(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New
+                  </Button>
+                )}
+              </div>
               <p className="text-xs text-gray-600 mb-4">
                 Select venues teams can use and adjust number of tables actually available
               </p>
@@ -516,7 +537,7 @@ export const TeamManagement: React.FC = () => {
             {venues.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-sm text-gray-600 mb-3">No venues yet</p>
-                <Button size="sm" onClick={() => navigate('/venues')}>
+                <Button size="sm" onClick={() => setShowVenueCreation(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Venue
                 </Button>
@@ -678,6 +699,15 @@ export const TeamManagement: React.FC = () => {
               setShowDeleteConfirm(false);
               setDeletingTeamId(null);
             }}
+          />
+        )}
+
+        {/* Venue Creation Modal */}
+        {showVenueCreation && operatorId && (
+          <VenueCreationModal
+            operatorId={operatorId}
+            onSuccess={handleVenueCreated}
+            onCancel={() => setShowVenueCreation(false)}
           />
         )}
       </div>
