@@ -5,7 +5,27 @@
  * These tables ensure fair scheduling where each team plays every other team.
  */
 
-import { fourTeamSchedule, sixTeamSchedule, eightTeamSchedule, tenTeamSchedule } from '@/data/matchupTables';
+import {
+  fourTeamSchedule,
+  sixTeamSchedule,
+  eightTeamSchedule,
+  tenTeamSchedule,
+  twelveTeamSchedule,
+  fourteenTeamSchedule,
+  sixteenTeamSchedule,
+  eighteenTeamSchedule,
+  twentyTeamSchedule,
+  twentyTwoTeamSchedule,
+  twentyFourTeamSchedule,
+  twentySixTeamSchedule,
+  twentyEightTeamSchedule,
+  thirtyTeamSchedule,
+  thirtyTwoTeamSchedule,
+  thirtyFourTeamSchedule,
+  thirtySixTeamSchedule,
+  thirtyEightTeamSchedule,
+  fortyTeamSchedule,
+} from '@/data/matchupTables';
 import type { MatchupPair } from '@/types/schedule';
 
 /**
@@ -18,6 +38,21 @@ const MATCHUP_TABLES: Record<number, MatchupPair[][]> = {
   6: sixTeamSchedule as MatchupPair[][],
   8: eightTeamSchedule as MatchupPair[][],
   10: tenTeamSchedule as MatchupPair[][],
+  12: twelveTeamSchedule as MatchupPair[][],
+  14: fourteenTeamSchedule as MatchupPair[][],
+  16: sixteenTeamSchedule as MatchupPair[][],
+  18: eighteenTeamSchedule as MatchupPair[][],
+  20: twentyTeamSchedule as MatchupPair[][],
+  22: twentyTwoTeamSchedule as MatchupPair[][],
+  24: twentyFourTeamSchedule as MatchupPair[][],
+  26: twentySixTeamSchedule as MatchupPair[][],
+  28: twentyEightTeamSchedule as MatchupPair[][],
+  30: thirtyTeamSchedule as MatchupPair[][],
+  32: thirtyTwoTeamSchedule as MatchupPair[][],
+  34: thirtyFourTeamSchedule as MatchupPair[][],
+  36: thirtySixTeamSchedule as MatchupPair[][],
+  38: thirtyEightTeamSchedule as MatchupPair[][],
+  40: fortyTeamSchedule as MatchupPair[][],
 };
 
 /**

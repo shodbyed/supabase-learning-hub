@@ -167,7 +167,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           disabled={disabled}
           min={minDate}
           max={maxDate}
-          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
         />
         {/* Calendar Popup Button */}
         <Button

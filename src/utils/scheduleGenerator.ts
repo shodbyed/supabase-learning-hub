@@ -3,6 +3,14 @@
  *
  * Generates full season schedules by mapping team positions to matchup tables
  * and creating match records for each week of the season.
+ *
+ * The generation process is broken down into single-responsibility functions:
+ * 1. Validate teams have positions assigned
+ * 2. Fetch regular season weeks from database
+ * 3. Get matchup table for team count
+ * 4. Build team position lookup map
+ * 5. Generate match records for each week
+ * 6. Insert matches in bulk to database
  */
 
 import { supabase } from '@/supabaseClient';
@@ -23,14 +31,197 @@ interface GenerateScheduleResult {
   error?: string;
 }
 
+interface SeasonWeek {
+  id: string;
+  scheduled_date: string;
+  week_name: string;
+  week_type: string;
+}
+
+/**
+ * Validate that teams array is not empty and has required data
+ *
+ * @param teams - Array of teams with positions
+ * @returns Validation result with error message if invalid
+ */
+function validateTeams(teams: TeamWithPosition[]): { valid: boolean; error?: string } {
+  if (teams.length === 0) {
+    return {
+      valid: false,
+      error: 'No teams provided for schedule generation',
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Fetch regular season weeks from database
+ * Note: Only fetches 'regular' type weeks for match generation
+ * Blackout, playoff, and break weeks are excluded from match scheduling
+ *
+ * @param seasonId - Season ID to fetch weeks for
+ * @returns Array of regular season weeks or error
+ */
+async function fetchSeasonWeeks(
+  seasonId: string
+): Promise<{ weeks: SeasonWeek[] | null; error?: string }> {
+  const { data: seasonWeeks, error: weeksError } = await supabase
+    .from('season_weeks')
+    .select('id, scheduled_date, week_name, week_type')
+    .eq('season_id', seasonId)
+    .eq('week_type', 'regular')
+    .order('scheduled_date', { ascending: true });
+
+  if (weeksError) {
+    return { weeks: null, error: weeksError.message };
+  }
+
+  if (!seasonWeeks || seasonWeeks.length === 0) {
+    return {
+      weeks: null,
+      error: 'No regular season weeks found. Please create season weeks first.',
+    };
+  }
+
+  return { weeks: seasonWeeks };
+}
+
+/**
+ * Build a map of schedule positions to teams for quick lookup
+ *
+ * @param teams - Array of teams with positions
+ * @returns Map of position number to team
+ */
+function buildTeamPositionMap(teams: TeamWithPosition[]): Map<number, TeamWithPosition> {
+  const sortedTeams = [...teams].sort(
+    (a, b) => a.schedule_position - b.schedule_position
+  );
+
+  const teamsByPosition = new Map<number, TeamWithPosition>();
+  sortedTeams.forEach((team) => {
+    teamsByPosition.set(team.schedule_position, team);
+  });
+
+  return teamsByPosition;
+}
+
+/**
+ * Generate match records for a single week
+ *
+ * @param seasonWeek - The season week to generate matches for
+ * @param weeklyMatchups - Array of matchup pairs for this week
+ * @param teamsByPosition - Map of position to team
+ * @param seasonId - Season ID
+ * @param weekIndex - Index of the week (for logging)
+ * @returns Array of match insert data
+ */
+function generateWeekMatches(
+  seasonWeek: SeasonWeek,
+  weeklyMatchups: [number, number][],
+  teamsByPosition: Map<number, TeamWithPosition>,
+  seasonId: string,
+  weekIndex: number
+): MatchInsertData[] {
+  const matches: MatchInsertData[] = [];
+
+  for (let matchIndex = 0; matchIndex < weeklyMatchups.length; matchIndex++) {
+    const [homePos, awayPos] = weeklyMatchups[matchIndex];
+
+    const homeTeam = teamsByPosition.get(homePos);
+    const awayTeam = teamsByPosition.get(awayPos);
+
+    // Skip if either position doesn't have a team (shouldn't happen with proper validation)
+    if (!homeTeam || !awayTeam) {
+      console.warn(
+        `⚠️ Missing team for positions ${homePos} or ${awayPos} in week ${weekIndex + 1}`
+      );
+      continue;
+    }
+
+    matches.push({
+      season_id: seasonId,
+      season_week_id: seasonWeek.id,
+      home_team_id: homeTeam.id === 'BYE' ? null : homeTeam.id,
+      away_team_id: awayTeam.id === 'BYE' ? null : awayTeam.id,
+      scheduled_venue_id: homeTeam.home_venue_id,
+      match_number: matchIndex + 1,
+      status: 'scheduled',
+    });
+  }
+
+  return matches;
+}
+
+/**
+ * Generate all match records for the entire season
+ *
+ * @param seasonWeeks - Array of season weeks
+ * @param matchupTable - Matchup table for team count
+ * @param teamsByPosition - Map of position to team
+ * @param seasonId - Season ID
+ * @returns Array of all match insert data
+ */
+function generateAllMatches(
+  seasonWeeks: SeasonWeek[],
+  matchupTable: [number, number][][],
+  teamsByPosition: Map<number, TeamWithPosition>,
+  seasonId: string
+): MatchInsertData[] {
+  const allMatches: MatchInsertData[] = [];
+  const cycleLength = matchupTable.length;
+
+  for (let weekIndex = 0; weekIndex < seasonWeeks.length; weekIndex++) {
+    const seasonWeek = seasonWeeks[weekIndex];
+
+    // Use modulo to cycle through matchup table if season is longer than one cycle
+    const matchupWeekIndex = weekIndex % cycleLength;
+    const weeklyMatchups = matchupTable[matchupWeekIndex];
+
+    const weekMatches = generateWeekMatches(
+      seasonWeek,
+      weeklyMatchups,
+      teamsByPosition,
+      seasonId,
+      weekIndex
+    );
+
+    allMatches.push(...weekMatches);
+  }
+
+  return allMatches;
+}
+
+/**
+ * Insert match records into database
+ *
+ * @param matches - Array of match insert data
+ * @returns Error message if insert fails, undefined otherwise
+ */
+async function insertMatches(matches: MatchInsertData[]): Promise<string | undefined> {
+  const { error: insertError } = await supabase
+    .from('matches')
+    .insert(matches);
+
+  if (insertError) {
+    return insertError.message;
+  }
+
+  return undefined;
+}
+
 /**
  * Generate full season schedule based on team positions
  *
- * Process:
- * 1. Fetch all regular season weeks
- * 2. Get matchup table for team count
- * 3. Map matchup positions to actual teams
- * 4. Create match records for each week
+ * This is the main orchestration function that coordinates the schedule generation process.
+ * It delegates to smaller single-responsibility functions for each step:
+ *
+ * 1. Validate teams have positions assigned (validateTeams)
+ * 2. Fetch all regular season weeks from database (fetchSeasonWeeks)
+ * 3. Get matchup table for team count (getMatchupTable)
+ * 4. Build team position lookup map (buildTeamPositionMap)
+ * 5. Generate match records for entire season (generateAllMatches)
+ * 6. Insert matches in bulk to database (insertMatches)
  *
  * @param params - Season ID and teams with assigned positions
  * @returns Result indicating success and number of matches created
@@ -50,34 +241,27 @@ export async function generateSchedule({
   teams,
 }: GenerateScheduleParams): Promise<GenerateScheduleResult> {
   try {
-    // Validate teams have positions
-    if (teams.length === 0) {
+    // Step 1: Validate teams
+    const validation = validateTeams(teams);
+    if (!validation.valid) {
       return {
         success: false,
         matchesCreated: 0,
-        error: 'No teams provided for schedule generation',
+        error: validation.error,
       };
     }
 
-    // Fetch regular season weeks
-    const { data: seasonWeeks, error: weeksError } = await supabase
-      .from('season_weeks')
-      .select('id, scheduled_date, week_name, week_type')
-      .eq('season_id', seasonId)
-      .eq('week_type', 'regular')
-      .order('scheduled_date', { ascending: true });
-
-    if (weeksError) throw weeksError;
-
-    if (!seasonWeeks || seasonWeeks.length === 0) {
+    // Step 2: Fetch regular season weeks
+    const { weeks: seasonWeeks, error: weeksError } = await fetchSeasonWeeks(seasonId);
+    if (weeksError || !seasonWeeks) {
       return {
         success: false,
         matchesCreated: 0,
-        error: 'No regular season weeks found. Please create season weeks first.',
+        error: weeksError,
       };
     }
 
-    // Get matchup table for team count
+    // Step 3: Get matchup table for team count
     const matchupTable = getMatchupTable(teams.length);
     if (!matchupTable) {
       return {
@@ -87,63 +271,36 @@ export async function generateSchedule({
       };
     }
 
-    // Sort teams by schedule position for consistent mapping
-    const sortedTeams = [...teams].sort(
-      (a, b) => a.schedule_position - b.schedule_position
+    // Step 4: Build team position lookup map
+    const teamsByPosition = buildTeamPositionMap(teams);
+
+    // Step 5: Generate all match records
+    const matches = generateAllMatches(
+      seasonWeeks,
+      matchupTable,
+      teamsByPosition,
+      seasonId
     );
 
-    // Create team position lookup (position -> team)
-    const teamsByPosition = new Map<number, TeamWithPosition>();
-    sortedTeams.forEach((team) => {
-      teamsByPosition.set(team.schedule_position, team);
-    });
-
-    // Generate matches for each week
-    const matches: MatchInsertData[] = [];
-    const cycleLength = matchupTable.length;
-
-    for (let weekIndex = 0; weekIndex < seasonWeeks.length; weekIndex++) {
-      const seasonWeek = seasonWeeks[weekIndex];
-
-      // Use modulo to cycle through matchup table if season is longer
-      const matchupWeekIndex = weekIndex % cycleLength;
-      const weeklyMatchups = matchupTable[matchupWeekIndex];
-
-      // Create matches for this week
-      for (let matchIndex = 0; matchIndex < weeklyMatchups.length; matchIndex++) {
-        const [homePos, awayPos] = weeklyMatchups[matchIndex];
-
-        const homeTeam = teamsByPosition.get(homePos);
-        const awayTeam = teamsByPosition.get(awayPos);
-
-        // Skip if either position doesn't have a team (shouldn't happen)
-        if (!homeTeam || !awayTeam) {
-          console.warn(
-            `Missing team for positions ${homePos} or ${awayPos} in week ${weekIndex + 1}`
-          );
-          continue;
-        }
-
-        matches.push({
-          season_id: seasonId,
-          season_week_id: seasonWeek.id,
-          home_team_id: homeTeam.id === 'BYE' ? null : homeTeam.id,
-          away_team_id: awayTeam.id === 'BYE' ? null : awayTeam.id,
-          scheduled_venue_id: homeTeam.home_venue_id,
-          match_number: matchIndex + 1,
-          status: 'scheduled',
-        });
-      }
+    // Step 6: Insert matches in bulk
+    const insertError = await insertMatches(matches);
+    if (insertError) {
+      return {
+        success: false,
+        matchesCreated: 0,
+        error: insertError,
+      };
     }
 
-    // Insert all matches in bulk
-    const { error: insertError } = await supabase
-      .from('matches')
-      .insert(matches);
-
-    if (insertError) throw insertError;
-
+    // Log success details
     console.log(`✅ Generated ${matches.length} matches for season ${seasonId}`);
+    console.log(`📊 Schedule Details:`, {
+      teamCount: teams.length,
+      weeksInSeason: seasonWeeks.length,
+      matchupCycleLength: matchupTable.length,
+      matchesPerWeek: matchupTable[0]?.length || 0,
+      totalMatches: matches.length,
+    });
 
     return {
       success: true,
@@ -154,6 +311,53 @@ export async function generateSchedule({
     return {
       success: false,
       matchesCreated: 0,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Delete all matches for a season
+ * Use this to clear a schedule before regenerating
+ *
+ * @param seasonId - Season ID to clear matches for
+ * @returns Result indicating success and number of matches deleted
+ */
+export async function clearSchedule(seasonId: string): Promise<{
+  success: boolean;
+  matchesDeleted: number;
+  error?: string;
+}> {
+  try {
+    // Count matches before deleting
+    const { count, error: countError } = await supabase
+      .from('matches')
+      .select('*', { count: 'exact', head: true })
+      .eq('season_id', seasonId);
+
+    if (countError) throw countError;
+
+    const matchCount = count || 0;
+
+    // Delete all matches for this season
+    const { error: deleteError } = await supabase
+      .from('matches')
+      .delete()
+      .eq('season_id', seasonId);
+
+    if (deleteError) throw deleteError;
+
+    console.log(`🗑️ Deleted ${matchCount} matches for season ${seasonId}`);
+
+    return {
+      success: true,
+      matchesDeleted: matchCount,
+    };
+  } catch (error) {
+    console.error('❌ Error clearing schedule:', error);
+    return {
+      success: false,
+      matchesDeleted: 0,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }

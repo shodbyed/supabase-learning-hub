@@ -60,6 +60,24 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* League Operator Dashboard - Show to league operators */}
+          {(member.role === 'league_operator' || member.role === 'developer') && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="max-w-2xl mx-auto">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+                  League Operator Tools
+                </h3>
+                <div className="flex justify-center">
+                  <Link to="/operator-dashboard">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white h-32 w-64 text-xl">
+                      League Admin Dashboard
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* League Operator Invitation - Only show to regular players */}
           {member.role === 'player' && (
             <div className="bg-white rounded-lg shadow p-4">

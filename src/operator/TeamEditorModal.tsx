@@ -33,6 +33,8 @@ interface TeamEditorModalProps {
   members: Member[];
   /** Default team name (e.g., "Team 1") */
   defaultTeamName: string;
+  /** All teams (for cross-team duplicate validation) */
+  allTeams: import('@/types/team').TeamWithQueryDetails[];
   /** Existing team to edit (optional) */
   existingTeam?: {
     id: string;
@@ -64,6 +66,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   leagueVenues,
   members,
   defaultTeamName,
+  allTeams,
   existingTeam,
   onSuccess,
   onCancel,
@@ -99,6 +102,8 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     rosterSize,
     captainId,
     existingTeamId: existingTeam?.id,
+    allTeams,
+    seasonId,
   });
 
   /**
@@ -328,6 +333,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   value={playerIds[index]}
                   onValueChange={(memberId) => handlePlayerChange(index, memberId)}
                   placeholder={`Player ${index + 2} (optional)`}
+                  showClear={true}
                 />
               ))}
             </div>

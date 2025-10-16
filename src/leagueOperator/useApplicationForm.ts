@@ -131,13 +131,18 @@ export const useApplicationForm = () => {
   /**
    * Format and validate current input, then save to state
    * Called when user hits Enter or clicks Next
+   *
+   * @param preFormattedValue - Optional value already formatted by QuestionStep (respects autoCapitalize checkbox)
    */
-  const handleSaveCurrentInput = () => {
+  const handleSaveCurrentInput = (preFormattedValue?: string) => {
     if (!currentQuestion.setValue) return;
 
     try {
-      // Apply formatting if available
-      const formattedValue = currentQuestion.formatter
+      // Use pre-formatted value if provided (from QuestionStep with autoCapitalize handling)
+      // Otherwise apply formatter if available
+      const formattedValue = preFormattedValue !== undefined
+        ? preFormattedValue
+        : currentQuestion.formatter
         ? currentQuestion.formatter(currentInput)
         : currentInput;
 

@@ -95,7 +95,9 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
       onChange(finalValue);
     }
 
-    // Always call onNext - let the parent handle validation
+    // Pass the formatted value to parent
+    // The parent will receive the formatted value if autoCapitalize was on,
+    // or the raw value if it was off
     onNext(finalValue);
   };
 
