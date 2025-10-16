@@ -78,15 +78,16 @@ export async function fetchPlayerTeams(memberId: string) {
 
   // Filter for active/upcoming seasons and sort by start date (most recent first)
   const filteredData = data
-    ?.filter((item) => {
+    ?.filter((item: any) => {
       const status = item.teams?.season?.status;
       return status === 'active' || status === 'upcoming';
     })
-    .sort((a, b) => {
+    .sort((a: any, b: any) => {
       const dateA = new Date(a.teams?.season?.start_date || 0).getTime();
       const dateB = new Date(b.teams?.season?.start_date || 0).getTime();
       return dateB - dateA; // Most recent first
-    });
+    })
+    .map((item: any) => item.teams); // Extract just the teams object
 
   return { data: filteredData, error: null };
 }
