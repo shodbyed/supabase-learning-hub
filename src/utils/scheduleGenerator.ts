@@ -23,6 +23,7 @@ import type {
 interface GenerateScheduleParams {
   seasonId: string;
   teams: TeamWithPosition[];
+  skipExistingCheck?: boolean;
 }
 
 interface GenerateScheduleResult {
@@ -239,8 +240,33 @@ async function insertMatches(matches: MatchInsertData[]): Promise<string | undef
 export async function generateSchedule({
   seasonId,
   teams,
+  skipExistingCheck = false,
 }: GenerateScheduleParams): Promise<GenerateScheduleResult> {
   try {
+    // Step 0: Check if schedule already exists (unless skip flag is set)
+    if (!skipExistingCheck) {
+      const { count: existingMatches, error: countError } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', seasonId);
+
+      if (countError) {
+        return {
+          success: false,
+          matchesCreated: 0,
+          error: `Error checking for existing schedule: ${countError.message}`,
+        };
+      }
+
+      if (existingMatches && existingMatches > 0) {
+        return {
+          success: false,
+          matchesCreated: 0,
+          error: `Schedule already exists with ${existingMatches} matches. Delete the existing schedule before regenerating.`,
+        };
+      }
+    }
+
     // Step 1: Validate teams
     const validation = validateTeams(teams);
     if (!validation.valid) {
