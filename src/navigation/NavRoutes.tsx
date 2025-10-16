@@ -25,8 +25,6 @@ import { TeamManagement } from '../operator/TeamManagement';
 import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
 import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
 import { Messages } from '../pages/Messages';
-import { MyTeams } from '../player/MyTeams';
-import { ScoreMatch } from '../player/ScoreMatch';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
