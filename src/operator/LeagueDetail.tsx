@@ -13,7 +13,6 @@ import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
 import { LeagueProgressBar } from '@/components/operator/LeagueProgressBar';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
-import { SeasonsCard } from '@/components/operator/SeasonsCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
 
@@ -335,12 +334,6 @@ export const LeagueDetail: React.FC = () => {
 
         {/* League Overview */}
         <LeagueOverviewCard league={league} />
-
-        {/* Seasons Section */}
-        <SeasonsCard
-          leagueId={league.id}
-          onCreateSeason={() => navigate(`/league/${league.id}/create-season`)}
-        />
 
         {/* Teams Section */}
         <TeamsCard leagueId={league.id} />

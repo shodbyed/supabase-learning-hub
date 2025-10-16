@@ -99,6 +99,8 @@ export interface TeamWithQueryDetails extends Team {
     id: string;
     first_name: string;
     last_name: string;
+    phone: string;
+    email: string;
     system_player_number: number;
     bca_member_number: string | null;
   };
@@ -117,6 +119,10 @@ export interface TeamWithQueryDetails extends Team {
   venue?: {
     id: string;
     name: string;
+    phone?: string;
+    street_address?: string;
+    city?: string;
+    state?: string;
   };
 }
 
