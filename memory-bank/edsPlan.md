@@ -1,83 +1,15 @@
 =============FINISH LEAGUE WIZARDS===============
+-- BUILD THE CAPTAINS MANAGE TEAM FLOW.
 
-1. Team builder
-2. Scheduler
-3. Wizard dashboard
+1. players league and team pages
+2. have a special button for captains to be able to manage their team/teams
+3. they will need to be able to:
+   change team name
+   add/remove players
+   change/select home venue
+4. make sure changes update every where they need to. ie change of venue will change the schedule as that shows where matches are played.
 
--- FINISH TEAM BUILDER WIZARD
-
-    ======left off.  fixing the error handling in the add new team modal.   moving the error near the create team button to be more visible.
-
-    8. optimize
-    make sure components follow
-    Kiss
-    Dry
-    small single responsibility
-    reusable
-    easily testable
-
--- Add the scheduler
-description: the schedule will contain the match ups between the teams for each week of the season. this will not only need to be displayed but used by the website create scoring mechanisms users to document their games/matches. each week teams will play
-
-    actual 4 team schedule
-    export const fourTeamSchedule = [
-
-{ week: 1, matches: [[1, 2], [3, 4]] },
-{ week: 2, matches: [[3, 1], [4, 2]] },
-{ week: 3, matches: [[2, 3], [1, 4]] },
-{ week: 4, matches: [[3, 4], [2, 1]] },
-{ week: 5, matches: [[4, 2], [1, 3]] },
-{ week: 6, matches: [[1, 4], [3, 2]] },
-{ week: 7, matches: [[2, 1], [4, 3]] },
-{ week: 8, matches: [[1, 3], [2, 4]] },
-{ week: 9, matches: [[3, 2], [4, 1]] },
-{ week: 10, matches: [[4, 3], [1, 2]] },
-{ week: 11, matches: [[2, 4], [3, 1]] },
-{ week: 12, matches: [[4, 1], [2, 3]] },
-];
-week 1 would be team 1 vs team 2 and team 3 vs team 4 etc.  
-first number is home team 2nd number is away. (week 13 would start over at week 1) 1. schedulers
-decide shape for schedulers to be stored in
-decide if (blank) schedulers should be stored in the code or in the database
-i have schedulers that will accommodate between 4 and 48 teams. 2. convert schedulers from PDF to correct code shape 3. bye team
-if {# of teams} is odd add a bye team to allow for seamless scheduling 4. randomize order
-assign them numbers 1 to {# of teams} randomly to teams 5. scheduler
-figure out an appropriate way to merge the scheduler with the teams and weeks.
-
-    6. display schedule
-        (this should be a reusable component as it will be used several places in the website)
-        find an appropriate way to display the schedule for the league that is adaptive and intuitive
-        we will need several "views" of the schedule depending on user needs
-
-        single line per date (bare bones)
-        {date} 1 vs 2, 3 vs 4
-        {date} 3 vs 1, 4 vs 2  etc with team list
-        Team 1 {Team name}
-        Team 2 {Team name}
-
-        expanded (more explanatory)
-        {date}
-        Mav's (home) vs Bucks @ {venue}
-        Sun's (home) vs Tigers @ {venue}
-        {date}
-        Sun's (home) vs Mav's @ {venue} ... etc
-
-        team view
-        schedule for Mav's
-        {date} Bucks @ {venue} (home)
-        {date} Suns @ {venue} (away)
-
-    7. connect to database
-        write sql to create tables needed
-        write teams, and schedule too database
-
-    8. optimize
-        make sure components follow
-        Kiss
-        Dry
-        small single responsibility
-        reusable
-        easily testable
+ux. most members/users are players in a pool league. from the dashboard they will want to be able to get to all of the pages they might need for a league. first should be a list of the leagues they are playing in. the teams they are on. the schedule for those leagues, and the score keeping page for when they are actually playing their matches (an early version of the schedule page exists already but not the rest). in order for us to get to the captains being able to manage their team we need to build the league list (to choose which league they want to work with) and then the team page. captains will just have an visible edit button for the team, regular players will not. the flow for the edit team should already exist with the team wizard so we should be able to bite from that. there is at least some data in the database already for everything we will need for our purposes. most of the functions for the db should also be here some where. hopefully in a designated place
 
 -- future shit 6. consistent modal
 use the same modal as in other places in the code some have blacked out the background outside of the modal. i think some others you could see behind it.

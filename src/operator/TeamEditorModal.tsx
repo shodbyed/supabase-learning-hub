@@ -47,6 +47,8 @@ interface TeamEditorModalProps {
   onSuccess: () => void;
   /** Called when user cancels or closes modal */
   onCancel: () => void;
+  /** Variant: 'operator' allows all edits, 'captain' restricts captain field */
+  variant?: 'operator' | 'captain';
 }
 
 /**
@@ -70,9 +72,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   existingTeam,
   onSuccess,
   onCancel,
+  variant = 'operator',
 }) => {
   const rosterSize = teamFormat === '5_man' ? 5 : 8;
   const isEditing = !!existingTeam;
+  const isCaptainVariant = variant === 'captain';
 
   /**
    * Get assigned venues for home venue selection
@@ -309,13 +313,28 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           )}
 
           {/* Captain */}
-          <MemberCombobox
-            label="Captain"
-            members={members}
-            value={captainId}
-            onValueChange={setCaptainId}
-            placeholder="Select team captain..."
-          />
+          {isCaptainVariant ? (
+            <div>
+              <Label>Captain</Label>
+              <Input
+                type="text"
+                value={members.find(m => m.id === captainId)?.first_name + ' ' + members.find(m => m.id === captainId)?.last_name || 'Unknown'}
+                disabled
+                className="bg-gray-100 cursor-not-allowed"
+              />
+              <p className="text-xs text-gray-600 mt-1">
+                Captain cannot be changed. Contact your league operator if needed.
+              </p>
+            </div>
+          ) : (
+            <MemberCombobox
+              label="Captain"
+              members={members}
+              value={captainId}
+              onValueChange={setCaptainId}
+              placeholder="Select team captain..."
+            />
+          )}
 
           {/* Roster Players */}
           <div>
