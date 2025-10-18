@@ -4,7 +4,8 @@
       "Read(//c/Users/shodb/personal/**)",
       "Bash(pnpm run typecheck)",
       "Bash(pnpm run build)",
-      "Bash(pnpm run lint)"
+      "Bash(pnpm run lint)",
+      "Bash(copy:*)"
     ],
     "deny": [],
     "ask": []

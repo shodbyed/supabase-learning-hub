@@ -43,12 +43,12 @@ export interface TeamSchedulePositionInsertData {
 export interface Match {
   id: string;
   season_id: string;
-  season_week_id: string;       // FK to season_weeks table
+  round_number: number;          // Which round of round-robin (1, 2, 3...)
   home_team_id: string | null;  // Null if BYE
   away_team_id: string | null;  // Null if BYE
   scheduled_venue_id: string | null;  // Home team's venue by default
   actual_venue_id: string | null;     // If venue changed from scheduled
-  match_number: number;          // Order on the night (1, 2, 3...)
+  match_number: number;          // Order within the round (1, 2, 3...)
   status: MatchStatus;
 
   // Score tracking (nullable until completed)
@@ -64,7 +64,7 @@ export interface Match {
  */
 export interface MatchInsertData {
   season_id: string;
-  season_week_id: string;
+  round_number: number;
   home_team_id: string | null;
   away_team_id: string | null;
   scheduled_venue_id: string | null;

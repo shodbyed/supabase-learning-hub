@@ -7,6 +7,7 @@
 -- =====================================================
 
 -- Drop all tables in reverse dependency order
+DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS team_players CASCADE;
 DROP TABLE IF EXISTS teams CASCADE;
 DROP TABLE IF EXISTS league_venues CASCADE;
@@ -1021,6 +1022,95 @@ CREATE POLICY "Public can view active league team players"
       WHERE teams.id = team_id
       AND leagues.status = 'active'
       AND team_players.status = 'active'
+    )
+  );
+
+-- =====================================================
+-- 12. MATCHES TABLE
+-- =====================================================
+-- Uses matches_complete.sql for latest schema
+
+CREATE TABLE matches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  season_id UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
+  round_number INTEGER NOT NULL,
+  home_team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+  away_team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+  scheduled_venue_id UUID REFERENCES venues(id) ON DELETE SET NULL,
+  actual_venue_id UUID REFERENCES venues(id) ON DELETE SET NULL,
+  match_number INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'forfeited', 'postponed')),
+
+  home_team_score INTEGER,
+  away_team_score INTEGER,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_matches_season_id ON matches(season_id);
+CREATE INDEX idx_matches_round_number ON matches(season_id, round_number);
+CREATE INDEX idx_matches_home_team_id ON matches(home_team_id);
+CREATE INDEX idx_matches_away_team_id ON matches(away_team_id);
+CREATE INDEX idx_matches_status ON matches(status);
+CREATE INDEX idx_matches_scheduled_venue_id ON matches(scheduled_venue_id);
+CREATE INDEX idx_matches_actual_venue_id ON matches(actual_venue_id);
+
+CREATE OR REPLACE FUNCTION update_matches_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_matches_updated_at
+  BEFORE UPDATE ON matches
+  FOR EACH ROW
+  EXECUTE FUNCTION update_matches_updated_at();
+
+ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Matches are viewable by everyone"
+  ON matches FOR SELECT
+  USING (true);
+
+CREATE POLICY "League operators can insert matches"
+  ON matches FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM seasons s
+      JOIN leagues l ON s.league_id = l.id
+      JOIN league_operators lo ON l.operator_id = lo.id
+      JOIN members m ON lo.member_id = m.id
+      WHERE s.id = season_id
+      AND m.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "League operators can update their league matches"
+  ON matches FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM seasons s
+      JOIN leagues l ON s.league_id = l.id
+      JOIN league_operators lo ON l.operator_id = lo.id
+      JOIN members m ON lo.member_id = m.id
+      WHERE s.id = season_id
+      AND m.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "League operators can delete their league matches"
+  ON matches FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM seasons s
+      JOIN leagues l ON s.league_id = l.id
+      JOIN league_operators lo ON l.operator_id = lo.id
+      JOIN members m ON lo.member_id = m.id
+      WHERE s.id = season_id
+      AND m.user_id = auth.uid()
     )
   );
 

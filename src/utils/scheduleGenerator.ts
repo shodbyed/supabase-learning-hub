@@ -108,21 +108,19 @@ function buildTeamPositionMap(teams: TeamWithPosition[]): Map<number, TeamWithPo
 }
 
 /**
- * Generate match records for a single week
+ * Generate match records for a single round
  *
- * @param seasonWeek - The season week to generate matches for
- * @param weeklyMatchups - Array of matchup pairs for this week
+ * @param roundNumber - Which round of round-robin (1-based)
+ * @param weeklyMatchups - Array of matchup pairs for this round
  * @param teamsByPosition - Map of position to team
  * @param seasonId - Season ID
- * @param weekIndex - Index of the week (for logging)
  * @returns Array of match insert data
  */
-function generateWeekMatches(
-  seasonWeek: SeasonWeek,
+function generateRoundMatches(
+  roundNumber: number,
   weeklyMatchups: [number, number][],
   teamsByPosition: Map<number, TeamWithPosition>,
-  seasonId: string,
-  weekIndex: number
+  seasonId: string
 ): MatchInsertData[] {
   const matches: MatchInsertData[] = [];
 
@@ -135,14 +133,14 @@ function generateWeekMatches(
     // Skip if either position doesn't have a team (shouldn't happen with proper validation)
     if (!homeTeam || !awayTeam) {
       console.warn(
-        `⚠️ Missing team for positions ${homePos} or ${awayPos} in week ${weekIndex + 1}`
+        `⚠️ Missing team for positions ${homePos} or ${awayPos} in round ${roundNumber}`
       );
       continue;
     }
 
     matches.push({
       season_id: seasonId,
-      season_week_id: seasonWeek.id,
+      round_number: roundNumber,
       home_team_id: homeTeam.id === 'BYE' ? null : homeTeam.id,
       away_team_id: awayTeam.id === 'BYE' ? null : awayTeam.id,
       scheduled_venue_id: homeTeam.home_venue_id,
@@ -157,7 +155,7 @@ function generateWeekMatches(
 /**
  * Generate all match records for the entire season
  *
- * @param seasonWeeks - Array of season weeks
+ * @param seasonWeeks - Array of regular season weeks only
  * @param matchupTable - Matchup table for team count
  * @param teamsByPosition - Map of position to team
  * @param seasonId - Season ID
@@ -172,22 +170,22 @@ function generateAllMatches(
   const allMatches: MatchInsertData[] = [];
   const cycleLength = matchupTable.length;
 
-  for (let weekIndex = 0; weekIndex < seasonWeeks.length; weekIndex++) {
-    const seasonWeek = seasonWeeks[weekIndex];
+  // Each regular week gets a round number (1, 2, 3...)
+  for (let roundIndex = 0; roundIndex < seasonWeeks.length; roundIndex++) {
+    const roundNumber = roundIndex + 1; // 1-based round numbering
 
     // Use modulo to cycle through matchup table if season is longer than one cycle
-    const matchupWeekIndex = weekIndex % cycleLength;
-    const weeklyMatchups = matchupTable[matchupWeekIndex];
+    const matchupWeekIndex = roundIndex % cycleLength;
+    const roundMatchups = matchupTable[matchupWeekIndex];
 
-    const weekMatches = generateWeekMatches(
-      seasonWeek,
-      weeklyMatchups,
+    const roundMatches = generateRoundMatches(
+      roundNumber,
+      roundMatchups,
       teamsByPosition,
-      seasonId,
-      weekIndex
+      seasonId
     );
 
-    allMatches.push(...weekMatches);
+    allMatches.push(...roundMatches);
   }
 
   return allMatches;
