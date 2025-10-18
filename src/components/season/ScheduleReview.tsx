@@ -33,6 +33,7 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   bcaChampionship,
   apaChampionship,
   currentPlayWeek = 0, // TODO: In future, fetch from database (e.g., SELECT MAX(week_number) FROM match_results WHERE season_id = ?)
+  onScheduleChange,
   onConfirm,
   onBack,
 }) => {
@@ -103,6 +104,15 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
    * Regenerates the schedule with current blackout weeks
    */
   const regenerateSchedule = () => {
+    console.log('🔄 Regenerating schedule with:', {
+      seasonStartDate,
+      leagueDayOfWeek,
+      originalSeasonLength,
+      blackoutWeeksCount: blackoutWeeks.length,
+      blackoutDates: blackoutWeeks.map(b => ({ date: b.date, name: b.weekName })),
+      addSeasonEndBreak
+    });
+
     // Use the original season length to ensure we always generate the same number of regular weeks
     const newSchedule = generateSchedule(
       parseLocalDate(seasonStartDate),
@@ -111,6 +121,13 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
       blackoutWeeks,
       addSeasonEndBreak
     );
+
+    console.log('📅 Generated schedule (regular weeks only):', newSchedule.map(w => ({
+      weekNumber: w.weekNumber,
+      weekName: w.weekName,
+      date: w.date,
+      type: w.type
+    })));
 
     // Detect conflicts using shared utility
     const scheduleWithConflicts = detectScheduleConflicts(
@@ -121,7 +138,24 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
       leagueDayOfWeek
     );
 
+    console.log('⚠️ Schedule with conflicts detected:', scheduleWithConflicts.map(w => ({
+      weekNumber: w.weekNumber,
+      weekName: w.weekName,
+      date: w.date,
+      type: w.type,
+      conflictsCount: w.conflicts.length
+    })));
+
     setSchedule(scheduleWithConflicts);
+  };
+
+  /**
+   * Extracts holiday name from conflict name by removing timing description
+   * Example: "Christmas (Saturday 2 days before)" -> "Christmas"
+   */
+  const extractHolidayName = (conflictName: string): string => {
+    const parenIndex = conflictName.indexOf(' (');
+    return parenIndex !== -1 ? conflictName.substring(0, parenIndex) : conflictName;
   };
 
   /**
@@ -129,33 +163,39 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
    */
   const handleToggleWeekOff = (index: number) => {
     const week = displaySchedule[index];
+    console.log('🔘 Toggle week-off clicked:', { index, week: { weekNumber: week.weekNumber, weekName: week.weekName, date: week.date, type: week.type } });
 
     // Special handling for Season End Break - decrement count
     if (week.weekName === 'Season End Break') {
+      console.log('➖ Removing Season End Break');
       setAddSeasonEndBreak(Math.max(0, addSeasonEndBreak - 1));
       return;
     }
 
     // Special handling for Playoffs - increment Season End Break count
     if (week.type === 'playoffs') {
+      console.log('➕ Adding Season End Break before Playoffs');
       setAddSeasonEndBreak(addSeasonEndBreak + 1);
       return;
     }
 
     // If it's already a week-off, remove it from blackout
     if (week.type === 'week-off') {
+      console.log('🗑️ Removing blackout week:', week.date);
       const updatedBlackout = blackoutWeeks.filter(b => b.date !== week.date);
       setBlackoutWeeks(updatedBlackout);
       // Schedule will regenerate via useEffect
       return;
     }
 
-    // If week has conflicts, use the first conflict's name
+    // If week has conflicts, use the first conflict's name (without timing description)
     if (week.conflicts.length > 0) {
       const conflict = week.conflicts[0];
+      const holidayName = extractHolidayName(conflict.name);
+      console.log('➕ Adding blackout week for conflict:', { originalName: conflict.name, cleanName: holidayName, date: week.date });
       const blackoutEntry: WeekEntry = {
         weekNumber: 0, // Not used for blackouts
-        weekName: conflict.name,
+        weekName: holidayName,
         date: week.date,
         type: 'week-off',
         conflicts: [],
@@ -164,6 +204,7 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
       // Schedule will regenerate via useEffect
     } else {
       // No conflicts - show modal for custom reason
+      console.log('📝 Opening modal for custom blackout reason');
       setPendingWeekIndex(index);
       setModalOpen(true);
     }
@@ -175,7 +216,8 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   const handleModalConfirm = (reason: string) => {
     if (pendingWeekIndex === null) return;
 
-    const week = schedule[pendingWeekIndex];
+    // IMPORTANT: Use displaySchedule (not schedule) since pendingWeekIndex comes from the combined/sorted display
+    const week = displaySchedule[pendingWeekIndex];
     const blackoutEntry: WeekEntry = {
       weekNumber: 0,
       weekName: reason,
@@ -209,10 +251,39 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   /**
    * Combine schedule and blackout weeks for display
    * Sort by date to show chronological order
+   * Deduplicate: if a date appears in both arrays, keep only the blackout version
    */
-  const displaySchedule = [...schedule, ...blackoutWeeks].sort((a, b) => {
-    return a.date.localeCompare(b.date);
-  });
+  const displaySchedule = (() => {
+    // First, create a Set of blackout dates for quick lookup
+    const blackoutDates = new Set(blackoutWeeks.map(b => b.date));
+
+    // Filter out any regular weeks that conflict with blackout dates
+    const filteredSchedule = schedule.filter(week => !blackoutDates.has(week.date));
+
+    // Combine filtered schedule with blackouts
+    const combined = [...filteredSchedule, ...blackoutWeeks];
+
+    // Sort by date
+    return combined.sort((a, b) => a.date.localeCompare(b.date));
+  })();
+
+  /**
+   * Notify parent component whenever the complete schedule changes
+   * This ensures SeasonCreationWizard has the correct combined schedule to save
+   */
+  useEffect(() => {
+    if (displaySchedule.length > 0 && onScheduleChange) {
+      onScheduleChange(displaySchedule);
+    }
+  }, [displaySchedule.length, schedule.length, blackoutWeeks.length, onScheduleChange]);
+
+  console.log('📋 Final displaySchedule (combined & sorted):', displaySchedule.map((w, idx) => ({
+    displayIndex: idx,
+    weekNumber: w.weekNumber,
+    weekName: w.weekName,
+    date: w.date,
+    type: w.type
+  })));
 
   /**
    * Counts total conflicts across all weeks

@@ -94,6 +94,24 @@ export function getSeasonWizardSteps(
     const newData = { ...formData, ...updates };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
     Object.assign(formData, newData);
+
+    // Log championship date changes for debugging
+    if ('bcaChoice' in updates || 'bcaStartDate' in updates || 'bcaEndDate' in updates) {
+      console.log('💾 BCA championship data updated:', {
+        bcaChoice: newData.bcaChoice,
+        bcaStartDate: newData.bcaStartDate,
+        bcaEndDate: newData.bcaEndDate,
+        bcaIgnored: newData.bcaIgnored
+      });
+    }
+    if ('apaChoice' in updates || 'apaStartDate' in updates || 'apaEndDate' in updates) {
+      console.log('💾 APA championship data updated:', {
+        apaChoice: newData.apaChoice,
+        apaStartDate: newData.apaStartDate,
+        apaEndDate: newData.apaEndDate,
+        apaIgnored: newData.apaIgnored
+      });
+    }
   };
 
   /**
@@ -400,10 +418,14 @@ export function getSeasonWizardSteps(
 }
 
 /**
- * Clear season creation data from localStorage
+ * Clear ALL season creation data from localStorage
+ * Removes all wizard data, schedule data, and blackout weeks
  */
 export function clearSeasonCreationData(leagueId: string): void {
   const STORAGE_KEY = `season-creation-${leagueId}`;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(`season-wizard-step-${leagueId}`);
+  localStorage.removeItem('season-schedule-review');
+  localStorage.removeItem('season-blackout-weeks');
+  console.log('🧹 Cleared all season creation data from localStorage');
 }

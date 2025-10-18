@@ -292,6 +292,20 @@ Schedule Generation → Schedule Display → Accept Schedule → League Dashboar
 
 ## Active Decisions and Considerations
 
+### **🚨 CRITICAL: Matchup Tables - Use Existing Tables ONLY**
+**Decision**: ALWAYS use pre-built matchup tables from `/src/data/matchupTables/`
+**Rationale**:
+- **NO ALGORITHMS**: Never generate matchups algorithmically
+- **NO CUSTOM TABLES**: Never create or compute matchup tables
+- Pre-built tables exist for 4-40 teams (every even number)
+- Tables are deterministic and tested
+- If season is longer than table cycle length, **wrap around** to week 1 and repeat
+  - Example: 6-team table has 35 weeks. For a 40-week season, use weeks 1-35, then repeat weeks 1-5
+- Use `getMatchupTable(teamCount)` from `/src/utils/matchupTables.ts`
+- Table format: `[[1,2], [3,4], [5,6]]` where numbers are team positions
+
+**IMPORTANT**: This is a hard requirement. Do not suggest or implement algorithmic matchup generation under any circumstances.
+
 ### **Unified Calendar vs Separate Tables**
 **Decision**: One unified season_weeks table for all week types
 **Rationale**:

@@ -5,7 +5,7 @@
  * Uses localStorage for form persistence across page refreshes.
  */
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,7 @@ import { parseLocalDate } from '@/utils/formatters';
 export const SeasonCreationWizard: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [league, setLeague] = useState<League | null>(null);
   const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
@@ -50,6 +51,7 @@ export const SeasonCreationWizard: React.FC = () => {
     const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
     return stored ? parseInt(stored, 10) : 0;
   });
+  const [isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [_refreshKey, setRefreshKey] = useState(0); // Force re-render when form data changes
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -67,6 +69,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   /**
    * Fetch league and existing seasons
+   * If seasonId query param exists, we're editing an existing season
    */
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +78,8 @@ export const SeasonCreationWizard: React.FC = () => {
         setLoading(false);
         return;
       }
+
+      const seasonId = searchParams.get('seasonId');
 
       try {
         // Fetch league
@@ -87,25 +92,49 @@ export const SeasonCreationWizard: React.FC = () => {
         if (leagueError) throw leagueError;
         setLeague(leagueData);
 
-        // TODO: Fetch existing seasons once seasons table exists
-        // const { data: seasonsData, error: seasonsError } = await supabase
-        //   .from('seasons')
-        //   .select('*')
-        //   .eq('league_id', leagueId)
-        //   .order('start_date', { ascending: false });
-        //
-        // if (seasonsError) throw seasonsError;
-        // setExistingSeasons(seasonsData || []);
-
-        // For now, simulate no existing seasons
-        setExistingSeasons([]);
-
         // Fetch championship date options for both BCA and APA
         const bcaDates = await fetchChampionshipDateOptions('BCA');
         setBcaDateOptions(bcaDates);
 
         const apaDates = await fetchChampionshipDateOptions('APA');
         setApaDateOptions(apaDates);
+
+        // If editing existing season, load season data and jump to schedule review
+        if (seasonId) {
+          console.log('📝 Edit mode - loading season:', seasonId);
+          setIsEditingExistingSeason(true);
+
+          // Fetch season data
+          const { data: seasonData, error: seasonError } = await supabase
+            .from('seasons')
+            .select('*')
+            .eq('id', seasonId)
+            .single();
+
+          if (seasonError) throw seasonError;
+
+          // Fetch season weeks
+          const { data: weeksData, error: weeksError } = await supabase
+            .from('season_weeks')
+            .select('*')
+            .eq('season_id', seasonId)
+            .order('scheduled_date', { ascending: true });
+
+          if (weeksError) throw weeksError;
+
+          console.log('✅ Loaded season data:', seasonData);
+          console.log('✅ Loaded season weeks:', weeksData);
+
+          // TODO: Transform weeksData into the format expected by the wizard
+          // For now, just jump to the schedule-review step
+          // This will be improved later to properly load and display the existing season data
+
+          // Set existingSeasons array (to indicate we're editing)
+          setExistingSeasons([seasonData]);
+        } else {
+          // Creating new season
+          setExistingSeasons([]);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load league information');
@@ -115,7 +144,19 @@ export const SeasonCreationWizard: React.FC = () => {
     };
 
     fetchData();
-  }, [leagueId]);
+  }, [leagueId, searchParams]);
+
+  /**
+   * Load existing season data into wizard when editing
+   * User can navigate through all steps to make changes
+   */
+  useEffect(() => {
+    if (!league || !leagueId || loading || !isEditingExistingSeason) return;
+
+    // TODO: Load season data into localStorage to populate wizard fields
+    // For now, user will start at step 0 and can navigate through all steps
+    console.log('📝 Edit mode: User can navigate through wizard steps to edit season');
+  }, [league, leagueId, loading, isEditingExistingSeason]);
 
   /**
    * Generate schedule when reaching schedule-review step
@@ -374,12 +415,36 @@ export const SeasonCreationWizard: React.FC = () => {
 
       // Submit BCA championship dates to database if custom dates were entered
       if (formData.bcaChoice === 'custom' && formData.bcaStartDate && formData.bcaEndDate) {
-        await submitChampionshipDates('BCA', formData.bcaStartDate, formData.bcaEndDate);
+        console.log('🏆 Submitting BCA championship dates:', formData.bcaStartDate, 'to', formData.bcaEndDate);
+        const bcaResult = await submitChampionshipDates('BCA', formData.bcaStartDate, formData.bcaEndDate);
+        if (bcaResult) {
+          console.log('✅ BCA championship dates saved successfully:', bcaResult);
+        } else {
+          console.error('❌ Failed to save BCA championship dates - check console for errors');
+        }
+      } else {
+        console.log('ℹ️ Skipping BCA championship date submission:', {
+          choice: formData.bcaChoice,
+          hasStartDate: !!formData.bcaStartDate,
+          hasEndDate: !!formData.bcaEndDate
+        });
       }
 
       // Submit APA championship dates to database if custom dates were entered
       if (formData.apaChoice === 'custom' && formData.apaStartDate && formData.apaEndDate) {
-        await submitChampionshipDates('APA', formData.apaStartDate, formData.apaEndDate);
+        console.log('🏆 Submitting APA championship dates:', formData.apaStartDate, 'to', formData.apaEndDate);
+        const apaResult = await submitChampionshipDates('APA', formData.apaStartDate, formData.apaEndDate);
+        if (apaResult) {
+          console.log('✅ APA championship dates saved successfully:', apaResult);
+        } else {
+          console.error('❌ Failed to save APA championship dates - check console for errors');
+        }
+      } else {
+        console.log('ℹ️ Skipping APA championship date submission:', {
+          choice: formData.apaChoice,
+          hasStartDate: !!formData.apaStartDate,
+          hasEndDate: !!formData.apaEndDate
+        });
       }
 
       // Calculate end date using timezone-safe parsing
@@ -425,42 +490,51 @@ export const SeasonCreationWizard: React.FC = () => {
         seasonId = newSeason.id;
         console.log('✅ Season created:', seasonId);
 
-        // Step 2: Get final schedule from state and blackout weeks from localStorage
-        const blackoutWeeksStored = localStorage.getItem('season-blackout-weeks');
-        const blackoutWeeks = blackoutWeeksStored ? JSON.parse(blackoutWeeksStored) : [];
+        // Step 2: Get final schedule from state (already contains regular weeks + blackouts combined)
+        // The ScheduleReview component manages the combination and passes us the complete schedule
+        // Map UI week types to database week_type values:
+        // - 'regular' → 'regular'
+        // - 'playoffs' → 'playoffs'
+        // - 'week-off' with weekName containing specific strings → determine if 'season_end_break' or 'blackout'
+        const allWeeks = schedule.map(week => {
+          let weekType: 'regular' | 'playoffs' | 'blackout' | 'season_end_break';
 
-        // Combine schedule and blackouts into single array for season_weeks table
-        // Map UI types to database types:
-        // - 'week-off' from schedule generator → 'season_end_break'
-        // - 'week-off' from blackoutWeeks → 'blackout'
-        const scheduleWeeks = schedule.map(week => ({
-          season_id: seasonId,
-          scheduled_date: week.date,
-          week_name: week.weekName,
-          week_type: week.type === 'week-off' ? 'season_end_break' : week.type, // Map week-off to season_end_break
-          week_completed: false,
-          notes: null,
-        }));
-
-        const blackoutWeeksData = blackoutWeeks.map((week: any) => ({
-          season_id: seasonId,
-          scheduled_date: week.date,
-          week_name: week.weekName,
-          week_type: 'blackout' as const, // Blackout weeks are always type 'blackout'
-          week_completed: false,
-          notes: null,
-        }));
-
-        // Deduplicate by date (blackout takes precedence over schedule)
-        const allWeeks = [...blackoutWeeksData, ...scheduleWeeks].reduce((acc, week) => {
-          const existing = acc.find((w: any) => w.scheduled_date === week.scheduled_date);
-          if (!existing) {
-            acc.push(week);
+          // Determine the correct database week_type for each UI type
+          if (week.type === 'week-off') {
+            // Season End Break has a specific name pattern
+            if (week.weekName === 'Season End Break') {
+              weekType = 'season_end_break';
+            } else {
+              // All other week-offs are blackouts (holidays, championships, custom reasons)
+              weekType = 'blackout';
+            }
+          } else if (week.type === 'playoffs') {
+            weekType = 'playoffs';
+          } else {
+            weekType = 'regular';
           }
-          return acc;
-        }, [] as typeof scheduleWeeks);
 
-        console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table (deduplicated)');
+          return {
+            season_id: seasonId,
+            scheduled_date: week.date,
+            week_name: week.weekName,
+            week_type: weekType,
+            week_completed: false,
+            notes: null,
+          };
+        });
+
+        console.log('📊 Week insertion summary:', {
+          totalWeeks: allWeeks.length,
+          byType: {
+            regular: allWeeks.filter(w => w.week_type === 'regular').length,
+            playoffs: allWeeks.filter(w => w.week_type === 'playoffs').length,
+            blackout: allWeeks.filter(w => w.week_type === 'blackout').length,
+            season_end_break: allWeeks.filter(w => w.week_type === 'season_end_break').length,
+          }
+        });
+        console.log('📅 Complete schedule to insert:', allWeeks);
+        console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table');
 
         // Step 3: Batch insert all weeks
         const { error: weeksError } = await supabase

@@ -45,7 +45,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
           .select('id')
           .eq('league_id', leagueId)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
         if (seasonError && seasonError.code !== 'PGRST116') {
           throw seasonError;
@@ -155,7 +155,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
           .eq('week_type', 'regular')
           .order('scheduled_date', { ascending: true })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (week1Data) {
           setSeasonStartDate(week1Data.scheduled_date);
@@ -169,7 +169,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
           .eq('week_type', 'playoffs')
           .order('scheduled_date', { ascending: true })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (playoffsData) {
           setPlayoffsDate(playoffsData.scheduled_date);

@@ -270,23 +270,47 @@ CREATE POLICY "Public can view active leagues"
 -- =====================================================
 
 CREATE TABLE championship_date_options (
+  -- Primary identification
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  organization VARCHAR(10) NOT NULL CHECK (organization IN ('BCA', 'APA')),
-  year INTEGER NOT NULL,
+
+  -- Tournament identification
+  organization TEXT NOT NULL CHECK (organization IN ('BCA', 'APA')),
+  year INTEGER NOT NULL CHECK (year >= 2024 AND year <= 2050),
+
+  -- Date range for the championship
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
-  location VARCHAR(255),
-  vote_count INTEGER NOT NULL DEFAULT 0,
-  verified BOOLEAN NOT NULL DEFAULT false,
+
+  -- Community verification
+  vote_count INTEGER NOT NULL DEFAULT 1 CHECK (vote_count >= 1),
+  dev_verified BOOLEAN NOT NULL DEFAULT false,
+
+  -- Metadata
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(organization, year, start_date, end_date)
+
+  -- Validation: end_date must be after start_date
+  CONSTRAINT valid_date_range CHECK (end_date > start_date)
 );
 
-CREATE INDEX idx_championship_dates_org_year ON championship_date_options(organization, year);
-CREATE INDEX idx_championship_dates_year ON championship_date_options(year);
+-- Prevent duplicate date entries for same organization/year
+CREATE UNIQUE INDEX unique_dates_per_org_year
+ON championship_date_options (organization, year, start_date, end_date);
 
-CREATE OR REPLACE FUNCTION update_championship_dates_updated_at()
+-- Index for common queries (organization + year filtering)
+CREATE INDEX idx_championship_org_year
+ON championship_date_options (organization, year);
+
+-- Index for filtering future dates
+CREATE INDEX idx_championship_end_date
+ON championship_date_options (end_date);
+
+-- Index for finding dev-verified dates quickly
+CREATE INDEX idx_championship_dev_verified
+ON championship_date_options (organization, year, dev_verified);
+
+-- Trigger to auto-update updated_at timestamp
+CREATE FUNCTION update_championship_date_options_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -294,20 +318,30 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER championship_dates_updated_at
+CREATE TRIGGER championship_date_options_updated_at_trigger
   BEFORE UPDATE ON championship_date_options
   FOR EACH ROW
-  EXECUTE FUNCTION update_championship_dates_updated_at();
+  EXECUTE FUNCTION update_championship_date_options_updated_at();
 
+-- Row Level Security (RLS) Policies
 ALTER TABLE championship_date_options ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view championship dates"
+-- Everyone can view championship dates (needed for season creation)
+CREATE POLICY "Championship dates are viewable by everyone"
   ON championship_date_options FOR SELECT
   USING (true);
 
-CREATE POLICY "Authenticated users can vote"
+-- Authenticated operators can submit championship dates
+CREATE POLICY "Operators can submit championship dates"
+  ON championship_date_options FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+-- Authenticated operators can update vote counts
+-- (Typically done by incrementing vote_count when dates match user submission)
+CREATE POLICY "Operators can update championship dates"
   ON championship_date_options FOR UPDATE
-  USING (auth.uid() IS NOT NULL);
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
 
 -- =====================================================
 -- 5. SEASONS TABLE
