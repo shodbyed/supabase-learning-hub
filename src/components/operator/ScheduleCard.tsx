@@ -193,9 +193,25 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
     }
   };
 
+  /**
+   * Navigate to schedule view/edit page
+   */
+  const handleViewSchedule = () => {
+    if (activeSeason) {
+      navigate(`/league/${leagueId}/season/${activeSeason.id}/schedule`);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Schedule</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-900">Schedule</h2>
+        {scheduleExists && (
+          <Button size="sm" onClick={handleViewSchedule}>
+            View Schedule
+          </Button>
+        )}
+      </div>
 
       {loading ? (
         <div className="text-center py-8">
