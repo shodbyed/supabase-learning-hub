@@ -140,6 +140,10 @@ CREATE TABLE league_operators (
   billing_zip VARCHAR(10) NOT NULL,
   payment_verified BOOLEAN NOT NULL DEFAULT false,
 
+  -- Championship Preferences (auto-skip if saved and still valid)
+  preferred_bca_championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
+  preferred_apa_championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -147,6 +151,8 @@ CREATE TABLE league_operators (
 CREATE INDEX idx_league_operators_member_id ON league_operators(member_id);
 CREATE INDEX idx_league_operators_org_name ON league_operators(organization_name);
 CREATE INDEX idx_league_operators_stripe_customer ON league_operators(stripe_customer_id);
+CREATE INDEX idx_league_operators_preferred_bca ON league_operators(preferred_bca_championship_id);
+CREATE INDEX idx_league_operators_preferred_apa ON league_operators(preferred_apa_championship_id);
 
 CREATE OR REPLACE FUNCTION update_league_operators_updated_at()
 RETURNS TRIGGER AS $$

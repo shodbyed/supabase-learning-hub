@@ -15,6 +15,7 @@ import { DayOfWeekWarningModal } from '@/components/modals/DayOfWeekWarningModal
 import { DualDateStep } from '@/components/forms/DualDateStep';
 import { SimpleRadioChoice } from '@/components/forms/SimpleRadioChoice';
 import { ScheduleReview } from '@/components/season/ScheduleReview';
+import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions, submitChampionshipDates, type ChampionshipDateOption } from '@/utils/tournamentUtils';
 import { generateSchedule } from '@/utils/scheduleUtils';
@@ -160,6 +161,8 @@ export const SeasonCreationWizard: React.FC = () => {
 
   /**
    * Generate schedule when reaching schedule-review step
+   * If editing an existing season, load saved schedule from localStorage
+   * Otherwise, generate a fresh schedule
    */
   useEffect(() => {
     if (!league || !leagueId || loading) return;
@@ -183,16 +186,29 @@ export const SeasonCreationWizard: React.FC = () => {
 
       const formData: SeasonFormData = JSON.parse(stored);
 
-      // Generate initial schedule
+      // Check if we have a saved complete schedule (from Continue Setup)
+      const savedSchedule = localStorage.getItem('season-schedule-review');
+      const savedBlackouts = localStorage.getItem('season-blackout-weeks');
+
       const startDate = parseLocalDate(formData.startDate);
       const seasonLength = parseInt(formData.seasonLength);
       const leagueDayOfWeek = formatDayOfWeek(league.day_of_week);
 
-      const initialSchedule = generateSchedule(
-        startDate,
-        leagueDayOfWeek,
-        seasonLength
-      );
+      let initialSchedule: WeekEntry[];
+
+      if (savedSchedule) {
+        // Load saved schedule (from Continue Setup)
+        console.log('📂 Loading saved schedule from localStorage');
+        initialSchedule = JSON.parse(savedSchedule);
+      } else {
+        // Generate fresh schedule
+        console.log('🔄 Generating new schedule');
+        initialSchedule = generateSchedule(
+          startDate,
+          leagueDayOfWeek,
+          seasonLength
+        );
+      }
 
       // Fetch holidays for the season
       const holidays = fetchHolidaysForSeason(startDate, seasonLength);
@@ -243,7 +259,11 @@ export const SeasonCreationWizard: React.FC = () => {
         setApaChampionship(undefined);
       }
 
-      console.log('📅 Generated schedule with conflicts:', scheduleWithConflicts);
+      console.log('📅 Schedule loaded with conflicts:', {
+        source: savedSchedule ? 'localStorage' : 'generated',
+        weekCount: scheduleWithConflicts.length,
+        hasBlackouts: savedBlackouts ? 'yes' : 'no'
+      });
     }
   }, [currentStep, league, leagueId, loading, existingSeasons, bcaDateOptions, apaDateOptions]);
 
@@ -400,7 +420,7 @@ export const SeasonCreationWizard: React.FC = () => {
     }
   };
 
-  const handleCreateSeason = async () => {
+  const handleCreateSeason = async (destination: 'dashboard' | 'teams' = 'dashboard') => {
     setIsCreating(true);
 
     try {
@@ -534,9 +554,26 @@ export const SeasonCreationWizard: React.FC = () => {
           }
         });
         console.log('📅 Complete schedule to insert:', allWeeks);
+
+        // Step 3: If editing existing season, delete old weeks first
+        const existingSeasonId = searchParams.get('seasonId');
+        if (existingSeasonId) {
+          console.log('🗑️ Deleting old season_weeks for existing season:', existingSeasonId);
+          const { error: deleteError } = await supabase
+            .from('season_weeks')
+            .delete()
+            .eq('season_id', existingSeasonId);
+
+          if (deleteError) {
+            console.error('❌ Failed to delete old weeks:', deleteError);
+            throw deleteError;
+          }
+          console.log('✅ Old weeks deleted successfully');
+        }
+
         console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table');
 
-        // Step 3: Batch insert all weeks
+        // Step 4: Batch insert all weeks
         const { error: weeksError } = await supabase
           .from('season_weeks')
           .insert(allWeeks);
@@ -562,8 +599,15 @@ export const SeasonCreationWizard: React.FC = () => {
       localStorage.removeItem('season-schedule-review');
       localStorage.removeItem('season-blackout-weeks');
 
-      // Navigate back to league detail page
-      navigate(`/league/${leagueId}`);
+      // Navigate based on user's choice
+      if (destination === 'teams' && seasonId) {
+        // Navigate to team management page for the new season
+        console.log('🎯 Navigating to team management with seasonId:', seasonId);
+        navigate(`/league/${leagueId}/manage-teams?seasonId=${seasonId}`);
+      } else {
+        // Navigate back to league detail page (dashboard view)
+        navigate(`/league/${leagueId}`);
+      }
     } catch (err) {
       console.error('Error creating season:', err);
       setError(err instanceof Error ? err.message : 'Failed to create season');
@@ -612,6 +656,44 @@ export const SeasonCreationWizard: React.FC = () => {
 
         {/* Progress Bar */}
         <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
+
+        {/* Season Status Card - Shows configured data and allows editing */}
+        {(() => {
+          const STORAGE_KEY = `season-creation-${leagueId}`;
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (!stored) return null;
+
+          const formData: SeasonFormData = JSON.parse(stored);
+
+          /**
+           * Handle edit button clicks - jump to specific step
+           */
+          const handleEdit = (step: 'startDate' | 'seasonLength' | 'bca' | 'apa') => {
+            const stepMap = {
+              startDate: 0,
+              seasonLength: 1,
+              bca: 2,
+              apa: 3,
+            };
+            const targetStep = stepMap[step];
+            setCurrentStep(targetStep);
+            localStorage.setItem(`season-wizard-step-${leagueId}`, targetStep.toString());
+          };
+
+          return (
+            <SeasonStatusCard
+              startDate={formData.startDate}
+              seasonLength={parseInt(formData.seasonLength) || undefined}
+              bcaStartDate={formData.bcaStartDate}
+              bcaEndDate={formData.bcaEndDate}
+              bcaIgnored={formData.bcaIgnored}
+              apaStartDate={formData.apaStartDate}
+              apaEndDate={formData.apaEndDate}
+              apaIgnored={formData.apaIgnored}
+              onEdit={handleEdit}
+            />
+          );
+        })()}
 
         {/* Guard against missing step data */}
         {!currentStepData ? (
@@ -730,7 +812,7 @@ export const SeasonCreationWizard: React.FC = () => {
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleCreateSeason}
+                    onClick={() => handleCreateSeason('dashboard')}
                     disabled={isCreating}
                     className="bg-blue-600 hover:bg-blue-700"
                   >

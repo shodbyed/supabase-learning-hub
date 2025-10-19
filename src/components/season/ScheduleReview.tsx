@@ -67,6 +67,9 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [pendingWeekIndex, setPendingWeekIndex] = useState<number | null>(null);
 
+  // Track if we've loaded saved data to prevent regenerating on initial load
+  const [hasLoadedSavedData, setHasLoadedSavedData] = useState(false);
+
   // Store the original season length (count of regular weeks from initial schedule)
   const [originalSeasonLength, setOriginalSeasonLength] = useState(() => {
     return initialSchedule.filter(w => w.type === 'regular').length;
@@ -83,8 +86,14 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   // Update local schedule when prop changes (but only if localStorage is empty)
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEYS.SCHEDULE_REVIEW);
+
     if (!stored) {
       setSchedule(initialSchedule);
+      setHasLoadedSavedData(false);
+    } else {
+      // We loaded saved schedule AND blackouts - don't regenerate
+      setHasLoadedSavedData(true);
+      console.log('📂 Loaded saved schedule from localStorage - skipping initial regeneration');
     }
   }, [initialSchedule]);
 
@@ -240,13 +249,52 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   };
 
   // Regenerate schedule whenever blackoutWeeks or addSeasonEndBreak changes
+  // BUT skip the first regeneration if we loaded saved data
   useEffect(() => {
+    // Skip regeneration on initial load if we loaded saved data
+    // BUT still run conflict detection on the loaded schedule
+    if (hasLoadedSavedData) {
+      console.log('⏭️ Skipping regeneration - using loaded saved schedule');
+
+      // Make sure we have all required props before running conflict detection
+      if (!seasonStartDate || !leagueDayOfWeek || schedule.length === 0) {
+        console.log('⏸️ Waiting for props to be ready...', {
+          hasSeasonStartDate: !!seasonStartDate,
+          hasLeagueDayOfWeek: !!leagueDayOfWeek,
+          scheduleLength: schedule.length
+        });
+        // Don't clear the flag yet - let it try again when props are ready
+        return;
+      }
+
+      console.log('🔍 Re-running conflict detection on loaded schedule');
+
+      // Run conflict detection on the existing loaded schedule
+      const scheduleWithConflicts = detectScheduleConflicts(
+        schedule,
+        holidays,
+        bcaChampionship,
+        apaChampionship,
+        leagueDayOfWeek
+      );
+
+      console.log('⚠️ Conflicts detected on loaded schedule:', scheduleWithConflicts.map(w => ({
+        weekNumber: w.weekNumber,
+        date: w.date,
+        conflictsCount: w.conflicts.length
+      })));
+
+      setSchedule(scheduleWithConflicts);
+      setHasLoadedSavedData(false); // Clear flag so future changes DO trigger regeneration
+      return;
+    }
+
     // Only regenerate if we have initial data loaded
     if (schedule.length > 0 && seasonStartDate) {
       regenerateSchedule();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blackoutWeeks, addSeasonEndBreak]);
+  }, [blackoutWeeks, addSeasonEndBreak, seasonStartDate, leagueDayOfWeek, holidays, bcaChampionship, apaChampionship]);
 
   /**
    * Combine schedule and blackout weeks for display
@@ -358,14 +406,29 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
               type="button"
               variant="outline"
               onClick={onBack}
-              className="flex-1"
             >
               Previous
             </Button>
 
-            <Button type="button" onClick={onConfirm} className="flex-1">
-              Confirm Schedule
-            </Button>
+            <div className="flex-1 flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onConfirm('dashboard')}
+                className="flex-1"
+              >
+                Save & Exit
+              </Button>
+
+              <Button
+                type="button"
+                onClick={() => onConfirm('teams')}
+                className="flex-1"
+                style={{ backgroundColor: '#2563eb', color: 'white' }}
+              >
+                Save & Add Teams →
+              </Button>
+            </div>
           </div>
         </div>
       </div>
