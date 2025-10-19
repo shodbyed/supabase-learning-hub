@@ -1,0 +1,800 @@
+# Messaging System Implementation Progress
+
+## Overview
+Building a real-time messaging system for league communications with support for:
+- Direct messages (1-on-1)
+- Auto-managed group chats (Team Chat, Captain's Chat)
+- Season announcements (read-only broadcasts)
+
+---
+
+## System Architecture
+
+### League Structure Understanding
+- **League** = Ongoing entity (e.g., "9-Ball Tuesday")
+- **Season** = Time period within league (e.g., "Spring 2025")
+- **Team** = Group of players in a specific season
+
+### Conversation Types
+
+#### 1. Direct Messages
+- User → User (1-on-1)
+- Created manually via "New Message"
+- Both can reply
+
+#### 2. Team Chat (Auto-Created)
+- All team members can send/receive
+- Auto-created when season becomes 'active'
+- Auto-managed membership (synced with team_players table)
+- Use case: "I'll be late", "need a sub", coordination
+
+#### 3. Captain's Chat (Auto-Created)
+- All captains + league operator(s) for a season
+- Everyone can reply (back-and-forth discussion)
+- Auto-created when season becomes 'active'
+- Replaces operator's phone group text
+- Use case: Rule questions, scheduling, season coordination
+
+#### 4. Season Announcements (Auto-Created)
+- Operator → All current season players
+- Read-only for players (cannot reply)
+- Auto-created when season becomes 'active'
+- Use case: Schedule changes, important league updates
+
+---
+
+## Permission Model (MVP - Phase 1)
+
+### League Operator
+- ✅ Send announcements to **current season** (all players)
+- ✅ Participate in **Captain's Chat** (back-and-forth)
+- ✅ Send direct messages to anyone
+- ✅ Create manual group chats
+
+### Team Captain
+- ✅ Participate in **Captain's Chat** (back-and-forth)
+- ✅ Participate in **Team Chat** (back-and-forth)
+- ✅ Send direct messages to anyone
+
+### Regular Player
+- ✅ Participate in **Team Chat** (back-and-forth)
+- ✅ View **Season Announcements** (read-only)
+- ✅ Send direct messages to anyone
+
+### Future Permissions (Phase 8+)
+- ❌ Announce to entire organization (all past/current players)
+- ❌ Announce to organization current-only
+- ❌ Announce to captains-only
+- ❌ Cross-league announcements
+- ❌ Historical season communications
+
+---
+
+## Message System Rules
+
+### Time Limits (Accountability + Flexibility)
+- **Edit window**: 5 minutes after sending (fix typos)
+- **Delete window**: 15 minutes after sending (remove mistakes)
+- After limits: Message is permanent
+
+### Character Limits
+- **Max message length**: 2000 characters (prevents spam walls)
+
+### Group Size Limits
+- **Direct messages**: 2 people (by definition)
+- **Manual group chats**: 25 people max
+- **Auto-managed chats**: No limit (based on team/season size)
+- **Announcements**: No limit (can broadcast to entire season)
+
+### Operator Privileges
+- ✅ Send season-wide announcements
+- ✅ Delete reported messages (after review)
+- ✅ Pin important announcements
+- ❌ Cannot view all conversations (privacy)
+- ❌ Cannot edit other users' messages
+
+---
+
+## Implementation Checklist
+
+### ✅ Phase 1: UI Components (COMPLETED - 2025-01-16)
+
+- [x] **Messages Page** (`/src/pages/Messages.tsx`)
+  - Two-column layout
+  - Header with "New Message" button
+  - Empty state when no conversation selected
+  - Route: `/messages`
+  - Integrated NewMessageModal
+
+- [x] **ConversationList Component** (`/src/components/messages/ConversationList.tsx`)
+  - Search bar for filtering conversations
+  - List of conversations with previews, timestamps, unread badges
+  - "Announcement" badge for announcement threads
+  - Click to select conversation
+  - Mock data (3 example conversations)
+
+- [x] **MessageView Component** (`/src/components/messages/MessageView.tsx`)
+  - Message bubbles (left = others, right = current user)
+  - Sender names and timestamps
+  - Text input with send button
+  - Enter key to send
+  - Auto-scroll to bottom
+  - Mock data for conversations
+
+- [x] **NewMessageModal Component** (`/src/components/messages/NewMessageModal.tsx`)
+  - Search by name or member number
+  - Filter tabs: All | My Leagues | My Teams
+  - User list with context badges
+  - Click user to start conversation
+  - Mock data (5 example users)
+
+- [x] **Navbar Integration** (`/src/navigation/NavBar.tsx`)
+  - Envelope icon with unread badge (hardcoded "3")
+  - Only visible to approved members
+
+- [x] **Dashboard Integration** (`/src/dashboard/Dashboard.tsx`)
+  - Messages card/button linking to `/messages`
+
+- [x] **Routing** (`/src/navigation/NavRoutes.tsx`)
+  - Added `/messages` route to memberRoutes
+
+- [x] **TypeScript & Build**
+  - Fixed all type errors
+  - All builds successful
+  - Ready for database integration
+
+---
+
+### 🚧 Phase 2: Database Schema (CURRENT PHASE)
+
+**Status**: Ready to design and implement
+
+#### Tables to Create
+
+##### 1. **`conversations` table**
+Stores conversation metadata
+
+```sql
+CREATE TABLE conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Conversation type
+  type TEXT NOT NULL CHECK (type IN ('direct', 'group', 'announcement', 'auto_team', 'auto_captains')),
+
+  -- Auto-managed conversations
+  auto_managed BOOLEAN DEFAULT false,
+  scope TEXT, -- 'team' | 'season_players' | 'season_captains'
+  scope_id UUID, -- team_id or season_id
+
+  -- Display info
+  title TEXT, -- null for direct messages, required for groups/announcements
+
+  -- Metadata
+  created_by UUID REFERENCES members(id),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  last_message_at TIMESTAMPTZ, -- for sorting conversations
+
+  -- Indexes
+  CONSTRAINT valid_auto_managed CHECK (
+    (auto_managed = false) OR
+    (auto_managed = true AND scope IS NOT NULL AND scope_id IS NOT NULL)
+  )
+);
+
+CREATE INDEX idx_conversations_last_message ON conversations(last_message_at DESC);
+CREATE INDEX idx_conversations_scope ON conversations(scope, scope_id) WHERE auto_managed = true;
+```
+
+##### 2. **`conversation_participants` table**
+Links users to conversations
+
+```sql
+CREATE TABLE conversation_participants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- Permissions
+  can_reply BOOLEAN DEFAULT true, -- false for announcement recipients
+  is_admin BOOLEAN DEFAULT false, -- can manage group (add/remove participants)
+
+  -- Read tracking
+  joined_at TIMESTAMPTZ DEFAULT now(),
+  last_read_at TIMESTAMPTZ DEFAULT now(),
+
+  -- Constraints
+  UNIQUE(conversation_id, member_id)
+);
+
+CREATE INDEX idx_participants_conversation ON conversation_participants(conversation_id);
+CREATE INDEX idx_participants_member ON conversation_participants(member_id);
+CREATE INDEX idx_participants_unread ON conversation_participants(member_id, last_read_at);
+```
+
+##### 3. **`messages` table**
+Stores actual messages
+
+```sql
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_id UUID NOT NULL REFERENCES members(id) ON DELETE SET NULL,
+
+  -- Content
+  content TEXT NOT NULL CHECK (LENGTH(content) <= 2000),
+
+  -- Edit tracking
+  edited BOOLEAN DEFAULT false,
+  edited_at TIMESTAMPTZ,
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+
+  -- Soft delete (for moderation)
+  deleted BOOLEAN DEFAULT false,
+  deleted_at TIMESTAMPTZ,
+  deleted_by UUID REFERENCES members(id)
+);
+
+CREATE INDEX idx_messages_conversation ON messages(conversation_id, created_at DESC);
+CREATE INDEX idx_messages_sender ON messages(sender_id);
+```
+
+##### 4. **`blocked_users` table** (Phase 6, but add to schema now)
+User blocking/muting
+
+```sql
+CREATE TABLE blocked_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  blocker_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  blocked_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- Type of block
+  type TEXT NOT NULL CHECK (type IN ('block', 'mute')),
+  -- block = cannot message, cannot see in search
+  -- mute = no notifications, but can still read
+
+  -- Metadata
+  reason TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+
+  UNIQUE(blocker_id, blocked_id)
+);
+
+CREATE INDEX idx_blocked_users_blocker ON blocked_users(blocker_id);
+```
+
+##### 5. **`user_reports` table** (Phase 6, but add to schema now)
+User reporting for moderation
+
+```sql
+CREATE TABLE user_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  reported_id UUID NOT NULL REFERENCES members(id) ON DELETE SET NULL,
+
+  -- Report details
+  reason TEXT NOT NULL CHECK (reason IN ('harassment', 'spam', 'inappropriate', 'abuse', 'other')),
+  description TEXT NOT NULL,
+
+  -- Context (what triggered the report)
+  context_type TEXT, -- 'message' | 'profile' | 'match'
+  context_id UUID, -- message_id, match_id, etc.
+
+  -- Status
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'action_taken', 'dismissed')),
+  reviewed_by UUID REFERENCES members(id),
+  reviewed_at TIMESTAMPTZ,
+  admin_notes TEXT,
+
+  -- Timestamps
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_reports_status ON user_reports(status, created_at DESC);
+CREATE INDEX idx_reports_reported ON user_reports(reported_id);
+```
+
+#### RLS Policies
+
+**conversations table:**
+- Users can see conversations they're participants in
+- Users can create direct/group conversations
+- Only operators can create announcements
+
+**conversation_participants table:**
+- Users can see participants in their conversations
+- Conversation admins can add/remove participants
+
+**messages table:**
+- Users can see messages from their conversations
+- Users can send messages if can_reply = true
+- Users can edit their own messages (within 5 min)
+- Users can delete their own messages (within 15 min)
+- Operators can delete any message (after report review)
+
+**blocked_users table:**
+- Users can only see/manage their own blocks
+
+**user_reports table:**
+- Users can see their own submitted reports
+- Operators can see all reports
+
+#### SQL Files to Create
+- [ ] `/database/conversations.sql`
+- [ ] `/database/conversation_participants.sql`
+- [ ] `/database/messages.sql`
+- [ ] `/database/blocked_users.sql`
+- [ ] `/database/user_reports.sql`
+- [ ] Update `/database/rebuild_all_tables.sql` to include new tables
+
+#### Triggers Needed
+- [ ] Update `conversations.updated_at` on change
+- [ ] Update `conversations.last_message_at` when new message inserted
+- [ ] Update `messages.updated_at` on edit
+- [ ] Prevent message edit after 5 minutes
+- [ ] Prevent message delete after 15 minutes
+
+---
+
+### 📋 Phase 3: Auto-Created Conversations (TODO)
+
+**When does auto-creation happen?**
+- When season status changes to 'active'
+- Triggered by operator completing season setup
+
+#### Auto-Create Logic
+
+```typescript
+// When season becomes active:
+async function createSeasonConversations(seasonId: string) {
+  // 1. Create "Season Announcements"
+  const announcement = await createConversation({
+    type: 'announcement',
+    auto_managed: true,
+    scope: 'season_players',
+    scope_id: seasonId,
+    title: '{Season Name} - Announcements',
+    created_by: operator_id
+  });
+
+  // Add all players as participants (can_reply = false)
+  await addParticipantsFromSeason(announcement.id, seasonId, false);
+
+  // 2. Create "Captain's Chat"
+  const captainsChat = await createConversation({
+    type: 'auto_captains',
+    auto_managed: true,
+    scope: 'season_captains',
+    scope_id: seasonId,
+    title: '{Season Name} - Captains & Operator',
+    created_by: operator_id
+  });
+
+  // Add all captains + operator (can_reply = true)
+  await addCaptainsAndOperators(captainsChat.id, seasonId);
+
+  // 3. Create Team Chats for each team
+  const teams = await getTeamsForSeason(seasonId);
+  for (const team of teams) {
+    const teamChat = await createConversation({
+      type: 'auto_team',
+      auto_managed: true,
+      scope: 'team',
+      scope_id: team.id,
+      title: team.team_name,
+      created_by: operator_id
+    });
+
+    // Add all team members (can_reply = true)
+    await addTeamMembers(teamChat.id, team.id);
+  }
+}
+```
+
+#### Implementation Tasks
+- [ ] Create utility: `createSeasonConversations(seasonId)`
+- [ ] Hook into season activation flow
+- [ ] Create utility: `addParticipantsFromSeason()`
+- [ ] Create utility: `addCaptainsAndOperators()`
+- [ ] Create utility: `addTeamMembers()`
+- [ ] Handle team roster changes (add/remove participants automatically)
+
+---
+
+### 📋 Phase 4: Real Data Integration (TODO)
+
+#### Message Queries Utility (`/src/utils/messageQueries.ts`)
+
+- [ ] **fetchUserConversations(memberId)**
+  - Get all conversations user is participant in
+  - Include last message preview
+  - Calculate unread count
+  - Sort by last_message_at DESC
+  - Filter out blocked users
+
+- [ ] **fetchConversationMessages(conversationId, limit = 50)**
+  - Get recent messages for conversation
+  - Include sender details
+  - Order by created_at DESC
+  - Handle deleted messages (hide content)
+
+- [ ] **fetchUsersForNewMessage(currentMemberId, filterType)**
+  - filterType: 'all' | 'leagues' | 'teams'
+  - Search members by name/number
+  - Exclude blocked users
+  - Include context (what league/team they share)
+
+- [ ] **createOrOpenConversation(memberId1, memberId2)**
+  - Check if direct conversation already exists
+  - If yes: return existing conversation
+  - If no: create new conversation + participants
+
+- [ ] **sendMessage(conversationId, senderId, content)**
+  - Insert message
+  - Update conversation.last_message_at
+  - Update sender's last_read_at
+  - Validate can_reply permission
+  - Validate character limit
+
+- [ ] **markConversationAsRead(conversationId, memberId)**
+  - Update conversation_participants.last_read_at = now()
+
+- [ ] **editMessage(messageId, newContent)**
+  - Verify ownership
+  - Check 5-minute time limit
+  - Update content, set edited = true
+
+- [ ] **deleteMessage(messageId, userId)**
+  - Verify ownership OR operator privilege
+  - Check 15-minute time limit (for users)
+  - Soft delete (set deleted = true)
+
+#### Component Updates
+
+- [ ] Replace mock data in ConversationList with real queries
+- [ ] Replace mock data in MessageView with real queries
+- [ ] Replace mock data in NewMessageModal with real queries
+- [ ] Add loading states for all queries
+- [ ] Add error handling for failed queries
+
+---
+
+### 🔄 Phase 5: Realtime Features (TODO)
+
+#### Enable Realtime on Tables
+
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+ALTER PUBLICATION supabase_realtime ADD TABLE conversations;
+ALTER PUBLICATION supabase_realtime ADD TABLE conversation_participants;
+```
+
+#### Realtime Subscriptions
+
+- [ ] **Subscribe to new messages**
+  - Listen for INSERT on messages table
+  - Filter by conversation_id
+  - Append to message list when received
+  - Play notification sound (optional)
+  - Auto-scroll to bottom
+
+- [ ] **Subscribe to conversation updates**
+  - Listen for UPDATE on conversations
+  - Update last_message_at in conversation list
+  - Re-sort conversation list
+
+- [ ] **Dynamic unread counts**
+  - Calculate: messages where created_at > last_read_at
+  - Update navbar badge
+  - Update conversation list badges
+
+- [ ] **Typing indicators** (Future)
+  - Use Realtime Presence API
+  - Show "{User} is typing..." when composing
+
+#### Implementation
+
+```typescript
+// Example: Subscribe to messages
+useEffect(() => {
+  const channel = supabase
+    .channel(`conversation-${conversationId}`)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `conversation_id=eq.${conversationId}`
+    }, (payload) => {
+      setMessages(prev => [...prev, payload.new]);
+    })
+    .subscribe();
+
+  return () => channel.unsubscribe();
+}, [conversationId]);
+```
+
+---
+
+### 🎨 Phase 6: User Interactions & Safety (TODO)
+
+#### PlayerNameLink Component
+
+- [ ] **Create Component** (`/src/components/PlayerNameLink.tsx`)
+  - Wraps any player name display
+  - Shows as clickable text
+  - Hover/click opens popover menu:
+    - "View Profile"
+    - "Send Message"
+    - "Report User"
+    - "Block User" (if not already blocked)
+  - Uses shadcn Popover component
+
+- [ ] **Replace all player name displays**
+  - Team rosters
+  - Match results
+  - League standings
+  - Message sender names
+  - EXCEPT: dropdowns, inputs, form fields
+
+#### Block/Mute Implementation
+
+- [ ] Create block/mute UI in popover
+- [ ] Create utility functions:
+  - `blockUser(blockerId, blockedId)`
+  - `muteUser(muterId, mutedId)`
+  - `unblockUser(blockerId, blockedId)`
+  - `getBlockedUsers(userId)`
+- [ ] Filter blocked users from:
+  - New message search
+  - Conversation participants
+  - Message visibility
+- [ ] Settings page: Manage blocked/muted users
+
+#### Report User System
+
+- [ ] Create report modal component
+- [ ] Create utility: `reportUser(reporterId, reportedId, reason, description, contextId)`
+- [ ] Operator dashboard: View all reports
+- [ ] Operator actions: Review, dismiss, take action
+- [ ] Auto-hide messages from users with 3+ pending reports
+
+---
+
+### 🎯 Phase 7: Quick-Create Shortcuts (TODO)
+
+#### Operator Shortcuts (in Season Dashboard)
+
+- [ ] **"Announce to Season" button**
+  - Opens modal showing: "24 players will receive this"
+  - Text input for announcement
+  - Send → Creates announcement conversation
+  - Auto-adds all season participants (can_reply = false)
+
+- [ ] **"Open Captain's Chat" button**
+  - Opens existing auto-created captain's chat
+  - If doesn't exist, create it
+
+#### Captain Shortcuts (in Team Page)
+
+- [ ] **"Open Team Chat" button**
+  - Opens existing auto-created team chat
+  - If doesn't exist, create it
+
+#### Implementation
+
+- [ ] Add buttons to Season Dashboard (operator view)
+- [ ] Add button to Team page (captain view)
+- [ ] Create modal for quick announcements
+- [ ] Create utility: `sendQuickAnnouncement(scope, scopeId, content)`
+
+---
+
+### 🔧 Phase 8: Performance & Polish (TODO)
+
+- [ ] **Performance**
+  - Pagination for message history (load older messages)
+  - Virtual scrolling for long conversations
+  - Debounce search input
+  - Add database indexes for common queries
+
+- [ ] **Error Handling**
+  - Network error recovery
+  - Failed message retry with visual indicator
+  - Connection status indicator
+  - Graceful degradation if Realtime fails
+
+- [ ] **Accessibility**
+  - Keyboard navigation (arrow keys, enter)
+  - Screen reader support (ARIA labels)
+  - Focus management in modals
+  - High contrast mode support
+
+- [ ] **Mobile Responsiveness**
+  - Stack layout on mobile (list OR messages view, not both)
+  - Swipe gestures (optional)
+  - Touch-friendly tap targets (44px minimum)
+
+---
+
+### 🚀 Phase 9: Future Enhancements (Backlog)
+
+- [ ] Message reactions (👍, ❤️, 😂)
+- [ ] File/image attachments
+- [ ] Voice messages
+- [ ] Message threading/replies
+- [ ] GIF support
+- [ ] Message search within conversations
+- [ ] Pinned messages
+- [ ] @Mentions with notifications
+- [ ] Message forwarding
+- [ ] Organization-wide announcements (all past players)
+- [ ] Captain-only announcements
+- [ ] Multi-league operator permissions
+- [ ] Historical season communications
+
+---
+
+## Game Plan: Step-by-Step Implementation
+
+### Week 1: Database Foundation
+**Goal**: Get data storage working
+
+1. ✅ Create tracking document (this file)
+2. ⏭️ Create SQL files for all 5 tables
+3. ⏭️ Add RLS policies to each table
+4. ⏭️ Add triggers for auto-updates
+5. ⏭️ Update `rebuild_all_tables.sql`
+6. ⏭️ Run migrations on local Supabase
+7. ⏭️ Test with manual SQL inserts
+
+**Deliverable**: Database ready to store messages
+
+---
+
+### Week 2: Core Messaging
+**Goal**: Send/receive direct messages
+
+1. ⏭️ Create `messageQueries.ts` utility file
+2. ⏭️ Implement `fetchUserConversations()`
+3. ⏭️ Implement `fetchConversationMessages()`
+4. ⏭️ Implement `sendMessage()`
+5. ⏭️ Replace mock data in ConversationList
+6. ⏭️ Replace mock data in MessageView
+7. ⏭️ Test: Send message between two users
+
+**Deliverable**: Can send/receive direct messages
+
+---
+
+### Week 3: User Search & Conversation Creation
+**Goal**: Start new conversations
+
+1. ⏭️ Implement `fetchUsersForNewMessage()`
+2. ⏭️ Implement `createOrOpenConversation()`
+3. ⏭️ Replace mock data in NewMessageModal
+4. ⏭️ Wire up "New Message" → Select user → Open conversation
+5. ⏭️ Test: Start conversation with search
+
+**Deliverable**: Can search for users and start conversations
+
+---
+
+### Week 4: Realtime Updates
+**Goal**: Messages appear instantly
+
+1. ⏭️ Enable Realtime on tables (SQL)
+2. ⏭️ Subscribe to new messages in MessageView
+3. ⏭️ Subscribe to conversation updates in ConversationList
+4. ⏭️ Implement dynamic unread counts
+5. ⏭️ Update navbar badge in real-time
+6. ⏭️ Test: Two browser windows, send message, see it appear
+
+**Deliverable**: Real-time messaging works
+
+---
+
+### Week 5: Auto-Created Conversations
+**Goal**: Team chats and announcements auto-create
+
+1. ⏭️ Create `createSeasonConversations()` utility
+2. ⏭️ Create helper functions for adding participants
+3. ⏭️ Hook into season activation flow
+4. ⏭️ Test: Activate season → chats auto-create
+5. ⏭️ Handle team roster changes (auto add/remove)
+
+**Deliverable**: Chats auto-created when season starts
+
+---
+
+### Week 6: Quick-Create Shortcuts
+**Goal**: Easy announcement sending
+
+1. ⏭️ Add "Announce to Season" button (operator dashboard)
+2. ⏭️ Add "Open Captain's Chat" button (operator dashboard)
+3. ⏭️ Add "Open Team Chat" button (team page)
+4. ⏭️ Create quick announcement modal
+5. ⏭️ Test: Send season announcement
+
+**Deliverable**: Operators can easily send announcements
+
+---
+
+### Week 7: User Safety Features
+**Goal**: Block, mute, report users
+
+1. ⏭️ Create PlayerNameLink component
+2. ⏭️ Implement block/mute functionality
+3. ⏭️ Implement report user system
+4. ⏭️ Create operator report review dashboard
+5. ⏭️ Filter blocked users from search/messages
+
+**Deliverable**: Users can block/report, operators can moderate
+
+---
+
+### Week 8: Polish & Testing
+**Goal**: Production-ready
+
+1. ⏭️ Add message edit/delete (with time limits)
+2. ⏭️ Add loading states everywhere
+3. ⏭️ Add error handling
+4. ⏭️ Test all user flows end-to-end
+5. ⏭️ Fix bugs
+6. ⏭️ Mobile responsiveness
+7. ⏭️ Performance optimization
+
+**Deliverable**: Messaging system ready for users!
+
+---
+
+## Current Status
+
+**Phase**: 2 (Database Schema Design)
+**Next Task**: Create SQL migration files
+**Last Updated**: 2025-01-16
+
+**What we have:**
+- ✅ Complete UI components with mock data
+- ✅ Routing and navigation
+- ✅ TypeScript types
+- ✅ Comprehensive implementation plan
+
+**What we need:**
+- ⏭️ Database schema implementation
+- ⏭️ Real data queries
+- ⏭️ Realtime subscriptions
+- ⏭️ Auto-creation logic
+
+---
+
+## Technical Notes
+
+### Realtime Capabilities
+- **Free Tier**: 200 concurrent connections, 2GB monthly bandwidth
+- **Setup**: Add tables to supabase_realtime publication
+- **Usage**: Subscribe to INSERT/UPDATE/DELETE events
+- **Cleanup**: Always unsubscribe when component unmounts
+
+### Component Architecture
+- Messages page = container component
+- ConversationList, MessageView, NewMessageModal = presentational
+- All components use shadcn/ui
+- Mock data at top of files for easy replacement
+
+### File Locations
+- **Pages**: `/src/pages/Messages.tsx`
+- **Components**: `/src/components/messages/`
+- **Utilities**: `/src/utils/messageQueries.ts` (to be created)
+- **Database**: `/database/` (SQL files to be created)
+
+---
+
+## Resources
+
+- [Supabase Realtime Docs](https://supabase.com/docs/guides/realtime)
+- [Supabase RLS Policies](https://supabase.com/docs/guides/auth/row-level-security)
+- [PostgreSQL Triggers](https://www.postgresql.org/docs/current/sql-createtrigger.html)

@@ -13,14 +13,21 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ConversationList } from '@/components/messages/ConversationList';
 import { MessageView } from '@/components/messages/MessageView';
+import { NewMessageModal } from '@/components/messages/NewMessageModal';
 
 export function Messages() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  // const [showNewMessageModal, setShowNewMessageModal] = useState(false);
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false);
 
   const handleNewMessage = () => {
-    // TODO: Open new message modal
-    console.log('New message clicked - modal will be implemented next');
+    setShowNewMessageModal(true);
+  };
+
+  const handleSelectUser = (userId: string) => {
+    // TODO: Create or open conversation with this user
+    console.log('Selected user:', userId);
+    // For now, just select the first conversation as a placeholder
+    setSelectedConversationId('1');
   };
 
   return (
@@ -58,6 +65,14 @@ export function Messages() {
           )}
         </div>
       </div>
+
+      {/* New Message Modal */}
+      {showNewMessageModal && (
+        <NewMessageModal
+          onClose={() => setShowNewMessageModal(false)}
+          onSelectUser={handleSelectUser}
+        />
+      )}
     </div>
   );
 }

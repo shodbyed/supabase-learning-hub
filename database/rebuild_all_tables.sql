@@ -7,6 +7,11 @@
 -- =====================================================
 
 -- Drop all tables in reverse dependency order
+DROP TABLE IF EXISTS user_reports CASCADE;
+DROP TABLE IF EXISTS blocked_users CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS conversation_participants CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS team_players CASCADE;
 DROP TABLE IF EXISTS teams CASCADE;
@@ -1111,8 +1116,47 @@ COMMENT ON COLUMN public.matches.status IS 'Match status: scheduled, in_progress
 --   );
 
 -- =====================================================
+-- 13. CONVERSATIONS TABLE
+-- =====================================================
+
+\i database/conversations.sql
+
+-- =====================================================
+-- 14. CONVERSATION PARTICIPANTS TABLE
+-- =====================================================
+
+\i database/conversation_participants.sql
+
+-- =====================================================
+-- 15. MESSAGES TABLE
+-- =====================================================
+
+\i database/messages.sql
+
+-- =====================================================
+-- 16. BLOCKED USERS TABLE
+-- =====================================================
+
+\i database/blocked_users.sql
+
+-- =====================================================
+-- 17. USER REPORTS TABLE
+-- =====================================================
+
+\i database/user_reports.sql
+
+-- =====================================================
+-- 18. MESSAGING RLS POLICIES
+-- =====================================================
+-- These policies reference conversation_participants, so they must be added
+-- after all messaging tables are created to avoid circular dependencies
+
+\i database/messaging_rls_policies.sql
+
+-- =====================================================
 -- REBUILD COMPLETE
 -- =====================================================
 -- All tables have been recreated with correct structure
 -- You can now register users, create operators, and set up leagues
+-- Messaging system tables are also included
 -- =====================================================
