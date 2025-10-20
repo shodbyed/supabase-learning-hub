@@ -202,3 +202,26 @@ export async function createOrOpenConversation(userId1: string, userId2: string)
 
   return { data: { conversationId: data }, error: null };
 }
+
+/**
+ * Update the last read timestamp for the current user in a conversation
+ * This marks all messages as read and resets the unread count
+ *
+ * @param conversationId - The conversation ID
+ * @param userId - The current user's member ID
+ * @returns Promise with any error
+ */
+export async function updateLastRead(conversationId: string, userId: string) {
+  const { error } = await supabase
+    .from('conversation_participants')
+    .update({ last_read_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error updating last read:', error);
+    return { error };
+  }
+
+  return { error: null };
+}

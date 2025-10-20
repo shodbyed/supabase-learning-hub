@@ -8,9 +8,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send } from 'lucide-react';
+import { Send, Check, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fetchConversationMessages, sendMessage } from '@/utils/messageQueries';
+import { fetchConversationMessages, sendMessage, updateLastRead } from '@/utils/messageQueries';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/supabaseClient';
 
@@ -39,15 +39,17 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [recipientName, setRecipientName] = useState<string>('');
+  const [recipientLastRead, setRecipientLastRead] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Load conversation participants to get recipient name
+  // Load conversation participants to get recipient name and last_read_at
   useEffect(() => {
     async function loadRecipient() {
       const { data, error } = await supabase
         .from('conversation_participants')
         .select(`
           user_id,
+          last_read_at,
           members:user_id (
             id,
             first_name,
@@ -68,6 +70,7 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
       if (otherParticipant?.members) {
         const member = otherParticipant.members;
         setRecipientName(`${member.first_name} ${member.last_name}`);
+        setRecipientLastRead(otherParticipant.last_read_at);
       }
     }
 
@@ -88,10 +91,13 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
 
       setMessages((data as any) || []);
       setLoading(false);
+
+      // Mark conversation as read when viewing
+      await updateLastRead(conversationId, currentUserId);
     }
 
     loadMessages();
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -185,15 +191,26 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
                     <p className="text-xs font-semibold mb-1">{senderName}</p>
                   )}
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <p
-                    className={cn(
-                      'text-xs mt-1',
-                      isCurrentUser ? 'text-blue-100' : 'text-gray-500'
+                  <div className="flex items-center gap-1 mt-1">
+                    <p
+                      className={cn(
+                        'text-xs',
+                        isCurrentUser ? 'text-blue-100' : 'text-gray-500'
+                      )}
+                    >
+                      {formatTimestamp(message.created_at)}
+                      {message.is_edited && ' (edited)'}
+                    </p>
+                    {isCurrentUser && recipientLastRead && (
+                      <span className="text-blue-100">
+                        {new Date(message.created_at) <= new Date(recipientLastRead) ? (
+                          <CheckCheck className="h-3 w-3" />
+                        ) : (
+                          <Check className="h-3 w-3" />
+                        )}
+                      </span>
                     )}
-                  >
-                    {formatTimestamp(message.created_at)}
-                    {message.is_edited && ' (edited)'}
-                  </p>
+                  </div>
                 </div>
               </div>
             );
