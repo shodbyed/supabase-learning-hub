@@ -11,6 +11,7 @@ import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
 import { fetchConversationMessages, sendMessage, updateLastRead } from '@/utils/messageQueries';
+import { supabase } from '@/supabaseClient';
 
 interface Message {
   id: string;
@@ -62,6 +63,52 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
     loadMessages();
   }, [conversationId, currentUserId]);
 
+  // Subscribe to new messages in this conversation
+  useEffect(() => {
+    const channel = supabase
+      .channel(`messages:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          // Fetch the complete message with sender info
+          const { data, error } = await supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              edited_at,
+              is_edited,
+              sender:members!sender_id(
+                id,
+                first_name,
+                last_name,
+                system_player_number
+              )
+            `)
+            .eq('id', payload.new.id)
+            .single();
+
+          if (!error && data) {
+            setMessages((prev) => [...prev, data as any]);
+            // Update last read if we're viewing the conversation
+            await updateLastRead(conversationId, currentUserId);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId, currentUserId]);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -75,10 +122,8 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
       return;
     }
 
-    const { data: updatedMessages } = await fetchConversationMessages(conversationId);
-    if (updatedMessages) {
-      setMessages(updatedMessages as any);
-    }
+    // Don't manually fetch - let realtime subscription handle it
+    // The message will appear via the realtime subscription
   };
 
   return (

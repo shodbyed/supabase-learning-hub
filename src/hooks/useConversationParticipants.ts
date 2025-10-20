@@ -47,6 +47,30 @@ export function useConversationParticipants(conversationId: string, currentUserI
     }
 
     loadRecipient();
+
+    // Subscribe to read receipt updates
+    const channel = supabase
+      .channel(`participants:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'conversation_participants',
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          // Update last_read_at if it's the other participant
+          if (payload.new.user_id !== currentUserId) {
+            setRecipientLastRead((payload.new as any).last_read_at);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [conversationId, currentUserId]);
 
   return { recipientName, recipientLastRead, loading };

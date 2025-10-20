@@ -4,7 +4,10 @@
       "Read(//c/Users/shodb/personal/**)",
       "Bash(pnpm run typecheck)",
       "Bash(pnpm run build)",
-      "Bash(pnpm run lint)"
+      "Bash(pnpm run lint)",
+      "Bash(supabase status:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []
