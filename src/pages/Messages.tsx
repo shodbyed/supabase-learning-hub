@@ -15,7 +15,7 @@ import { MessageView } from '@/components/messages/MessageView';
 import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
 import { NewMessageModal } from '@/components/messages/NewMessageModal';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { createOrOpenConversation } from '@/utils/messageQueries';
+import { createOrOpenConversation, createGroupConversation } from '@/utils/messageQueries';
 
 export function Messages() {
   const navigate = useNavigate();
@@ -28,20 +28,45 @@ export function Messages() {
     setShowNewMessageModal(true);
   };
 
-  const handleSelectUser = async (userId: string) => {
+  const handleCreateConversation = async (userIds: string[], groupName?: string) => {
     if (!memberId) {
       return;
     }
 
-    const { data, error } = await createOrOpenConversation(memberId, userId);
+    let conversationId: string | null = null;
 
-    if (error) {
-      console.error('Error creating/opening conversation:', error);
-      return;
+    if (userIds.length === 1) {
+      // Direct message
+      const { data, error } = await createOrOpenConversation(memberId, userIds[0]);
+
+      if (error) {
+        console.error('Error creating/opening conversation:', error);
+        return;
+      }
+
+      conversationId = data?.conversationId || null;
+    } else {
+      // Group conversation
+      if (!groupName) {
+        console.error('Group name is required for group conversations');
+        return;
+      }
+
+      // Include current user in the group
+      const allMemberIds = [memberId, ...userIds];
+
+      const { data, error } = await createGroupConversation(memberId, groupName, allMemberIds);
+
+      if (error) {
+        console.error('Error creating group conversation:', error);
+        return;
+      }
+
+      conversationId = data?.conversationId || null;
     }
 
-    if (data) {
-      setSelectedConversationId(data.conversationId);
+    if (conversationId) {
+      setSelectedConversationId(conversationId);
       setShowNewMessageModal(false);
       setRefreshKey((prev) => prev + 1);
     }
@@ -90,10 +115,11 @@ export function Messages() {
       </div>
 
       {/* New Message Modal */}
-      {showNewMessageModal && (
+      {showNewMessageModal && memberId && (
         <NewMessageModal
           onClose={() => setShowNewMessageModal(false)}
-          onSelectUser={handleSelectUser}
+          onCreateConversation={handleCreateConversation}
+          currentUserId={memberId}
         />
       )}
     </div>

@@ -1,17 +1,19 @@
 /**
  * @fileoverview New Message Modal
  *
- * Modal for starting a new conversation.
+ * Modal for starting a new conversation (direct or group).
  * Features:
+ * - Multi-select user picker
  * - Search bar for finding users
  * - Filter tabs: All | My Leagues | My Teams
- * - Clickable user list with compact cards
+ * - Group name input (when 2+ users selected)
+ * - Creates DM (1 person) or Group (2+ people)
  */
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Search } from 'lucide-react';
+import { X, Search, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
@@ -25,23 +27,31 @@ interface Member {
 
 interface NewMessageModalProps {
   onClose: () => void;
-  onSelectUser: (userId: string) => void;
+  onCreateConversation: (userIds: string[], groupName?: string) => void;
+  currentUserId: string;
 }
 
 type FilterTab = 'all' | 'leagues' | 'teams';
 
-export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps) {
+export function NewMessageModal({
+  onClose,
+  onCreateConversation,
+  currentUserId,
+}: NewMessageModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [groupName, setGroupName] = useState('');
 
   useEffect(() => {
     async function fetchMembers() {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('members')
         .select('id, first_name, last_name, system_player_number')
         .not('user_id', 'is', null)
+        .neq('id', currentUserId) // Exclude current user
         .order('last_name', { ascending: true });
 
       if (error) {
@@ -55,7 +65,7 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
     }
 
     fetchMembers();
-  }, []);
+  }, [currentUserId]);
 
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
@@ -65,6 +75,35 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
 
     return fullName.includes(query) || playerNumber.includes(cleanQuery);
   });
+
+  const handleToggleUser = (userId: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleCreate = () => {
+    if (selectedUserIds.length === 0) return;
+
+    if (selectedUserIds.length === 1) {
+      // Direct message - no group name needed
+      onCreateConversation(selectedUserIds);
+    } else {
+      // Group conversation - group name required
+      if (!groupName.trim()) {
+        alert('Please enter a group name');
+        return;
+      }
+      onCreateConversation(selectedUserIds, groupName);
+    }
+  };
+
+  const selectedMembers = members.filter((m) => selectedUserIds.includes(m.id));
+  const isGroup = selectedUserIds.length >= 2;
+
+  // Auto-generate group name suggestion
+  const suggestedGroupName =
+    selectedMembers.length > 0 ? selectedMembers.map((m) => m.first_name).join(', ') : '';
 
   return (
     <div
@@ -85,6 +124,49 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
             <X className="h-6 w-6" />
           </button>
         </div>
+
+        {/* Selected Users */}
+        {selectedUserIds.length > 0 && (
+          <div className="px-6 pt-4 border-b bg-blue-50">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-900">
+                Selected ({selectedUserIds.length})
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2 pb-4">
+              {selectedMembers.map((member) => (
+                <div
+                  key={member.id}
+                  className="bg-white border border-blue-300 rounded-full px-3 py-1 text-sm flex items-center gap-2"
+                >
+                  <span>
+                    {member.first_name} {member.last_name}
+                  </span>
+                  <button
+                    onClick={() => handleToggleUser(member.id)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Group Name Input (only show for 2+ people) */}
+            {isGroup && (
+              <div className="pb-4">
+                <Input
+                  type="text"
+                  placeholder={`Group name (e.g., "${suggestedGroupName}")`}
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  className="bg-white"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Search */}
         <div className="p-6 border-b">
@@ -159,7 +241,8 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
                   firstName={member.first_name}
                   lastName={member.last_name}
                   playerNumber={member.system_player_number}
-                  onClick={() => onSelectUser(member.id)}
+                  onClick={() => handleToggleUser(member.id)}
+                  isSelected={selectedUserIds.includes(member.id)}
                 />
               ))}
             </div>
@@ -167,9 +250,16 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t bg-gray-50">
-          <Button variant="outline" onClick={onClose} className="w-full">
+        <div className="p-6 border-t bg-gray-50 flex gap-3">
+          <Button variant="outline" onClick={onClose} className="flex-1">
             Cancel
+          </Button>
+          <Button onClick={handleCreate} disabled={selectedUserIds.length === 0} className="flex-1">
+            {selectedUserIds.length === 0
+              ? 'Select People'
+              : selectedUserIds.length === 1
+                ? 'Message'
+                : `Create Group (${selectedUserIds.length})`}
           </Button>
         </div>
       </div>

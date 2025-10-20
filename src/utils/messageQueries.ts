@@ -205,6 +205,38 @@ export async function createOrOpenConversation(userId1: string, userId2: string)
 }
 
 /**
+ * Create a new group conversation
+ *
+ * Creates a group conversation with a title and adds all specified members.
+ * Uses a database function with SECURITY DEFINER to bypass RLS policies.
+ *
+ * @param creatorId - The member ID of the user creating the group
+ * @param groupName - The name/title for the group conversation
+ * @param memberIds - Array of member IDs to add to the group (including creator)
+ * @returns Promise with conversation ID and any error
+ */
+export async function createGroupConversation(
+  creatorId: string,
+  groupName: string,
+  memberIds: string[]
+) {
+  // Call the database function that handles group creation with SECURITY DEFINER
+  // This bypasses RLS policies while still maintaining security
+  const { data, error } = await supabase.rpc('create_group_conversation', {
+    creator_id: creatorId,
+    group_name: groupName,
+    member_ids: memberIds,
+  });
+
+  if (error) {
+    console.error('Error creating group conversation:', error);
+    return { data: null, error };
+  }
+
+  return { data: { conversationId: data }, error: null };
+}
+
+/**
  * Update the last read timestamp for the current user in a conversation
  * This marks all messages as read and resets the unread count
  *
