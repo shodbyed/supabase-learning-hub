@@ -63,53 +63,8 @@ CREATE TRIGGER reset_unread_on_read
   FOR EACH ROW
   EXECUTE FUNCTION reset_unread_count();
 
--- Row Level Security (RLS)
+-- Row Level Security (RLS) - Enable but policies added later in messaging_rls_policies.sql
 ALTER TABLE conversation_participants ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can see participants in conversations they're part of
-CREATE POLICY "Users can view participants in their conversations"
-  ON conversation_participants
-  FOR SELECT
-  USING (
-    conversation_id IN (
-      SELECT conversation_id
-      FROM conversation_participants
-      WHERE user_id = auth.uid()
-    )
-  );
-
--- Policy: Users can add themselves to non-auto-managed conversations
-CREATE POLICY "Users can join conversations"
-  ON conversation_participants
-  FOR INSERT
-  WITH CHECK (
-    auth.uid() = user_id
-    AND conversation_id IN (
-      SELECT id
-      FROM conversations
-      WHERE auto_managed = FALSE
-    )
-  );
-
--- Policy: Users can update their own participant settings
-CREATE POLICY "Users can update their own settings"
-  ON conversation_participants
-  FOR UPDATE
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- Policy: Users can leave conversations by setting left_at
-CREATE POLICY "Users can leave conversations"
-  ON conversation_participants
-  FOR DELETE
-  USING (
-    auth.uid() = user_id
-    AND conversation_id IN (
-      SELECT id
-      FROM conversations
-      WHERE auto_managed = FALSE
-    )
-  );
 
 -- Comments
 COMMENT ON TABLE conversation_participants IS 'Join table connecting users to conversations with per-user settings';

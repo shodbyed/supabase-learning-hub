@@ -186,49 +186,8 @@ CREATE TRIGGER set_messages_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_messages_updated_at();
 
--- Row Level Security (RLS)
+-- Row Level Security (RLS) - Enable but policies added later in messaging_rls_policies.sql
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can view messages in conversations they're part of (excluding deleted)
-CREATE POLICY "Users can view messages in their conversations"
-  ON messages
-  FOR SELECT
-  USING (
-    is_deleted = FALSE
-    AND conversation_id IN (
-      SELECT conversation_id
-      FROM conversation_participants
-      WHERE user_id = auth.uid()
-        AND left_at IS NULL
-    )
-  );
-
--- Policy: Users can send messages to conversations they're part of
-CREATE POLICY "Users can send messages"
-  ON messages
-  FOR INSERT
-  WITH CHECK (
-    auth.uid() = sender_id
-    AND conversation_id IN (
-      SELECT conversation_id
-      FROM conversation_participants
-      WHERE user_id = auth.uid()
-        AND left_at IS NULL
-    )
-  );
-
--- Policy: Users can edit their own messages (time limit enforced by trigger)
-CREATE POLICY "Users can edit their own messages"
-  ON messages
-  FOR UPDATE
-  USING (auth.uid() = sender_id)
-  WITH CHECK (auth.uid() = sender_id);
-
--- Policy: Users can soft-delete their own messages (time limit enforced by trigger)
-CREATE POLICY "Users can delete their own messages"
-  ON messages
-  FOR DELETE
-  USING (auth.uid() = sender_id);
 
 -- Comments
 COMMENT ON TABLE messages IS 'Individual messages within conversations, supporting edit/delete with time limits';

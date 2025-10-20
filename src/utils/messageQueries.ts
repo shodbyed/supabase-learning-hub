@@ -1,0 +1,204 @@
+/**
+ * @fileoverview Message Query Utilities
+ *
+ * Queries for the messaging system including conversations, messages, and participants.
+ * Handles direct messages, team chats, captain chats, and announcements.
+ */
+
+import { supabase } from '@/supabaseClient';
+
+/**
+ * Fetch all conversations for a user
+ *
+ * Returns conversations with:
+ * - Conversation metadata (title, type, last message preview)
+ * - Participant count
+ * - Unread count for the current user
+ * - Last message timestamp for sorting
+ *
+ * Conversations are sorted by most recent message first.
+ *
+ * @param userId - The member ID to fetch conversations for
+ * @returns Promise with conversations data and any error
+ */
+export async function fetchUserConversations(userId: string) {
+  // Fetch all conversations the user is a participant in
+  const { data, error } = await supabase
+    .from('conversation_participants')
+    .select(`
+      conversation_id,
+      unread_count,
+      last_read_at,
+      conversations!inner(
+        id,
+        title,
+        conversation_type,
+        scope_type,
+        last_message_at,
+        last_message_preview,
+        created_at
+      )
+    `)
+    .eq('user_id', userId)
+    .is('left_at', null) // Only active conversations
+    .order('conversations(last_message_at)', { ascending: false, nullsFirst: false });
+
+  if (error) {
+    console.error('Error fetching user conversations:', error);
+    return { data: null, error };
+  }
+
+  // For each conversation, fetch the other participant's name for DMs
+  const conversationsWithNames = await Promise.all(
+    (data || []).map(async (item: any) => {
+      let displayName = item.conversations.title;
+
+      // If no title (DM conversation), fetch other participant's name
+      if (!displayName) {
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select(`
+            user_id,
+            members:user_id (
+              first_name,
+              last_name
+            )
+          `)
+          .eq('conversation_id', item.conversations.id)
+          .is('left_at', null);
+
+        // Find the other participant (not current user)
+        const otherParticipant = participants?.find((p: any) => p.user_id !== userId);
+        if (otherParticipant?.members) {
+          displayName = `${otherParticipant.members.first_name} ${otherParticipant.members.last_name}`;
+        }
+      }
+
+      return {
+        id: item.conversations.id,
+        title: displayName || 'Direct Message',
+        conversationType: item.conversations.conversation_type,
+        scopeType: item.conversations.scope_type,
+        lastMessageAt: item.conversations.last_message_at,
+        lastMessagePreview: item.conversations.last_message_preview,
+        unreadCount: item.unread_count,
+        createdAt: item.conversations.created_at,
+      };
+    })
+  );
+
+  return { data: conversationsWithNames, error: null };
+}
+
+/**
+ * Fetch all messages in a conversation
+ *
+ * Returns messages with:
+ * - Message content and metadata (created_at, edited_at)
+ * - Sender information (name, member number)
+ * - Edit/delete status
+ *
+ * Messages are sorted chronologically (oldest first) for chat display.
+ * Only returns non-deleted messages.
+ *
+ * @param conversationId - The conversation ID to fetch messages for
+ * @returns Promise with messages data and any error
+ */
+export async function fetchConversationMessages(conversationId: string) {
+  const { data, error } = await supabase
+    .from('messages')
+    .select(`
+      id,
+      content,
+      created_at,
+      edited_at,
+      is_edited,
+      sender:members!sender_id(
+        id,
+        first_name,
+        last_name,
+        system_player_number
+      )
+    `)
+    .eq('conversation_id', conversationId)
+    .eq('is_deleted', false)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching conversation messages:', error);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
+/**
+ * Send a new message in a conversation
+ *
+ * Creates a new message record and automatically:
+ * - Updates conversation's last_message_at and preview
+ * - Increments unread count for other participants
+ *
+ * @param conversationId - The conversation to send the message in
+ * @param senderId - The member ID of the sender
+ * @param content - The message text (max 2000 characters)
+ * @returns Promise with the created message data and any error
+ */
+export async function sendMessage(
+  conversationId: string,
+  senderId: string,
+  content: string
+) {
+  // Validate content length
+  if (!content || content.length === 0) {
+    return { data: null, error: new Error('Message content cannot be empty') };
+  }
+
+  if (content.length > 2000) {
+    return { data: null, error: new Error('Message cannot exceed 2000 characters') };
+  }
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      conversation_id: conversationId,
+      sender_id: senderId,
+      content: content.trim(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error sending message:', error);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
+/**
+ * Create a new direct message conversation or open existing one
+ *
+ * Checks if a DM conversation already exists between two users.
+ * If it exists, returns the existing conversation.
+ * If not, creates a new conversation and adds both participants.
+ *
+ * @param userId1 - First user's member ID
+ * @param userId2 - Second user's member ID
+ * @returns Promise with conversation ID and any error
+ */
+export async function createOrOpenConversation(userId1: string, userId2: string) {
+  // Call the database function that handles conversation creation with SECURITY DEFINER
+  // This bypasses RLS policies while still maintaining security
+  const { data, error } = await supabase.rpc('create_dm_conversation', {
+    user1_id: userId1,
+    user2_id: userId2,
+  });
+
+  if (error) {
+    console.error('Error creating/opening conversation:', error);
+    return { data: null, error };
+  }
+
+  return { data: { conversationId: data }, error: null };
+}

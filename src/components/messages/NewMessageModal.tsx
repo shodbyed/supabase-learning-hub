@@ -5,21 +5,22 @@
  * Features:
  * - Search bar for finding users
  * - Filter tabs: All | My Leagues | My Teams
- * - Clickable user list
- * - Creates or opens existing conversation
+ * - Clickable user list with compact cards
+ * - Fetches real members from database
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/supabaseClient';
 
-interface User {
+interface Member {
   id: string;
-  name: string;
-  memberNumber: string;
-  context?: string; // e.g., "Monday Night League" or "Team Sharks"
+  first_name: string;
+  last_name: string;
+  system_player_number: number;
 }
 
 interface NewMessageModalProps {
@@ -29,28 +30,52 @@ interface NewMessageModalProps {
 
 type FilterTab = 'all' | 'leagues' | 'teams';
 
-// Mock data - will be replaced with real data from database
-const MOCK_USERS: User[] = [
-  { id: '1', name: 'John Smith', memberNumber: '12345', context: 'Monday Night League' },
-  { id: '2', name: 'Sarah Johnson', memberNumber: '23456', context: 'Team Sharks' },
-  { id: '3', name: 'Mike Williams', memberNumber: '34567', context: 'Monday Night League' },
-  { id: '4', name: 'Lisa Brown', memberNumber: '45678', context: 'Team Sharks' },
-  { id: '5', name: 'Tom Davis', memberNumber: '56789', context: 'Wednesday League' },
-];
-
 export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Filter users based on search query
-  const filteredUsers = MOCK_USERS.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.memberNumber.includes(searchQuery)
-  );
+  // Fetch all members
+  useEffect(() => {
+    async function fetchMembers() {
+      // Only fetch members with user_id (authenticated accounts)
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, first_name, last_name, system_player_number')
+        .not('user_id', 'is', null)
+        .order('last_name', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching members:', error);
+        setLoading(false);
+        return;
+      }
+
+      setMembers(data || []);
+      setLoading(false);
+    }
+
+    fetchMembers();
+  }, []);
+
+  // Filter members based on search query
+  const filteredMembers = members.filter((member) => {
+    const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
+    const query = searchQuery.toLowerCase();
+
+    // Remove 'p-' prefix if user typed it
+    const cleanQuery = query.replace(/^p-?/, '');
+    const playerNumber = member.system_player_number.toString().padStart(5, '0');
+
+    return (
+      fullName.includes(query) ||
+      playerNumber.includes(cleanQuery)
+    );
+  });
 
   const handleUserClick = (userId: string) => {
     onSelectUser(userId);
-    onClose();
   };
 
   return (
@@ -129,31 +154,30 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
 
         {/* User List */}
         <div className="flex-1 overflow-y-auto p-6">
-          {filteredUsers.length === 0 ? (
+          {loading ? (
             <div className="text-center py-8 text-gray-500">
-              <p>No users found</p>
+              <p>Loading members...</p>
+            </div>
+          ) : filteredMembers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No members found</p>
               <p className="text-sm mt-2">Try a different search term</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {filteredUsers.map((user) => (
+            <div className="space-y-1">
+              {filteredMembers.map((member) => (
                 <button
-                  key={user.id}
-                  onClick={() => handleUserClick(user.id)}
-                  className="w-full p-4 rounded-lg border hover:bg-gray-50 transition-colors text-left"
+                  key={member.id}
+                  onClick={() => handleUserClick(member.id)}
+                  className="w-full p-2 rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-600">
-                        Member #{user.memberNumber}
-                      </p>
-                    </div>
-                    {user.context && (
-                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        {user.context}
-                      </span>
-                    )}
+                    <p className="font-medium text-gray-900">
+                      {member.first_name} {member.last_name}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      P-{member.system_player_number.toString().padStart(5, '0')}
+                    </p>
                   </div>
                 </button>
               ))}

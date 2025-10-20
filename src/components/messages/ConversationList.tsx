@@ -5,63 +5,72 @@
  * Shows conversation preview with last message and timestamp.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fetchUserConversations } from '@/utils/messageQueries';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Conversation {
   id: string;
-  title: string;
-  lastMessage: string;
-  timestamp: string;
+  title: string | null;
+  conversationType: string | null;
+  scopeType: string | null;
+  lastMessageAt: string | null;
+  lastMessagePreview: string | null;
   unreadCount: number;
-  isAnnouncement: boolean;
+  createdAt: string;
 }
 
 interface ConversationListProps {
+  userId: string;
   selectedConversationId: string | null;
   onSelectConversation: (id: string) => void;
 }
 
-// Mock data - will be replaced with real data later
-const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: '1',
-    title: 'Team Sharks',
-    lastMessage: 'Practice this Thursday at 7pm',
-    timestamp: '2m ago',
-    unreadCount: 2,
-    isAnnouncement: false,
-  },
-  {
-    id: '2',
-    title: 'Monday Night League',
-    lastMessage: 'Schedule has been updated',
-    timestamp: '1h ago',
-    unreadCount: 0,
-    isAnnouncement: true,
-  },
-  {
-    id: '3',
-    title: 'John Smith',
-    lastMessage: 'Thanks for the game last night!',
-    timestamp: '3h ago',
-    unreadCount: 1,
-    isAnnouncement: false,
-  },
-];
-
 export function ConversationList({
+  userId,
   selectedConversationId,
   onSelectConversation,
 }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch conversations
+  useEffect(() => {
+    async function loadConversations() {
+      const { data, error } = await fetchUserConversations(userId);
+
+      if (error) {
+        console.error('Error loading conversations:', error);
+        setLoading(false);
+        return;
+      }
+
+      setConversations(data || []);
+      setLoading(false);
+    }
+
+    loadConversations();
+  }, [userId]);
 
   // Filter conversations based on search
-  const filteredConversations = MOCK_CONVERSATIONS.filter((conv) =>
-    conv.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter((conv) => {
+    const title = conv.title || 'Direct Message';
+    return title.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  // Format timestamp
+  const formatTimestamp = (dateString: string | null) => {
+    if (!dateString) return '';
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch {
+      return '';
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -81,43 +90,54 @@ export function ConversationList({
 
       {/* Conversation list */}
       <div className="flex-1 overflow-y-auto">
-        {filteredConversations.length === 0 ? (
+        {loading ? (
+          <div className="p-4 text-center text-gray-500 text-sm">
+            Loading conversations...
+          </div>
+        ) : filteredConversations.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
             No conversations found
           </div>
         ) : (
-          filteredConversations.map((conversation) => (
-            <button
-              key={conversation.id}
-              onClick={() => onSelectConversation(conversation.id)}
-              className={cn(
-                'w-full p-4 text-left border-b hover:bg-gray-100 transition-colors',
-                selectedConversationId === conversation.id && 'bg-blue-50 hover:bg-blue-50'
-              )}
-            >
-              <div className="flex items-start justify-between mb-1">
-                <span className="font-semibold text-sm flex items-center gap-2">
-                  {conversation.title}
-                  {conversation.isAnnouncement && (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                      Announcement
+          filteredConversations.map((conversation) => {
+            const isAnnouncement = conversation.conversationType === 'announcements';
+            const displayTitle = conversation.title || 'Direct Message';
+
+            return (
+              <button
+                key={conversation.id}
+                onClick={() => onSelectConversation(conversation.id)}
+                className={cn(
+                  'w-full p-4 text-left border-b-2 border-gray-300 hover:bg-gray-100 transition-colors',
+                  selectedConversationId === conversation.id && 'bg-blue-50 hover:bg-blue-50'
+                )}
+              >
+                <div className="flex items-start justify-between mb-1">
+                  <span className="font-semibold text-sm flex items-center gap-2">
+                    {displayTitle}
+                    {isAnnouncement && (
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                        Announcement
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {formatTimestamp(conversation.lastMessageAt)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600 truncate flex-1">
+                    {conversation.lastMessagePreview || 'No messages yet'}
+                  </p>
+                  {conversation.unreadCount > 0 && (
+                    <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">
+                      {conversation.unreadCount}
                     </span>
                   )}
-                </span>
-                <span className="text-xs text-gray-500">{conversation.timestamp}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600 truncate flex-1">
-                  {conversation.lastMessage}
-                </p>
-                {conversation.unreadCount > 0 && (
-                  <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center flex-shrink-0">
-                    {conversation.unreadCount}
-                  </span>
-                )}
-              </div>
-            </button>
-          ))
+                </div>
+              </button>
+            );
+          })
         )}
       </div>
     </div>

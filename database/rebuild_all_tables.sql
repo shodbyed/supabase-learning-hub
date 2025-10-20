@@ -1154,6 +1154,13 @@ COMMENT ON COLUMN public.matches.status IS 'Match status: scheduled, in_progress
 \i database/messaging_rls_policies.sql
 
 -- =====================================================
+-- 19. CONVERSATION HELPER FUNCTIONS
+-- =====================================================
+-- Functions for creating conversations with SECURITY DEFINER to bypass RLS
+
+\i database/create_conversation_function.sql
+
+-- =====================================================
 -- REBUILD COMPLETE
 -- =====================================================
 -- All tables have been recreated with correct structure

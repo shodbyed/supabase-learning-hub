@@ -1,25 +1,3 @@
-/**
- * @fileoverview RLS Policies for Messaging System
- *
- * This file adds Row Level Security policies for the messaging tables.
- * It must be run AFTER all messaging tables are created to avoid circular dependencies.
- *
- * IMPORTANT: conversation_participants.user_id is a MEMBER ID (members.id), NOT an auth user ID.
- * We use helper functions to translate between auth.uid() and member IDs.
- *
- * Run order:
- * 1. conversations.sql
- * 2. conversation_participants.sql
- * 3. messages.sql
- * 4. blocked_users.sql
- * 5. user_reports.sql
- * 6. THIS FILE (messaging_rls_policies.sql)
- * 7. create_conversation_function.sql
- */
-
--- =====================================================
--- HELPER FUNCTIONS
--- =====================================================
 
 -- Helper function to get current authenticated user's member_id
 CREATE OR REPLACE FUNCTION get_current_member_id()
@@ -36,26 +14,30 @@ $$;
 
 GRANT EXECUTE ON FUNCTION get_current_member_id() TO authenticated;
 
--- Helper function to check if user is in conversation (security definer to bypass RLS)
-CREATE OR REPLACE FUNCTION is_conversation_participant(conv_id UUID, uid UUID)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM conversation_participants
-    WHERE conversation_id = conv_id
-      AND user_id = uid
-      AND left_at IS NULL
-  );
-END;
-$$;
+-- =====================================================
+-- DROP ALL EXISTING POLICIES
+-- =====================================================
 
-GRANT EXECUTE ON FUNCTION is_conversation_participant(UUID, UUID) TO authenticated;
+-- Conversations
+DROP POLICY IF EXISTS "Users can view their own conversations" ON conversations;
+DROP POLICY IF EXISTS "Authenticated users can create conversations" ON conversations;
+DROP POLICY IF EXISTS "Participants can update conversation metadata" ON conversations;
+DROP POLICY IF EXISTS "Users cannot delete auto-managed conversations" ON conversations;
+
+-- Conversation Participants
+DROP POLICY IF EXISTS "Users can view participants in their conversations" ON conversation_participants;
+DROP POLICY IF EXISTS "Users can join conversations" ON conversation_participants;
+DROP POLICY IF EXISTS "Users can update their own settings" ON conversation_participants;
+DROP POLICY IF EXISTS "Users can leave conversations" ON conversation_participants;
+
+-- Messages
+DROP POLICY IF EXISTS "Users can view messages in their conversations" ON messages;
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
+DROP POLICY IF EXISTS "Users can edit their own messages" ON messages;
+DROP POLICY IF EXISTS "Users can delete their own messages" ON messages;
 
 -- =====================================================
--- CONVERSATIONS POLICIES
+-- RECREATE CONVERSATIONS POLICIES (CORRECTED)
 -- =====================================================
 
 CREATE POLICY "Users can view their own conversations"
@@ -94,7 +76,7 @@ CREATE POLICY "Users cannot delete auto-managed conversations"
   USING (auto_managed = FALSE);
 
 -- =====================================================
--- CONVERSATION_PARTICIPANTS POLICIES
+-- RECREATE CONVERSATION_PARTICIPANTS POLICIES (CORRECTED)
 -- =====================================================
 
 CREATE POLICY "Users can view participants in their conversations"
@@ -132,10 +114,8 @@ CREATE POLICY "Users can leave conversations"
   );
 
 -- =====================================================
--- MESSAGES POLICIES
+-- RECREATE MESSAGES POLICIES (CORRECTED)
 -- =====================================================
-
--- NOTE: messages.sender_id is a foreign key to members.id, not auth.users.id
 
 CREATE POLICY "Users can view messages in their conversations"
   ON messages
@@ -174,7 +154,3 @@ CREATE POLICY "Users can delete their own messages"
   ON messages
   FOR DELETE
   USING (sender_id = get_current_member_id());
-
--- =====================================================
--- POLICIES COMPLETE
--- =====================================================
