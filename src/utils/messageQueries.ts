@@ -69,8 +69,9 @@ export async function fetchUserConversations(userId: string) {
 
         // Find the other participant (not current user)
         const otherParticipant = participants?.find((p: any) => p.user_id !== userId);
-        if (otherParticipant?.members) {
-          displayName = `${otherParticipant.members.first_name} ${otherParticipant.members.last_name}`;
+        if (otherParticipant?.members && !Array.isArray(otherParticipant.members)) {
+          const member = otherParticipant.members as any;
+          displayName = `${member.first_name} ${member.last_name}`;
         }
       }
 

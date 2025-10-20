@@ -6,7 +6,6 @@
  * - Search bar for finding users
  * - Filter tabs: All | My Leagues | My Teams
  * - Clickable user list with compact cards
- * - Fetches real members from database
  */
 
 import { useState, useEffect } from 'react';
@@ -15,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
+import { UserListItem } from './UserListItem';
 
 interface Member {
   id: string;
@@ -36,10 +36,8 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all members
   useEffect(() => {
     async function fetchMembers() {
-      // Only fetch members with user_id (authenticated accounts)
       const { data, error } = await supabase
         .from('members')
         .select('id, first_name, last_name, system_player_number')
@@ -59,24 +57,14 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
     fetchMembers();
   }, []);
 
-  // Filter members based on search query
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
     const query = searchQuery.toLowerCase();
-
-    // Remove 'p-' prefix if user typed it
     const cleanQuery = query.replace(/^p-?/, '');
     const playerNumber = member.system_player_number.toString().padStart(5, '0');
 
-    return (
-      fullName.includes(query) ||
-      playerNumber.includes(cleanQuery)
-    );
+    return fullName.includes(query) || playerNumber.includes(cleanQuery);
   });
-
-  const handleUserClick = (userId: string) => {
-    onSelectUser(userId);
-  };
 
   return (
     <div
@@ -166,20 +154,13 @@ export function NewMessageModal({ onClose, onSelectUser }: NewMessageModalProps)
           ) : (
             <div className="space-y-1">
               {filteredMembers.map((member) => (
-                <button
+                <UserListItem
                   key={member.id}
-                  onClick={() => handleUserClick(member.id)}
-                  className="w-full p-2 rounded-lg border hover:bg-blue-50 hover:border-blue-300 transition-colors text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-gray-900">
-                      {member.first_name} {member.last_name}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      P-{member.system_player_number.toString().padStart(5, '0')}
-                    </p>
-                  </div>
-                </button>
+                  firstName={member.first_name}
+                  lastName={member.last_name}
+                  playerNumber={member.system_player_number}
+                  onClick={() => onSelectUser(member.id)}
+                />
               ))}
             </div>
           )}
