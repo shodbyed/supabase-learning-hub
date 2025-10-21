@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
 import { WeekOffReasonModal } from '@/components/modals/WeekOffReasonModal';
+import { InfoButton } from '@/components/InfoButton';
 import type { WeekEntry } from '@/types/season';
 import type { League } from '@/types/league';
 import { formatLocalDate } from '@/utils/formatters';
@@ -21,6 +22,7 @@ interface SeasonData {
   season_name: string;
   start_date: string;
   end_date: string;
+  season_length: number;
   status: 'active' | 'upcoming' | 'completed';
 }
 
@@ -74,7 +76,7 @@ export const SeasonScheduleManager: React.FC = () => {
         // Fetch season
         const { data: seasonData, error: seasonError } = await supabase
           .from('seasons')
-          .select('id, season_name, start_date, end_date, status')
+          .select('id, season_name, start_date, end_date, season_length, status')
           .eq('id', seasonId)
           .single();
 
@@ -371,15 +373,114 @@ export const SeasonScheduleManager: React.FC = () => {
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* Instructions Info Button */}
+        <div className="mb-4">
+          <InfoButton title="Instructions" label="Instructions">
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>Click "Insert Week-Off" to add a blackout week (holiday, break, etc.)</li>
+              <li>Click "Remove Week-Off" to convert a blackout week back to a regular week</li>
+              <li>You can only edit future weeks (past weeks are locked)</li>
+              <li>Week numbers will automatically adjust when you add/remove blackout weeks</li>
+            </ul>
+          </InfoButton>
+        </div>
+
+        {/* Season Configuration Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-blue-900 mb-2">Instructions</h3>
-          <ul className="list-disc list-inside text-blue-800 space-y-1 text-sm">
-            <li>Click "Insert Week-Off" to add a blackout week (holiday, break, etc.)</li>
-            <li>Click "Remove Week-Off" to convert a blackout week back to a regular week</li>
-            <li>You can only edit future weeks (past weeks are locked)</li>
-            <li>Week numbers will automatically adjust when you add/remove blackout weeks</li>
-          </ul>
+          <div className="grid grid-cols-2 gap-32 text-sm">
+            {/* Left Column: Start Date & Season Length */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-blue-900">Starting Date:</span>
+                  <span className="ml-2 text-blue-800">
+                    {season?.start_date ? new Date(season.start_date + 'T00:00:00').toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-2"
+                  onClick={() => console.log('Edit start date')}
+                >
+                  Edit
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-blue-900">Season Length:</span>
+                  <span className="ml-2 text-blue-800">
+                    {season?.season_length ? `${season.season_length} weeks` : 'N/A'}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-2"
+                  onClick={() => console.log('Edit season length')}
+                >
+                  Edit
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Column: BCA & APA Championships */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-blue-900">BCA Championship:</span>
+                  <span className="ml-2 text-blue-800">
+                    {(() => {
+                      const bcaWeeks = schedule.filter(w =>
+                        w.type === 'week-off' &&
+                        (w.weekName.toLowerCase().includes('bca') || w.weekName.toLowerCase().includes('championship'))
+                      );
+                      if (bcaWeeks.length === 0) return 'Not scheduled';
+                      const start = bcaWeeks[0]?.date;
+                      const end = bcaWeeks[bcaWeeks.length - 1]?.date;
+                      return start && end
+                        ? `${new Date(start + 'T00:00:00').toLocaleDateString()} - ${new Date(end + 'T00:00:00').toLocaleDateString()}`
+                        : 'Not scheduled';
+                    })()}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-2"
+                  onClick={() => console.log('Edit BCA championship')}
+                >
+                  Edit
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-blue-900">APA Championship:</span>
+                  <span className="ml-2 text-blue-800">
+                    {(() => {
+                      const apaWeeks = schedule.filter(w =>
+                        w.type === 'week-off' && w.weekName.toLowerCase().includes('apa')
+                      );
+                      if (apaWeeks.length === 0) return 'Not scheduled';
+                      const start = apaWeeks[0]?.date;
+                      const end = apaWeeks[apaWeeks.length - 1]?.date;
+                      return start && end
+                        ? `${new Date(start + 'T00:00:00').toLocaleDateString()} - ${new Date(end + 'T00:00:00').toLocaleDateString()}`
+                        : 'Not scheduled';
+                    })()}
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-2"
+                  onClick={() => console.log('Edit APA championship')}
+                >
+                  Edit
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Error message */}

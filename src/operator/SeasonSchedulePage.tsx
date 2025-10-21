@@ -42,7 +42,6 @@ interface MatchWithDetails extends Match {
   home_team?: Team | null;
   away_team?: Team | null;
   scheduled_venue?: Venue | null;
-  season_week?: SeasonWeek;
 }
 
 interface WeekSchedule {
@@ -219,25 +218,55 @@ export const SeasonSchedulePage: React.FC = () => {
         if (weeksError) throw weeksError;
 
         // Fetch all matches with team and venue details
+        // NOTE: matches use round_number, not season_week_id
+        // We'll match them to weeks dynamically based on regular week order
         const { data: matchesData, error: matchesError } = await supabase
           .from('matches')
           .select(`
             *,
             home_team:teams!matches_home_team_id_fkey(id, team_name, captain_id),
             away_team:teams!matches_away_team_id_fkey(id, team_name, captain_id),
-            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, street_address, city, state),
-            season_week:season_weeks(id, scheduled_date, week_name, week_type)
+            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, street_address, city, state)
           `)
           .eq('season_id', seasonId)
           .order('match_number', { ascending: true });
 
         if (matchesError) throw matchesError;
 
+        // Create a mapping of round_number to week ID
+        // Round numbers correspond to regular weeks only (1st regular week = round 1, etc.)
+        const regularWeeks = weeksData.filter(w => w.week_type === 'regular').sort((a, b) =>
+          a.scheduled_date.localeCompare(b.scheduled_date)
+        );
+        const roundToWeekIdMap = new Map<number, string>();
+        regularWeeks.forEach((week, index) => {
+          roundToWeekIdMap.set(index + 1, week.id); // round_number is 1-indexed
+        });
+
+        console.log('📅 Regular weeks mapping:',
+          Array.from(roundToWeekIdMap.entries()).map(([round, weekId]) => {
+            const week = regularWeeks.find(w => w.id === weekId);
+            return { round, weekId, date: week?.scheduled_date, name: week?.week_name };
+          })
+        );
+
         // Organize matches by week
-        const scheduleByWeek: WeekSchedule[] = weeksData.map(week => ({
-          week,
-          matches: matchesData.filter(match => match.season_week_id === week.id) as MatchWithDetails[],
-        }));
+        // Regular weeks get their matches based on round_number
+        // Non-regular weeks (blackouts, breaks, playoffs) have no matches
+        const scheduleByWeek: WeekSchedule[] = weeksData.map(week => {
+          if (week.week_type === 'regular') {
+            // Find which round number this week represents by finding its position in regularWeeks
+            const roundNumber = regularWeeks.findIndex(w => w.id === week.id) + 1;
+            const weekMatches = matchesData.filter(match => match.round_number === roundNumber) as MatchWithDetails[];
+
+            console.log(`Week ${week.week_name} (${week.scheduled_date}): round ${roundNumber}, ${weekMatches.length} matches`);
+
+            return { week, matches: weekMatches };
+          } else {
+            // Non-regular weeks have no matches
+            return { week, matches: [] };
+          }
+        });
 
         setSchedule(scheduleByWeek);
       } catch (err) {

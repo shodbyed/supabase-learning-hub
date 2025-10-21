@@ -8,7 +8,6 @@ import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { DeleteSeasonModal } from '@/components/modals/DeleteSeasonModal';
 import type { League } from '@/types/league';
-import type { WeekEntry } from '@/types/season';
 
 interface LeagueOverviewCardProps {
   /** League data to display */
@@ -129,7 +128,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
     if (currentSeason.status === 'upcoming' && currentPlayWeek === 0) {
       return {
         showManageSchedule: true,
-        showEditSeasonInfo: true,
         showDelete: true,
       };
     }
@@ -261,23 +259,15 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
         localStorage.setItem('season-blackout-weeks', JSON.stringify(blackoutWeeks));
       }
 
-      // Reconstruct the complete schedule (regular weeks, season-end break, playoffs)
-      // This is what ScheduleReview expects to display
-      const completeSchedule: WeekEntry[] = (seasonWeeks || [])
-        .filter(w => w.week_type !== 'blackout') // Exclude blackouts - they're saved separately
-        .map(w => ({
-          weekNumber: w.week_type === 'regular' ? w.week_number : 0,
-          weekName: w.week_name,
-          date: w.scheduled_date,
-          type: w.week_type === 'regular' ? 'regular' :
-                w.week_type === 'playoffs' ? 'playoffs' : 'week-off',
-          conflicts: [], // Conflicts will be recalculated by ScheduleReview
-        }));
+      // DON'T load the schedule from database - let the wizard regenerate it fresh
+      // The database might have incomplete/corrupted data
+      // The wizard will regenerate the correct schedule based on:
+      // - seasonFormData (start date, length, championships)
+      // - blackoutWeeks (loaded above)
+      // This ensures we always get a complete, correct schedule
 
-      // Save complete schedule to localStorage (key expected by ScheduleReview)
-      if (completeSchedule.length > 0) {
-        localStorage.setItem('season-schedule-review', JSON.stringify(completeSchedule));
-      }
+      // Clear any old saved schedule
+      localStorage.removeItem('season-schedule-review');
 
       // Determine which step to start at based on what data exists
       let startStep = 0;
@@ -315,16 +305,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
     }
   };
 
-  /**
-   * Navigate to Season Settings Editor for upcoming seasons
-   * TODO: Implement SeasonSettingsEditor component (Phase 3)
-   */
-  const handleEditSeasonInfoClick = () => {
-    if (currentSeason) {
-      // For now, navigate to wizard - will be replaced with dedicated editor
-      navigate(`/league/${league.id}/create-season?seasonId=${currentSeason.id}`);
-    }
-  };
 
   /**
    * Determine if season is complete (has teams and schedule)
@@ -409,16 +389,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
             </Button>
           )}
 
-          {/* Edit Season Info - shown for upcoming seasons only */}
-          {editOptions.showEditSeasonInfo && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleEditSeasonInfoClick}
-            >
-              Edit Season Info
-            </Button>
-          )}
 
           {/* Continue Setup - shown for incomplete seasons */}
           {editOptions.showContinueSetup && (
