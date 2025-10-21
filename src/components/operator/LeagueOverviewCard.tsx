@@ -51,6 +51,12 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
    * Also checks if season has teams and schedule to determine if it's complete
    */
   useEffect(() => {
+    // Clear all localStorage when landing on dashboard to prevent cross-league contamination
+    localStorage.removeItem(`season-creation-${league.id}`);
+    localStorage.removeItem(`season-wizard-step-${league.id}`);
+    localStorage.removeItem('season-schedule-review');
+    localStorage.removeItem('season-blackout-weeks');
+
     const fetchCurrentSeason = async () => {
       setLoading(true);
       try {
@@ -116,15 +122,15 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       return { showCreate: true };
     }
 
-    // Incomplete season (partial wizard completion)
-    if (!hasSchedule || !hasTeams) {
+    // Incomplete season (wizard not finished - no schedule yet)
+    if (!hasSchedule) {
       return {
         showContinueSetup: true,
         showDelete: true,
       };
     }
 
-    // Upcoming season (complete but not started)
+    // Upcoming season (has schedule, not started yet)
     if (currentSeason.status === 'upcoming' && currentPlayWeek === 0) {
       return {
         showManageSchedule: true,
@@ -153,9 +159,10 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
    * Navigate to wizard to create a new season
    */
   const handleCreateSeasonClick = () => {
-    // Clear localStorage and navigate to wizard
+    // Clear ALL localStorage keys related to season creation
     localStorage.removeItem(`season-creation-${league.id}`);
     localStorage.removeItem(`season-wizard-step-${league.id}`);
+    localStorage.removeItem('season-schedule-review');
     localStorage.removeItem('season-blackout-weeks');
     navigate(`/league/${league.id}/create-season`);
   };
@@ -378,14 +385,14 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-semibold text-gray-900">League Overview</h2>
         <div className="flex gap-2">
-          {/* Manage Schedule - shown for complete seasons (active, upcoming with schedule, completed) */}
+          {/* Manage Season - shown for complete seasons (active, upcoming with schedule, completed) */}
           {editOptions.showManageSchedule && currentSeason && (
             <Button
               size="sm"
               variant="outline"
               onClick={() => navigate(`/league/${league.id}/season/${currentSeason.id}/manage-schedule`)}
             >
-              Manage Schedule
+              Manage Season
             </Button>
           )}
 

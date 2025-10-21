@@ -13,9 +13,11 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
 import { WeekOffReasonModal } from '@/components/modals/WeekOffReasonModal';
 import { InfoButton } from '@/components/InfoButton';
-import type { WeekEntry } from '@/types/season';
+import type { WeekEntry, ChampionshipEvent } from '@/types/season';
 import type { League } from '@/types/league';
-import { formatLocalDate } from '@/utils/formatters';
+import { formatLocalDate, parseLocalDate } from '@/utils/formatters';
+import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
+import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
 
 interface SeasonData {
   id: string;
@@ -114,8 +116,57 @@ export const SeasonScheduleManager: React.FC = () => {
           };
         });
 
-        setSchedule(transformedSchedule);
-        setOriginalSchedule(JSON.parse(JSON.stringify(transformedSchedule))); // Deep clone for comparison
+        // Run conflict detection on the loaded schedule
+        const startDate = parseLocalDate(seasonData.start_date);
+        const seasonLength = seasonData.season_length || 16;
+        const holidays = fetchHolidaysForSeason(startDate, seasonLength);
+
+        // Extract championship events from blackout weeks
+        const bcaWeeks = transformedSchedule.filter(w =>
+          w.type === 'week-off' &&
+          (w.weekName.toLowerCase().includes('bca') || w.weekName.toLowerCase().includes('championship'))
+        );
+        const apaWeeks = transformedSchedule.filter(w =>
+          w.type === 'week-off' && w.weekName.toLowerCase().includes('apa')
+        );
+
+        const bcaChampionship: ChampionshipEvent | undefined =
+          bcaWeeks.length > 0
+            ? {
+                start: bcaWeeks[0].date,
+                end: bcaWeeks[bcaWeeks.length - 1].date,
+                ignored: false,
+              }
+            : undefined;
+
+        const apaChampionship: ChampionshipEvent | undefined =
+          apaWeeks.length > 0
+            ? {
+                start: apaWeeks[0].date,
+                end: apaWeeks[apaWeeks.length - 1].date,
+                ignored: false,
+              }
+            : undefined;
+
+        const leagueDayOfWeek = leagueData?.day_of_week || 'tuesday';
+
+        // Run conflict detection
+        const scheduleWithConflicts = detectScheduleConflicts(
+          transformedSchedule,
+          holidays,
+          bcaChampionship,
+          apaChampionship,
+          leagueDayOfWeek
+        );
+
+        console.log('⚠️ Conflicts detected:', scheduleWithConflicts.filter(w => w.conflicts.length > 0).map(w => ({
+          weekName: w.weekName,
+          date: w.date,
+          conflicts: w.conflicts
+        })));
+
+        setSchedule(scheduleWithConflicts);
+        setOriginalSchedule(JSON.parse(JSON.stringify(scheduleWithConflicts))); // Deep clone for comparison
       } catch (err) {
         console.error('Error loading schedule:', err);
         setError('Failed to load season schedule');

@@ -9,12 +9,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft, Calendar, MapPin, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
+import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
+import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
 import type { Match } from '@/types/schedule';
+import type { ChampionshipEvent } from '@/types/season';
 
 interface SeasonWeek {
   id: string;
@@ -22,6 +25,13 @@ interface SeasonWeek {
   week_name: string;
   week_type: string;
   week_completed: boolean;
+  conflicts?: Array<{
+    type: 'holiday' | 'championship';
+    name: string;
+    reason: string;
+    severity: string;
+    daysAway: number;
+  }>;
 }
 
 interface Team {
@@ -250,6 +260,48 @@ export const SeasonSchedulePage: React.FC = () => {
           })
         );
 
+        // Fetch holidays for conflict detection
+        const startDate = parseLocalDate(seasonData.start_date);
+        const seasonLength = seasonData.season_length || 16;
+        const holidays = fetchHolidaysForSeason(startDate, seasonLength);
+        console.log('🎄 Holidays fetched:', holidays);
+
+        // Extract championship events from blackout weeks
+        const bcaWeeks = weeksData.filter(w =>
+          w.week_type === 'blackout' &&
+          (w.week_name?.toLowerCase().includes('bca') || w.week_name?.toLowerCase().includes('championship'))
+        );
+        const apaWeeks = weeksData.filter(w =>
+          w.week_type === 'blackout' && w.week_name?.toLowerCase().includes('apa')
+        );
+
+        const bcaChampionship: ChampionshipEvent | undefined =
+          bcaWeeks.length > 0
+            ? {
+                start: bcaWeeks[0].scheduled_date,
+                end: bcaWeeks[bcaWeeks.length - 1].scheduled_date,
+                ignored: false,
+              }
+            : undefined;
+
+        const apaChampionship: ChampionshipEvent | undefined =
+          apaWeeks.length > 0
+            ? {
+                start: apaWeeks[0].scheduled_date,
+                end: apaWeeks[apaWeeks.length - 1].scheduled_date,
+                ignored: false,
+              }
+            : undefined;
+
+        // Get league day of week for conflict detection
+        const { data: leagueData } = await supabase
+          .from('leagues')
+          .select('day_of_week')
+          .eq('id', leagueId)
+          .single();
+
+        const leagueDayOfWeek = leagueData?.day_of_week || 'tuesday';
+
         // Organize matches by week
         // Regular weeks get their matches based on round_number
         // Non-regular weeks (blackouts, breaks, playoffs) have no matches
@@ -268,7 +320,54 @@ export const SeasonSchedulePage: React.FC = () => {
           }
         });
 
-        setSchedule(scheduleByWeek);
+        // Run conflict detection on the schedule
+        const weekEntries = scheduleByWeek.map(({ week }) => ({
+          weekNumber: week.week_type === 'regular' ? parseInt(week.week_name.replace(/\D/g, '')) || 0 : 0,
+          weekName: week.week_name,
+          date: week.scheduled_date,
+          type: week.week_type === 'regular' ? 'regular' as const :
+                week.week_type === 'playoffs' ? 'playoffs' as const : 'week-off' as const,
+          conflicts: [],
+        }));
+
+        console.log('🔍 Running conflict detection with:', {
+          weekEntriesCount: weekEntries.length,
+          holidaysCount: holidays.length,
+          bcaChampionship,
+          apaChampionship,
+          leagueDayOfWeek
+        });
+
+        const weeksWithConflicts = detectScheduleConflicts(
+          weekEntries,
+          holidays,
+          bcaChampionship,
+          apaChampionship,
+          leagueDayOfWeek
+        );
+
+        console.log('⚠️ Weeks with conflicts:', weeksWithConflicts.filter(w => w.conflicts.length > 0).map(w => ({
+          weekName: w.weekName,
+          date: w.date,
+          conflicts: w.conflicts
+        })));
+
+        // Map conflicts back to schedule
+        const scheduleWithConflicts = scheduleByWeek.map((item, index) => ({
+          ...item,
+          week: {
+            ...item.week,
+            conflicts: weeksWithConflicts[index]?.conflicts || [],
+          },
+        }));
+
+        console.log('📊 Final schedule with conflicts mapped:', scheduleWithConflicts.filter(s => s.week.conflicts && s.week.conflicts.length > 0).map(s => ({
+          weekName: s.week.week_name,
+          date: s.week.scheduled_date,
+          conflicts: s.week.conflicts
+        })));
+
+        setSchedule(scheduleWithConflicts);
       } catch (err) {
         console.error('Error fetching schedule:', err);
         setError('Failed to load schedule');
@@ -366,6 +465,20 @@ export const SeasonSchedulePage: React.FC = () => {
                         <span className={`text-xs font-semibold px-2 py-1 rounded ${weekStyle.badgeColor}`}>
                           {weekStyle.badge}
                         </span>
+                      )}
+                      {/* Conflict Badges */}
+                      {week.conflicts && week.conflicts.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          {week.conflicts.map((conflict, idx) => (
+                            <span
+                              key={idx}
+                              className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-orange-100 text-orange-800 border border-orange-300"
+                            >
+                              <AlertTriangle className="h-3 w-3" />
+                              {conflict.name}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
