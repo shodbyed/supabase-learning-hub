@@ -157,6 +157,7 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
                 isEdited={message.is_edited}
                 isCurrentUser={isCurrentUser}
                 senderName={!isCurrentUser ? senderName : undefined}
+                senderId={!isCurrentUser ? message.sender.id : undefined}
                 recipientLastRead={recipientLastRead}
               />
             );

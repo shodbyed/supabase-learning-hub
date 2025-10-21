@@ -15,6 +15,7 @@ import { supabase } from '@/supabaseClient';
  * - Participant count
  * - Unread count for the current user
  * - Last message timestamp for sorting
+ * - Excludes conversations with blocked users (for DM conversations)
  *
  * Conversations are sorted by most recent message first.
  *
@@ -22,6 +23,14 @@ import { supabase } from '@/supabaseClient';
  * @returns Promise with conversations data and any error
  */
 export async function fetchUserConversations(userId: string) {
+  // First, get list of blocked users
+  const { data: blockedData } = await supabase
+    .from('blocked_users')
+    .select('blocked_id')
+    .eq('blocker_id', userId);
+
+  const blockedUserIds = (blockedData || []).map((block: any) => block.blocked_id);
+
   // Fetch all conversations the user is a participant in
   const { data, error } = await supabase
     .from('conversation_participants')
@@ -48,10 +57,11 @@ export async function fetchUserConversations(userId: string) {
     return { data: null, error };
   }
 
-  // For each conversation, fetch the other participant's name for DMs
+  // For each conversation, fetch the other participant's name for DMs and filter blocked users
   const conversationsWithNames = await Promise.all(
     (data || []).map(async (item: any) => {
       let displayName = item.conversations.title;
+      let shouldHide = false;
 
       // If no title (DM conversation), fetch other participant's name
       if (!displayName) {
@@ -69,10 +79,21 @@ export async function fetchUserConversations(userId: string) {
 
         // Find the other participant (not current user)
         const otherParticipant = participants?.find((p: any) => p.user_id !== userId);
+
+        // Check if the other participant is blocked
+        if (otherParticipant && blockedUserIds.includes(otherParticipant.user_id)) {
+          shouldHide = true;
+        }
+
         if (otherParticipant?.members && !Array.isArray(otherParticipant.members)) {
           const member = otherParticipant.members as any;
           displayName = `${member.first_name} ${member.last_name}`;
         }
+      }
+
+      // Return null for conversations that should be hidden
+      if (shouldHide) {
+        return null;
       }
 
       return {
@@ -88,7 +109,10 @@ export async function fetchUserConversations(userId: string) {
     })
   );
 
-  return { data: conversationsWithNames, error: null };
+  // Filter out null values (blocked conversations)
+  const filteredConversations = conversationsWithNames.filter((conv) => conv !== null);
+
+  return { data: filteredConversations, error: null };
 }
 
 /**
@@ -257,4 +281,123 @@ export async function updateLastRead(conversationId: string, userId: string) {
   }
 
   return { error: null };
+}
+
+/**
+ * Block a user from messaging
+ *
+ * Prevents the blocked user from:
+ * - Creating new DM conversations with the blocker
+ * - Sending messages in existing conversations
+ * - Appearing in the blocker's user search
+ *
+ * @param blockerId - The member ID of the user blocking
+ * @param blockedId - The member ID of the user being blocked
+ * @param reason - Optional reason for blocking (e.g., 'spam', 'harassment')
+ * @returns Promise with any error
+ */
+export async function blockUser(
+  blockerId: string,
+  blockedId: string,
+  reason?: string
+) {
+  // Prevent blocking yourself
+  if (blockerId === blockedId) {
+    return { error: new Error('Cannot block yourself') };
+  }
+
+  const { error } = await supabase
+    .from('blocked_users')
+    .insert({
+      blocker_id: blockerId,
+      blocked_id: blockedId,
+      reason: reason || null,
+    });
+
+  if (error) {
+    console.error('Error blocking user:', error);
+    return { error };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Unblock a previously blocked user
+ *
+ * Removes the block and allows normal messaging to resume.
+ *
+ * @param blockerId - The member ID of the user who blocked
+ * @param blockedId - The member ID of the user who was blocked
+ * @returns Promise with any error
+ */
+export async function unblockUser(blockerId: string, blockedId: string) {
+  const { error } = await supabase
+    .from('blocked_users')
+    .delete()
+    .eq('blocker_id', blockerId)
+    .eq('blocked_id', blockedId);
+
+  if (error) {
+    console.error('Error unblocking user:', error);
+    return { error };
+  }
+
+  return { error: null };
+}
+
+/**
+ * Get all users blocked by the current user
+ *
+ * Returns a list of blocked users with their basic info and block metadata.
+ *
+ * @param userId - The member ID to fetch blocked users for
+ * @returns Promise with array of blocked users and any error
+ */
+export async function getBlockedUsers(userId: string) {
+  const { data, error } = await supabase
+    .from('blocked_users')
+    .select(`
+      blocked_id,
+      blocked_at,
+      reason,
+      blocked:members!blocked_id(
+        id,
+        first_name,
+        last_name,
+        system_player_number
+      )
+    `)
+    .eq('blocker_id', userId)
+    .order('blocked_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching blocked users:', error);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+}
+
+/**
+ * Check if a user is blocked by the current user
+ *
+ * @param userId - The current user's member ID
+ * @param otherUserId - The other user's member ID to check
+ * @returns Promise with boolean indicating if user is blocked and any error
+ */
+export async function isUserBlocked(userId: string, otherUserId: string) {
+  const { data, error } = await supabase
+    .from('blocked_users')
+    .select('blocker_id')
+    .eq('blocker_id', userId)
+    .eq('blocked_id', otherUserId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error checking if user is blocked:', error);
+    return { data: false, error };
+  }
+
+  return { data: !!data, error: null };
 }

@@ -16,6 +16,7 @@ import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { Link } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 
 interface Captain {
   id: string;
@@ -165,9 +166,14 @@ export function TeamCard({
         {/* Captain */}
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Captain</p>
-          <p className={`text-base ${captain.id === currentUserId ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
-            {captain.first_name} {captain.last_name} {formatPartialMemberNumber(captain)}
-          </p>
+          <div className={`text-base ${captain.id === currentUserId ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-gray-100'}`}>
+            <PlayerNameLink
+              playerId={captain.id}
+              playerName={`${captain.first_name} ${captain.last_name}`}
+              className={captain.id === currentUserId ? 'font-semibold' : ''}
+            />{' '}
+            {formatPartialMemberNumber(captain)}
+          </div>
         </div>
 
         {/* Roster (excluding captain) */}
@@ -189,7 +195,11 @@ export function TeamCard({
               >
                 {slot.type === 'player' ? (
                   <>
-                    {slot.player.members.first_name} {slot.player.members.last_name}{' '}
+                    <PlayerNameLink
+                      playerId={slot.player.members.id}
+                      playerName={`${slot.player.members.first_name} ${slot.player.members.last_name}`}
+                      className={slot.player.member_id === currentUserId ? 'font-semibold' : ''}
+                    />{' '}
                     {formatPartialMemberNumber(slot.player.members)}
                   </>
                 ) : (

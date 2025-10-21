@@ -6,8 +6,8 @@
  * - Right: Selected conversation with message history and input
  */
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ConversationList } from '@/components/messages/ConversationList';
@@ -19,10 +19,21 @@ import { createOrOpenConversation, createGroupConversation } from '@/utils/messa
 
 export function Messages() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { memberId, firstName } = useCurrentMember();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Check if we were passed a conversationId from navigation state
+  useEffect(() => {
+    const state = location.state as { conversationId?: string } | null;
+    if (state?.conversationId) {
+      setSelectedConversationId(state.conversationId);
+      // Clear the state so refreshing doesn't re-select
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, location.pathname, navigate]);
 
   const handleNewMessage = () => {
     setShowNewMessageModal(true);

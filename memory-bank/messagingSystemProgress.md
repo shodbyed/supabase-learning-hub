@@ -380,70 +380,68 @@ CREATE INDEX idx_reports_reported ON user_reports(reported_id);
 
 ---
 
-### 📋 Phase 3: Auto-Created Conversations (TODO)
+### 📋 Phase 3: Auto-Created Conversations (WAITING ON SEASON WIZARD COMPLETION)
+
+**Status:** Design complete, waiting for season wizard code to be finalized before implementing to avoid conflicts.
 
 **When does auto-creation happen?**
 
-- When season status changes to 'active'
-- Triggered by operator completing season setup
+- When season wizard completes and badge changes to "active"
+- Triggered automatically (no operator action needed)
+- Conversations created silently (no notifications, just exist when users navigate to Messages)
 
-#### Auto-Create Logic
+#### Design Decisions (2025-01-19)
 
-```typescript
-// When season becomes active:
-async function createSeasonConversations(seasonId: string) {
-  // 1. Create "Season Announcements"
-  const announcement = await createConversation({
-    type: 'announcement',
-    auto_managed: true,
-    scope: 'season_players',
-    scope_id: seasonId,
-    title: '{Season Name} - Announcements',
-    created_by: operator_id,
-  });
+**Four Auto-Created Conversation Types:**
 
-  // Add all players as participants (can_reply = false)
-  await addParticipantsFromSeason(announcement.id, seasonId, false);
+1. **Team Chat** (one per team)
+   - Scope: `team`, auto_managed: true, type: `team_chat`
+   - Participants: All players on the team
+   - Permissions: Everyone can send/receive
+   - **Message History Rule:** New players only see messages from their join date forward (privacy by default)
+   - **Captain Override:** Captain can share older history with specific players via "Share History" button
+   - Auto-maintains: Players added/removed as roster changes
 
-  // 2. Create "Captain's Chat"
-  const captainsChat = await createConversation({
-    type: 'auto_captains',
-    auto_managed: true,
-    scope: 'season_captains',
-    scope_id: seasonId,
-    title: '{Season Name} - Captains & Operator',
-    created_by: operator_id,
-  });
+2. **Captain's Chat** (one per season/division)
+   - Scope: `season`, auto_managed: true, type: `captains_chat`
+   - Participants: All team captains + league operator
+   - **Guard against duplicates:** If operator is also a captain, don't add twice
+   - Permissions: Everyone can send/receive (back-and-forth discussion)
+   - Use case: Rule questions, scheduling, coordination
 
-  // Add all captains + operator (can_reply = true)
-  await addCaptainsAndOperators(captainsChat.id, seasonId);
+3. **Season/Division Announcements** (one per season/division)
+   - Scope: `season`, auto_managed: true, type: `announcements`
+   - Participants: All players in this season/division (ACTIVE players only)
+   - Permissions: Only operator can write, all players read-only
+   - Auto-maintains: Players added/removed as rosters change
+   - Use case: Schedule changes, important league updates
 
-  // 3. Create Team Chats for each team
-  const teams = await getTeamsForSeason(seasonId);
-  for (const team of teams) {
-    const teamChat = await createConversation({
-      type: 'auto_team',
-      auto_managed: true,
-      scope: 'team',
-      scope_id: team.id,
-      title: team.team_name,
-      created_by: operator_id,
-    });
+4. **Organization Announcements** (one per organization)
+   - Scope: `organization`, auto_managed: true, type: `announcements`
+   - Participants: All players in ALL ACTIVE seasons in organization
+   - **Excludes past players** (they can be messaged separately via manual operator action in future)
+   - Permissions: Only operator can write, all players read-only
+   - Use case: Organization-wide announcements
 
-    // Add all team members (can_reply = true)
-    await addTeamMembers(teamChat.id, team.id);
-  }
-}
-```
+#### Database Schema Changes Needed
+
+Add to `conversation_participants` table:
+- `history_visible_from TIMESTAMPTZ` - Controls how far back player can see messages
+- Default: Set to `joined_at` for new participants
+- Captain can update to earlier date to share history
 
 #### Implementation Tasks
 
-- [ ] Create utility: `createSeasonConversations(seasonId)`
-- [ ] Hook into season activation flow
-- [ ] Create utility: `addParticipantsFromSeason()`
-- [ ] Create utility: `addCaptainsAndOperators()`
-- [ ] Create utility: `addTeamMembers()`
-- [ ] Handle team roster changes (add/remove participants automatically)
+- [ ] Add `history_visible_from` column to `conversation_participants`
+- [ ] Create utility: `createSeasonConversations(seasonId, organizationId, operatorId)`
+- [ ] Create utility: `createOrganizationAnnouncements(organizationId, operatorId)` (if not exists)
+- [ ] Create utility: `addParticipantsFromSeason(conversationId, seasonId, canReply)`
+- [ ] Create utility: `addCaptainsAndOperators(conversationId, seasonId)` with duplicate guard
+- [ ] Create utility: `addTeamMembers(conversationId, teamId)`
+- [ ] Database trigger: Auto-add/remove players when `team_players` changes
+- [ ] Hook into season wizard "activate" flow (WAIT FOR WIZARD COMPLETION)
+- [ ] Captain UI: "Share History" button in team chat settings
+- [ ] Update `fetchConversationMessages()` to respect `history_visible_from`
 
 ---
 

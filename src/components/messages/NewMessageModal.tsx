@@ -17,6 +17,7 @@ import { X, Search, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
+import { getBlockedUsers } from '@/utils/messageQueries';
 
 interface Member {
   id: string;
@@ -44,7 +45,26 @@ export function NewMessageModal({
   const [loading, setLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
 
+  // Fetch blocked users
+  useEffect(() => {
+    async function fetchBlockedUsers() {
+      const { data, error } = await getBlockedUsers(currentUserId);
+
+      if (error) {
+        console.error('Error fetching blocked users:', error);
+        return;
+      }
+
+      // Extract IDs of blocked users
+      setBlockedUserIds((data || []).map((block: any) => block.blocked_id));
+    }
+
+    fetchBlockedUsers();
+  }, [currentUserId]);
+
+  // Fetch members (excluding current user and blocked users)
   useEffect(() => {
     async function fetchMembers() {
       const { data, error} = await supabase
@@ -60,12 +80,17 @@ export function NewMessageModal({
         return;
       }
 
-      setMembers(data || []);
+      // Filter out blocked users
+      const filteredData = (data || []).filter((member) => !blockedUserIds.includes(member.id));
+      setMembers(filteredData);
       setLoading(false);
     }
 
-    fetchMembers();
-  }, [currentUserId]);
+    // Only fetch members after we have blocked users list
+    if (blockedUserIds.length >= 0) {
+      fetchMembers();
+    }
+  }, [currentUserId, blockedUserIds]);
 
   const filteredMembers = members.filter((member) => {
     const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();

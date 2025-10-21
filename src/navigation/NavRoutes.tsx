@@ -25,6 +25,7 @@ import { TeamManagement } from '../operator/TeamManagement';
 import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
 import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
 import { Messages } from '../pages/Messages';
+import { PlayerProfile } from '../pages/PlayerProfile';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -56,6 +57,7 @@ const memberRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/profile', element: <Profile /> },
   { path: '/messages', element: <Messages /> },
+  { path: '/player/:playerId', element: <PlayerProfile /> },
   { path: '/my-teams', element: <MyTeams /> },
   { path: '/score-match', element: <ScoreMatch /> },
 ];

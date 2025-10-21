@@ -8,6 +8,7 @@
 import { Check, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 
 interface MessageBubbleProps {
   content: string;
@@ -15,6 +16,7 @@ interface MessageBubbleProps {
   isEdited: boolean;
   isCurrentUser: boolean;
   senderName?: string;
+  senderId?: string;
   recipientLastRead: string | null;
 }
 
@@ -24,6 +26,7 @@ export function MessageBubble({
   isEdited,
   isCurrentUser,
   senderName,
+  senderId,
   recipientLastRead,
 }: MessageBubbleProps) {
   const formatTimestamp = (dateString: string) => {
@@ -44,8 +47,10 @@ export function MessageBubble({
           isCurrentUser ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-900'
         )}
       >
-        {!isCurrentUser && senderName && (
-          <p className="text-xs font-semibold mb-1">{senderName}</p>
+        {!isCurrentUser && senderName && senderId && (
+          <div className="text-xs font-semibold mb-1">
+            <PlayerNameLink playerId={senderId} playerName={senderName} className="text-gray-900 hover:text-blue-600" />
+          </div>
         )}
         <p className="text-sm whitespace-pre-wrap">{content}</p>
         <div className="flex items-center gap-1 mt-1">
