@@ -144,8 +144,9 @@ CREATE TABLE league_operators (
   payment_verified BOOLEAN NOT NULL DEFAULT false,
 
   -- Championship Preferences (auto-skip if saved and still valid)
-  preferred_bca_championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
-  preferred_apa_championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
+  -- FK constraints added at end of file after championship_date_options table exists
+  preferred_bca_championship_id UUID,
+  preferred_apa_championship_id UUID,
 
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -320,7 +321,7 @@ CREATE INDEX idx_championship_dev_verified
 ON championship_date_options (organization, year, dev_verified);
 
 -- Trigger to auto-update updated_at timestamp
-CREATE FUNCTION update_championship_date_options_updated_at()
+CREATE OR REPLACE FUNCTION update_championship_date_options_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -421,7 +422,7 @@ ON operator_blackout_preferences(championship_id)
 WHERE championship_id IS NOT NULL;
 
 -- Trigger for updated_at
-CREATE FUNCTION update_operator_blackout_preferences_updated_at()
+CREATE OR REPLACE FUNCTION update_operator_blackout_preferences_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -1263,6 +1264,22 @@ CREATE POLICY "League operators can delete their league matches"
 --       AND (SELECT state FROM members WHERE id = league_operators.member_id LIMIT 1) = members.state
 --     )
 --   );
+
+-- =====================================================
+-- FOREIGN KEY CONSTRAINTS (added after all tables exist)
+-- =====================================================
+
+-- Add FK constraints for league_operators championship preferences
+-- These are added here because championship_date_options table is created after league_operators
+ALTER TABLE league_operators
+ADD CONSTRAINT fk_league_operators_preferred_bca
+FOREIGN KEY (preferred_bca_championship_id)
+REFERENCES championship_date_options(id) ON DELETE SET NULL;
+
+ALTER TABLE league_operators
+ADD CONSTRAINT fk_league_operators_preferred_apa
+FOREIGN KEY (preferred_apa_championship_id)
+REFERENCES championship_date_options(id) ON DELETE SET NULL;
 
 -- =====================================================
 -- REBUILD COMPLETE

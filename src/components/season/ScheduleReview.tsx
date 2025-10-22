@@ -174,6 +174,9 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
     const week = displaySchedule[index];
     console.log('🔘 Toggle week-off clicked:', { index, week: { weekNumber: week.weekNumber, weekName: week.weekName, date: week.date, type: week.type } });
 
+    // Clear the saved data flag to ensure regeneration happens
+    setHasLoadedSavedData(false);
+
     // Special handling for Season End Break - decrement count
     if (week.weekName === 'Season End Break') {
       console.log('➖ Removing Season End Break');
@@ -251,6 +254,13 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
   // Regenerate schedule whenever blackoutWeeks or addSeasonEndBreak changes
   // BUT skip the first regeneration if we loaded saved data
   useEffect(() => {
+    console.log('🔄 useEffect triggered - checking if regeneration needed:', {
+      hasLoadedSavedData,
+      blackoutWeeksCount: blackoutWeeks.length,
+      scheduleLength: schedule.length,
+      hasSeasonStartDate: !!seasonStartDate
+    });
+
     // Skip regeneration on initial load if we loaded saved data
     // BUT still run conflict detection on the loaded schedule
     if (hasLoadedSavedData) {

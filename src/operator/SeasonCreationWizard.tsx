@@ -4,7 +4,7 @@
  * Multi-step wizard for creating a new season for a league.
  * Uses localStorage for form persistence across page refreshes.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
@@ -66,10 +66,28 @@ export const SeasonCreationWizard: React.FC = () => {
     newDate: string;
   } | null>(null);
   const [schedule, setSchedule] = useState<WeekEntry[]>([]);
+
+  // Wrapper to log schedule updates from ScheduleReview
+  // Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
+  const handleScheduleChange = useCallback((newSchedule: WeekEntry[]) => {
+    console.log('📥 SeasonCreationWizard received schedule update from ScheduleReview:', {
+      weekCount: newSchedule.length,
+      byType: {
+        regular: newSchedule.filter(w => w.type === 'regular').length,
+        playoffs: newSchedule.filter(w => w.type === 'playoffs').length,
+        'week-off': newSchedule.filter(w => w.type === 'week-off').length,
+      },
+      weeks: newSchedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
+    });
+    setSchedule(newSchedule);
+  }, []);
   const [seasonStartDate, setSeasonStartDate] = useState<string>('');
   const [holidays, setHolidays] = useState<any[]>([]);
   const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
   const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
+
+  // Track if schedule has been generated for current step to prevent infinite loops
+  const scheduleGeneratedForStep = useRef<number | null>(null);
 
   /**
    * Fetch league and existing seasons
@@ -198,6 +216,8 @@ export const SeasonCreationWizard: React.FC = () => {
    * Generate schedule when reaching schedule-review step
    * If editing an existing season, load saved schedule from localStorage
    * Otherwise, generate a fresh schedule
+   *
+   * Only runs once when entering schedule-review step to prevent infinite loops
    */
   useEffect(() => {
     if (!league || !leagueId || loading) return;
@@ -216,6 +236,15 @@ export const SeasonCreationWizard: React.FC = () => {
     const currentStepData = steps[currentStep];
 
     if (currentStepData?.type === 'schedule-review') {
+      // Prevent infinite loop - only generate schedule once per step
+      if (scheduleGeneratedForStep.current === currentStep) {
+        console.log('⏸️ Schedule already generated for step', currentStep, '- skipping');
+        return;
+      }
+
+      console.log('🔄 Generating schedule for step', currentStep);
+      scheduleGeneratedForStep.current = currentStep;
+
       // Get form data from localStorage
       const stored = localStorage.getItem(`season-creation-${leagueId}`);
       if (!stored) {
@@ -557,6 +586,8 @@ export const SeasonCreationWizard: React.FC = () => {
       const newStep = currentStep - 1;
       setCurrentStep(newStep);
       localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
+      // Reset schedule generation flag when navigating away
+      scheduleGeneratedForStep.current = null;
     }
   };
 
@@ -739,6 +770,16 @@ export const SeasonCreationWizard: React.FC = () => {
 
         // Step 2: Get final schedule from state (already contains regular weeks + blackouts combined)
         // The ScheduleReview component manages the combination and passes us the complete schedule
+        console.log('📦 Schedule state at save time:', {
+          weekCount: schedule.length,
+          byType: {
+            regular: schedule.filter(w => w.type === 'regular').length,
+            playoffs: schedule.filter(w => w.type === 'playoffs').length,
+            'week-off': schedule.filter(w => w.type === 'week-off').length,
+          },
+          weeks: schedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
+        });
+
         // Map UI week types to database week_type values:
         // - 'regular' → 'regular'
         // - 'playoffs' → 'playoffs'
@@ -934,7 +975,7 @@ export const SeasonCreationWizard: React.FC = () => {
             bcaChampionship={bcaChampionship}
             apaChampionship={apaChampionship}
             currentPlayWeek={0} // New season hasn't started yet - all weeks are editable. TODO: For existing seasons, fetch from database
-            onScheduleChange={setSchedule}
+            onScheduleChange={handleScheduleChange}
             onConfirm={handleCreateSeason}
             onBack={handleBack}
           />
