@@ -218,8 +218,6 @@ export const SeasonSchedulePage: React.FC = () => {
         if (weeksError) throw weeksError;
 
         // Fetch all matches with team and venue details
-        // NOTE: matches use round_number, not season_week_id
-        // We'll match them to weeks dynamically based on regular week order
         const { data: matchesData, error: matchesError } = await supabase
           .from('matches')
           .select(`
@@ -233,30 +231,13 @@ export const SeasonSchedulePage: React.FC = () => {
 
         if (matchesError) throw matchesError;
 
-        // Create a mapping of round_number to week ID
-        // Round numbers correspond to regular weeks only (1st regular week = round 1, etc.)
-        const regularWeeks = weeksData.filter(w => w.week_type === 'regular').sort((a, b) =>
-          a.scheduled_date.localeCompare(b.scheduled_date)
-        );
-        const roundToWeekIdMap = new Map<number, string>();
-        regularWeeks.forEach((week, index) => {
-          roundToWeekIdMap.set(index + 1, week.id); // round_number is 1-indexed
-        });
-
-        // Organize matches by week
-        // Regular weeks get their matches based on round_number
-        // Non-regular weeks (blackouts, breaks, playoffs) have no matches
+        // Organize matches by week using season_week_id
         const scheduleByWeek: WeekSchedule[] = weeksData.map(week => {
-          if (week.week_type === 'regular') {
-            // Find which round number this week represents by finding its position in regularWeeks
-            const roundNumber = regularWeeks.findIndex(w => w.id === week.id) + 1;
-            const weekMatches = matchesData.filter(match => match.round_number === roundNumber) as MatchWithDetails[];
+          const weekMatches = matchesData.filter(
+            match => match.season_week_id === week.id
+          ) as MatchWithDetails[];
 
-            return { week, matches: weekMatches };
-          } else {
-            // Non-regular weeks have no matches
-            return { week, matches: [] };
-          }
+          return { week, matches: weekMatches };
         });
 
         setSchedule(scheduleByWeek);

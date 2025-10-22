@@ -1161,19 +1161,19 @@ CREATE POLICY "Public can view active league team players"
 -- =====================================================
 -- 12. MATCHES TABLE
 -- =====================================================
--- Uses matches_complete.sql for latest schema
 
-CREATE TABLE matches (
+CREATE TABLE IF NOT EXISTS public.matches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  season_id UUID NOT NULL REFERENCES seasons(id) ON DELETE CASCADE,
-  round_number INTEGER NOT NULL,
-  home_team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-  away_team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-  scheduled_venue_id UUID REFERENCES venues(id) ON DELETE SET NULL,
-  actual_venue_id UUID REFERENCES venues(id) ON DELETE SET NULL,
-  match_number INTEGER NOT NULL,
+  season_id UUID NOT NULL REFERENCES public.seasons(id) ON DELETE CASCADE,
+  season_week_id UUID NOT NULL REFERENCES public.season_weeks(id) ON DELETE CASCADE,
+  home_team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE, -- Null if BYE week
+  away_team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE, -- Null if BYE week
+  scheduled_venue_id UUID REFERENCES public.venues(id) ON DELETE SET NULL, -- Original venue
+  actual_venue_id UUID REFERENCES public.venues(id) ON DELETE SET NULL, -- If venue changed
+  match_number INTEGER NOT NULL, -- Order on the night (1, 2, 3...)
   status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'forfeited', 'postponed')),
 
+  -- Score tracking (nullable until completed)
   home_team_score INTEGER,
   away_team_score INTEGER,
 
@@ -1182,7 +1182,7 @@ CREATE TABLE matches (
 );
 
 CREATE INDEX idx_matches_season_id ON matches(season_id);
-CREATE INDEX idx_matches_round_number ON matches(season_id, round_number);
+CREATE INDEX idx_matches_season_week_id ON matches(season_week_id);
 CREATE INDEX idx_matches_home_team_id ON matches(home_team_id);
 CREATE INDEX idx_matches_away_team_id ON matches(away_team_id);
 CREATE INDEX idx_matches_status ON matches(status);

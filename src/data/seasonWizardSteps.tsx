@@ -54,6 +54,16 @@ export interface SeasonWizardStep {
 }
 
 /**
+ * Championship preference from database
+ */
+export interface ChampionshipPreference {
+  organization: 'BCA' | 'APA';
+  startDate: string;
+  endDate: string;
+  ignored: boolean;
+}
+
+/**
  * Get season wizard steps with localStorage integration
  */
 export function getSeasonWizardSteps(
@@ -63,7 +73,8 @@ export function getSeasonWizardSteps(
   _leagueDayOfWeek?: string,
   onDayOfWeekChange?: (newDay: string, newDate: string) => void,
   bcaDateOptions?: ChampionshipDateOption[],
-  apaDateOptions?: ChampionshipDateOption[]
+  apaDateOptions?: ChampionshipDateOption[],
+  _savedChampionshipPreferences?: ChampionshipPreference[]
 ): SeasonWizardStep[] {
   const STORAGE_KEY = `season-creation-${leagueId}`;
 
@@ -73,7 +84,9 @@ export function getSeasonWizardSteps(
     if (stored) {
       return JSON.parse(stored);
     }
-    return {
+
+    // Create default data
+    const defaultData = {
       startDate: defaultStartDate || '',
       seasonLength: '16',
       isCustomLength: false,
@@ -86,6 +99,12 @@ export function getSeasonWizardSteps(
       apaEndDate: '',
       apaIgnored: false,
     };
+
+    // Save defaults to localStorage immediately so they're available for auto-advance logic
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
+    console.log('💾 Initialized form data with defaults:', defaultData);
+
+    return defaultData;
   };
 
   const formData = getStoredData();
@@ -301,16 +320,19 @@ export function getSeasonWizardSteps(
       type: 'date',
       getValue: () => formData.startDate,
       setValue: (value: string) => {
+        console.log('📅 Start date setValue called with:', value, { hasExistingSeasons, defaultStartDate });
         // If first season and date changes, check if we need to warn
         if (!hasExistingSeasons && defaultStartDate && onDayOfWeekChange && value !== defaultStartDate) {
           // Use timezone-safe day calculation
           const newDayOfWeek = getDayOfWeekName(value);
 
+          console.log('⚠️ Day of week changed - showing modal instead of saving');
           // Only trigger callback if date is different from default
           onDayOfWeekChange(newDayOfWeek, value);
           // Don't save yet - wait for user confirmation
           return;
         }
+        console.log('💾 Saving start date to localStorage:', value);
         saveData({ startDate: value });
       },
       infoTitle: 'Season Start Date',
