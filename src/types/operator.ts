@@ -143,6 +143,55 @@ export interface LeagueOperatorInsertData {
 }
 
 /**
+ * Operator Blackout Preference
+ * Maps to operator_blackout_preferences table in database
+ * Stores operator preferences for automatic blackouts and ignored conflicts
+ */
+export interface OperatorBlackoutPreference {
+  // Identity
+  id: string;
+  operator_id: string;  // References league_operators.id
+
+  // Preference Type
+  preference_type: 'holiday' | 'championship' | 'custom';
+  preference_action: 'blackout' | 'ignore';
+
+  // For type = 'holiday'
+  holiday_name: string | null;
+
+  // For type = 'championship'
+  championship_id: string | null;  // References championship_date_options.id
+
+  // For type = 'custom'
+  custom_name: string | null;
+  custom_start_date: string | null;  // ISO date
+  custom_end_date: string | null;    // ISO date
+
+  // Auto-apply flag
+  auto_apply: boolean;
+
+  // Timestamps
+  created_at: string;  // ISO timestamp
+  updated_at: string;  // ISO timestamp
+}
+
+/**
+ * Database Insert Data for Operator Blackout Preference
+ * Prepared data ready for INSERT into operator_blackout_preferences table
+ */
+export interface OperatorBlackoutPreferenceInsertData {
+  operator_id: string;
+  preference_type: 'holiday' | 'championship' | 'custom';
+  preference_action: 'blackout' | 'ignore';
+  holiday_name?: string;
+  championship_id?: string;
+  custom_name?: string;
+  custom_start_date?: string;
+  custom_end_date?: string;
+  auto_apply: boolean;
+}
+
+/**
  * Mock Payment Data Generator
  * Creates realistic-looking Stripe IDs for testing
  */

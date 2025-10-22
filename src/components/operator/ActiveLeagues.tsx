@@ -75,12 +75,13 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
               .select('*', { count: 'exact', head: true })
               .eq('league_id', league.id);
 
-            // Fetch active season
+            // Fetch most recent season (regardless of status - could be upcoming, active, or completed)
             const { data: activeSeasonData } = await supabase
               .from('seasons')
               .select('*')
               .eq('league_id', league.id)
-              .eq('status', 'active')
+              .order('created_at', { ascending: false })
+              .limit(1)
               .maybeSingle();
 
             let completedWeeks = 0;
@@ -208,12 +209,13 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
             .select('*', { count: 'exact', head: true })
             .eq('league_id', league.id);
 
-          // Fetch active season
+          // Fetch most recent season (regardless of status - could be upcoming, active, or completed)
           const { data: activeSeasonData } = await supabase
             .from('seasons')
             .select('*')
             .eq('league_id', league.id)
-            .eq('status', 'active')
+            .order('created_at', { ascending: false })
+            .limit(1)
             .maybeSingle();
 
           let completedWeeks = 0;
@@ -294,12 +296,13 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     const progress = league._progress;
     if (!progress) return 0;
 
-    // If there's an active season, show season progress
-    if (progress.activeSeason && progress.totalWeeks > 0) {
+    // Only show season progress if the season is ACTIVE (not just created)
+    // AND has weeks defined (setup complete and season running)
+    if (progress.activeSeason && progress.activeSeason.status === 'active' && progress.totalWeeks > 0) {
       return Math.round((progress.completedWeeks / progress.totalWeeks) * 100);
     }
 
-    // Otherwise show setup progress
+    // Otherwise show setup progress (even if season exists but not started)
     let setupProgress = 0;
     if (progress.seasonCount > 0) setupProgress += 20; // Season created
     if (progress.teamCount > 0) setupProgress += 20; // Teams added
@@ -320,14 +323,14 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     const progress = league._progress;
     if (!progress) return 'setup';
 
-    // If active season exists, status is "active"
-    if (progress.activeSeason) return 'active';
+    // Only show "active" status if season is actually active (started)
+    if (progress.activeSeason && progress.activeSeason.status === 'active') return 'active';
 
     // Check if setup is complete
     const isSetupComplete = progress.seasonCount > 0 && progress.teamCount > 0 && progress.playerCount > 0 && progress.scheduleExists;
-    if (isSetupComplete) return 'active'; // Ready to play
+    if (isSetupComplete) return 'active'; // Ready to play (green bar)
 
-    return 'setup';
+    return 'setup'; // Still in setup (orange bar)
   };
 
   /**
@@ -338,8 +341,8 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     const progress = league._progress;
     if (!progress) return 'Loading...';
 
-    // If in active season
-    if (progress.activeSeason && progress.totalWeeks > 0) {
+    // Only show week progress if season is actually active (started)
+    if (progress.activeSeason && progress.activeSeason.status === 'active' && progress.totalWeeks > 0) {
       return `Week ${progress.completedWeeks} of ${progress.totalWeeks} completed`;
     }
 
@@ -353,15 +356,18 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
 
   /**
    * Get status badge text and color
+   * Matches logic from LeagueDetail.tsx
    */
   const getStatusBadge = (league: LeagueWithProgress): { text: string; className: string } => {
     const progress = league._progress;
     if (!progress) return { text: 'Loading', className: 'bg-gray-100 text-gray-800' };
 
-    if (progress.activeSeason) {
+    // Check if season is actually active (status = 'active')
+    if (progress.activeSeason && progress.activeSeason.status === 'active') {
       return { text: 'In Session', className: 'bg-blue-100 text-blue-800' };
     }
 
+    // Check if setup is complete (has season, teams, players, and schedule)
     const isSetupComplete = progress.seasonCount > 0 && progress.teamCount > 0 && progress.playerCount > 0 && progress.scheduleExists;
     if (isSetupComplete) {
       return { text: 'Ready to Play', className: 'bg-green-100 text-green-800' };

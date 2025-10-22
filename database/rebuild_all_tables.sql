@@ -15,10 +15,13 @@ DROP TABLE IF EXISTS venues CASCADE;
 DROP TABLE IF EXISTS venue_owners CASCADE;
 DROP TABLE IF EXISTS season_weeks CASCADE;
 DROP TABLE IF EXISTS seasons CASCADE;
+DROP TABLE IF EXISTS operator_blackout_preferences CASCADE;
 DROP TABLE IF EXISTS championship_date_options CASCADE;
 DROP TABLE IF EXISTS leagues CASCADE;
 DROP TABLE IF EXISTS league_operators CASCADE;
 DROP TABLE IF EXISTS members CASCADE;
+DROP TYPE IF EXISTS preference_type CASCADE;
+DROP TYPE IF EXISTS preference_action CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
 
 -- =====================================================
@@ -351,7 +354,131 @@ CREATE POLICY "Operators can update championship dates"
   WITH CHECK (auth.role() = 'authenticated');
 
 -- =====================================================
--- 5. SEASONS TABLE
+-- 5. OPERATOR BLACKOUT PREFERENCES TABLE
+-- =====================================================
+
+-- Create custom types for preferences
+CREATE TYPE preference_type AS ENUM ('holiday', 'championship', 'custom');
+CREATE TYPE preference_action AS ENUM ('blackout', 'ignore');
+
+CREATE TABLE operator_blackout_preferences (
+  -- Primary identification
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- Which operator owns this preference
+  operator_id UUID NOT NULL REFERENCES league_operators(id) ON DELETE CASCADE,
+
+  -- What type of preference is this
+  preference_type preference_type NOT NULL,
+
+  -- What action should be taken (blackout week or ignore conflict)
+  preference_action preference_action NOT NULL,
+
+  -- For type = 'holiday'
+  holiday_name TEXT,
+
+  -- For type = 'championship'
+  championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
+
+  -- For type = 'custom'
+  custom_name TEXT,
+  custom_start_date DATE,
+  custom_end_date DATE,
+
+  -- Should this be automatically applied when creating new seasons
+  auto_apply BOOLEAN NOT NULL DEFAULT false,
+
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  -- Validation constraints
+  CONSTRAINT valid_holiday_preference CHECK (
+    preference_type != 'holiday' OR holiday_name IS NOT NULL
+  ),
+  CONSTRAINT valid_championship_preference CHECK (
+    preference_type != 'championship' OR championship_id IS NOT NULL
+  ),
+  CONSTRAINT valid_custom_preference CHECK (
+    preference_type != 'custom' OR (
+      custom_name IS NOT NULL AND
+      custom_start_date IS NOT NULL AND
+      custom_end_date IS NOT NULL AND
+      custom_end_date >= custom_start_date
+    )
+  )
+);
+
+-- Indexes
+CREATE INDEX idx_operator_blackout_preferences_operator_id
+ON operator_blackout_preferences(operator_id);
+
+CREATE INDEX idx_operator_blackout_preferences_type_action
+ON operator_blackout_preferences(preference_type, preference_action);
+
+CREATE INDEX idx_operator_blackout_preferences_championship_id
+ON operator_blackout_preferences(championship_id)
+WHERE championship_id IS NOT NULL;
+
+-- Trigger for updated_at
+CREATE FUNCTION update_operator_blackout_preferences_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER operator_blackout_preferences_updated_at_trigger
+  BEFORE UPDATE ON operator_blackout_preferences
+  FOR EACH ROW
+  EXECUTE FUNCTION update_operator_blackout_preferences_updated_at();
+
+-- RLS Policies
+ALTER TABLE operator_blackout_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Operators can view their own preferences"
+  ON operator_blackout_preferences FOR SELECT
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can insert their own preferences"
+  ON operator_blackout_preferences FOR INSERT
+  WITH CHECK (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can update their own preferences"
+  ON operator_blackout_preferences FOR UPDATE
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can delete their own preferences"
+  ON operator_blackout_preferences FOR DELETE
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+-- =====================================================
+-- 6. SEASONS TABLE
 -- =====================================================
 
 CREATE TABLE seasons (

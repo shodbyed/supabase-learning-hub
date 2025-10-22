@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
+import { useOperatorId } from '@/hooks/useOperatorId';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -40,6 +41,7 @@ export const SeasonCreationWizard: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { operatorId } = useOperatorId();
 
   const [league, setLeague] = useState<League | null>(null);
   const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
@@ -420,6 +422,75 @@ export const SeasonCreationWizard: React.FC = () => {
     }
   };
 
+  /**
+   * Save championship preference to operator_blackout_preferences table
+   * Called after championship dates are submitted to database
+   */
+  const saveChampionshipPreference = async (
+    organization: 'BCA' | 'APA',
+    choice: string,
+    championshipId?: string
+  ) => {
+    if (!operatorId) {
+      console.warn('⚠️ No operator ID available - skipping preference save');
+      return;
+    }
+
+    try {
+      // Delete any existing preference for this organization
+      await supabase
+        .from('operator_blackout_preferences')
+        .delete()
+        .eq('operator_id', operatorId)
+        .eq('preference_type', 'championship')
+        .eq('championship_id', championshipId || null);
+
+      // Determine what to save based on choice
+      if (choice === 'ignore' || choice === 'skip') {
+        // Check if future championship dates exist in database
+        const { data: futureChampionships } = await supabase
+          .from('championship_date_options')
+          .select('id')
+          .eq('organization', organization)
+          .gte('end_date', new Date().toISOString().split('T')[0])
+          .order('start_date', { ascending: true })
+          .limit(1);
+
+        if (futureChampionships && futureChampionships.length > 0) {
+          // Dates exist - save "ignore" preference
+          await supabase
+            .from('operator_blackout_preferences')
+            .insert({
+              operator_id: operatorId,
+              preference_type: 'championship',
+              preference_action: 'ignore',
+              championship_id: futureChampionships[0].id,
+              auto_apply: false,
+            });
+          console.log(`✅ Saved ${organization} preference: ignore (dates available)`);
+        } else {
+          // No dates available - don't save preference (NULL state)
+          console.log(`ℹ️ Skipping ${organization} preference save - no future dates available`);
+        }
+      } else if (championshipId) {
+        // They selected a specific championship option or entered custom dates
+        await supabase
+          .from('operator_blackout_preferences')
+          .insert({
+            operator_id: operatorId,
+            preference_type: 'championship',
+            preference_action: 'blackout',
+            championship_id: championshipId,
+            auto_apply: false,
+          });
+        console.log(`✅ Saved ${organization} preference: blackout with ID ${championshipId}`);
+      }
+    } catch (err) {
+      console.error(`❌ Error saving ${organization} preference:`, err);
+      // Don't throw - preference saving is not critical to season creation
+    }
+  };
+
   const handleCreateSeason = async (destination: 'dashboard' | 'teams' = 'dashboard') => {
     setIsCreating(true);
 
@@ -434,11 +505,13 @@ export const SeasonCreationWizard: React.FC = () => {
       const formData: SeasonFormData = JSON.parse(stored);
 
       // Submit BCA championship dates to database if custom dates were entered
+      let bcaSavedId: string | undefined;
       if (formData.bcaChoice === 'custom' && formData.bcaStartDate && formData.bcaEndDate) {
         console.log('🏆 Submitting BCA championship dates:', formData.bcaStartDate, 'to', formData.bcaEndDate);
         const bcaResult = await submitChampionshipDates('BCA', formData.bcaStartDate, formData.bcaEndDate);
         if (bcaResult) {
           console.log('✅ BCA championship dates saved successfully:', bcaResult);
+          bcaSavedId = bcaResult.id;
         } else {
           console.error('❌ Failed to save BCA championship dates - check console for errors');
         }
@@ -450,12 +523,21 @@ export const SeasonCreationWizard: React.FC = () => {
         });
       }
 
+      // Save BCA preference
+      await saveChampionshipPreference(
+        'BCA',
+        formData.bcaChoice,
+        bcaSavedId || (formData.bcaChoice !== 'custom' && formData.bcaChoice !== 'ignore' ? formData.bcaChoice : undefined)
+      );
+
       // Submit APA championship dates to database if custom dates were entered
+      let apaSavedId: string | undefined;
       if (formData.apaChoice === 'custom' && formData.apaStartDate && formData.apaEndDate) {
         console.log('🏆 Submitting APA championship dates:', formData.apaStartDate, 'to', formData.apaEndDate);
         const apaResult = await submitChampionshipDates('APA', formData.apaStartDate, formData.apaEndDate);
         if (apaResult) {
           console.log('✅ APA championship dates saved successfully:', apaResult);
+          apaSavedId = apaResult.id;
         } else {
           console.error('❌ Failed to save APA championship dates - check console for errors');
         }
@@ -466,6 +548,13 @@ export const SeasonCreationWizard: React.FC = () => {
           hasEndDate: !!formData.apaEndDate
         });
       }
+
+      // Save APA preference
+      await saveChampionshipPreference(
+        'APA',
+        formData.apaChoice,
+        apaSavedId || (formData.apaChoice !== 'custom' && formData.apaChoice !== 'ignore' ? formData.apaChoice : undefined)
+      );
 
       // Calculate end date using timezone-safe parsing
       const startDate = parseLocalDate(formData.startDate);
