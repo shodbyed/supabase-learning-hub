@@ -4,7 +4,7 @@
  * Multi-step wizard for creating a new season for a league.
  * Uses localStorage for form persistence across page refreshes.
  */
-import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
+import { useEffect, useRef, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
@@ -77,7 +77,8 @@ export const SeasonCreationWizard: React.FC = () => {
   // const [validationError, setValidationError] = useState<string | null>(null);
   // Migrated to useReducer - use state.state.dayOfWeekWarning instead
   // const [state.dayOfWeekWarning, setDayOfWeekWarning] = useState<...>(null);
-  const [schedule, setSchedule] = useState<WeekEntry[]>([]);
+  // Migrated to useReducer - use state.schedule instead
+  // const [schedule, setSchedule] = useState<WeekEntry[]>([]);
 
   // Wrapper to log schedule updates from ScheduleReview
   // Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
@@ -91,8 +92,8 @@ export const SeasonCreationWizard: React.FC = () => {
       },
       weeks: newSchedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
     });
-    setSchedule(newSchedule);
-  }, []);
+    dispatch({ type: 'SET_SCHEDULE', payload: newSchedule });
+  }, [dispatch]);
   // Migrated to useReducer - use state.seasonStartDate instead
   // const [seasonStartDate, setSeasonStartDate] = useState<string>('');
   // Migrated to useReducer - use state.holidays instead
@@ -364,7 +365,7 @@ export const SeasonCreationWizard: React.FC = () => {
       // Execute the async function
       generateScheduleWithPreferences().then(({ scheduleWithConflicts, bcaChampionshipEvent, apaChampionshipEvent }) => {
         // Save data to state for ScheduleReview component
-        setSchedule(scheduleWithConflicts);
+        dispatch({ type: 'SET_SCHEDULE', payload: scheduleWithConflicts });
         dispatch({ type: 'SET_SEASON_START_DATE', payload: formData.startDate });
         dispatch({ type: 'SET_HOLIDAYS', payload: holidays });
 
@@ -814,20 +815,20 @@ export const SeasonCreationWizard: React.FC = () => {
         // Step 2: Get final schedule from state (already contains regular weeks + blackouts combined)
         // The ScheduleReview component manages the combination and passes us the complete schedule
         console.log('📦 Schedule state at save time:', {
-          weekCount: schedule.length,
+          weekCount: state.schedule.length,
           byType: {
-            regular: schedule.filter(w => w.type === 'regular').length,
-            playoffs: schedule.filter(w => w.type === 'playoffs').length,
-            'week-off': schedule.filter(w => w.type === 'week-off').length,
+            regular: state.schedule.filter(w => w.type === 'regular').length,
+            playoffs: state.schedule.filter(w => w.type === 'playoffs').length,
+            'week-off': state.schedule.filter(w => w.type === 'week-off').length,
           },
-          weeks: schedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
+          weeks: state.schedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
         });
 
         // Map UI week types to database week_type values:
         // - 'regular' → 'regular'
         // - 'playoffs' → 'playoffs'
         // - 'week-off' with weekName containing specific strings → determine if 'season_end_break' or 'blackout'
-        const allWeeks = schedule.map(week => {
+        const allWeeks = state.schedule.map(week => {
           let weekType: 'regular' | 'playoffs' | 'blackout' | 'season_end_break';
 
           // Determine the correct database week_type for each UI type
@@ -1000,7 +1001,7 @@ export const SeasonCreationWizard: React.FC = () => {
           <div className="text-center text-gray-600">Loading step...</div>
         ) : steps[state.currentStep]?.type === 'schedule-review' ? (
           <ScheduleReview
-            schedule={schedule}
+            schedule={state.schedule}
             leagueDayOfWeek={formatDayOfWeek(state.league?.day_of_week || 'tuesday')}
             seasonStartDate={state.seasonStartDate}
             holidays={state.holidays}
