@@ -58,11 +58,11 @@ export const SeasonCreationWizard: React.FC = () => {
   // const [loading, setLoading] = useState(true);
   // Migrated to useReducer - use state.error instead
   // const [error, setError] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(() => {
-    // Restore current step from localStorage
-    const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
-    return stored ? parseInt(stored, 10) : 0;
-  });
+  // Migrated to useReducer - use state.currentStep instead
+  // const [currentStep, setCurrentStep] = useState(() => {
+  //   const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
+  //   return stored ? parseInt(stored, 10) : 0;
+  // });
   // Migrated to useReducer - use state.state.isEditingExistingSeason instead
   // const [state.isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
   // Migrated to useReducer - use state.state.isCreating instead
@@ -252,17 +252,17 @@ export const SeasonCreationWizard: React.FC = () => {
       savedChampionshipPreferences
     );
 
-    const currentStepData = steps[currentStep];
+    const currentStepData = steps[state.currentStep];
 
     if (currentStepData?.type === 'schedule-review') {
       // Prevent infinite loop - only generate schedule once per step
-      if (scheduleGeneratedForStep.current === currentStep) {
-        console.log('⏸️ Schedule already generated for step', currentStep, '- skipping');
+      if (scheduleGeneratedForStep.current === state.currentStep) {
+        console.log('⏸️ Schedule already generated for step', state.currentStep, '- skipping');
         return;
       }
 
-      console.log('🔄 Generating schedule for step', currentStep);
-      scheduleGeneratedForStep.current = currentStep;
+      console.log('🔄 Generating schedule for step', state.currentStep);
+      scheduleGeneratedForStep.current = state.currentStep;
 
       // Get form data from localStorage
       const stored = localStorage.getItem(`season-creation-${leagueId}`);
@@ -373,7 +373,7 @@ export const SeasonCreationWizard: React.FC = () => {
         });
       });
     }
-  }, [currentStep, league, leagueId, state.loading, existingSeasons, bcaDateOptions, apaDateOptions, operatorId, savedChampionshipPreferences]);
+  }, [state.currentStep, league, leagueId, state.loading, existingSeasons, bcaDateOptions, apaDateOptions, operatorId, savedChampionshipPreferences]);
 
   /**
    * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
@@ -393,7 +393,7 @@ export const SeasonCreationWizard: React.FC = () => {
       savedChampionshipPreferences
     );
 
-    const currentStepData = steps[currentStep];
+    const currentStepData = steps[state.currentStep];
     if (!currentStepData) return;
 
     // Check if we're on BCA or APA choice step
@@ -436,13 +436,13 @@ export const SeasonCreationWizard: React.FC = () => {
         console.log(`✅ Auto-populated ${organization} preference from saved settings`);
 
         // Auto-advance to next step
-        const nextStep = currentStep + 1;
-        setCurrentStep(nextStep);
+        const nextStep = state.currentStep + 1;
+        dispatch({ type: 'SET_CURRENT_STEP', payload: nextStep });
         localStorage.setItem(`season-wizard-step-${leagueId}`, nextStep.toString());
         console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
       }
     }
-  }, [currentStep, leagueId, state.loading, league, savedChampionshipPreferences, existingSeasons, bcaDateOptions, apaDateOptions]);
+  }, [state.currentStep, leagueId, state.loading, league, savedChampionshipPreferences, existingSeasons, bcaDateOptions, apaDateOptions]);
 
   if (state.loading) {
     return (
@@ -562,7 +562,7 @@ export const SeasonCreationWizard: React.FC = () => {
       apa: 3,
     };
     const targetStep = stepMap[step];
-    setCurrentStep(targetStep);
+    dispatch({ type: 'SET_CURRENT_STEP', payload: targetStep });
     localStorage.setItem(`season-wizard-step-${leagueId}`, targetStep.toString());
   };
 
@@ -578,10 +578,10 @@ export const SeasonCreationWizard: React.FC = () => {
   );
 
   // Wrap setValue to trigger re-render
-  const currentStepData = steps[currentStep] ? {
-    ...steps[currentStep],
+  const currentStepData = steps[state.currentStep] ? {
+    ...steps[state.currentStep],
     setValue: (value: string) => {
-      steps[currentStep]?.setValue(value);
+      steps[state.currentStep]?.setValue(value);
       dispatch({ type: 'INCREMENT_REFRESH_KEY' }); // Trigger re-render
     }
   } : null;
@@ -591,7 +591,7 @@ export const SeasonCreationWizard: React.FC = () => {
     dispatch({ type: 'SET_VALIDATION_ERROR', payload: null });
 
     // If current step has a validator, run it
-    const currentStepData = steps[currentStep];
+    const currentStepData = steps[state.currentStep];
     if (currentStepData?.validator) {
       const value = currentStepData.getValue();
       const result = currentStepData.validator(value);
@@ -601,18 +601,18 @@ export const SeasonCreationWizard: React.FC = () => {
       }
     }
 
-    if (currentStep < steps.length - 1) {
-      const newStep = currentStep + 1;
-      setCurrentStep(newStep);
+    if (state.currentStep < steps.length - 1) {
+      const newStep = state.currentStep + 1;
+      dispatch({ type: 'SET_CURRENT_STEP', payload: newStep });
       localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
     }
   };
 
   const handleBack = () => {
     dispatch({ type: 'SET_VALIDATION_ERROR', payload: null });
-    if (currentStep > 0) {
-      const newStep = currentStep - 1;
-      setCurrentStep(newStep);
+    if (state.currentStep > 0) {
+      const newStep = state.currentStep - 1;
+      dispatch({ type: 'SET_CURRENT_STEP', payload: newStep });
       localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
       // Reset schedule generation flag when navigating away
       scheduleGeneratedForStep.current = null;
@@ -914,7 +914,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className={`container mx-auto px-4 ${steps[currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
+      <div className={`container mx-auto px-4 ${steps[state.currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
         {/* Header */}
         <div className="mb-8">
           <Button
@@ -955,7 +955,7 @@ export const SeasonCreationWizard: React.FC = () => {
         </div>
 
         {/* Progress Bar */}
-        <WizardProgress currentStep={currentStep} totalSteps={steps.length} />
+        <WizardProgress currentStep={state.currentStep} totalSteps={steps.length} />
 
         {/* Season Status Card - Shows configured data and allows editing */}
         {(() => {
@@ -983,7 +983,7 @@ export const SeasonCreationWizard: React.FC = () => {
         {/* Guard against missing step data */}
         {!currentStepData ? (
           <div className="text-center text-gray-600">Loading step...</div>
-        ) : steps[currentStep]?.type === 'schedule-review' ? (
+        ) : steps[state.currentStep]?.type === 'schedule-review' ? (
           <ScheduleReview
             schedule={schedule}
             leagueDayOfWeek={formatDayOfWeek(league?.day_of_week || 'tuesday')}
@@ -1071,8 +1071,8 @@ export const SeasonCreationWizard: React.FC = () => {
               }}
               onNext={handleNext}
               onPrevious={handleBack}
-              canGoBack={currentStep > 0}
-              isLastQuestion={currentStep === steps.length - 1}
+              canGoBack={state.currentStep > 0}
+              isLastQuestion={state.currentStep === steps.length - 1}
               infoTitle={currentStepData.infoTitle}
               infoContent={currentStepData.infoContent}
               infoLabel={currentStepData.infoLabel}
@@ -1081,17 +1081,17 @@ export const SeasonCreationWizard: React.FC = () => {
             </div>
 
             {/* Navigation Buttons (hidden for dual-date and schedule-review steps which have their own buttons) */}
-            {!(steps[currentStep]?.type === 'dual-date' || (steps[currentStep]?.type as string) === 'schedule-review') && (
+            {!(steps[state.currentStep]?.type === 'dual-date' || (steps[state.currentStep]?.type as string) === 'schedule-review') && (
               <div className="flex justify-between">
                 <Button
                   variant="outline"
                   onClick={handleBack}
-                  disabled={currentStep === 0 || state.isCreating}
+                  disabled={state.currentStep === 0 || state.isCreating}
                 >
                   Back
                 </Button>
 
-                {currentStep < steps.length - 1 ? (
+                {state.currentStep < steps.length - 1 ? (
                   <Button onClick={handleNext} disabled={state.isCreating}>
                     Next
                   </Button>
