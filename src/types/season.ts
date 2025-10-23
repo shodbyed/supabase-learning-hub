@@ -156,6 +156,10 @@ export interface WeekEntry {
   date: string;            // ISO date string (YYYY-MM-DD)
   type: 'regular' | 'playoffs' | 'week-off';
   conflicts: ConflictFlag[];
+  dbId?: string;           // Database ID (for editing existing weeks)
+  weekCompleted?: boolean; // Whether this week has been completed
+  isModified?: boolean;    // Whether this week has been modified in the UI
+  dbWeekType?: 'regular' | 'blackout' | 'playoffs' | 'season_end_break'; // Original DB week_type
 }
 
 /**

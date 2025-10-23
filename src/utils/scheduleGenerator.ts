@@ -110,19 +110,17 @@ function buildTeamPositionMap(teams: TeamWithPosition[]): Map<number, TeamWithPo
 /**
  * Generate match records for a single week
  *
- * @param seasonWeek - The season week to generate matches for
+ * @param seasonWeekId - ID of the season week
  * @param weeklyMatchups - Array of matchup pairs for this week
  * @param teamsByPosition - Map of position to team
  * @param seasonId - Season ID
- * @param weekIndex - Index of the week (for logging)
  * @returns Array of match insert data
  */
 function generateWeekMatches(
-  seasonWeek: SeasonWeek,
+  seasonWeekId: string,
   weeklyMatchups: [number, number][],
   teamsByPosition: Map<number, TeamWithPosition>,
-  seasonId: string,
-  weekIndex: number
+  seasonId: string
 ): MatchInsertData[] {
   const matches: MatchInsertData[] = [];
 
@@ -135,14 +133,14 @@ function generateWeekMatches(
     // Skip if either position doesn't have a team (shouldn't happen with proper validation)
     if (!homeTeam || !awayTeam) {
       console.warn(
-        `⚠️ Missing team for positions ${homePos} or ${awayPos} in week ${weekIndex + 1}`
+        `⚠️ Missing team for positions ${homePos} or ${awayPos} in week ${seasonWeekId}`
       );
       continue;
     }
 
     matches.push({
       season_id: seasonId,
-      season_week_id: seasonWeek.id,
+      season_week_id: seasonWeekId,
       home_team_id: homeTeam.id === 'BYE' ? null : homeTeam.id,
       away_team_id: awayTeam.id === 'BYE' ? null : awayTeam.id,
       scheduled_venue_id: homeTeam.home_venue_id,
@@ -157,7 +155,7 @@ function generateWeekMatches(
 /**
  * Generate all match records for the entire season
  *
- * @param seasonWeeks - Array of season weeks
+ * @param seasonWeeks - Array of regular season weeks only
  * @param matchupTable - Matchup table for team count
  * @param teamsByPosition - Map of position to team
  * @param seasonId - Season ID
@@ -172,19 +170,19 @@ function generateAllMatches(
   const allMatches: MatchInsertData[] = [];
   const cycleLength = matchupTable.length;
 
+  // Each regular week gets matches from the matchup table
   for (let weekIndex = 0; weekIndex < seasonWeeks.length; weekIndex++) {
     const seasonWeek = seasonWeeks[weekIndex];
 
     // Use modulo to cycle through matchup table if season is longer than one cycle
     const matchupWeekIndex = weekIndex % cycleLength;
-    const weeklyMatchups = matchupTable[matchupWeekIndex];
+    const weekMatchups = matchupTable[matchupWeekIndex];
 
     const weekMatches = generateWeekMatches(
-      seasonWeek,
-      weeklyMatchups,
+      seasonWeek.id,
+      weekMatchups,
       teamsByPosition,
-      seasonId,
-      weekIndex
+      seasonId
     );
 
     allMatches.push(...weekMatches);

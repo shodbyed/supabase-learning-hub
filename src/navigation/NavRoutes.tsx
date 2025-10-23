@@ -20,6 +20,7 @@ import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
 import { LeagueRules } from '../operator/LeagueRules';
 import { LeagueDetail } from '../operator/LeagueDetail';
 import { SeasonCreationWizard } from '../operator/SeasonCreationWizard';
+import { SeasonScheduleManager } from '../operator/SeasonScheduleManager';
 import { VenueManagement } from '../operator/VenueManagement';
 import { TeamManagement } from '../operator/TeamManagement';
 import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
@@ -67,6 +68,7 @@ const operatorRoutes = [
   { path: '/league-rules', element: <LeagueRules /> },
   { path: '/league/:leagueId', element: <LeagueDetail /> },
   { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
+  { path: '/league/:leagueId/season/:seasonId/manage-schedule', element: <SeasonScheduleManager /> },
   { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
   { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
   { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },

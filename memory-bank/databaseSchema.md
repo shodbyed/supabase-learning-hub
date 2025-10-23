@@ -1,5 +1,43 @@
 # Database Schema Design
 
+## Database File Organization Pattern
+
+### File Structure
+All database schema files follow this pattern for version control and migrations:
+
+```
+database/
+├── [table]_complete.sql          ← Current production-ready schema (source of truth)
+├── [table]_unfinished.sql        ← Original schema (archived for reference)
+├── [table]_unfinished_update1.sql ← Migration step 1 (ALTER TABLE commands)
+├── [table]_unfinished_update2.sql ← Migration step 2 (if needed)
+└── rebuild_all_tables.sql        ← Uses all *_complete.sql files
+```
+
+### Benefits
+- ✅ **Clear progression**: Can see schema evolution over time
+- ✅ **Rollback capability**: If update breaks, previous version available
+- ✅ **Production-ready**: `*_complete.sql` always has latest working schema
+- ✅ **Safe testing**: Test migrations on copy database first
+- ✅ **Documentation**: Each update file shows what changed and why
+- ✅ **Flexible updates**: Make subtle database changes without full rebuild
+
+### Usage
+1. **Development (full rebuild)**: Run `rebuild_all_tables.sql` - uses all `*_complete.sql` files
+2. **Production (incremental updates)**: Run `[table]_unfinished_updateN.sql` files in order
+3. **New schema changes**: Create new `_updateN.sql` file, update `_complete.sql`, update `rebuild_all_tables.sql`
+
+### Example: Matches Table Migration
+```
+database/
+├── matches_complete.sql          ← Uses round_number (latest schema)
+├── matches_unfinished.sql        ← Uses season_week_id (old schema)
+├── matches_unfinished_update1.sql ← ALTER TABLE to add round_number, drop season_week_id
+└── rebuild_all_tables.sql        ← Includes matches_complete.sql schema inline
+```
+
+---
+
 ## Core Business Model
 
 ### Key Principles

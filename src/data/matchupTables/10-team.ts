@@ -44,3 +44,4 @@ export const tenTeamSchedule = [
   [[4, 2], [10, 6], [5, 7], [1, 8], [9, 3]], // Week 35
   [[7, 1], [4, 9], [6, 3], [5, 2], [10, 8]], // Week 36
 ];
+// if more than 36 weeks repeat starting at week 1

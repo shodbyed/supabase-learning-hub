@@ -42,7 +42,6 @@ interface MatchWithDetails extends Match {
   home_team?: Team | null;
   away_team?: Team | null;
   scheduled_venue?: Venue | null;
-  season_week?: SeasonWeek;
 }
 
 interface WeekSchedule {
@@ -86,14 +85,14 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
     case 'playoffs':
       return {
         bgColor: 'bg-purple-50',
-        badge: '',
-        badgeColor: '',
+        badge: 'PLAYOFFS',
+        badgeColor: 'bg-purple-600 text-white',
       };
     case 'blackout':
       return {
-        bgColor: 'bg-gray-50',
-        badge: '',
-        badgeColor: '',
+        bgColor: 'bg-gray-100',
+        badge: 'BLACKOUT',
+        badgeColor: 'bg-gray-700 text-white',
       };
     case 'season_end_break':
       return {
@@ -261,6 +260,12 @@ export const SeasonSchedulePage: React.FC = () => {
 
         if (weeksError) throw weeksError;
 
+        console.log('📅 Fetched weeks data:', weeksData.map(w => ({
+          week_name: w.week_name,
+          week_type: w.week_type,
+          scheduled_date: w.scheduled_date
+        })));
+
         // Fetch all matches with team and venue details
         const { data: matchesData, error: matchesError } = await supabase
           .from('matches')
@@ -268,19 +273,28 @@ export const SeasonSchedulePage: React.FC = () => {
             *,
             home_team:teams!matches_home_team_id_fkey(id, team_name, captain_id),
             away_team:teams!matches_away_team_id_fkey(id, team_name, captain_id),
-            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, street_address, city, state),
-            season_week:season_weeks(id, scheduled_date, week_name, week_type)
+            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, street_address, city, state)
           `)
           .eq('season_id', seasonId)
           .order('match_number', { ascending: true });
 
         if (matchesError) throw matchesError;
 
-        // Organize matches by week
-        const scheduleByWeek: WeekSchedule[] = weeksData.map(week => ({
-          week,
-          matches: matchesData.filter(match => match.season_week_id === week.id) as MatchWithDetails[],
-        }));
+        // Organize matches by week using season_week_id
+        const scheduleByWeek: WeekSchedule[] = weeksData.map(week => {
+          const weekMatches = matchesData.filter(
+            match => match.season_week_id === week.id
+          ) as MatchWithDetails[];
+
+          return { week, matches: weekMatches };
+        });
+
+        console.log('📊 Final schedule by week:', scheduleByWeek.map(s => ({
+          week_name: s.week.week_name,
+          week_type: s.week.week_type,
+          scheduled_date: s.week.scheduled_date,
+          matchCount: s.matches.length
+        })));
 
         setSchedule(scheduleByWeek);
       } catch (err) {
@@ -386,11 +400,11 @@ export const SeasonSchedulePage: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <CardTitle className="text-lg">
-                        {week.week_name}
+                        {week.week_type === 'blackout' ? week.week_name : week.week_name}
                       </CardTitle>
                       {weekStyle.badge && (
                         <span className={`text-xs font-semibold px-2 py-1 rounded ${weekStyle.badgeColor}`}>
-                          {weekStyle.badge}
+                          {week.week_type === 'blackout' ? 'BLACKOUT' : weekStyle.badge}
                         </span>
                       )}
                     </div>

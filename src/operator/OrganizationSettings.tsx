@@ -9,8 +9,13 @@ import { useNavigate } from 'react-router-dom';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
-import { ArrowLeft } from 'lucide-react';
-import type { LeagueOperator } from '@/types/operator';
+import { InfoButton } from '@/components/InfoButton';
+import { ArrowLeft, CalendarX } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import type { LeagueOperator, OperatorBlackoutPreference } from '@/types/operator';
+import type { ChampionshipDateOption } from '@/utils/tournamentUtils';
+import { parseLocalDate } from '@/utils/formatters';
 
 /**
  * Organization Settings Component
@@ -24,6 +29,24 @@ export const OrganizationSettings: React.FC = () => {
   const [operatorProfile, setOperatorProfile] = useState<LeagueOperator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Championship preferences state
+  const [bcaPreference, setBcaPreference] = useState<{
+    preference: OperatorBlackoutPreference | null;
+    championship: ChampionshipDateOption | null;
+  } | null>(null);
+  const [apaPreference, setApaPreference] = useState<{
+    preference: OperatorBlackoutPreference | null;
+    championship: ChampionshipDateOption | null;
+  } | null>(null);
+
+  // Inline edit state
+  const [editingBca, setEditingBca] = useState(false);
+  const [editingApa, setEditingApa] = useState(false);
+  const [bcaStartDate, setBcaStartDate] = useState('');
+  const [bcaEndDate, setBcaEndDate] = useState('');
+  const [apaStartDate, setApaStartDate] = useState('');
+  const [apaEndDate, setApaEndDate] = useState('');
 
   /**
    * Fetch operator profile on mount
@@ -55,6 +78,328 @@ export const OrganizationSettings: React.FC = () => {
 
     fetchOperatorProfile();
   }, [member]);
+
+  /**
+   * Fetch championship preferences for BCA and APA
+   * Fetches both the preference and the associated championship date details
+   */
+  useEffect(() => {
+    const fetchChampionshipPreferences = async () => {
+      if (!operatorProfile) return;
+
+      try {
+        // Fetch all championship preferences for this operator
+        const { data: preferences, error: prefError } = await supabase
+          .from('operator_blackout_preferences')
+          .select('*')
+          .eq('operator_id', operatorProfile.id)
+          .eq('preference_type', 'championship');
+
+        if (prefError) throw prefError;
+
+        // Process each preference and fetch associated championship details
+        for (const pref of preferences || []) {
+          if (!pref.championship_id) continue;
+
+          const { data: championship } = await supabase
+            .from('championship_date_options')
+            .select('*')
+            .eq('id', pref.championship_id)
+            .single();
+
+          if (championship) {
+            if (championship.organization === 'BCA') {
+              setBcaPreference({ preference: pref, championship });
+            } else if (championship.organization === 'APA') {
+              setApaPreference({ preference: pref, championship });
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch championship preferences:', err);
+      }
+    };
+
+    fetchChampionshipPreferences();
+  }, [operatorProfile]);
+
+  /**
+   * Refetch championship preferences after saving changes
+   * Clears existing state and re-fetches to ensure UI is up to date
+   */
+  const refetchPreferences = async () => {
+    if (!operatorProfile) return;
+
+    // Clear existing state
+    setBcaPreference(null);
+    setApaPreference(null);
+
+    try {
+      // Fetch all championship preferences for this operator
+      const { data: preferences, error: prefError } = await supabase
+        .from('operator_blackout_preferences')
+        .select('*')
+        .eq('operator_id', operatorProfile.id)
+        .eq('preference_type', 'championship');
+
+      if (prefError) throw prefError;
+
+      // Process each preference and fetch associated championship details
+      for (const pref of preferences || []) {
+        if (!pref.championship_id) continue;
+
+        const { data: championship } = await supabase
+          .from('championship_date_options')
+          .select('*')
+          .eq('id', pref.championship_id)
+          .single();
+
+        if (championship) {
+          if (championship.organization === 'BCA') {
+            setBcaPreference({ preference: pref, championship });
+          } else if (championship.organization === 'APA') {
+            setApaPreference({ preference: pref, championship });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch championship preferences:', err);
+    }
+  };
+
+  /**
+   * Toggle ignore flag for BCA championship
+   */
+  const toggleBcaIgnore = async () => {
+    if (!operatorProfile || !bcaPreference?.preference) return;
+
+    const newAction = bcaPreference.preference.preference_action === 'ignore' ? 'blackout' : 'ignore';
+
+    try {
+      const { error } = await supabase
+        .from('operator_blackout_preferences')
+        .update({ preference_action: newAction })
+        .eq('id', bcaPreference.preference.id);
+
+      if (error) throw error;
+
+      await refetchPreferences();
+    } catch (err) {
+      console.error('Failed to toggle BCA ignore:', err);
+    }
+  };
+
+  /**
+   * Toggle ignore flag for APA championship
+   */
+  const toggleApaIgnore = async () => {
+    if (!operatorProfile || !apaPreference?.preference) return;
+
+    const newAction = apaPreference.preference.preference_action === 'ignore' ? 'blackout' : 'ignore';
+
+    try {
+      const { error } = await supabase
+        .from('operator_blackout_preferences')
+        .update({ preference_action: newAction })
+        .eq('id', apaPreference.preference.id);
+
+      if (error) throw error;
+
+      await refetchPreferences();
+    } catch (err) {
+      console.error('Failed to toggle APA ignore:', err);
+    }
+  };
+
+  /**
+   * Start editing BCA dates
+   */
+  const startEditingBca = () => {
+    if (bcaPreference?.championship) {
+      setBcaStartDate(bcaPreference.championship.start_date);
+      setBcaEndDate(bcaPreference.championship.end_date);
+    } else {
+      setBcaStartDate('');
+      setBcaEndDate('');
+    }
+    setEditingBca(true);
+  };
+
+  /**
+   * Start editing APA dates
+   */
+  const startEditingApa = () => {
+    if (apaPreference?.championship) {
+      setApaStartDate(apaPreference.championship.start_date);
+      setApaEndDate(apaPreference.championship.end_date);
+    } else {
+      setApaStartDate('');
+      setApaEndDate('');
+    }
+    setEditingApa(true);
+  };
+
+  /**
+   * Cancel editing BCA dates
+   */
+  const cancelEditingBca = () => {
+    setEditingBca(false);
+    setBcaStartDate('');
+    setBcaEndDate('');
+  };
+
+  /**
+   * Cancel editing APA dates
+   */
+  const cancelEditingApa = () => {
+    setEditingApa(false);
+    setApaStartDate('');
+    setApaEndDate('');
+  };
+
+  /**
+   * Save edited BCA dates
+   */
+  const saveBcaDates = async () => {
+    if (!operatorProfile || !bcaStartDate || !bcaEndDate) {
+      console.log('Save validation failed:', { operatorProfile: !!operatorProfile, bcaStartDate, bcaEndDate });
+      return;
+    }
+
+    // Validate that end date is after start date
+    const start = new Date(bcaStartDate);
+    const end = new Date(bcaEndDate);
+
+    if (end <= start) {
+      alert('End date must be after start date');
+      return;
+    }
+
+    console.log('Saving BCA dates:', { bcaStartDate, bcaEndDate, hasExisting: !!bcaPreference?.championship });
+
+    try {
+      if (bcaPreference?.championship) {
+        // Update existing championship_date_options record
+        const { error } = await supabase
+          .from('championship_date_options')
+          .update({
+            start_date: bcaStartDate,
+            end_date: bcaEndDate,
+          })
+          .eq('id', bcaPreference.championship.id);
+
+        if (error) throw error;
+      } else {
+        // Create new championship_date_options record
+        const currentYear = new Date().getFullYear();
+        const { data: newChampionship, error: champError } = await supabase
+          .from('championship_date_options')
+          .insert({
+            organization: 'BCA',
+            year: currentYear,
+            start_date: bcaStartDate,
+            end_date: bcaEndDate,
+            dev_verified: false,
+          })
+          .select()
+          .single();
+
+        if (champError) throw champError;
+
+        // Create the preference record linking to this championship
+        const { error: prefError } = await supabase
+          .from('operator_blackout_preferences')
+          .insert({
+            operator_id: operatorProfile.id,
+            preference_type: 'championship',
+            preference_action: 'blackout',
+            championship_id: newChampionship.id,
+            auto_apply: false,
+          });
+
+        if (prefError) throw prefError;
+      }
+
+      console.log('✅ BCA dates saved successfully');
+      await refetchPreferences();
+      setEditingBca(false);
+    } catch (err) {
+      console.error('❌ Failed to save BCA dates:', err);
+      alert('Failed to save BCA dates. Check console for details.');
+    }
+  };
+
+  /**
+   * Save edited APA dates
+   */
+  const saveApaDates = async () => {
+    if (!operatorProfile || !apaStartDate || !apaEndDate) {
+      console.log('Save validation failed:', { operatorProfile: !!operatorProfile, apaStartDate, apaEndDate });
+      return;
+    }
+
+    // Validate that end date is after start date
+    const start = new Date(apaStartDate);
+    const end = new Date(apaEndDate);
+
+    if (end <= start) {
+      alert('End date must be after start date');
+      return;
+    }
+
+    console.log('Saving APA dates:', { apaStartDate, apaEndDate, hasExisting: !!apaPreference?.championship });
+
+    try {
+      if (apaPreference?.championship) {
+        // Update existing championship_date_options record
+        const { error } = await supabase
+          .from('championship_date_options')
+          .update({
+            start_date: apaStartDate,
+            end_date: apaEndDate,
+          })
+          .eq('id', apaPreference.championship.id);
+
+        if (error) throw error;
+      } else {
+        // Create new championship_date_options record
+        const currentYear = new Date().getFullYear();
+        const { data: newChampionship, error: champError } = await supabase
+          .from('championship_date_options')
+          .insert({
+            organization: 'APA',
+            year: currentYear,
+            start_date: apaStartDate,
+            end_date: apaEndDate,
+            dev_verified: false,
+          })
+          .select()
+          .single();
+
+        if (champError) throw champError;
+
+        // Create the preference record linking to this championship
+        const { error: prefError } = await supabase
+          .from('operator_blackout_preferences')
+          .insert({
+            operator_id: operatorProfile.id,
+            preference_type: 'championship',
+            preference_action: 'blackout',
+            championship_id: newChampionship.id,
+            auto_apply: false,
+          });
+
+        if (prefError) throw prefError;
+      }
+
+      console.log('✅ APA dates saved successfully');
+      await refetchPreferences();
+      setEditingApa(false);
+    } catch (err) {
+      console.error('❌ Failed to save APA dates:', err);
+      alert('Failed to save APA dates. Check console for details.');
+    }
+  };
 
   // Loading state
   if (loading) {
@@ -149,6 +494,169 @@ export const OrganizationSettings: React.FC = () => {
             buttonText="View Rules"
             linkTo="/league-rules"
           />
+
+          {/* Blackout Dates Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <CalendarX className="h-6 w-6 text-red-600" />
+              <h3 className="font-semibold text-gray-900">Blackout Dates</h3>
+            </div>
+            <div className="space-y-3 mb-6">
+              {/* BCA Preference */}
+              <div className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600 font-medium">BCA Championship</span>
+                  {!editingBca ? (
+                    <button
+                      onClick={startEditingBca}
+                      className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      {bcaPreference?.championship ? 'Edit' : 'Add'}
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={saveBcaDates}
+                        size="sm"
+                        className="text-xs h-7"
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        onClick={cancelEditingBca}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {editingBca ? (
+                  <div className="space-y-2 mb-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                        <Calendar
+                          value={bcaStartDate}
+                          onChange={setBcaStartDate}
+                          placeholder="Select start date"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                        <Calendar
+                          value={bcaEndDate}
+                          onChange={setBcaEndDate}
+                          placeholder="Select end date"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : bcaPreference && bcaPreference.championship ? (
+                  <>
+                    <div className="text-sm text-gray-900 mb-2">
+                      {parseLocalDate(bcaPreference.championship.start_date).toLocaleDateString()} - {parseLocalDate(bcaPreference.championship.end_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 text-sm text-gray-600">
+                        <input
+                          type="checkbox"
+                          checked={bcaPreference.preference?.preference_action === 'ignore'}
+                          onChange={toggleBcaIgnore}
+                          className="rounded"
+                        />
+                        Ignore these dates
+                      </label>
+                      <InfoButton title="Championship Dates">
+                        National tournament dates are normally flagged as potential schedule conflicts since many players travel to play or attend. If you don't expect enough of your players to be affected to justify rescheduling, these dates can safely be ignored.
+                      </InfoButton>
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-400 italic">Not set</span>
+                )}
+              </div>
+
+              {/* APA Preference */}
+              <div className="border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600 font-medium">APA Championship</span>
+                  {!editingApa ? (
+                    <button
+                      onClick={startEditingApa}
+                      className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      {apaPreference?.championship ? 'Edit' : 'Add'}
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={saveApaDates}
+                        size="sm"
+                        className="text-xs h-7"
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        onClick={cancelEditingApa}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {editingApa ? (
+                  <div className="space-y-2 mb-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                        <Calendar
+                          value={apaStartDate}
+                          onChange={setApaStartDate}
+                          placeholder="Select start date"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                        <Calendar
+                          value={apaEndDate}
+                          onChange={setApaEndDate}
+                          placeholder="Select end date"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : apaPreference && apaPreference.championship ? (
+                  <>
+                    <div className="text-sm text-gray-900 mb-2">
+                      {parseLocalDate(apaPreference.championship.start_date).toLocaleDateString()} - {parseLocalDate(apaPreference.championship.end_date).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 text-sm text-gray-600">
+                        <input
+                          type="checkbox"
+                          checked={apaPreference.preference?.preference_action === 'ignore'}
+                          onChange={toggleApaIgnore}
+                          className="rounded"
+                        />
+                        Ignore these dates
+                      </label>
+                      <InfoButton title="Championship Dates">
+                        National tournament dates are normally flagged as potential schedule conflicts since many players travel to play or attend. If you don't expect enough of your players to be affected to justify rescheduling, these dates can safely be ignored.
+                      </InfoButton>
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-400 italic">Not set</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

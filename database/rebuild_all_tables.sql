@@ -15,10 +15,13 @@ DROP TABLE IF EXISTS venues CASCADE;
 DROP TABLE IF EXISTS venue_owners CASCADE;
 DROP TABLE IF EXISTS season_weeks CASCADE;
 DROP TABLE IF EXISTS seasons CASCADE;
+DROP TABLE IF EXISTS operator_blackout_preferences CASCADE;
 DROP TABLE IF EXISTS championship_date_options CASCADE;
 DROP TABLE IF EXISTS leagues CASCADE;
 DROP TABLE IF EXISTS league_operators CASCADE;
 DROP TABLE IF EXISTS members CASCADE;
+DROP TYPE IF EXISTS preference_type CASCADE;
+DROP TYPE IF EXISTS preference_action CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
 
 -- =====================================================
@@ -140,6 +143,11 @@ CREATE TABLE league_operators (
   billing_zip VARCHAR(10) NOT NULL,
   payment_verified BOOLEAN NOT NULL DEFAULT false,
 
+  -- Championship Preferences (auto-skip if saved and still valid)
+  -- FK constraints added at end of file after championship_date_options table exists
+  preferred_bca_championship_id UUID,
+  preferred_apa_championship_id UUID,
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -147,6 +155,8 @@ CREATE TABLE league_operators (
 CREATE INDEX idx_league_operators_member_id ON league_operators(member_id);
 CREATE INDEX idx_league_operators_org_name ON league_operators(organization_name);
 CREATE INDEX idx_league_operators_stripe_customer ON league_operators(stripe_customer_id);
+CREATE INDEX idx_league_operators_preferred_bca ON league_operators(preferred_bca_championship_id);
+CREATE INDEX idx_league_operators_preferred_apa ON league_operators(preferred_apa_championship_id);
 
 CREATE OR REPLACE FUNCTION update_league_operators_updated_at()
 RETURNS TRIGGER AS $$
@@ -271,23 +281,47 @@ CREATE POLICY "Public can view active leagues"
 -- =====================================================
 
 CREATE TABLE championship_date_options (
+  -- Primary identification
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  organization VARCHAR(10) NOT NULL CHECK (organization IN ('BCA', 'APA')),
-  year INTEGER NOT NULL,
+
+  -- Tournament identification
+  organization TEXT NOT NULL CHECK (organization IN ('BCA', 'APA')),
+  year INTEGER NOT NULL CHECK (year >= 2024 AND year <= 2050),
+
+  -- Date range for the championship
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
-  location VARCHAR(255),
-  vote_count INTEGER NOT NULL DEFAULT 0,
-  verified BOOLEAN NOT NULL DEFAULT false,
+
+  -- Community verification
+  vote_count INTEGER NOT NULL DEFAULT 1 CHECK (vote_count >= 1),
+  dev_verified BOOLEAN NOT NULL DEFAULT false,
+
+  -- Metadata
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(organization, year, start_date, end_date)
+
+  -- Validation: end_date must be after start_date
+  CONSTRAINT valid_date_range CHECK (end_date > start_date)
 );
 
-CREATE INDEX idx_championship_dates_org_year ON championship_date_options(organization, year);
-CREATE INDEX idx_championship_dates_year ON championship_date_options(year);
+-- Prevent duplicate date entries for same organization/year
+CREATE UNIQUE INDEX unique_dates_per_org_year
+ON championship_date_options (organization, year, start_date, end_date);
 
-CREATE OR REPLACE FUNCTION update_championship_dates_updated_at()
+-- Index for common queries (organization + year filtering)
+CREATE INDEX idx_championship_org_year
+ON championship_date_options (organization, year);
+
+-- Index for filtering future dates
+CREATE INDEX idx_championship_end_date
+ON championship_date_options (end_date);
+
+-- Index for finding dev-verified dates quickly
+CREATE INDEX idx_championship_dev_verified
+ON championship_date_options (organization, year, dev_verified);
+
+-- Trigger to auto-update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_championship_date_options_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
@@ -295,23 +329,157 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER championship_dates_updated_at
+CREATE TRIGGER championship_date_options_updated_at_trigger
   BEFORE UPDATE ON championship_date_options
   FOR EACH ROW
-  EXECUTE FUNCTION update_championship_dates_updated_at();
+  EXECUTE FUNCTION update_championship_date_options_updated_at();
 
+-- Row Level Security (RLS) Policies
 ALTER TABLE championship_date_options ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view championship dates"
+-- Everyone can view championship dates (needed for season creation)
+CREATE POLICY "Championship dates are viewable by everyone"
   ON championship_date_options FOR SELECT
   USING (true);
 
-CREATE POLICY "Authenticated users can vote"
+-- Authenticated operators can submit championship dates
+CREATE POLICY "Operators can submit championship dates"
+  ON championship_date_options FOR INSERT
+  WITH CHECK (auth.role() = 'authenticated');
+
+-- Authenticated operators can update vote counts
+-- (Typically done by incrementing vote_count when dates match user submission)
+CREATE POLICY "Operators can update championship dates"
   ON championship_date_options FOR UPDATE
-  USING (auth.uid() IS NOT NULL);
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
 
 -- =====================================================
--- 5. SEASONS TABLE
+-- 5. OPERATOR BLACKOUT PREFERENCES TABLE
+-- =====================================================
+
+-- Create custom types for preferences
+CREATE TYPE preference_type AS ENUM ('holiday', 'championship', 'custom');
+CREATE TYPE preference_action AS ENUM ('blackout', 'ignore');
+
+CREATE TABLE operator_blackout_preferences (
+  -- Primary identification
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- Which operator owns this preference
+  operator_id UUID NOT NULL REFERENCES league_operators(id) ON DELETE CASCADE,
+
+  -- What type of preference is this
+  preference_type preference_type NOT NULL,
+
+  -- What action should be taken (blackout week or ignore conflict)
+  preference_action preference_action NOT NULL,
+
+  -- For type = 'holiday'
+  holiday_name TEXT,
+
+  -- For type = 'championship'
+  championship_id UUID REFERENCES championship_date_options(id) ON DELETE SET NULL,
+
+  -- For type = 'custom'
+  custom_name TEXT,
+  custom_start_date DATE,
+  custom_end_date DATE,
+
+  -- Should this be automatically applied when creating new seasons
+  auto_apply BOOLEAN NOT NULL DEFAULT false,
+
+  -- Timestamps
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  -- Validation constraints
+  CONSTRAINT valid_holiday_preference CHECK (
+    preference_type != 'holiday' OR holiday_name IS NOT NULL
+  ),
+  CONSTRAINT valid_championship_preference CHECK (
+    preference_type != 'championship' OR championship_id IS NOT NULL
+  ),
+  CONSTRAINT valid_custom_preference CHECK (
+    preference_type != 'custom' OR (
+      custom_name IS NOT NULL AND
+      custom_start_date IS NOT NULL AND
+      custom_end_date IS NOT NULL AND
+      custom_end_date >= custom_start_date
+    )
+  )
+);
+
+-- Indexes
+CREATE INDEX idx_operator_blackout_preferences_operator_id
+ON operator_blackout_preferences(operator_id);
+
+CREATE INDEX idx_operator_blackout_preferences_type_action
+ON operator_blackout_preferences(preference_type, preference_action);
+
+CREATE INDEX idx_operator_blackout_preferences_championship_id
+ON operator_blackout_preferences(championship_id)
+WHERE championship_id IS NOT NULL;
+
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_operator_blackout_preferences_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER operator_blackout_preferences_updated_at_trigger
+  BEFORE UPDATE ON operator_blackout_preferences
+  FOR EACH ROW
+  EXECUTE FUNCTION update_operator_blackout_preferences_updated_at();
+
+-- RLS Policies
+ALTER TABLE operator_blackout_preferences ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Operators can view their own preferences"
+  ON operator_blackout_preferences FOR SELECT
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can insert their own preferences"
+  ON operator_blackout_preferences FOR INSERT
+  WITH CHECK (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can update their own preferences"
+  ON operator_blackout_preferences FOR UPDATE
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+CREATE POLICY "Operators can delete their own preferences"
+  ON operator_blackout_preferences FOR DELETE
+  USING (
+    operator_id IN (
+      SELECT id FROM league_operators WHERE member_id IN (
+        SELECT id FROM members WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+-- =====================================================
+-- 6. SEASONS TABLE
 -- =====================================================
 
 CREATE TABLE seasons (
@@ -1109,6 +1277,22 @@ COMMENT ON COLUMN public.matches.status IS 'Match status: scheduled, in_progress
 --       AND (SELECT state FROM members WHERE id = league_operators.member_id LIMIT 1) = members.state
 --     )
 --   );
+
+-- =====================================================
+-- FOREIGN KEY CONSTRAINTS (added after all tables exist)
+-- =====================================================
+
+-- Add FK constraints for league_operators championship preferences
+-- These are added here because championship_date_options table is created after league_operators
+ALTER TABLE league_operators
+ADD CONSTRAINT fk_league_operators_preferred_bca
+FOREIGN KEY (preferred_bca_championship_id)
+REFERENCES championship_date_options(id) ON DELETE SET NULL;
+
+ALTER TABLE league_operators
+ADD CONSTRAINT fk_league_operators_preferred_apa
+FOREIGN KEY (preferred_apa_championship_id)
+REFERENCES championship_date_options(id) ON DELETE SET NULL;
 
 -- =====================================================
 -- REBUILD COMPLETE

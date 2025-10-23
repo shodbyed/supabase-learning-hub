@@ -78,7 +78,7 @@ export const LeagueDetail: React.FC = () => {
           .select('*')
           .eq('league_id', leagueId)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
         if (activeSeasonData) {
           setActiveSeason(activeSeasonData);
