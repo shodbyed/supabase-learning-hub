@@ -5,7 +5,8 @@
       "Bash(pnpm run typecheck)",
       "Bash(pnpm run build)",
       "Bash(pnpm run lint)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(pnpm test:run:*)"
     ],
     "deny": [],
     "ask": []
