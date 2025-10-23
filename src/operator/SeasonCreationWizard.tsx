@@ -9,6 +9,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
+import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
@@ -226,73 +227,27 @@ export const SeasonCreationWizard: React.FC = () => {
   });
 
   /**
-   * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
-   * This creates a seamless "breeze through" experience for operators who have saved preferences
+   * Championship auto-fill hook
+   * Auto-populates and auto-advances BCA/APA steps when saved preferences exist
+   * Creates a seamless "breeze through" experience for operators
+   * MUST be called before loading guard to satisfy Rules of Hooks
    */
-  useEffect(() => {
-    if (!leagueId || state.loading || !state.league || state.savedChampionshipPreferences.length === 0) return;
-
-    const steps = getSeasonWizardSteps(
-      leagueId,
-      state.existingSeasons.length > 0,
-      state.existingSeasons.length > 0 ? undefined : state.league.league_start_date,
-      state.league.day_of_week,
-      () => {},
-      state.bcaDateOptions,
-      state.apaDateOptions,
-      state.savedChampionshipPreferences
-    );
-
-    const currentStepData = steps[state.currentStep];
-    if (!currentStepData) return;
-
-    // Check if we're on BCA or APA choice step
-    if (currentStepData.id === 'bcaChoice' || currentStepData.id === 'apaChoice') {
-      const organization = currentStepData.id === 'bcaChoice' ? 'BCA' : 'APA';
-      const preference = state.savedChampionshipPreferences.find(p => p.organization === organization);
-
-      if (preference) {
-        // Auto-populate localStorage with saved preference
-        const STORAGE_KEY = `season-creation-${leagueId}`;
-        const stored = localStorage.getItem(STORAGE_KEY);
-        console.log(`📦 Current localStorage for ${organization}:`, stored);
-        const formData: SeasonFormData = stored ? JSON.parse(stored) : {
-          startDate: '',
-          seasonLength: '16',
-          isCustomLength: false,
-          bcaChoice: '',
-          bcaStartDate: '',
-          bcaEndDate: '',
-          bcaIgnored: false,
-          apaChoice: '',
-          apaStartDate: '',
-          apaEndDate: '',
-          apaIgnored: false,
-        };
-
-        if (organization === 'BCA') {
-          formData.bcaChoice = 'saved-preference';
-          formData.bcaStartDate = preference.startDate;
-          formData.bcaEndDate = preference.endDate;
-          formData.bcaIgnored = preference.ignored;
-        } else {
-          formData.apaChoice = 'saved-preference';
-          formData.apaStartDate = preference.startDate;
-          formData.apaEndDate = preference.endDate;
-          formData.apaIgnored = preference.ignored;
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-        console.log(`✅ Auto-populated ${organization} preference from saved settings`);
-
-        // Auto-advance to next step
-        const nextStep = state.currentStep + 1;
-        dispatch({ type: 'SET_CURRENT_STEP', payload: nextStep });
-        localStorage.setItem(`season-wizard-step-${leagueId}`, nextStep.toString());
-        console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
+  useChampionshipAutoFill({
+    currentStep: state.currentStep,
+    leagueId,
+    loading: state.loading,
+    league: state.league,
+    savedChampionshipPreferences: state.savedChampionshipPreferences,
+    existingSeasons: state.existingSeasons,
+    bcaDateOptions: state.bcaDateOptions,
+    apaDateOptions: state.apaDateOptions,
+    onStepChange: (step) => {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: step });
+      if (leagueId) {
+        localStorage.setItem(`season-wizard-step-${leagueId}`, step.toString());
       }
-    }
-  }, [state.currentStep, leagueId, state.loading, state.league, state.savedChampionshipPreferences, state.existingSeasons, state.bcaDateOptions, state.apaDateOptions]);
+    },
+  });
 
   if (state.loading) {
     return (
