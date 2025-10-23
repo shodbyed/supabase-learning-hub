@@ -78,13 +78,30 @@ export async function fetchPlayerTeams(memberId: string) {
 
   // Filter for active/upcoming seasons and sort by start date (most recent first)
   const filteredData = data
-    ?.filter((item) => {
-      const status = item.teams?.season?.status;
+    ?.filter((item: any) => {
+      // Type guard: ensure teams and season are objects, not arrays
+      const teams = item.teams;
+      if (!teams || Array.isArray(teams)) return false;
+
+      const season = teams.season;
+      if (!season || Array.isArray(season)) return false;
+
+      const status = season.status;
       return status === 'active' || status === 'upcoming';
     })
-    .sort((a, b) => {
-      const dateA = new Date(a.teams?.season?.start_date || 0).getTime();
-      const dateB = new Date(b.teams?.season?.start_date || 0).getTime();
+    .sort((a: any, b: any) => {
+      const teamsA = a.teams;
+      const teamsB = b.teams;
+
+      if (!teamsA || Array.isArray(teamsA) || !teamsB || Array.isArray(teamsB)) return 0;
+
+      const seasonA = teamsA.season;
+      const seasonB = teamsB.season;
+
+      if (!seasonA || Array.isArray(seasonA) || !seasonB || Array.isArray(seasonB)) return 0;
+
+      const dateA = new Date(seasonA.start_date || 0).getTime();
+      const dateB = new Date(seasonB.start_date || 0).getTime();
       return dateB - dateA; // Most recent first
     });
 

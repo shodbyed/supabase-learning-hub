@@ -21,6 +21,7 @@ interface TeamData {
     id: string;
     team_name: string;
     captain_id: string;
+    roster_size: number;
     captain: {
       id: string;
       first_name: string;
@@ -108,7 +109,7 @@ export function MyTeams() {
         return;
       }
 
-      setTeams(data || []);
+      setTeams((data || []) as unknown as TeamData[]);
       setLoading(false);
     }
 
@@ -154,7 +155,7 @@ export function MyTeams() {
       return;
     }
 
-    setTeams(data || []);
+    setTeams((data || []) as unknown as TeamData[]);
     setLoading(false);
   };
 

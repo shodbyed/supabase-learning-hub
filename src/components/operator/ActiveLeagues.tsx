@@ -416,7 +416,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
           <p className="text-gray-600 mb-6">
             You haven't created any leagues yet. Start by creating your first league!
           </p>
-          <Button asChild style={{ backgroundColor: '#2563eb', color: 'white' }}>
+          <Button asChild>
             <Link to="/create-league">Create Your First League</Link>
           </Button>
         </div>
@@ -429,7 +429,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     <div className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Your Active Leagues</h3>
-        <Button asChild size="sm" style={{ backgroundColor: '#2563eb', color: 'white' }}>
+        <Button asChild size="sm">
           <Link to="/create-league">Create New League</Link>
         </Button>
       </div>
