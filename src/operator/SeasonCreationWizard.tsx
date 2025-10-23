@@ -4,10 +4,12 @@
  * Multi-step wizard for creating a new season for a league.
  * Uses localStorage for form persistence across page refreshes.
  */
-import { useEffect, useRef, useCallback, useReducer } from 'react';
+import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
+import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
+import { fetchChampionshipPreferences } from '@/services/championshipService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,12 +21,9 @@ import { DualDateStep } from '@/components/forms/DualDateStep';
 import { SimpleRadioChoice } from '@/components/forms/SimpleRadioChoice';
 import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
-import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData, type ChampionshipPreference } from '@/data/seasonWizardSteps';
+import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions, submitChampionshipDates } from '@/utils/tournamentUtils';
-import { generateSchedule } from '@/utils/scheduleUtils';
-import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
-import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
-import type { SeasonInsertData, WeekEntry, ChampionshipEvent } from '@/types/season';
+import type { SeasonInsertData, WeekEntry } from '@/types/season';
 import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
@@ -44,44 +43,14 @@ export const SeasonCreationWizard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { operatorId } = useOperatorId();
 
-  // useReducer hook for state management
+  // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
 
-  // Migrated to useReducer - use state.league instead
-  // const [league, setLeague] = useState<League | null>(null);
-  // Migrated to useReducer - use state.existingSeasons instead
-  // const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
-  // Migrated to useReducer - use state.bcaDateOptions instead
-  // const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  // Migrated to useReducer - use state.apaDateOptions instead
-  // const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  // Migrated to useReducer - use state.savedChampionshipPreferences instead
-  // const [savedChampionshipPreferences, setSavedChampionshipPreferences] = useState<ChampionshipPreference[]>([]);
-
-  // Migrated to useReducer - use state.loading instead
-  // const [loading, setLoading] = useState(true);
-  // Migrated to useReducer - use state.error instead
-  // const [error, setError] = useState<string | null>(null);
-  // Migrated to useReducer - use state.currentStep instead
-  // const [currentStep, setCurrentStep] = useState(() => {
-  //   const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
-  //   return stored ? parseInt(stored, 10) : 0;
-  // });
-  // Migrated to useReducer - use state.state.isEditingExistingSeason instead
-  // const [state.isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
-  // Migrated to useReducer - use state.state.isCreating instead
-  // const [state.isCreating, setIsCreating] = useState(false);
-  // Migrated to useReducer - use state.refreshKey instead
-  // const [_refreshKey, setRefreshKey] = useState(0);
-  // Migrated to useReducer - use state.validationError instead
-  // const [validationError, setValidationError] = useState<string | null>(null);
-  // Migrated to useReducer - use state.state.dayOfWeekWarning instead
-  // const [state.dayOfWeekWarning, setDayOfWeekWarning] = useState<...>(null);
-  // Migrated to useReducer - use state.schedule instead
-  // const [schedule, setSchedule] = useState<WeekEntry[]>([]);
-
-  // Wrapper to log schedule updates from ScheduleReview
-  // Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
+  /**
+   * Callback to handle schedule updates from ScheduleReview component
+   * Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
+   * The dispatch function is stable, so this callback won't cause unnecessary re-renders
+   */
   const handleScheduleChange = useCallback((newSchedule: WeekEntry[]) => {
     console.log('📥 SeasonCreationWizard received schedule update from ScheduleReview:', {
       weekCount: newSchedule.length,
@@ -94,56 +63,6 @@ export const SeasonCreationWizard: React.FC = () => {
     });
     dispatch({ type: 'SET_SCHEDULE', payload: newSchedule });
   }, [dispatch]);
-  // Migrated to useReducer - use state.seasonStartDate instead
-  // const [seasonStartDate, setSeasonStartDate] = useState<string>('');
-  // Migrated to useReducer - use state.holidays instead
-  // const [holidays, setHolidays] = useState<any[]>([]);
-  // Migrated to useReducer - use state.bcaChampionship instead
-  // const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
-  // Migrated to useReducer - use state.apaChampionship instead
-  // const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
-
-  // Track if schedule has been generated for current step to prevent infinite loops
-  const scheduleGeneratedForStep = useRef<number | null>(null);
-
-  /**
-   * Fetch operator's saved championship preferences
-   * Returns array of saved preferences or empty array if none exist
-   */
-  const fetchChampionshipPreferences = async (operatorId: string | null): Promise<ChampionshipPreference[]> => {
-    if (!operatorId) {
-      console.log('⚠️ No operatorId available - cannot fetch preferences');
-      return [];
-    }
-
-    try {
-      const { data: preferences } = await supabase
-        .from('operator_blackout_preferences')
-        .select('*, championship_date_options(*)')
-        .eq('operator_id', operatorId)
-        .eq('preference_type', 'championship');
-
-      if (preferences && preferences.length > 0) {
-        const prefs: ChampionshipPreference[] = preferences
-          .filter(p => p.championship_date_options && p.preference_action !== null)
-          .map(p => ({
-            organization: p.championship_date_options!.organization as 'BCA' | 'APA',
-            startDate: p.championship_date_options!.start_date,
-            endDate: p.championship_date_options!.end_date,
-            ignored: p.preference_action === 'ignore',
-          }));
-
-        console.log('📋 Loaded saved championship preferences:', prefs);
-        return prefs;
-      } else {
-        console.log('📋 No saved championship preferences found');
-        return [];
-      }
-    } catch (err) {
-      console.error('❌ Failed to fetch saved championship preferences:', err);
-      return [];
-    }
-  };
 
   /**
    * Fetch league and existing seasons
@@ -240,149 +159,71 @@ export const SeasonCreationWizard: React.FC = () => {
     console.log('📝 Edit mode: User can navigate through wizard steps to edit season');
   }, [state.league, leagueId, state.loading, state.isEditingExistingSeason]);
 
+  // Calculate step data for hooks - safe to do before guards since we handle null cases
+  const hasExistingSeasons = state.existingSeasons.length > 0;
+  const defaultStartDate = hasExistingSeasons ? undefined : state.league?.league_start_date;
+
   /**
-   * Generate schedule when reaching schedule-review step
-   * If editing an existing season, load saved schedule from localStorage
-   * Otherwise, generate a fresh schedule
-   *
-   * Only runs once when entering schedule-review step to prevent infinite loops
+   * Callback triggered when user changes start date to a different day of week
+   * Shows warning modal explaining that league will be updated
    */
-  useEffect(() => {
-    if (!state.league || !leagueId || state.loading) return;
+  const handleDayOfWeekChange = (newDay: string, newDate: string) => {
+    if (!state.league) return;
 
-    const steps = getSeasonWizardSteps(
-      leagueId,
-      state.existingSeasons.length > 0,
-      state.existingSeasons.length > 0 ? undefined : state.league.league_start_date,
-      state.league.day_of_week,
-      () => {},
-      state.bcaDateOptions,
-      state.apaDateOptions,
-      state.savedChampionshipPreferences
-    );
-
-    const currentStepData = steps[state.currentStep];
-
-    if (currentStepData?.type === 'schedule-review') {
-      // Prevent infinite loop - only generate schedule once per step
-      if (scheduleGeneratedForStep.current === state.currentStep) {
-        console.log('⏸️ Schedule already generated for step', state.currentStep, '- skipping');
-        return;
+    dispatch({
+      type: 'SET_DAY_OF_WEEK_WARNING',
+      payload: {
+        show: true,
+        oldDay: formatDayOfWeek(state.league.day_of_week),
+        newDay,
+        newDate,
       }
+    });
+  };
 
-      console.log('🔄 Generating schedule for step', state.currentStep);
-      scheduleGeneratedForStep.current = state.currentStep;
+  const steps = getSeasonWizardSteps(
+    leagueId || '',
+    hasExistingSeasons,
+    defaultStartDate,
+    state.league?.day_of_week || 'tuesday',
+    handleDayOfWeekChange,
+    state.bcaDateOptions,
+    state.apaDateOptions,
+    state.savedChampionshipPreferences
+  );
 
-      // Get form data from localStorage
-      const stored = localStorage.getItem(`season-creation-${leagueId}`);
-      if (!stored) {
-        console.log('⚠️ No localStorage data found for schedule generation');
-        return;
-      }
-
-      const formData: SeasonFormData = JSON.parse(stored);
-      console.log('📋 Form data for schedule generation:', formData);
-
-      // Check if we have a saved complete schedule (from Continue Setup)
-      const savedSchedule = localStorage.getItem('season-schedule-review');
-      const savedBlackouts = localStorage.getItem('season-blackout-weeks');
-
-      const startDate = parseLocalDate(formData.startDate);
-      const seasonLength = parseInt(formData.seasonLength);
-      const leagueDayOfWeek = formatDayOfWeek(state.league.day_of_week);
-
-      let initialSchedule: WeekEntry[];
-
-      if (savedSchedule) {
-        // Load saved schedule (from Continue Setup)
-        console.log('📂 Loading saved schedule from localStorage');
-        initialSchedule = JSON.parse(savedSchedule);
-      } else {
-        // Generate fresh schedule
-        console.log('🔄 Generating new schedule');
-        initialSchedule = generateSchedule(
-          startDate,
-          leagueDayOfWeek,
-          seasonLength
-        );
-      }
-
-      // Fetch holidays for the season
-      const holidays = fetchHolidaysForSeason(startDate, seasonLength);
-
-      // Function to fetch operator's championship preferences and generate schedule with conflicts
-      const generateScheduleWithPreferences = async () => {
-        // Fetch operator's championship preferences from database to determine if they should be included in conflict detection
-        let bcaShouldBeIncluded = !formData.bcaIgnored; // Default to wizard form data
-        let apaShouldBeIncluded = !formData.apaIgnored; // Default to wizard form data
-
-        // Fetch preferences using shared function
-        const preferences = await fetchChampionshipPreferences(operatorId);
-
-        if (preferences.length > 0) {
-          // Check if operator has set these championships to 'ignore'
-          const bcaPref = preferences.find(p => p.organization === 'BCA');
-          const apaPref = preferences.find(p => p.organization === 'APA');
-
-          // Only include championships in conflict detection if NOT ignored
-          if (bcaPref) {
-            bcaShouldBeIncluded = !bcaPref.ignored;
-          }
-          if (apaPref) {
-            apaShouldBeIncluded = !apaPref.ignored;
-          }
-
-          console.log('📋 Championship preference check:', {
-            bca: bcaPref ? `${bcaPref.ignored ? 'ignore' : 'blackout'} (${bcaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-            apa: apaPref ? `${apaPref.ignored ? 'ignore' : 'blackout'} (${apaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-          });
-        }
-
-        // Build championship event objects for conflict detection
-        // Only include if operator hasn't set them to 'ignore'
-        const bcaChampionshipEvent: ChampionshipEvent | undefined =
-          bcaShouldBeIncluded && formData.bcaStartDate && formData.bcaEndDate
-            ? { start: formData.bcaStartDate, end: formData.bcaEndDate, ignored: false }
-            : undefined;
-
-        const apaChampionshipEvent: ChampionshipEvent | undefined =
-          apaShouldBeIncluded && formData.apaStartDate && formData.apaEndDate
-            ? { start: formData.apaStartDate, end: formData.apaEndDate, ignored: false }
-            : undefined;
-
-        // Detect conflicts using shared utility
-        const scheduleWithConflicts = detectScheduleConflicts(
-          initialSchedule,
-          holidays,
-          bcaChampionshipEvent,
-          apaChampionshipEvent,
-          leagueDayOfWeek
-        );
-
-        return { scheduleWithConflicts, bcaChampionshipEvent, apaChampionshipEvent };
-      };
-
-      // Execute the async function
-      generateScheduleWithPreferences().then(({ scheduleWithConflicts, bcaChampionshipEvent, apaChampionshipEvent }) => {
-        // Save data to state for ScheduleReview component
-        dispatch({ type: 'SET_SCHEDULE', payload: scheduleWithConflicts });
-        dispatch({ type: 'SET_SEASON_START_DATE', payload: formData.startDate });
-        dispatch({ type: 'SET_HOLIDAYS', payload: holidays });
-
-        // Set championship data based on what was actually included in conflict detection
-        dispatch({ type: 'SET_BCA_CHAMPIONSHIP', payload: bcaChampionshipEvent });
-        dispatch({ type: 'SET_APA_CHAMPIONSHIP', payload: apaChampionshipEvent });
-
-        console.log('📅 Schedule loaded with conflicts:', {
-          source: savedSchedule ? 'localStorage' : 'generated',
-          weekCount: scheduleWithConflicts.length,
-          hasBlackouts: savedBlackouts ? 'yes' : 'no',
-          bcaIncluded: !!bcaChampionshipEvent,
-          apaIncluded: !!apaChampionshipEvent,
-        });
-      });
+  // Wrap setValue to trigger re-render
+  const currentStepData = steps[state.currentStep] ? {
+    ...steps[state.currentStep],
+    setValue: (value: string) => {
+      steps[state.currentStep]?.setValue(value);
+      dispatch({ type: 'INCREMENT_REFRESH_KEY' }); // Trigger re-render
     }
-  }, [state.currentStep, state.league, leagueId, state.loading, state.existingSeasons, state.bcaDateOptions, state.apaDateOptions, operatorId, state.savedChampionshipPreferences]);
+  } : null;
+
+  /**
+   * Schedule generation hook
+   * Handles loading schedule from localStorage or generating fresh schedule
+   * Only runs when reaching schedule-review step
+   * MUST be called before loading guard to satisfy Rules of Hooks
+   */
+  useScheduleGeneration({
+    currentStep: state.currentStep,
+    isScheduleReviewStep: currentStepData?.type === 'schedule-review',
+    league: state.league,
+    leagueId,
+    loading: state.loading,
+    operatorId,
+    existingSeasons: state.existingSeasons,
+    bcaDateOptions: state.bcaDateOptions,
+    apaDateOptions: state.apaDateOptions,
+    savedChampionshipPreferences: state.savedChampionshipPreferences,
+    onScheduleUpdate: (schedule) => dispatch({ type: 'SET_SCHEDULE', payload: schedule }),
+    onSeasonStartDateUpdate: (date) => dispatch({ type: 'SET_SEASON_START_DATE', payload: date }),
+    onHolidaysUpdate: (holidays) => dispatch({ type: 'SET_HOLIDAYS', payload: holidays }),
+    onBcaChampionshipUpdate: (champ) => dispatch({ type: 'SET_BCA_CHAMPIONSHIP', payload: champ }),
+    onApaChampionshipUpdate: (champ) => dispatch({ type: 'SET_APA_CHAMPIONSHIP', payload: champ }),
+  });
 
   /**
    * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
@@ -479,27 +320,6 @@ export const SeasonCreationWizard: React.FC = () => {
     );
   }
 
-  const hasExistingSeasons = state.existingSeasons.length > 0;
-  const defaultStartDate = hasExistingSeasons ? undefined : state.league.league_start_date;
-
-  /**
-   * Callback triggered when user changes start date to a different day of week
-   * Shows warning modal explaining that league will be updated
-   */
-  const handleDayOfWeekChange = (newDay: string, newDate: string) => {
-    if (!state.league) return;
-
-    dispatch({
-      type: 'SET_DAY_OF_WEEK_WARNING',
-      payload: {
-        show: true,
-        oldDay: formatDayOfWeek(state.league.day_of_week),
-        newDay,
-        newDate,
-      }
-    });
-  };
-
   /**
    * User accepted the day of week change
    * Updates the league and saves the new date
@@ -580,26 +400,6 @@ export const SeasonCreationWizard: React.FC = () => {
     localStorage.setItem(`season-wizard-step-${leagueId}`, targetStep.toString());
   };
 
-  const steps = getSeasonWizardSteps(
-    leagueId,
-    hasExistingSeasons,
-    defaultStartDate,
-    state.league.day_of_week,
-    handleDayOfWeekChange,
-    state.bcaDateOptions,
-    state.apaDateOptions,
-    state.savedChampionshipPreferences
-  );
-
-  // Wrap setValue to trigger re-render
-  const currentStepData = steps[state.currentStep] ? {
-    ...steps[state.currentStep],
-    setValue: (value: string) => {
-      steps[state.currentStep]?.setValue(value);
-      dispatch({ type: 'INCREMENT_REFRESH_KEY' }); // Trigger re-render
-    }
-  } : null;
-
   const handleNext = () => {
     // Clear previous validation error
     dispatch({ type: 'SET_VALIDATION_ERROR', payload: null });
@@ -628,8 +428,6 @@ export const SeasonCreationWizard: React.FC = () => {
       const newStep = state.currentStep - 1;
       dispatch({ type: 'SET_CURRENT_STEP', payload: newStep });
       localStorage.setItem(`season-wizard-step-${leagueId}`, newStep.toString());
-      // Reset schedule generation flag when navigating away
-      scheduleGeneratedForStep.current = null;
     }
   };
 
