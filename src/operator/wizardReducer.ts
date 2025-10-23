@@ -45,6 +45,7 @@ export interface WizardState {
   holidays: any[];
   bcaChampionship: ChampionshipEvent | undefined;
   apaChampionship: ChampionshipEvent | undefined;
+  seasonStartDate: string;
 }
 
 /**
@@ -71,7 +72,8 @@ export type WizardAction =
   // Schedule-related data
   | { type: 'SET_HOLIDAYS'; payload: any[] }
   | { type: 'SET_BCA_CHAMPIONSHIP'; payload: ChampionshipEvent | undefined }
-  | { type: 'SET_APA_CHAMPIONSHIP'; payload: ChampionshipEvent | undefined };
+  | { type: 'SET_APA_CHAMPIONSHIP'; payload: ChampionshipEvent | undefined }
+  | { type: 'SET_SEASON_START_DATE'; payload: string };
 
 /**
  * Create initial wizard state
@@ -108,6 +110,7 @@ export function createInitialState(leagueId: string | undefined): WizardState {
     holidays: [],
     bcaChampionship: undefined,
     apaChampionship: undefined,
+    seasonStartDate: '',
   };
 }
 
@@ -158,6 +161,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return { ...state, bcaChampionship: action.payload };
     case 'SET_APA_CHAMPIONSHIP':
       return { ...state, apaChampionship: action.payload };
+    case 'SET_SEASON_START_DATE':
+      return { ...state, seasonStartDate: action.payload };
 
     default:
       return state;

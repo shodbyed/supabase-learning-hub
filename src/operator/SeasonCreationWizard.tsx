@@ -93,7 +93,8 @@ export const SeasonCreationWizard: React.FC = () => {
     });
     setSchedule(newSchedule);
   }, []);
-  const [seasonStartDate, setSeasonStartDate] = useState<string>('');
+  // Migrated to useReducer - use state.seasonStartDate instead
+  // const [seasonStartDate, setSeasonStartDate] = useState<string>('');
   // Migrated to useReducer - use state.holidays instead
   // const [holidays, setHolidays] = useState<any[]>([]);
   // Migrated to useReducer - use state.bcaChampionship instead
@@ -364,7 +365,7 @@ export const SeasonCreationWizard: React.FC = () => {
       generateScheduleWithPreferences().then(({ scheduleWithConflicts, bcaChampionshipEvent, apaChampionshipEvent }) => {
         // Save data to state for ScheduleReview component
         setSchedule(scheduleWithConflicts);
-        setSeasonStartDate(formData.startDate);
+        dispatch({ type: 'SET_SEASON_START_DATE', payload: formData.startDate });
         dispatch({ type: 'SET_HOLIDAYS', payload: holidays });
 
         // Set championship data based on what was actually included in conflict detection
@@ -1001,7 +1002,7 @@ export const SeasonCreationWizard: React.FC = () => {
           <ScheduleReview
             schedule={schedule}
             leagueDayOfWeek={formatDayOfWeek(state.league?.day_of_week || 'tuesday')}
-            seasonStartDate={seasonStartDate}
+            seasonStartDate={state.seasonStartDate}
             holidays={state.holidays}
             bcaChampionship={state.bcaChampionship}
             apaChampionship={state.apaChampionship}
