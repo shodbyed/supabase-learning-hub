@@ -91,6 +91,45 @@ export const SeasonCreationWizard: React.FC = () => {
   const scheduleGeneratedForStep = useRef<number | null>(null);
 
   /**
+   * Fetch operator's saved championship preferences
+   * Returns array of saved preferences or empty array if none exist
+   */
+  const fetchChampionshipPreferences = async (operatorId: string | null): Promise<ChampionshipPreference[]> => {
+    if (!operatorId) {
+      console.log('⚠️ No operatorId available - cannot fetch preferences');
+      return [];
+    }
+
+    try {
+      const { data: preferences } = await supabase
+        .from('operator_blackout_preferences')
+        .select('*, championship_date_options(*)')
+        .eq('operator_id', operatorId)
+        .eq('preference_type', 'championship');
+
+      if (preferences && preferences.length > 0) {
+        const prefs: ChampionshipPreference[] = preferences
+          .filter(p => p.championship_date_options && p.preference_action !== null)
+          .map(p => ({
+            organization: p.championship_date_options!.organization as 'BCA' | 'APA',
+            startDate: p.championship_date_options!.start_date,
+            endDate: p.championship_date_options!.end_date,
+            ignored: p.preference_action === 'ignore',
+          }));
+
+        console.log('📋 Loaded saved championship preferences:', prefs);
+        return prefs;
+      } else {
+        console.log('📋 No saved championship preferences found');
+        return [];
+      }
+    } catch (err) {
+      console.error('❌ Failed to fetch saved championship preferences:', err);
+      return [];
+    }
+  };
+
+  /**
    * Fetch league and existing seasons
    * If seasonId query param exists, we're editing an existing season
    */
@@ -123,36 +162,8 @@ export const SeasonCreationWizard: React.FC = () => {
         setApaDateOptions(apaDates);
 
         // Fetch operator's saved championship preferences to skip those steps in wizard
-        if (operatorId) {
-          try {
-            const { data: preferences } = await supabase
-              .from('operator_blackout_preferences')
-              .select('*, championship_date_options(*)')
-              .eq('operator_id', operatorId)
-              .eq('preference_type', 'championship');
-
-            if (preferences && preferences.length > 0) {
-              const prefs: ChampionshipPreference[] = preferences
-                .filter(p => p.championship_date_options && p.preference_action !== null)
-                .map(p => ({
-                  organization: p.championship_date_options!.organization as 'BCA' | 'APA',
-                  startDate: p.championship_date_options!.start_date,
-                  endDate: p.championship_date_options!.end_date,
-                  ignored: p.preference_action === 'ignore',
-                }));
-
-              setSavedChampionshipPreferences(prefs);
-              console.log('📋 Loaded saved championship preferences:', prefs);
-            } else {
-              console.log('📋 No saved championship preferences found');
-            }
-          } catch (err) {
-            console.error('❌ Failed to fetch saved championship preferences:', err);
-            // Continue without saved preferences
-          }
-        } else {
-          console.log('⚠️ No operatorId available - cannot fetch preferences');
-        }
+        const prefs = await fetchChampionshipPreferences(operatorId);
+        setSavedChampionshipPreferences(prefs);
 
         // If editing existing season, load season data and jump to schedule review
         if (seasonId) {
@@ -289,36 +300,26 @@ export const SeasonCreationWizard: React.FC = () => {
         let bcaShouldBeIncluded = !formData.bcaIgnored; // Default to wizard form data
         let apaShouldBeIncluded = !formData.apaIgnored; // Default to wizard form data
 
-        if (operatorId) {
-          try {
-            const { data: preferences } = await supabase
-              .from('operator_blackout_preferences')
-              .select('*, championship_date_options(*)')
-              .eq('operator_id', operatorId)
-              .eq('preference_type', 'championship');
+        // Fetch preferences using shared function
+        const preferences = await fetchChampionshipPreferences(operatorId);
 
-            if (preferences) {
-              // Check if operator has set these championships to 'ignore'
-              const bcaPref = preferences.find(p => p.championship_date_options?.organization === 'BCA');
-              const apaPref = preferences.find(p => p.championship_date_options?.organization === 'APA');
+        if (preferences.length > 0) {
+          // Check if operator has set these championships to 'ignore'
+          const bcaPref = preferences.find(p => p.organization === 'BCA');
+          const apaPref = preferences.find(p => p.organization === 'APA');
 
-              // Only include championships in conflict detection if preference_action is NOT 'ignore'
-              if (bcaPref) {
-                bcaShouldBeIncluded = bcaPref.preference_action !== 'ignore';
-              }
-              if (apaPref) {
-                apaShouldBeIncluded = apaPref.preference_action !== 'ignore';
-              }
-
-              console.log('📋 Championship preference check:', {
-                bca: bcaPref ? `${bcaPref.preference_action} (${bcaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-                apa: apaPref ? `${apaPref.preference_action} (${apaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-              });
-            }
-          } catch (err) {
-            console.error('Failed to fetch championship preferences:', err);
-            // Fall back to wizard form data on error
+          // Only include championships in conflict detection if NOT ignored
+          if (bcaPref) {
+            bcaShouldBeIncluded = !bcaPref.ignored;
           }
+          if (apaPref) {
+            apaShouldBeIncluded = !apaPref.ignored;
+          }
+
+          console.log('📋 Championship preference check:', {
+            bca: bcaPref ? `${bcaPref.ignored ? 'ignore' : 'blackout'} (${bcaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
+            apa: apaPref ? `${apaPref.ignored ? 'ignore' : 'blackout'} (${apaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
+          });
         }
 
         // Build championship event objects for conflict detection
