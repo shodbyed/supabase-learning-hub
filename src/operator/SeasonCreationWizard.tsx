@@ -11,6 +11,7 @@ import { useOperatorId } from '@/hooks/useOperatorId';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { Input } from '@/components/ui/input';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { DayOfWeekWarningModal } from '@/components/modals/DayOfWeekWarningModal';
 import { DualDateStep } from '@/components/forms/DualDateStep';
@@ -889,13 +890,15 @@ export const SeasonCreationWizard: React.FC = () => {
       <div className={`container mx-auto px-4 ${steps[currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
         {/* Header */}
         <div className="mb-8">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => navigate(`/league/${leagueId}`)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="mb-4 -ml-2"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Back to League
-          </button>
+          </Button>
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -906,7 +909,9 @@ export const SeasonCreationWizard: React.FC = () => {
                 {league.division && ` ${league.division}`}
               </p>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 if (confirm('Clear all form data and start over?')) {
                   clearSeasonCreationData(leagueId);
@@ -915,10 +920,10 @@ export const SeasonCreationWizard: React.FC = () => {
                   window.location.reload();
                 }
               }}
-              className="text-sm text-red-600 hover:text-red-800 underline"
+              className="text-red-600 hover:text-red-800"
             >
               Clear Form
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1019,7 +1024,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
           {currentStepData.type === 'input' && (
             <div className="space-y-4">
-              <input
+              <Input
                 type={currentStepData.inputType || 'text'}
                 min={currentStepData.min}
                 max={currentStepData.max}
@@ -1029,7 +1034,7 @@ export const SeasonCreationWizard: React.FC = () => {
                   setValidationError(null); // Clear error on input change
                 }}
                 placeholder={currentStepData.placeholder}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                className="text-lg"
               />
               {validationError && (
                 <p className="text-red-600 text-sm">{validationError}</p>
