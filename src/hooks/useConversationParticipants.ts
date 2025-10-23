@@ -15,6 +15,21 @@ export function useConversationParticipants(conversationId: string, currentUserI
 
   useEffect(() => {
     async function loadRecipient() {
+      // First, fetch the conversation to see if it has a title (group chat)
+      const { data: conversationData } = await supabase
+        .from('conversations')
+        .select('title')
+        .eq('id', conversationId)
+        .single();
+
+      // If conversation has a title (group chat), use that
+      if (conversationData?.title) {
+        setRecipientName(conversationData.title);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise, it's a DM - fetch the other participant
       const { data, error } = await supabase
         .from('conversation_participants')
         .select(`
@@ -41,6 +56,9 @@ export function useConversationParticipants(conversationId: string, currentUserI
         const member = otherParticipant.members as any;
         setRecipientName(`${member.first_name} ${member.last_name}`);
         setRecipientLastRead(otherParticipant.last_read_at);
+      } else {
+        // Fallback if no participant found
+        setRecipientName('Conversation');
       }
 
       setLoading(false);

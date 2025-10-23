@@ -401,3 +401,81 @@ export async function isUserBlocked(userId: string, otherUserId: string) {
 
   return { data: !!data, error: null };
 }
+
+/**
+ * Create an announcement for a league
+ *
+ * Creates a league-scoped conversation if it doesn't exist and sends an announcement message.
+ * All players in the league's active season will be added as participants.
+ *
+ * @param leagueId - The league ID to send the announcement to
+ * @param senderId - The member ID of the captain/operator sending the announcement
+ * @param message - The announcement text
+ * @returns Promise with conversation ID and any error
+ */
+export async function createLeagueAnnouncement(
+  leagueId: string,
+  senderId: string,
+  message: string
+) {
+  // Get the league's active season
+  const { data: activeSeason, error: seasonError } = await supabase
+    .from('seasons')
+    .select('id, season_name')
+    .eq('league_id', leagueId)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (seasonError) {
+    console.error('Error fetching active season:', seasonError);
+    return { data: null, error: seasonError };
+  }
+
+  if (!activeSeason) {
+    return { data: null, error: new Error('League has no active season') };
+  }
+
+  const seasonId = activeSeason.id;
+
+  // Get all players in the league's active season (via teams)
+  const { data: teamPlayers } = await supabase
+    .from('team_players')
+    .select('member_id, teams!inner(league_id, season_id)')
+    .eq('teams.league_id', leagueId)
+    .eq('teams.season_id', seasonId);
+
+  // Get unique member IDs
+  const memberIds = [...new Set((teamPlayers || []).map((tp: any) => tp.member_id))];
+
+  if (memberIds.length === 0) {
+    return { data: null, error: new Error('No players found in league') };
+  }
+
+  // Use database function to create/get announcement conversation with SECURITY DEFINER
+  const { data: conversationId, error: convError } = await supabase.rpc(
+    'create_announcement_conversation',
+    {
+      p_season_id: seasonId,
+      p_title: `${activeSeason.season_name} Announcements`,
+      p_member_ids: memberIds,
+    }
+  );
+
+  if (convError || !conversationId) {
+    console.error('Error creating announcement conversation:', convError);
+    return { data: null, error: convError };
+  }
+
+  // Send the announcement message
+  const { error: messageError } = await sendMessage(
+    conversationId,
+    senderId,
+    message
+  );
+
+  if (messageError) {
+    return { data: null, error: messageError };
+  }
+
+  return { data: { conversationId }, error: null };
+}

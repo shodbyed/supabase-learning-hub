@@ -1,13 +1,18 @@
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 
 export const NavBar: React.FC = () => {
   const { hasMemberRecord, canAccessLeagueOperatorFeatures } = useUserProfile();
+  const location = useLocation();
+
+  // Hide navbar on mobile when on Messages page
+  const isMessagesPage = location.pathname === '/messages';
+  const hideOnMobile = isMessagesPage;
 
   return (
-    <nav className="flex w-full py-2 border-b border-slate-300 px-6 justify-between items-center">
+    <nav className={`flex w-full py-2 border-b border-slate-300 px-6 justify-between items-center ${hideOnMobile ? 'hidden md:flex' : 'flex'}`}>
       {/* Left side - main navigation */}
       <ul className="flex gap-5 list-none m-0 p-0">
         <li>

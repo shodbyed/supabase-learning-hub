@@ -3,6 +3,11 @@
  *
  * Single responsibility: Handle message input and sending.
  * Reusable component for composing and sending messages.
+ *
+ * Mobile-optimized with:
+ * - Larger send button for touch targets
+ * - Responsive padding and sizing
+ * - Mobile-friendly character counter
  */
 
 import { useState, type KeyboardEvent } from 'react';
@@ -37,7 +42,7 @@ export function MessageInput({ onSend, disabled = false, maxLength = 2000 }: Mes
   };
 
   return (
-    <div className="border-t bg-green-300 p-4">
+    <div className="border-t bg-gray-300 p-3 md:p-4">
       <div className="flex gap-2">
         <Input
           type="text"
@@ -45,15 +50,20 @@ export function MessageInput({ onSend, disabled = false, maxLength = 2000 }: Mes
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={handleKeyPress}
-          className="flex-1 bg-white"
+          className="flex-1 h-11 md:h-10 text-base md:text-sm bg-white"
           disabled={sending || disabled}
           maxLength={maxLength}
         />
-        <Button onClick={handleSendMessage} disabled={!messageInput.trim() || sending || disabled}>
-          <Send className="h-4 w-4" />
+        <Button
+          onClick={handleSendMessage}
+          disabled={!messageInput.trim() || sending || disabled}
+          size="lg"
+          className="h-11 w-11 md:h-10 md:w-10 p-0 flex-shrink-0 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        >
+          <Send className="h-5 w-5 md:h-4 md:w-4 text-white" />
         </Button>
       </div>
-      <p className="text-xs text-gray-600 mt-1">
+      <p className="text-xs text-gray-700 mt-1.5 md:mt-1">
         {messageInput.length}/{maxLength} characters
       </p>
     </div>

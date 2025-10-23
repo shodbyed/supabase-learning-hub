@@ -3,6 +3,11 @@
  *
  * Displays message thread for selected conversation.
  * Shows message history and input box for sending new messages.
+ *
+ * Mobile-optimized with:
+ * - Responsive padding for message area
+ * - Touch-friendly message bubbles
+ * - Mobile-optimized input area
  */
 
 import { useState, useRef, useEffect } from 'react';
@@ -30,9 +35,10 @@ interface Message {
 interface MessageViewProps {
   conversationId: string;
   currentUserId: string;
+  onBack?: () => void;
 }
 
-export function MessageView({ conversationId, currentUserId }: MessageViewProps) {
+export function MessageView({ conversationId, currentUserId, onBack }: MessageViewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -128,17 +134,17 @@ export function MessageView({ conversationId, currentUserId }: MessageViewProps)
 
   return (
     <div className="flex flex-col h-full">
-      <ConversationHeader title={recipientName || 'Direct Message'} />
+      <ConversationHeader title={recipientName || 'Direct Message'} onBack={onBack} />
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 border-l-[16px] border-r-[16px] border-green-300">
+      {/* Messages - Mobile-optimized padding */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-gray-50">
         {loading ? (
           <div className="flex items-center justify-center h-full text-gray-500">
             <p>Loading messages...</p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p>No messages yet. Start the conversation!</p>
+          <div className="flex items-center justify-center h-full text-gray-500 px-4">
+            <p className="text-center">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           messages.map((message) => {
