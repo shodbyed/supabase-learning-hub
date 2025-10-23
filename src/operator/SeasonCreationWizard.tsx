@@ -4,10 +4,11 @@
  * Multi-step wizard for creating a new season for a league.
  * Uses localStorage for form persistence across page refreshes.
  */
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
+import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -43,6 +44,10 @@ export const SeasonCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { operatorId } = useOperatorId();
+
+  // New useReducer hook for state management (running alongside useState for now)
+  // Prefixed with _ because we're setting up infrastructure but not using it yet
+  const [_state, _dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
 
   const [league, setLeague] = useState<League | null>(null);
   const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
@@ -540,6 +545,22 @@ export const SeasonCreationWizard: React.FC = () => {
     setDayOfWeekWarning(null);
   };
 
+  /**
+   * Handle edit button clicks from SeasonStatusCard
+   * Jumps to specific wizard step for editing
+   */
+  const handleEdit = (step: 'startDate' | 'seasonLength' | 'bca' | 'apa') => {
+    const stepMap = {
+      startDate: 0,
+      seasonLength: 1,
+      bca: 2,
+      apa: 3,
+    };
+    const targetStep = stepMap[step];
+    setCurrentStep(targetStep);
+    localStorage.setItem(`season-wizard-step-${leagueId}`, targetStep.toString());
+  };
+
   const steps = getSeasonWizardSteps(
     leagueId,
     hasExistingSeasons,
@@ -938,21 +959,6 @@ export const SeasonCreationWizard: React.FC = () => {
           if (!stored) return null;
 
           const formData: SeasonFormData = JSON.parse(stored);
-
-          /**
-           * Handle edit button clicks - jump to specific step
-           */
-          const handleEdit = (step: 'startDate' | 'seasonLength' | 'bca' | 'apa') => {
-            const stepMap = {
-              startDate: 0,
-              seasonLength: 1,
-              bca: 2,
-              apa: 3,
-            };
-            const targetStep = stepMap[step];
-            setCurrentStep(targetStep);
-            localStorage.setItem(`season-wizard-step-${leagueId}`, targetStep.toString());
-          };
 
           return (
             <SeasonStatusCard
