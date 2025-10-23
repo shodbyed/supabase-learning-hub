@@ -67,15 +67,12 @@ export const SeasonCreationWizard: React.FC = () => {
   // const [state.isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
   // Migrated to useReducer - use state.state.isCreating instead
   // const [state.isCreating, setIsCreating] = useState(false);
-  const [_refreshKey, setRefreshKey] = useState(0); // Force re-render when form data changes
-  // Migrated to useReducer - use state.state.validationError instead
-  // const [state.validationError, setValidationError] = useState<string | null>(null);
-  const [dayOfWeekWarning, setDayOfWeekWarning] = useState<{
-    show: boolean;
-    oldDay: string;
-    newDay: string;
-    newDate: string;
-  } | null>(null);
+  // Migrated to useReducer - use state.refreshKey instead
+  // const [_refreshKey, setRefreshKey] = useState(0);
+  // Migrated to useReducer - use state.validationError instead
+  // const [validationError, setValidationError] = useState<string | null>(null);
+  // Migrated to useReducer - use state.state.dayOfWeekWarning instead
+  // const [state.dayOfWeekWarning, setDayOfWeekWarning] = useState<...>(null);
   const [schedule, setSchedule] = useState<WeekEntry[]>([]);
 
   // Wrapper to log schedule updates from ScheduleReview
@@ -481,11 +478,14 @@ export const SeasonCreationWizard: React.FC = () => {
    * Shows warning modal explaining that league will be updated
    */
   const handleDayOfWeekChange = (newDay: string, newDate: string) => {
-    setDayOfWeekWarning({
-      show: true,
-      oldDay: formatDayOfWeek(league.day_of_week),
-      newDay,
-      newDate,
+    dispatch({
+      type: 'SET_DAY_OF_WEEK_WARNING',
+      payload: {
+        show: true,
+        oldDay: formatDayOfWeek(league.day_of_week),
+        newDay,
+        newDate,
+      }
     });
   };
 
@@ -494,7 +494,7 @@ export const SeasonCreationWizard: React.FC = () => {
    * Updates the league and saves the new date
    */
   const handleAcceptDayChange = async () => {
-    if (!dayOfWeekWarning || !leagueId) return;
+    if (!state.dayOfWeekWarning || !leagueId) return;
 
     try {
       // Convert day name to number (0 = Sunday, 6 = Saturday)
@@ -508,11 +508,11 @@ export const SeasonCreationWizard: React.FC = () => {
         Saturday: 6,
       };
 
-      const newDayNumber = dayMap[dayOfWeekWarning.newDay];
-      const newDayString = dayOfWeekWarning.newDay.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+      const newDayNumber = dayMap[state.dayOfWeekWarning.newDay];
+      const newDayString = state.dayOfWeekWarning.newDay.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
       // Update the league's day_of_week in database
-      console.log('Updating league day_of_week to:', newDayNumber, `(${dayOfWeekWarning.newDay})`);
+      console.log('Updating league day_of_week to:', newDayNumber, `(${state.dayOfWeekWarning.newDay})`);
 
       const { error } = await supabase
         .from('leagues')
@@ -530,11 +530,11 @@ export const SeasonCreationWizard: React.FC = () => {
       const STORAGE_KEY = `season-creation-${leagueId}`;
       const stored = localStorage.getItem(STORAGE_KEY);
       const formData = stored ? JSON.parse(stored) : {};
-      formData.startDate = dayOfWeekWarning.newDate;
+      formData.startDate = state.dayOfWeekWarning.newDate;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 
       // Close modal
-      setDayOfWeekWarning(null);
+      dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
     } catch (err) {
       console.error('Error updating league day:', err);
       dispatch({ type: 'SET_ERROR', payload: 'Failed to update league day of week' });
@@ -547,7 +547,7 @@ export const SeasonCreationWizard: React.FC = () => {
    */
   const handleCancelDayChange = () => {
     // Just close the modal - the date wasn't saved
-    setDayOfWeekWarning(null);
+    dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
   };
 
   /**
@@ -582,7 +582,7 @@ export const SeasonCreationWizard: React.FC = () => {
     ...steps[currentStep],
     setValue: (value: string) => {
       steps[currentStep]?.setValue(value);
-      setRefreshKey(prev => prev + 1); // Trigger re-render
+      dispatch({ type: 'INCREMENT_REFRESH_KEY' }); // Trigger re-render
     }
   } : null;
 
@@ -1111,11 +1111,11 @@ export const SeasonCreationWizard: React.FC = () => {
         }
 
         {/* Warning Modal for Day of Week Changes */}
-        {dayOfWeekWarning && (
+        {state.dayOfWeekWarning && (
           <DayOfWeekWarningModal
-            isOpen={dayOfWeekWarning.show}
-            oldDay={dayOfWeekWarning.oldDay}
-            newDay={dayOfWeekWarning.newDay}
+            isOpen={state.dayOfWeekWarning.show}
+            oldDay={state.dayOfWeekWarning.oldDay}
+            newDay={state.dayOfWeekWarning.newDay}
             onAccept={handleAcceptDayChange}
             onCancel={handleCancelDayChange}
           />
