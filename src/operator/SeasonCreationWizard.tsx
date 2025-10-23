@@ -44,44 +44,14 @@ export const SeasonCreationWizard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { operatorId } = useOperatorId();
 
-  // useReducer hook for state management
+  // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
 
-  // Migrated to useReducer - use state.league instead
-  // const [league, setLeague] = useState<League | null>(null);
-  // Migrated to useReducer - use state.existingSeasons instead
-  // const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
-  // Migrated to useReducer - use state.bcaDateOptions instead
-  // const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  // Migrated to useReducer - use state.apaDateOptions instead
-  // const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  // Migrated to useReducer - use state.savedChampionshipPreferences instead
-  // const [savedChampionshipPreferences, setSavedChampionshipPreferences] = useState<ChampionshipPreference[]>([]);
-
-  // Migrated to useReducer - use state.loading instead
-  // const [loading, setLoading] = useState(true);
-  // Migrated to useReducer - use state.error instead
-  // const [error, setError] = useState<string | null>(null);
-  // Migrated to useReducer - use state.currentStep instead
-  // const [currentStep, setCurrentStep] = useState(() => {
-  //   const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
-  //   return stored ? parseInt(stored, 10) : 0;
-  // });
-  // Migrated to useReducer - use state.state.isEditingExistingSeason instead
-  // const [state.isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
-  // Migrated to useReducer - use state.state.isCreating instead
-  // const [state.isCreating, setIsCreating] = useState(false);
-  // Migrated to useReducer - use state.refreshKey instead
-  // const [_refreshKey, setRefreshKey] = useState(0);
-  // Migrated to useReducer - use state.validationError instead
-  // const [validationError, setValidationError] = useState<string | null>(null);
-  // Migrated to useReducer - use state.state.dayOfWeekWarning instead
-  // const [state.dayOfWeekWarning, setDayOfWeekWarning] = useState<...>(null);
-  // Migrated to useReducer - use state.schedule instead
-  // const [schedule, setSchedule] = useState<WeekEntry[]>([]);
-
-  // Wrapper to log schedule updates from ScheduleReview
-  // Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
+  /**
+   * Callback to handle schedule updates from ScheduleReview component
+   * Wrapped in useCallback to prevent infinite loops in ScheduleReview's useEffect
+   * The dispatch function is stable, so this callback won't cause unnecessary re-renders
+   */
   const handleScheduleChange = useCallback((newSchedule: WeekEntry[]) => {
     console.log('📥 SeasonCreationWizard received schedule update from ScheduleReview:', {
       weekCount: newSchedule.length,
@@ -94,14 +64,6 @@ export const SeasonCreationWizard: React.FC = () => {
     });
     dispatch({ type: 'SET_SCHEDULE', payload: newSchedule });
   }, [dispatch]);
-  // Migrated to useReducer - use state.seasonStartDate instead
-  // const [seasonStartDate, setSeasonStartDate] = useState<string>('');
-  // Migrated to useReducer - use state.holidays instead
-  // const [holidays, setHolidays] = useState<any[]>([]);
-  // Migrated to useReducer - use state.bcaChampionship instead
-  // const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
-  // Migrated to useReducer - use state.apaChampionship instead
-  // const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
 
   // Track if schedule has been generated for current step to prevent infinite loops
   const scheduleGeneratedForStep = useRef<number | null>(null);

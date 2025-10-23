@@ -1,9 +1,9 @@
 /**
  * @fileoverview State reducer for Season Creation Wizard
  *
- * Manages wizard state using useReducer for better state management.
- * This reducer handles UI state, navigation, and data loading.
- * Schedule-related state remains in useState for safety.
+ * Centralized state management for the season creation wizard using useReducer.
+ * Handles all wizard state including UI, navigation, data loading, and schedule generation.
+ * Provides predictable state updates through typed reducer actions.
  */
 import type { League } from '@/types/league';
 import type { Season, ChampionshipEvent, WeekEntry } from '@/types/season';
