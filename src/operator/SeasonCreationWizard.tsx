@@ -96,8 +96,10 @@ export const SeasonCreationWizard: React.FC = () => {
   const [seasonStartDate, setSeasonStartDate] = useState<string>('');
   // Migrated to useReducer - use state.holidays instead
   // const [holidays, setHolidays] = useState<any[]>([]);
-  const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
-  const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
+  // Migrated to useReducer - use state.bcaChampionship instead
+  // const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
+  // Migrated to useReducer - use state.apaChampionship instead
+  // const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
 
   // Track if schedule has been generated for current step to prevent infinite loops
   const scheduleGeneratedForStep = useRef<number | null>(null);
@@ -366,8 +368,8 @@ export const SeasonCreationWizard: React.FC = () => {
         dispatch({ type: 'SET_HOLIDAYS', payload: holidays });
 
         // Set championship data based on what was actually included in conflict detection
-        setBcaChampionship(bcaChampionshipEvent);
-        setApaChampionship(apaChampionshipEvent);
+        dispatch({ type: 'SET_BCA_CHAMPIONSHIP', payload: bcaChampionshipEvent });
+        dispatch({ type: 'SET_APA_CHAMPIONSHIP', payload: apaChampionshipEvent });
 
         console.log('📅 Schedule loaded with conflicts:', {
           source: savedSchedule ? 'localStorage' : 'generated',
@@ -1001,8 +1003,8 @@ export const SeasonCreationWizard: React.FC = () => {
             leagueDayOfWeek={formatDayOfWeek(state.league?.day_of_week || 'tuesday')}
             seasonStartDate={seasonStartDate}
             holidays={state.holidays}
-            bcaChampionship={bcaChampionship}
-            apaChampionship={apaChampionship}
+            bcaChampionship={state.bcaChampionship}
+            apaChampionship={state.apaChampionship}
             currentPlayWeek={0} // New season hasn't started yet - all weeks are editable. TODO: For existing seasons, fetch from database
             onScheduleChange={handleScheduleChange}
             onConfirm={handleCreateSeason}
