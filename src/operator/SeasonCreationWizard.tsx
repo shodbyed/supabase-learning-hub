@@ -20,12 +20,11 @@ import { SimpleRadioChoice } from '@/components/forms/SimpleRadioChoice';
 import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData, type ChampionshipPreference } from '@/data/seasonWizardSteps';
-import { fetchChampionshipDateOptions, submitChampionshipDates, type ChampionshipDateOption } from '@/utils/tournamentUtils';
+import { fetchChampionshipDateOptions, submitChampionshipDates } from '@/utils/tournamentUtils';
 import { generateSchedule } from '@/utils/scheduleUtils';
 import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
 import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
-import type { League } from '@/types/league';
-import type { Season, SeasonInsertData, WeekEntry, ChampionshipEvent } from '@/types/season';
+import type { SeasonInsertData, WeekEntry, ChampionshipEvent } from '@/types/season';
 import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
@@ -48,11 +47,16 @@ export const SeasonCreationWizard: React.FC = () => {
   // useReducer hook for state management
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
 
-  const [league, setLeague] = useState<League | null>(null);
-  const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
-  const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
-  const [savedChampionshipPreferences, setSavedChampionshipPreferences] = useState<ChampionshipPreference[]>([]);
+  // Migrated to useReducer - use state.league instead
+  // const [league, setLeague] = useState<League | null>(null);
+  // Migrated to useReducer - use state.existingSeasons instead
+  // const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
+  // Migrated to useReducer - use state.bcaDateOptions instead
+  // const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
+  // Migrated to useReducer - use state.apaDateOptions instead
+  // const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
+  // Migrated to useReducer - use state.savedChampionshipPreferences instead
+  // const [savedChampionshipPreferences, setSavedChampionshipPreferences] = useState<ChampionshipPreference[]>([]);
 
   // Migrated to useReducer - use state.loading instead
   // const [loading, setLoading] = useState(true);
@@ -159,18 +163,18 @@ export const SeasonCreationWizard: React.FC = () => {
           .single();
 
         if (leagueError) throw leagueError;
-        setLeague(leagueData);
+        dispatch({ type: 'SET_LEAGUE', payload: leagueData });
 
         // Fetch championship date options for both BCA and APA
         const bcaDates = await fetchChampionshipDateOptions('BCA');
-        setBcaDateOptions(bcaDates);
+        dispatch({ type: 'SET_BCA_DATE_OPTIONS', payload: bcaDates });
 
         const apaDates = await fetchChampionshipDateOptions('APA');
-        setApaDateOptions(apaDates);
+        dispatch({ type: 'SET_APA_DATE_OPTIONS', payload: apaDates });
 
         // Fetch operator's saved championship preferences to skip those steps in wizard
         const prefs = await fetchChampionshipPreferences(operatorId);
-        setSavedChampionshipPreferences(prefs);
+        dispatch({ type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES', payload: prefs });
 
         // If editing existing season, load season data and jump to schedule review
         if (seasonId) {
@@ -203,10 +207,10 @@ export const SeasonCreationWizard: React.FC = () => {
           // This will be improved later to properly load and display the existing season data
 
           // Set existingSeasons array (to indicate we're editing)
-          setExistingSeasons([seasonData]);
+          dispatch({ type: 'SET_EXISTING_SEASONS', payload: [seasonData] });
         } else {
           // Creating new season
-          setExistingSeasons([]);
+          dispatch({ type: 'SET_EXISTING_SEASONS', payload: [] });
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -224,12 +228,12 @@ export const SeasonCreationWizard: React.FC = () => {
    * User can navigate through all steps to make changes
    */
   useEffect(() => {
-    if (!league || !leagueId || state.loading || !state.isEditingExistingSeason) return;
+    if (!state.league || !leagueId || state.loading || !state.isEditingExistingSeason) return;
 
     // TODO: Load season data into localStorage to populate wizard fields
     // For now, user will start at step 0 and can navigate through all steps
     console.log('📝 Edit mode: User can navigate through wizard steps to edit season');
-  }, [league, leagueId, state.loading, state.isEditingExistingSeason]);
+  }, [state.league, leagueId, state.loading, state.isEditingExistingSeason]);
 
   /**
    * Generate schedule when reaching schedule-review step
@@ -239,17 +243,17 @@ export const SeasonCreationWizard: React.FC = () => {
    * Only runs once when entering schedule-review step to prevent infinite loops
    */
   useEffect(() => {
-    if (!league || !leagueId || state.loading) return;
+    if (!state.league || !leagueId || state.loading) return;
 
     const steps = getSeasonWizardSteps(
       leagueId,
-      existingSeasons.length > 0,
-      existingSeasons.length > 0 ? undefined : league.league_start_date,
-      league.day_of_week,
+      state.existingSeasons.length > 0,
+      state.existingSeasons.length > 0 ? undefined : state.league.league_start_date,
+      state.league.day_of_week,
       () => {},
-      bcaDateOptions,
-      apaDateOptions,
-      savedChampionshipPreferences
+      state.bcaDateOptions,
+      state.apaDateOptions,
+      state.savedChampionshipPreferences
     );
 
     const currentStepData = steps[state.currentStep];
@@ -280,7 +284,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
       const startDate = parseLocalDate(formData.startDate);
       const seasonLength = parseInt(formData.seasonLength);
-      const leagueDayOfWeek = formatDayOfWeek(league.day_of_week);
+      const leagueDayOfWeek = formatDayOfWeek(state.league.day_of_week);
 
       let initialSchedule: WeekEntry[];
 
@@ -373,24 +377,24 @@ export const SeasonCreationWizard: React.FC = () => {
         });
       });
     }
-  }, [state.currentStep, league, leagueId, state.loading, existingSeasons, bcaDateOptions, apaDateOptions, operatorId, savedChampionshipPreferences]);
+  }, [state.currentStep, state.league, leagueId, state.loading, state.existingSeasons, state.bcaDateOptions, state.apaDateOptions, operatorId, state.savedChampionshipPreferences]);
 
   /**
    * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
    * This creates a seamless "breeze through" experience for operators who have saved preferences
    */
   useEffect(() => {
-    if (!leagueId || state.loading || !league || savedChampionshipPreferences.length === 0) return;
+    if (!leagueId || state.loading || !state.league || state.savedChampionshipPreferences.length === 0) return;
 
     const steps = getSeasonWizardSteps(
       leagueId,
-      existingSeasons.length > 0,
-      existingSeasons.length > 0 ? undefined : league.league_start_date,
-      league.day_of_week,
+      state.existingSeasons.length > 0,
+      state.existingSeasons.length > 0 ? undefined : state.league.league_start_date,
+      state.league.day_of_week,
       () => {},
-      bcaDateOptions,
-      apaDateOptions,
-      savedChampionshipPreferences
+      state.bcaDateOptions,
+      state.apaDateOptions,
+      state.savedChampionshipPreferences
     );
 
     const currentStepData = steps[state.currentStep];
@@ -399,7 +403,7 @@ export const SeasonCreationWizard: React.FC = () => {
     // Check if we're on BCA or APA choice step
     if (currentStepData.id === 'bcaChoice' || currentStepData.id === 'apaChoice') {
       const organization = currentStepData.id === 'bcaChoice' ? 'BCA' : 'APA';
-      const preference = savedChampionshipPreferences.find(p => p.organization === organization);
+      const preference = state.savedChampionshipPreferences.find(p => p.organization === organization);
 
       if (preference) {
         // Auto-populate localStorage with saved preference
@@ -442,7 +446,7 @@ export const SeasonCreationWizard: React.FC = () => {
         console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
       }
     }
-  }, [state.currentStep, leagueId, state.loading, league, savedChampionshipPreferences, existingSeasons, bcaDateOptions, apaDateOptions]);
+  }, [state.currentStep, leagueId, state.loading, state.league, state.savedChampionshipPreferences, state.existingSeasons, state.bcaDateOptions, state.apaDateOptions]);
 
   if (state.loading) {
     return (
@@ -454,7 +458,7 @@ export const SeasonCreationWizard: React.FC = () => {
     );
   }
 
-  if (state.error || !league || !leagueId) {
+  if (state.error || !state.league || !leagueId) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-2xl">
@@ -470,19 +474,21 @@ export const SeasonCreationWizard: React.FC = () => {
     );
   }
 
-  const hasExistingSeasons = existingSeasons.length > 0;
-  const defaultStartDate = hasExistingSeasons ? undefined : league.league_start_date;
+  const hasExistingSeasons = state.existingSeasons.length > 0;
+  const defaultStartDate = hasExistingSeasons ? undefined : state.league.league_start_date;
 
   /**
    * Callback triggered when user changes start date to a different day of week
    * Shows warning modal explaining that league will be updated
    */
   const handleDayOfWeekChange = (newDay: string, newDate: string) => {
+    if (!state.league) return;
+
     dispatch({
       type: 'SET_DAY_OF_WEEK_WARNING',
       payload: {
         show: true,
-        oldDay: formatDayOfWeek(league.day_of_week),
+        oldDay: formatDayOfWeek(state.league.day_of_week),
         newDay,
         newDate,
       }
@@ -524,7 +530,10 @@ export const SeasonCreationWizard: React.FC = () => {
       console.log('✅ League day_of_week updated successfully');
 
       // Update local state
-      setLeague((prev) => prev ? { ...prev, day_of_week: newDayString } : null);
+      dispatch({
+        type: 'SET_LEAGUE',
+        payload: state.league ? { ...state.league, day_of_week: newDayString } : null
+      });
 
       // Save the new start date to form data
       const STORAGE_KEY = `season-creation-${leagueId}`;
@@ -570,11 +579,11 @@ export const SeasonCreationWizard: React.FC = () => {
     leagueId,
     hasExistingSeasons,
     defaultStartDate,
-    league.day_of_week,
+    state.league.day_of_week,
     handleDayOfWeekChange,
-    bcaDateOptions,
-    apaDateOptions,
-    savedChampionshipPreferences
+    state.bcaDateOptions,
+    state.apaDateOptions,
+    state.savedChampionshipPreferences
   );
 
   // Wrap setValue to trigger re-render
@@ -689,6 +698,8 @@ export const SeasonCreationWizard: React.FC = () => {
   };
 
   const handleCreateSeason = async (destination: 'dashboard' | 'teams' = 'dashboard') => {
+    if (!state.league) return;
+
     dispatch({ type: 'SET_IS_CREATING', payload: true });
 
     try {
@@ -760,9 +771,9 @@ export const SeasonCreationWizard: React.FC = () => {
       // Generate season name
       const seasonName = generateSeasonName(
         startDate,
-        formatDayOfWeek(league.day_of_week),
-        formatGameType(league.game_type),
-        league.division
+        formatDayOfWeek(state.league.day_of_week),
+        formatGameType(state.league.game_type),
+        state.league.division
       );
 
       // Build insert data (holidays and championships NOT stored - fetched on-demand)
@@ -932,8 +943,8 @@ export const SeasonCreationWizard: React.FC = () => {
                 Create {hasExistingSeasons ? 'New' : 'First'} Season
               </h1>
               <p className="text-gray-600 mt-2">
-                {formatDayOfWeek(league.day_of_week)} {formatGameType(league.game_type)}
-                {league.division && ` ${league.division}`}
+                {formatDayOfWeek(state.league.day_of_week)} {formatGameType(state.league.game_type)}
+                {state.league.division && ` ${state.league.division}`}
               </p>
             </div>
             <Button
@@ -986,7 +997,7 @@ export const SeasonCreationWizard: React.FC = () => {
         ) : steps[state.currentStep]?.type === 'schedule-review' ? (
           <ScheduleReview
             schedule={schedule}
-            leagueDayOfWeek={formatDayOfWeek(league?.day_of_week || 'tuesday')}
+            leagueDayOfWeek={formatDayOfWeek(state.league?.day_of_week || 'tuesday')}
             seasonStartDate={seasonStartDate}
             holidays={holidays}
             bcaChampionship={bcaChampionship}
