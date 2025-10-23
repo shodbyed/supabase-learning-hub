@@ -94,7 +94,8 @@ export const SeasonCreationWizard: React.FC = () => {
     setSchedule(newSchedule);
   }, []);
   const [seasonStartDate, setSeasonStartDate] = useState<string>('');
-  const [holidays, setHolidays] = useState<any[]>([]);
+  // Migrated to useReducer - use state.holidays instead
+  // const [holidays, setHolidays] = useState<any[]>([]);
   const [bcaChampionship, setBcaChampionship] = useState<ChampionshipEvent | undefined>();
   const [apaChampionship, setApaChampionship] = useState<ChampionshipEvent | undefined>();
 
@@ -362,7 +363,7 @@ export const SeasonCreationWizard: React.FC = () => {
         // Save data to state for ScheduleReview component
         setSchedule(scheduleWithConflicts);
         setSeasonStartDate(formData.startDate);
-        setHolidays(holidays);
+        dispatch({ type: 'SET_HOLIDAYS', payload: holidays });
 
         // Set championship data based on what was actually included in conflict detection
         setBcaChampionship(bcaChampionshipEvent);
@@ -999,7 +1000,7 @@ export const SeasonCreationWizard: React.FC = () => {
             schedule={schedule}
             leagueDayOfWeek={formatDayOfWeek(state.league?.day_of_week || 'tuesday')}
             seasonStartDate={seasonStartDate}
-            holidays={holidays}
+            holidays={state.holidays}
             bcaChampionship={bcaChampionship}
             apaChampionship={apaChampionship}
             currentPlayWeek={0} // New season hasn't started yet - all weeks are editable. TODO: For existing seasons, fetch from database

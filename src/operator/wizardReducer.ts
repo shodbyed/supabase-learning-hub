@@ -40,6 +40,9 @@ export interface WizardState {
   bcaDateOptions: ChampionshipDateOption[];
   apaDateOptions: ChampionshipDateOption[];
   savedChampionshipPreferences: ChampionshipPreference[];
+
+  // Schedule-related data
+  holidays: any[];
 }
 
 /**
@@ -62,7 +65,9 @@ export type WizardAction =
   | { type: 'SET_EXISTING_SEASONS'; payload: Season[] }
   | { type: 'SET_BCA_DATE_OPTIONS'; payload: ChampionshipDateOption[] }
   | { type: 'SET_APA_DATE_OPTIONS'; payload: ChampionshipDateOption[] }
-  | { type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES'; payload: ChampionshipPreference[] };
+  | { type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES'; payload: ChampionshipPreference[] }
+  // Schedule-related data
+  | { type: 'SET_HOLIDAYS'; payload: any[] };
 
 /**
  * Create initial wizard state
@@ -94,6 +99,9 @@ export function createInitialState(leagueId: string | undefined): WizardState {
     bcaDateOptions: [],
     apaDateOptions: [],
     savedChampionshipPreferences: [],
+
+    // Schedule-related data
+    holidays: [],
   };
 }
 
@@ -136,6 +144,10 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return { ...state, apaDateOptions: action.payload };
     case 'SET_SAVED_CHAMPIONSHIP_PREFERENCES':
       return { ...state, savedChampionshipPreferences: action.payload };
+
+    // Schedule-related data
+    case 'SET_HOLIDAYS':
+      return { ...state, holidays: action.payload };
 
     default:
       return state;
