@@ -45,26 +45,31 @@ export const SeasonCreationWizard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { operatorId } = useOperatorId();
 
-  // New useReducer hook for state management (running alongside useState for now)
-  // Prefixed with _ because we're setting up infrastructure but not using it yet
-  const [_state, _dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
+  // useReducer hook for state management
+  const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
 
   const [league, setLeague] = useState<League | null>(null);
   const [existingSeasons, setExistingSeasons] = useState<Season[]>([]);
   const [bcaDateOptions, setBcaDateOptions] = useState<ChampionshipDateOption[]>([]);
   const [apaDateOptions, setApaDateOptions] = useState<ChampionshipDateOption[]>([]);
   const [savedChampionshipPreferences, setSavedChampionshipPreferences] = useState<ChampionshipPreference[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Migrated to useReducer - use state.loading instead
+  // const [loading, setLoading] = useState(true);
+  // Migrated to useReducer - use state.error instead
+  // const [error, setError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(() => {
     // Restore current step from localStorage
     const stored = localStorage.getItem(`season-wizard-step-${leagueId}`);
     return stored ? parseInt(stored, 10) : 0;
   });
-  const [isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  // Migrated to useReducer - use state.state.isEditingExistingSeason instead
+  // const [state.isEditingExistingSeason, setIsEditingExistingSeason] = useState(false);
+  // Migrated to useReducer - use state.state.isCreating instead
+  // const [state.isCreating, setIsCreating] = useState(false);
   const [_refreshKey, setRefreshKey] = useState(0); // Force re-render when form data changes
-  const [validationError, setValidationError] = useState<string | null>(null);
+  // Migrated to useReducer - use state.state.validationError instead
+  // const [state.validationError, setValidationError] = useState<string | null>(null);
   const [dayOfWeekWarning, setDayOfWeekWarning] = useState<{
     show: boolean;
     oldDay: string;
@@ -141,8 +146,8 @@ export const SeasonCreationWizard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!leagueId) {
-        setError('No league ID provided');
-        setLoading(false);
+        dispatch({ type: 'SET_ERROR', payload: 'No league ID provided' });
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
 
@@ -173,7 +178,7 @@ export const SeasonCreationWizard: React.FC = () => {
         // If editing existing season, load season data and jump to schedule review
         if (seasonId) {
           console.log('📝 Edit mode - loading season:', seasonId);
-          setIsEditingExistingSeason(true);
+          dispatch({ type: 'SET_IS_EDITING_EXISTING_SEASON', payload: true });
 
           // Fetch season data
           const { data: seasonData, error: seasonError } = await supabase
@@ -208,9 +213,9 @@ export const SeasonCreationWizard: React.FC = () => {
         }
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError('Failed to load league information');
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to load league information' });
       } finally {
-        setLoading(false);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
@@ -222,12 +227,12 @@ export const SeasonCreationWizard: React.FC = () => {
    * User can navigate through all steps to make changes
    */
   useEffect(() => {
-    if (!league || !leagueId || loading || !isEditingExistingSeason) return;
+    if (!league || !leagueId || state.loading || !state.isEditingExistingSeason) return;
 
     // TODO: Load season data into localStorage to populate wizard fields
     // For now, user will start at step 0 and can navigate through all steps
     console.log('📝 Edit mode: User can navigate through wizard steps to edit season');
-  }, [league, leagueId, loading, isEditingExistingSeason]);
+  }, [league, leagueId, state.loading, state.isEditingExistingSeason]);
 
   /**
    * Generate schedule when reaching schedule-review step
@@ -237,7 +242,7 @@ export const SeasonCreationWizard: React.FC = () => {
    * Only runs once when entering schedule-review step to prevent infinite loops
    */
   useEffect(() => {
-    if (!league || !leagueId || loading) return;
+    if (!league || !leagueId || state.loading) return;
 
     const steps = getSeasonWizardSteps(
       leagueId,
@@ -371,14 +376,14 @@ export const SeasonCreationWizard: React.FC = () => {
         });
       });
     }
-  }, [currentStep, league, leagueId, loading, existingSeasons, bcaDateOptions, apaDateOptions, operatorId, savedChampionshipPreferences]);
+  }, [currentStep, league, leagueId, state.loading, existingSeasons, bcaDateOptions, apaDateOptions, operatorId, savedChampionshipPreferences]);
 
   /**
    * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
    * This creates a seamless "breeze through" experience for operators who have saved preferences
    */
   useEffect(() => {
-    if (!leagueId || loading || !league || savedChampionshipPreferences.length === 0) return;
+    if (!leagueId || state.loading || !league || savedChampionshipPreferences.length === 0) return;
 
     const steps = getSeasonWizardSteps(
       leagueId,
@@ -440,9 +445,9 @@ export const SeasonCreationWizard: React.FC = () => {
         console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
       }
     }
-  }, [currentStep, leagueId, loading, league, savedChampionshipPreferences, existingSeasons, bcaDateOptions, apaDateOptions]);
+  }, [currentStep, leagueId, state.loading, league, savedChampionshipPreferences, existingSeasons, bcaDateOptions, apaDateOptions]);
 
-  if (loading) {
+  if (state.loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-2xl">
@@ -452,13 +457,13 @@ export const SeasonCreationWizard: React.FC = () => {
     );
   }
 
-  if (error || !league || !leagueId) {
+  if (state.error || !league || !leagueId) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
-            <p className="text-gray-700 mb-4">{error || 'League not found'}</p>
+            <p className="text-gray-700 mb-4">{state.error || 'League not found'}</p>
             <Button onClick={() => navigate('/operator-dashboard')}>
               Back to Dashboard
             </Button>
@@ -532,7 +537,7 @@ export const SeasonCreationWizard: React.FC = () => {
       setDayOfWeekWarning(null);
     } catch (err) {
       console.error('Error updating league day:', err);
-      setError('Failed to update league day of week');
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to update league day of week' });
     }
   };
 
@@ -583,7 +588,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   const handleNext = () => {
     // Clear previous validation error
-    setValidationError(null);
+    dispatch({ type: 'SET_VALIDATION_ERROR', payload: null });
 
     // If current step has a validator, run it
     const currentStepData = steps[currentStep];
@@ -591,7 +596,7 @@ export const SeasonCreationWizard: React.FC = () => {
       const value = currentStepData.getValue();
       const result = currentStepData.validator(value);
       if (!result.isValid) {
-        setValidationError(result.error || 'Invalid input');
+        dispatch({ type: 'SET_VALIDATION_ERROR', payload: result.error || 'Invalid input' });
         return;
       }
     }
@@ -604,7 +609,7 @@ export const SeasonCreationWizard: React.FC = () => {
   };
 
   const handleBack = () => {
-    setValidationError(null);
+    dispatch({ type: 'SET_VALIDATION_ERROR', payload: null });
     if (currentStep > 0) {
       const newStep = currentStep - 1;
       setCurrentStep(newStep);
@@ -684,7 +689,7 @@ export const SeasonCreationWizard: React.FC = () => {
   };
 
   const handleCreateSeason = async (destination: 'dashboard' | 'teams' = 'dashboard') => {
-    setIsCreating(true);
+    dispatch({ type: 'SET_IS_CREATING', payload: true });
 
     try {
       // Get form data from localStorage
@@ -901,9 +906,9 @@ export const SeasonCreationWizard: React.FC = () => {
       }
     } catch (err) {
       console.error('Error creating season:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create season');
+      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to create season' });
     } finally {
-      setIsCreating(false);
+      dispatch({ type: 'SET_IS_CREATING', payload: false });
     }
   };
 
@@ -1038,13 +1043,13 @@ export const SeasonCreationWizard: React.FC = () => {
                 value={currentStepData.getValue()}
                 onChange={(e) => {
                   currentStepData.setValue(e.target.value);
-                  setValidationError(null); // Clear error on input change
+                  dispatch({ type: 'SET_VALIDATION_ERROR', payload: null }); // Clear error on input change
                 }}
                 placeholder={currentStepData.placeholder}
                 className="text-lg"
               />
-              {validationError && (
-                <p className="text-red-600 text-sm">{validationError}</p>
+              {state.validationError && (
+                <p className="text-red-600 text-sm">{state.validationError}</p>
               )}
             </div>
           )}
@@ -1081,22 +1086,22 @@ export const SeasonCreationWizard: React.FC = () => {
                 <Button
                   variant="outline"
                   onClick={handleBack}
-                  disabled={currentStep === 0 || isCreating}
+                  disabled={currentStep === 0 || state.isCreating}
                 >
                   Back
                 </Button>
 
                 {currentStep < steps.length - 1 ? (
-                  <Button onClick={handleNext} disabled={isCreating}>
+                  <Button onClick={handleNext} disabled={state.isCreating}>
                     Next
                   </Button>
                 ) : (
                   <Button
                     onClick={() => handleCreateSeason('dashboard')}
-                    disabled={isCreating}
+                    disabled={state.isCreating}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
-                    {isCreating ? 'Creating Season...' : 'Create Season'}
+                    {state.isCreating ? 'Creating Season...' : 'Create Season'}
                   </Button>
                 )}
               </div>
