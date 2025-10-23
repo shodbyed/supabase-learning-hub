@@ -82,7 +82,18 @@ export function getSeasonWizardSteps(
   const getStoredData = (): SeasonFormData => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsedData = JSON.parse(stored);
+
+      // IMPORTANT: If we have a defaultStartDate but localStorage has blank startDate,
+      // update it with the default. This handles the case where the component rendered
+      // before league data loaded, so localStorage was initialized with empty string.
+      if (defaultStartDate && !parsedData.startDate && !hasExistingSeasons) {
+        console.log('📅 Updating blank startDate with default:', defaultStartDate);
+        parsedData.startDate = defaultStartDate;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
+      }
+
+      return parsedData;
     }
 
     // Create default data
