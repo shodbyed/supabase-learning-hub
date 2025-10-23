@@ -48,116 +48,131 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
   const [selectedLeague, setSelectedLeague] = useState<{ id: string; name: string } | null>(null);
 
   /**
+   * Fetch progress data for a single league
+   * Reusable function to avoid code duplication
+   */
+  const fetchLeagueProgress = async (league: League): Promise<LeagueWithProgress> => {
+    // Fetch season count
+    const { count: seasonCount } = await supabase
+      .from('seasons')
+      .select('*', { count: 'exact', head: true })
+      .eq('league_id', league.id);
+
+    // Fetch most recent season (regardless of status - could be upcoming, active, or completed)
+    const { data: activeSeasonData } = await supabase
+      .from('seasons')
+      .select('*')
+      .eq('league_id', league.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let completedWeeks = 0;
+    let totalWeeks = 0;
+    if (activeSeasonData) {
+      // Get week counts for active season
+      const { count: total } = await supabase
+        .from('season_weeks')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', activeSeasonData.id)
+        .eq('week_type', 'regular');
+
+      const { count: completed } = await supabase
+        .from('season_weeks')
+        .select('*', { count: 'exact', head: true })
+        .eq('season_id', activeSeasonData.id)
+        .eq('week_type', 'regular')
+        .eq('week_completed', true);
+
+      totalWeeks = total || 0;
+      completedWeeks = completed || 0;
+    }
+
+    // Fetch team count
+    const { count: teamCount } = await supabase
+      .from('teams')
+      .select('*', { count: 'exact', head: true })
+      .eq('league_id', league.id);
+
+    // Fetch player count
+    const { count: playerCount } = await supabase
+      .from('team_players')
+      .select('teams!inner(league_id)', { count: 'exact', head: true })
+      .eq('teams.league_id', league.id);
+
+    // Check if schedule exists
+    const { data: seasonData } = await supabase
+      .from('seasons')
+      .select('id')
+      .eq('league_id', league.id);
+
+    let scheduleExists = false;
+    if (seasonData && seasonData.length > 0) {
+      const seasonIds = seasonData.map(s => s.id);
+      const { count: matchesCount } = await supabase
+        .from('matches')
+        .select('*', { count: 'exact', head: true })
+        .in('season_id', seasonIds);
+      scheduleExists = (matchesCount || 0) > 0;
+    }
+
+    return {
+      ...league,
+      _progress: {
+        seasonCount: seasonCount || 0,
+        teamCount: teamCount || 0,
+        playerCount: playerCount || 0,
+        scheduleExists,
+        activeSeason: activeSeasonData,
+        completedWeeks,
+        totalWeeks,
+      },
+    };
+  };
+
+  /**
    * Fetch operator's leagues and their progress data
    */
+  const fetchLeaguesWithProgress = async () => {
+    if (!operatorId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('leagues')
+        .select('*')
+        .eq('operator_id', operatorId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch progress data for each league using reusable function
+      const leaguesWithProgress = await Promise.all(
+        (data || []).map(fetchLeagueProgress)
+      );
+
+      setLeagues(leaguesWithProgress);
+    } catch (err) {
+      console.error('Error fetching leagues:', err);
+      setError('Failed to load leagues');
+    }
+  };
+
+  /**
+   * Initial fetch on mount
+   */
   useEffect(() => {
-    const fetchLeagues = async () => {
+    const loadLeagues = async () => {
       if (!operatorId) {
         setLoading(false);
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('leagues')
-          .select('*')
-          .eq('operator_id', operatorId)
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Fetch progress data for each league
-        const leaguesWithProgress = await Promise.all(
-          (data || []).map(async (league) => {
-            // Fetch season count
-            const { count: seasonCount } = await supabase
-              .from('seasons')
-              .select('*', { count: 'exact', head: true })
-              .eq('league_id', league.id);
-
-            // Fetch most recent season (regardless of status - could be upcoming, active, or completed)
-            const { data: activeSeasonData } = await supabase
-              .from('seasons')
-              .select('*')
-              .eq('league_id', league.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            let completedWeeks = 0;
-            let totalWeeks = 0;
-            if (activeSeasonData) {
-              // Get week counts for active season
-              const { count: total } = await supabase
-                .from('season_weeks')
-                .select('*', { count: 'exact', head: true })
-                .eq('season_id', activeSeasonData.id)
-                .eq('week_type', 'regular');
-
-              const { count: completed } = await supabase
-                .from('season_weeks')
-                .select('*', { count: 'exact', head: true })
-                .eq('season_id', activeSeasonData.id)
-                .eq('week_type', 'regular')
-                .eq('week_completed', true);
-
-              totalWeeks = total || 0;
-              completedWeeks = completed || 0;
-            }
-
-            // Fetch team count
-            const { count: teamCount } = await supabase
-              .from('teams')
-              .select('*', { count: 'exact', head: true })
-              .eq('league_id', league.id);
-
-            // Fetch player count
-            const { count: playerCount } = await supabase
-              .from('team_players')
-              .select('teams!inner(league_id)', { count: 'exact', head: true })
-              .eq('teams.league_id', league.id);
-
-            // Check if schedule exists
-            const { data: seasonData } = await supabase
-              .from('seasons')
-              .select('id')
-              .eq('league_id', league.id);
-
-            let scheduleExists = false;
-            if (seasonData && seasonData.length > 0) {
-              const seasonIds = seasonData.map(s => s.id);
-              const { count: matchesCount } = await supabase
-                .from('matches')
-                .select('*', { count: 'exact', head: true })
-                .in('season_id', seasonIds);
-              scheduleExists = (matchesCount || 0) > 0;
-            }
-
-            return {
-              ...league,
-              _progress: {
-                seasonCount: seasonCount || 0,
-                teamCount: teamCount || 0,
-                playerCount: playerCount || 0,
-                scheduleExists,
-                activeSeason: activeSeasonData,
-                completedWeeks,
-                totalWeeks,
-              },
-            };
-          })
-        );
-
-        setLeagues(leaguesWithProgress);
-      } catch (err) {
-        console.error('Error fetching leagues:', err);
-        setError('Failed to load leagues');
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      await fetchLeaguesWithProgress();
+      setLoading(false);
     };
 
-    fetchLeagues();
+    loadLeagues();
   }, [operatorId]);
 
   /**
@@ -188,104 +203,8 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     setDeleteModalOpen(false);
     setSelectedLeague(null);
 
-    // Manually refresh the leagues list
-    if (!operatorId) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('leagues')
-        .select('*')
-        .eq('operator_id', operatorId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch progress data for each league
-      const leaguesWithProgress = await Promise.all(
-        (data || []).map(async (league) => {
-          // Fetch season count
-          const { count: seasonCount } = await supabase
-            .from('seasons')
-            .select('*', { count: 'exact', head: true })
-            .eq('league_id', league.id);
-
-          // Fetch most recent season (regardless of status - could be upcoming, active, or completed)
-          const { data: activeSeasonData } = await supabase
-            .from('seasons')
-            .select('*')
-            .eq('league_id', league.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          let completedWeeks = 0;
-          let totalWeeks = 0;
-          if (activeSeasonData) {
-            // Get week counts for active season
-            const { count: total } = await supabase
-              .from('season_weeks')
-              .select('*', { count: 'exact', head: true })
-              .eq('season_id', activeSeasonData.id)
-              .eq('week_type', 'regular');
-
-            const { count: completed } = await supabase
-              .from('season_weeks')
-              .select('*', { count: 'exact', head: true })
-              .eq('season_id', activeSeasonData.id)
-              .eq('week_type', 'regular')
-              .eq('week_completed', true);
-
-            totalWeeks = total || 0;
-            completedWeeks = completed || 0;
-          }
-
-          // Fetch team count
-          const { count: teamCount } = await supabase
-            .from('teams')
-            .select('*', { count: 'exact', head: true })
-            .eq('league_id', league.id);
-
-          // Fetch player count
-          const { count: playerCount } = await supabase
-            .from('team_players')
-            .select('teams!inner(league_id)', { count: 'exact', head: true })
-            .eq('teams.league_id', league.id);
-
-          // Check if schedule exists
-          const { data: seasonData } = await supabase
-            .from('seasons')
-            .select('id')
-            .eq('league_id', league.id);
-
-          let scheduleExists = false;
-          if (seasonData && seasonData.length > 0) {
-            const seasonIds = seasonData.map(s => s.id);
-            const { count: matchesCount } = await supabase
-              .from('matches')
-              .select('*', { count: 'exact', head: true })
-              .in('season_id', seasonIds);
-            scheduleExists = (matchesCount || 0) > 0;
-          }
-
-          return {
-            ...league,
-            _progress: {
-              seasonCount: seasonCount || 0,
-              teamCount: teamCount || 0,
-              playerCount: playerCount || 0,
-              scheduleExists,
-              activeSeason: activeSeasonData,
-              completedWeeks,
-              totalWeeks,
-            },
-          };
-        })
-      );
-
-      setLeagues(leaguesWithProgress);
-    } catch (err) {
-      console.error('Error refreshing leagues:', err);
-    }
+    // Refresh the leagues list using our reusable function
+    await fetchLeaguesWithProgress();
   };
 
   /**
