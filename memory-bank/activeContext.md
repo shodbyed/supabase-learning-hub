@@ -2,6 +2,108 @@
 
 ## Current Work Focus
 
+### **🎯 NEXT: Messaging System**
+**Priority**: High
+**Status**: 🚀 **STARTING NEXT**
+
+**Planned Features**:
+- Internal messaging system for league communications
+- Operator to player messaging
+- Team captain communications
+- Announcement broadcasts
+
+---
+
+### **✅ COMPLETED: Player Team View & Captain Team Management** 🎉
+**Implementation Date**: 2025-01-16
+**Status**: ✅ **PRODUCTION READY**
+
+**What Was Built**:
+- Player-facing "My Teams" page with team cards
+- Captain team editing functionality with RLS-aware roster management
+- Team readiness indicators for minimum requirements
+- Schedule page access control (read-only for players, editable for operators)
+- Matches table database schema integration
+
+**Key Features Implemented**:
+
+1. **My Teams Page** ([MyTeams.tsx](../src/player/MyTeams.tsx))
+   - Displays all teams the logged-in player is on
+   - Shows team information grouped by league
+   - Captains see "Edit Team" button on their teams
+   - Uses TeamCard component for consistent display
+
+2. **Team Card Component** ([TeamCard.tsx](../src/components/player/TeamCard.tsx))
+   - Displays team name, captain, home venue, roster
+   - "View Schedule" button navigates to schedule page with `?from=player` query param
+   - "Score Match" button for match scorekeeping (placeholder)
+   - **Team Readiness Indicator** (captains only):
+     - Green checkmark: Team ready (venue + minimum roster)
+     - Yellow warning: Missing requirements with specific list
+     - Minimum roster: 3/5 for 5-man teams, 5/8 for 8-man teams
+   - Highlights current user in roster with blue color
+
+3. **Captain Team Editing** ([TeamEditorModal.tsx](../src/operator/TeamEditorModal.tsx))
+   - Modal opens from TeamCard "Edit Team" button
+   - **RLS-Aware Roster Management**:
+     - Captain cannot delete themselves due to RLS policy
+     - Different delete strategy for captain variant:
+       - Fetches current roster first
+       - Deletes only non-captain rows
+       - Updates captain's `is_captain` flag if needed
+       - Skips inserting captain (already exists)
+       - Inserts only new non-captain players
+     - Operator variant works normally (full delete/insert)
+   - Fixed duplicate key error when captains edit teams
+   - Extensive console logging for debugging
+
+4. **Schedule Page Access Control** ([SeasonSchedulePage.tsx](../src/operator/SeasonSchedulePage.tsx))
+   - **Operator Detection**: Queries database to check if user is league operator
+   - **Navigation Source Detection**: Reads `?from=player` query parameter
+   - **Conditional UI**:
+     - Operators from league page: "Back to League", show Clear/Accept buttons
+     - Players from My Teams: "Back to My Teams", hide Clear/Accept buttons
+     - Operators accessing via player route: "Back to My Teams", hide Clear/Accept buttons
+   - Read-only view for non-operators
+
+5. **Matches Table Schema** ([matches.sql](../database/matches.sql))
+   - Added to `rebuild_all_tables.sql` for future rebuilds
+   - Stores individual match/game records for each week
+   - Links teams, venues, and season weeks
+   - Tracks scores and match status
+   - RLS policies for operators and public viewing
+
+**Database Integration**:
+- `matches` table now included in rebuild script
+- Team readiness calculation: venue existence + roster count
+- Player teams query with full nested relationships
+- Captain team edit data query with all necessary context
+
+**Bug Fixed**:
+- **Captain Team Edit Duplicate Key Error**:
+  - Problem: RLS policy prevents captains from deleting themselves
+  - Solution: Separate delete/update strategy for captain vs operator variants
+  - Captain row preserved and updated instead of deleted/re-inserted
+
+**Files Modified**:
+- `/src/player/MyTeams.tsx` - Player teams list with edit functionality
+- `/src/components/player/TeamCard.tsx` - Team display with readiness indicator
+- `/src/operator/TeamEditorModal.tsx` - RLS-aware roster management
+- `/src/operator/SeasonSchedulePage.tsx` - Access control and navigation
+- `/database/rebuild_all_tables.sql` - Added matches table
+- `/database/matches.sql` - Complete matches table schema
+- `/src/utils/playerQueries.ts` - Player team queries
+- `/src/navigation/NavRoutes.tsx` - My Teams route
+
+**User Experience Improvements**:
+- Captains see clear visual feedback on team readiness
+- Specific requirements listed when team is not ready
+- Players can view schedules but not modify them
+- Back navigation respects user's entry point
+- Edit flow works seamlessly for both operators and captains
+
+---
+
 ### **✅ COMPLETED: League Detail Page Redesign & Schedule Generation Protection** 🎉
 **Implementation Date**: 2025-01-16
 **Status**: ✅ **PRODUCTION READY**

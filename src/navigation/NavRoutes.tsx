@@ -9,6 +9,8 @@ import { About } from '../about/About';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
+import { MyTeams } from '../player/MyTeams';
+import { ScoreMatch } from '../player/ScoreMatch';
 import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
 import { OperatorWelcome } from '../operator/OperatorWelcome';
@@ -53,6 +55,8 @@ const authRoutes = [
 const memberRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/profile', element: <Profile /> },
+  { path: '/my-teams', element: <MyTeams /> },
+  { path: '/score-match', element: <ScoreMatch /> },
 ];
 
 // Protected routes - require league_operator role
