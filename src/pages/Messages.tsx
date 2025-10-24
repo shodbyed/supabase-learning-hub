@@ -24,6 +24,7 @@ import { MessageView } from '@/components/messages/MessageView';
 import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
 import { NewMessageModal } from '@/components/messages/NewMessageModal';
 import { AnnouncementModal } from '@/components/messages/AnnouncementModal';
+import { MessageSettingsModal } from '@/components/messages/MessageSettingsModal';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import {
@@ -45,6 +46,7 @@ export function Messages() {
   >(null);
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isCaptain, setIsCaptain] = useState(false);
 
@@ -221,7 +223,7 @@ export function Messages() {
               onNewMessage={handleNewMessage}
               showAnnouncements={isCaptain || canAccessLeagueOperatorFeatures()}
               onAnnouncements={handleAnnouncements}
-              onSettings={() => alert('Settings coming soon')}
+              onSettings={() => setShowSettingsModal(true)}
               onExit={() => navigate('/dashboard')}
             />
           )}
@@ -274,6 +276,13 @@ export function Messages() {
           onCreateAnnouncement={handleCreateAnnouncement}
           currentUserId={memberId}
           canAccessOperatorFeatures={canAccessLeagueOperatorFeatures()}
+        />
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <MessageSettingsModal
+          onClose={() => setShowSettingsModal(false)}
         />
       )}
     </div>
