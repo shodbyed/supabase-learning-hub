@@ -3,6 +3,10 @@
  *
  * Modal form for creating and editing teams.
  * Allows operators to set team name, captain, home venue, and roster players.
+ *
+ * Profanity Validation:
+ * - If operator has profanity_filter_enabled, team names are validated for profanity
+ * - Team names containing profanity will be rejected with an error message
  */
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
@@ -14,6 +18,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { InfoButton } from '@/components/InfoButton';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
+import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
+import { containsProfanity } from '@/utils/profanityFilter';
 import type { Member } from '@/types/member';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamFormat } from '@/types/league';
@@ -94,6 +100,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Check if operator has profanity filter enabled
+  const { shouldValidate: operatorProfanityFilterEnabled } = useOperatorProfanityFilter(leagueId);
+
   // Use roster editor hook for roster management
   const {
     playerIds,
@@ -115,6 +124,12 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
    */
   const validate = (): string | null => {
     if (!teamName.trim()) return 'Team name is required';
+
+    // Check for profanity if operator has filter enabled
+    if (operatorProfanityFilterEnabled && containsProfanity(teamName)) {
+      return 'Team name contains inappropriate language. Please choose a different name.';
+    }
+
     if (!captainId) return 'Captain is required';
 
     // Validate roster using hook

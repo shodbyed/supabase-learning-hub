@@ -1,10 +1,11 @@
 /**
  * @fileoverview Announcement Modal
  *
- * Modal for creating announcements to leagues where user is captain.
+ * Modal for creating announcements to leagues and organizations.
  * Features:
  * - Lists all leagues where user is a captain
- * - Allows selection of one or more leagues for announcement
+ * - Lists organizations (for operators/devs)
+ * - Allows selection of one or more targets for announcement
  * - Text area for announcement content
  * - Creates read-only announcement messages
  */
@@ -15,36 +16,39 @@ import { Label } from '@/components/ui/label';
 import { X, Megaphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
-import { buildLeagueName } from '@/utils/leagueUtils';
 
-interface League {
+interface AnnouncementTarget {
   id: string;
   name: string;
-  season_id: string;
-  season_name: string;
+  type: 'league' | 'organization';
+  season_id?: string;
+  season_name?: string;
 }
 
 interface AnnouncementModalProps {
   onClose: () => void;
-  onCreateAnnouncement: (leagueIds: string[], message: string) => void;
+  onCreateAnnouncement: (targets: AnnouncementTarget[], message: string) => void;
   currentUserId: string;
+  canAccessOperatorFeatures: boolean;
 }
 
 export function AnnouncementModal({
   onClose,
   onCreateAnnouncement,
   currentUserId,
+  canAccessOperatorFeatures,
 }: AnnouncementModalProps) {
-  const [leagues, setLeagues] = useState<League[]>([]);
+  const [targets, setTargets] = useState<AnnouncementTarget[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLeagueIds, setSelectedLeagueIds] = useState<string[]>([]);
+  const [selectedTargetIds, setSelectedTargetIds] = useState<string[]>([]);
   const [announcementText, setAnnouncementText] = useState('');
   const maxLength = 500;
 
-  // Fetch leagues where user is captain
+  // Fetch announcement targets (leagues and organizations)
   useEffect(() => {
-    async function fetchCaptainLeagues() {
-      console.log('Fetching captain leagues for user:', currentUserId);
+    async function fetchAnnouncementTargets() {
+      console.log('Fetching announcement targets for user:', currentUserId);
+      const allTargets: AnnouncementTarget[] = [];
 
       // Get teams where user is captain
       const { data: captainTeams, error: teamsError } = await supabase
@@ -76,7 +80,7 @@ export function AnnouncementModal({
 
       console.log('League-season pairs:', Array.from(leagueSeasonPairs.values()));
 
-      // Fetch league and season details - simpler approach
+      // Fetch league targets
       const leaguePromises = Array.from(leagueSeasonPairs.values()).map(async ({ leagueId, seasonId }) => {
         // Fetch league data
         const { data: league, error: leagueError } = await supabase
@@ -118,33 +122,53 @@ export function AnnouncementModal({
         return {
           id: leagueId,
           name: leagueName,
+          type: 'league' as const,
           season_id: seasonId,
           season_name: season.season_name,
         };
       });
 
-      const leaguesData = await Promise.all(leaguePromises);
-      const leagueList = leaguesData.filter((league): league is League => league !== null);
+      const leagueTargets = (await Promise.all(leaguePromises)).filter((t) => t !== null);
+      allTargets.push(...leagueTargets);
 
-      console.log('Final leagues list:', leagueList);
-      setLeagues(leagueList);
+      // Fetch organization targets (if user has operator access)
+      if (canAccessOperatorFeatures) {
+        const { data: operatorData } = await supabase
+          .from('league_operators')
+          .select('id, organization_name')
+          .eq('member_id', currentUserId)
+          .maybeSingle();
+
+        if (operatorData && operatorData.organization_name) {
+          // Use the operator's ID as the organization identifier
+          // Since there's no separate organizations table, we use the operator record
+          allTargets.push({
+            id: operatorData.id, // Use operator ID as unique identifier
+            name: `${operatorData.organization_name} (Organization)`,
+            type: 'organization',
+          });
+        }
+      }
+
+      console.log('Final targets list:', allTargets);
+      setTargets(allTargets);
       setLoading(false);
     }
 
-    fetchCaptainLeagues();
-  }, [currentUserId]);
+    fetchAnnouncementTargets();
+  }, [currentUserId, canAccessOperatorFeatures]);
 
-  const handleToggleLeague = (leagueId: string) => {
-    setSelectedLeagueIds((prev) =>
-      prev.includes(leagueId)
-        ? prev.filter((id) => id !== leagueId)
-        : [...prev, leagueId]
+  const handleToggleTarget = (targetId: string) => {
+    setSelectedTargetIds((prev) =>
+      prev.includes(targetId)
+        ? prev.filter((id) => id !== targetId)
+        : [...prev, targetId]
     );
   };
 
   const handleCreate = () => {
-    if (selectedLeagueIds.length === 0) {
-      alert('Please select at least one league');
+    if (selectedTargetIds.length === 0) {
+      alert('Please select at least one target');
       return;
     }
 
@@ -153,10 +177,11 @@ export function AnnouncementModal({
       return;
     }
 
-    onCreateAnnouncement(selectedLeagueIds, announcementText);
+    const selectedTargets = targets.filter((t) => selectedTargetIds.includes(t.id));
+    onCreateAnnouncement(selectedTargets, announcementText);
   };
 
-  const selectedLeagues = leagues.filter((l) => selectedLeagueIds.includes(l.id));
+  const selectedTargets = targets.filter((t) => selectedTargetIds.includes(t.id));
 
   return (
     <div
@@ -181,25 +206,26 @@ export function AnnouncementModal({
           </button>
         </div>
 
-        {/* Selected Leagues */}
-        {selectedLeagueIds.length > 0 && (
+        {/* Selected Targets */}
+        {selectedTargetIds.length > 0 && (
           <div className="px-6 pt-4 border-b bg-blue-50">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-sm font-medium text-blue-900">
-                Selected Leagues ({selectedLeagueIds.length})
+                Selected ({selectedTargetIds.length})
               </span>
             </div>
             <div className="flex flex-wrap gap-2 pb-4">
-              {selectedLeagues.map((league) => (
+              {selectedTargets.map((target) => (
                 <div
-                  key={league.id}
+                  key={target.id}
                   className="bg-white border border-blue-300 rounded-full px-3 py-1 text-sm flex items-center gap-2"
                 >
                   <span>
-                    {league.name} ({league.season_name})
+                    {target.name}
+                    {target.season_name && ` (${target.season_name})`}
                   </span>
                   <button
-                    onClick={() => handleToggleLeague(league.id)}
+                    onClick={() => handleToggleTarget(target.id)}
                     className="text-gray-500 hover:text-gray-700"
                   >
                     <X className="h-3 w-3" />
@@ -210,43 +236,48 @@ export function AnnouncementModal({
           </div>
         )}
 
-        {/* League List */}
+        {/* Target List */}
         <div className="flex-1 overflow-y-auto p-6">
           <Label className="text-base font-semibold mb-3 block">
-            Select League(s) for Announcement
+            Select Target(s) for Announcement
           </Label>
 
           {loading ? (
             <div className="text-center py-8 text-gray-500">
-              <p>Loading leagues...</p>
+              <p>Loading targets...</p>
             </div>
-          ) : leagues.length === 0 ? (
+          ) : targets.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <p>You are not a captain of any teams</p>
-              <p className="text-sm mt-2">Only team captains can create announcements</p>
+              <p>No announcement targets available</p>
+              <p className="text-sm mt-2">You must be a captain or operator to send announcements</p>
             </div>
           ) : (
             <div className="space-y-2">
-              {leagues.map((league) => (
+              {targets.map((target) => (
                 <button
-                  key={league.id}
-                  onClick={() => handleToggleLeague(league.id)}
+                  key={target.id}
+                  onClick={() => handleToggleTarget(target.id)}
                   className={cn(
                     'w-full p-4 rounded-lg border-2 transition-all text-left',
-                    selectedLeagueIds.includes(league.id)
+                    selectedTargetIds.includes(target.id)
                       ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   )}
                 >
-                  <div className="font-medium text-gray-900">{league.name}</div>
-                  <div className="text-sm text-gray-600 mt-1">Season: {league.season_name}</div>
+                  <div className="font-medium text-gray-900">{target.name}</div>
+                  {target.season_name && (
+                    <div className="text-sm text-gray-600 mt-1">Season: {target.season_name}</div>
+                  )}
+                  <div className="text-xs text-gray-500 mt-1">
+                    {target.type === 'league' ? 'League' : 'Organization-wide'}
+                  </div>
                 </button>
               ))}
             </div>
           )}
 
           {/* Announcement Text */}
-          {leagues.length > 0 && (
+          {targets.length > 0 && (
             <div className="mt-6">
               <Label htmlFor="announcement" className="text-base font-semibold mb-3 block">
                 Announcement Message
@@ -273,12 +304,12 @@ export function AnnouncementModal({
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={selectedLeagueIds.length === 0 || !announcementText.trim()}
+            disabled={selectedTargetIds.length === 0 || !announcementText.trim()}
             className="flex-1"
           >
-            {selectedLeagueIds.length === 0
-              ? 'Select League'
-              : `Send to ${selectedLeagueIds.length} League${selectedLeagueIds.length > 1 ? 's' : ''}`}
+            {selectedTargetIds.length === 0
+              ? 'Select Target'
+              : `Send to ${selectedTargetIds.length} Target${selectedTargetIds.length > 1 ? 's' : ''}`}
           </Button>
         </div>
       </div>

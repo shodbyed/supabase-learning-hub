@@ -15,7 +15,7 @@ import { ConversationHeader } from './ConversationHeader';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { fetchConversationMessages, sendMessage, updateLastRead } from '@/utils/messageQueries';
+import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation } from '@/utils/messageQueries';
 import { supabase } from '@/supabaseClient';
 
 interface Message {
@@ -36,9 +36,10 @@ interface MessageViewProps {
   conversationId: string;
   currentUserId: string;
   onBack?: () => void;
+  onLeaveConversation?: () => void;
 }
 
-export function MessageView({ conversationId, currentUserId, onBack }: MessageViewProps) {
+export function MessageView({ conversationId, currentUserId, onBack, onLeaveConversation }: MessageViewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -132,9 +133,33 @@ export function MessageView({ conversationId, currentUserId, onBack }: MessageVi
     // The message will appear via the realtime subscription
   };
 
+  const handleLeave = async () => {
+    if (!confirm('Are you sure you want to leave this conversation? You can always start a new one later.')) {
+      return;
+    }
+
+    const { error } = await leaveConversation(conversationId, currentUserId);
+
+    if (error) {
+      console.error('Error leaving conversation:', error);
+      alert('Failed to leave conversation. Please try again.');
+      return;
+    }
+
+    // Navigate back to conversation list
+    if (onLeaveConversation) {
+      onLeaveConversation();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <ConversationHeader title={recipientName || 'Direct Message'} onBack={onBack} />
+      <ConversationHeader
+        title={recipientName || 'Direct Message'}
+        onBack={onBack}
+        onLeave={handleLeave}
+        canLeave={true}
+      />
 
       {/* Messages - Mobile-optimized padding */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-gray-50">

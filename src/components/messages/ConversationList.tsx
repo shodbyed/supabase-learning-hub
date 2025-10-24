@@ -138,6 +138,20 @@ export function ConversationList({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Announcements Button - Only for captains/operators/admins */}
+      {showAnnouncements && (
+        <div className="px-3 pb-2 pt-0 md:px-4 md:pb-3 bg-gray-300">
+          <Button
+            onClick={onAnnouncements}
+            variant="outline"
+            className="w-full bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 hover:text-blue-800"
+          >
+            <Megaphone className="h-4 w-4 mr-2" />
+            Send Announcement
+          </Button>
+        </div>
+      )}
+
       {/* Menu Bar */}
       <div className="px-3 pb-3 pt-0 md:px-4 md:pb-4 md:pt-0 border-b bg-gray-300">
         <div className="flex gap-2 justify-around bg-gray-50 rounded-lg p-2 shadow-sm border border-gray-200">
@@ -150,18 +164,6 @@ export function ConversationList({
             <MessageSquarePlus className="h-5 w-5" />
             <span className="text-[10px] text-gray-600">New</span>
           </button>
-
-          {/* Announcements - Only show for captains/operators/admins */}
-          {showAnnouncements && (
-            <button
-              onClick={onAnnouncements}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex-1 flex flex-col items-center gap-1"
-              aria-label="Announcements"
-            >
-              <Megaphone className="h-5 w-5" />
-              <span className="text-[10px] text-gray-600">Announce</span>
-            </button>
-          )}
 
           {/* Search Toggle */}
           <button

@@ -25,6 +25,7 @@ import { SuccessMessage } from './SuccessMessage';
 import { PersonalInfoSection } from './PersonalInfoSection';
 import { ContactInfoSection } from './ContactInfoSection';
 import { AddressSection } from './AddressSection';
+import { PrivacySettingsSection } from './PrivacySettingsSection';
 
 /**
  * Member Profile Page Component
@@ -156,6 +157,9 @@ export const Profile: React.FC = () => {
             form={addressForm}
             handlers={addressHandlers}
           />
+
+          {/* Privacy Settings Section */}
+          <PrivacySettingsSection />
         </div>
       </div>
     </div>

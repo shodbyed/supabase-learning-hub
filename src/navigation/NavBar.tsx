@@ -1,10 +1,12 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useUnreadMessageCount } from '../hooks/useUnreadMessageCount';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 
 export const NavBar: React.FC = () => {
   const { hasMemberRecord, canAccessLeagueOperatorFeatures } = useUserProfile();
+  const unreadCount = useUnreadMessageCount();
   const location = useLocation();
 
   // Hide navbar on mobile when on Messages page
@@ -54,11 +56,13 @@ export const NavBar: React.FC = () => {
         {hasMemberRecord() && (
           <Link to="/messages" className="relative">
             <Button variant="ghost" size="sm" className="relative">
-              <Mail className="h-5 w-5" />
-              {/* Unread badge - will be dynamic later */}
-              <span className="absolute top-0 right-0 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span>
+              <Mail className="h-6 w-6" />
+              {/* Unread badge - shows real count, hidden when 0 */}
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Button>
           </Link>
         )}

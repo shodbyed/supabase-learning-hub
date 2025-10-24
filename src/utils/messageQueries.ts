@@ -403,6 +403,32 @@ export async function isUserBlocked(userId: string, otherUserId: string) {
 }
 
 /**
+ * Leave a conversation
+ *
+ * Sets the left_at timestamp for the user in this conversation.
+ * The conversation will no longer appear in their list, but messages remain in the database.
+ * User can rejoin by starting a new conversation with the same person(s).
+ *
+ * @param conversationId - The conversation ID to leave
+ * @param userId - The member ID of the user leaving
+ * @returns Promise with any error
+ */
+export async function leaveConversation(conversationId: string, userId: string) {
+  const { error } = await supabase
+    .from('conversation_participants')
+    .update({ left_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error leaving conversation:', error);
+    return { error };
+  }
+
+  return { error: null };
+}
+
+/**
  * Create an announcement for a league
  *
  * Creates a league-scoped conversation if it doesn't exist and sends an announcement message.
@@ -463,6 +489,77 @@ export async function createLeagueAnnouncement(
 
   if (convError || !conversationId) {
     console.error('Error creating announcement conversation:', convError);
+    return { data: null, error: convError };
+  }
+
+  // Send the announcement message
+  const { error: messageError } = await sendMessage(
+    conversationId,
+    senderId,
+    message
+  );
+
+  if (messageError) {
+    return { data: null, error: messageError };
+  }
+
+  return { data: { conversationId }, error: null };
+}
+
+/**
+ * Create an announcement for an organization
+ *
+ * Creates an organization-scoped conversation if it doesn't exist and sends an announcement message.
+ * All members with active teams in any league operated by this league_operator will be added as participants.
+ *
+ * @param operatorId - The league_operators.id to send the announcement to
+ * @param senderId - The member ID of the operator/dev sending the announcement
+ * @param message - The announcement text
+ * @returns Promise with conversation ID and any error
+ */
+export async function createOrganizationAnnouncement(
+  operatorId: string,
+  senderId: string,
+  message: string
+) {
+  // Get operator/organization name
+  const { data: operator, error: opError } = await supabase
+    .from('league_operators')
+    .select('id, organization_name')
+    .eq('id', operatorId)
+    .single();
+
+  if (opError || !operator) {
+    console.error('Error fetching operator:', opError);
+    return { data: null, error: opError || new Error('Operator not found') };
+  }
+
+  // Get all members in any active season operated by this operator
+  const { data: teamPlayers } = await supabase
+    .from('team_players')
+    .select('member_id, teams!inner(id, season_id, seasons!inner(id, status, league_id, leagues!inner(id, operator_id)))')
+    .eq('teams.seasons.status', 'active')
+    .eq('teams.seasons.leagues.operator_id', operatorId);
+
+  // Get unique member IDs
+  const memberIds = [...new Set((teamPlayers || []).map((tp: any) => tp.member_id))];
+
+  if (memberIds.length === 0) {
+    return { data: null, error: new Error('No active players found in organization') };
+  }
+
+  // Use database function to create/get announcement conversation with SECURITY DEFINER
+  const { data: conversationId, error: convError } = await supabase.rpc(
+    'create_organization_announcement_conversation',
+    {
+      p_organization_id: operatorId,
+      p_title: `${operator.organization_name} Announcements`,
+      p_member_ids: memberIds,
+    }
+  );
+
+  if (convError || !conversationId) {
+    console.error('Error creating organization announcement conversation:', convError);
     return { data: null, error: convError };
   }
 

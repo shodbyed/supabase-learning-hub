@@ -30,6 +30,7 @@ import {
   createOrOpenConversation,
   createGroupConversation,
   createLeagueAnnouncement,
+  createOrganizationAnnouncement,
 } from '@/utils/messageQueries';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
@@ -83,19 +84,30 @@ export function Messages() {
     setShowAnnouncementModal(true);
   };
 
-  const handleCreateAnnouncement = async (leagueIds: string[], message: string) => {
+  const handleCreateAnnouncement = async (
+    targets: Array<{ id: string; name: string; type: 'league' | 'organization' }>,
+    message: string
+  ) => {
     if (!memberId) {
       return;
     }
 
-    // Send announcement to each selected league
-    for (const leagueId of leagueIds) {
-      const { error } = await createLeagueAnnouncement(leagueId, memberId, message);
-
-      if (error) {
-        console.error(`Error creating announcement for league ${leagueId}:`, error);
-        alert(`Failed to send announcement to one or more leagues. Please try again.`);
-        return;
+    // Send announcement to each selected target
+    for (const target of targets) {
+      if (target.type === 'league') {
+        const { error } = await createLeagueAnnouncement(target.id, memberId, message);
+        if (error) {
+          console.error(`Error creating announcement for league ${target.id}:`, error);
+          alert(`Failed to send announcement to one or more targets. Please try again.`);
+          return;
+        }
+      } else if (target.type === 'organization') {
+        const { error } = await createOrganizationAnnouncement(target.id, memberId, message);
+        if (error) {
+          console.error(`Error creating announcement for organization ${target.id}:`, error);
+          alert(`Failed to send announcement to one or more targets. Please try again.`);
+          return;
+        }
       }
     }
 
@@ -105,7 +117,7 @@ export function Messages() {
 
     // Show success message
     alert(
-      `Announcement sent successfully to ${leagueIds.length} league${leagueIds.length > 1 ? 's' : ''}!`
+      `Announcement sent successfully to ${targets.length} target${targets.length > 1 ? 's' : ''}!`
     );
   };
 
@@ -228,6 +240,10 @@ export function Messages() {
               conversationId={selectedConversationId}
               currentUserId={memberId}
               onBack={handleBackToList}
+              onLeaveConversation={() => {
+                setSelectedConversationId(null);
+                setRefreshKey((prev) => prev + 1);
+              }}
             />
           ) : (
             <MessagesEmptyState />
@@ -257,6 +273,7 @@ export function Messages() {
           onClose={() => setShowAnnouncementModal(false)}
           onCreateAnnouncement={handleCreateAnnouncement}
           currentUserId={memberId}
+          canAccessOperatorFeatures={canAccessLeagueOperatorFeatures()}
         />
       )}
     </div>
