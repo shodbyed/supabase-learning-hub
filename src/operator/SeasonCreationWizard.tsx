@@ -12,6 +12,7 @@ import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
 import { createSeason } from '@/services/seasonService';
+import { updateLeagueDayOfWeek } from '@/services/leagueService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -282,31 +283,8 @@ export const SeasonCreationWizard: React.FC = () => {
     if (!state.dayOfWeekWarning || !leagueId) return;
 
     try {
-      // Convert day name to number (0 = Sunday, 6 = Saturday)
-      const dayMap: Record<string, number> = {
-        Sunday: 0,
-        Monday: 1,
-        Tuesday: 2,
-        Wednesday: 3,
-        Thursday: 4,
-        Friday: 5,
-        Saturday: 6,
-      };
-
-      const newDayNumber = dayMap[state.dayOfWeekWarning.newDay];
-      const newDayString = state.dayOfWeekWarning.newDay.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-
-      // Update the league's day_of_week in database
-      console.log('Updating league day_of_week to:', newDayNumber, `(${state.dayOfWeekWarning.newDay})`);
-
-      const { error } = await supabase
-        .from('leagues')
-        .update({ day_of_week: newDayNumber })
-        .eq('id', leagueId);
-
-      if (error) throw error;
-
-      console.log('✅ League day_of_week updated successfully');
+      // Update league day of week using service
+      const newDayString = await updateLeagueDayOfWeek(leagueId, state.dayOfWeekWarning.newDay);
 
       // Update local state
       dispatch({
@@ -325,7 +303,7 @@ export const SeasonCreationWizard: React.FC = () => {
       dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
     } catch (err) {
       console.error('Error updating league day:', err);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update league day of week' });
+      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
     }
   };
 

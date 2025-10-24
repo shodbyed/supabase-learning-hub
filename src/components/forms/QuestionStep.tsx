@@ -2,9 +2,10 @@
  * @fileoverview QuestionStep Component
  * Reusable component for displaying individual survey questions with validation and formatting
  */
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { InfoButton } from '../InfoButton';
 
 interface QuestionStepProps {
@@ -55,7 +56,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   inputType = 'text',
   isSubmitting
 }) => {
-  const [autoCapitalize, setAutoCapitalize] = useState(true);
+  const capitalizeInputRef = useRef<{ getValue: () => string }>(null);
 
   /**
    * Default formatting function for auto-capitalization
@@ -73,31 +74,19 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   // Use provided onFormat or default formatting
   const formatFunction = onFormat || defaultFormat;
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Use external onKeyDown if provided, otherwise handle locally
-    if (onKeyDown) {
-      onKeyDown(e);
-      return;
-    }
-
-    // Format when user presses Enter (if auto-capitalize is enabled)
-    if (e.key === 'Enter' && autoCapitalize && inputType === 'text') {
-      const formatted = formatFunction(value);
-      onChange(formatted);
-    }
-  };
-
   const handleNext = () => {
-    // Format before proceeding if auto-capitalize is enabled
+    // For text inputs, get the final value from CapitalizeInput
+    // (formatted if auto-capitalize is on, raw if off)
     let finalValue = value;
-    if (autoCapitalize && inputType === 'text') {
-      finalValue = formatFunction(value);
-      onChange(finalValue);
+    if (inputType === 'text' && capitalizeInputRef.current) {
+      finalValue = capitalizeInputRef.current.getValue();
+      // Update parent state with final value
+      if (finalValue !== value) {
+        onChange(finalValue);
+      }
     }
 
-    // Pass the formatted value to parent
-    // The parent will receive the formatted value if autoCapitalize was on,
-    // or the raw value if it was off
+    // Pass the final value to parent
     onNext(finalValue);
   };
 
@@ -120,47 +109,44 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
         </p>
 
         <div className="space-y-6">
-          <div>
-            {inputType === 'date' ? (
+          {inputType === 'date' ? (
+            <div>
               <Calendar
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
                 minDate={new Date().toISOString().split('T')[0]} // Today or future
               />
-            ) : (
+              {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
+            </div>
+          ) : inputType === 'text' ? (
+            <CapitalizeInput
+              ref={capitalizeInputRef}
+              value={value}
+              onChange={onChange}
+              placeholder={placeholder}
+              error={!!error}
+              errorMessage={error}
+              formatFunction={formatFunction}
+              defaultCapitalize={true}
+            />
+          ) : (
+            <div>
               <input
                 type={inputType}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
+                onKeyDown={onKeyDown}
                 placeholder={placeholder}
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg ${
                   error ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-            )}
-            {error && (
-              <p className="text-red-500 text-sm mt-2">{error}</p>
-            )}
-          </div>
-
-          {/* Auto-Capitalize Toggle - only show for text inputs */}
-          {inputType === 'text' && (
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="autoCapitalize"
-                checked={autoCapitalize}
-                onChange={(e) => setAutoCapitalize(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="autoCapitalize" className="text-sm text-gray-700">
-                {autoCapitalize
-                  ? "Auto-capitalize (press Enter to preview, or Continue to format)"
-                  : "Auto-format off (text will appear exactly as entered)"
-                }
-              </label>
+              {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
             </div>
           )}
 
