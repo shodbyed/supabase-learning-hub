@@ -79,6 +79,36 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showExistingScheduleModal, setShowExistingScheduleModal] = useState(false);
   const [existingMatchCount, setExistingMatchCount] = useState(0);
+  const [positionsLocked, setPositionsLocked] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  /**
+   * Check if any matches have been played (completed, in_progress, or forfeited)
+   * If yes, lock team positions to prevent schedule corruption
+   */
+  React.useEffect(() => {
+    const checkMatchesPlayed = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('season_id', seasonId)
+          .in('status', ['completed', 'in_progress', 'forfeited']);
+
+        if (error) throw error;
+
+        if (count && count > 0) {
+          setPositionsLocked(true);
+        }
+      } catch (err) {
+        console.error('Error checking match status:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkMatchesPlayed();
+  }, [seasonId]);
 
   /**
    * Randomly shuffle team positions
@@ -228,6 +258,39 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
     setShowExistingScheduleModal(false);
     onSuccess();
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="text-center py-8">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (positionsLocked) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Team Positions Locked
+        </h2>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+          <p className="text-yellow-800 font-medium mb-2">
+            ⚠️ Team positions cannot be changed
+          </p>
+          <p className="text-yellow-700 text-sm">
+            Team schedule positions are locked because matches have already been played. Changing positions would corrupt the entire season schedule and matchups.
+          </p>
+        </div>
+        <div className="flex gap-3 justify-end">
+          <Button variant="outline" onClick={onCancel}>
+            Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!hasTable) {
     return (

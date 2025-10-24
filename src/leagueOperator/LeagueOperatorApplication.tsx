@@ -49,7 +49,7 @@ export const LeagueOperatorApplication: React.FC = () => {
   const navigate = useNavigate();
 
   // Get member profile data for pre-filling operator info
-  const { member } = useUserProfile();
+  const { member, refreshProfile } = useUserProfile();
 
   // Get all form state and handlers from custom hook
   const {
@@ -247,6 +247,17 @@ export const LeagueOperatorApplication: React.FC = () => {
     }
 
     console.log('✅ Member role updated to league_operator');
+    console.groupEnd();
+
+    console.group('🔄 Step 3: Refresh user profile to reflect new role');
+    // Refresh the user profile context so the new role is immediately available
+    // This prevents the user from seeing stale data on the next page
+    refreshProfile();
+
+    // Wait a moment for the profile to refresh before navigating
+    // This ensures role-based UI elements work immediately on the welcome page
+    await new Promise(resolve => setTimeout(resolve, 500));
+    console.log('✅ User profile refreshed with new role');
     console.groupEnd();
 
     console.log('🎉 SUCCESS! League operator application complete!');

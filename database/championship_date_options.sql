@@ -2,7 +2,28 @@
 -- Stores community-submitted and dev-verified championship dates for BCA and APA nationals
 -- Used in season creation wizard to help operators avoid scheduling conflicts
 
-CREATE TABLE IF NOT EXISTS championship_date_options (
+-- Drop existing policies if they exist (safe to run multiple times)
+DROP POLICY IF EXISTS "Championship dates are viewable by everyone" ON championship_date_options;
+DROP POLICY IF EXISTS "Operators can submit championship dates" ON championship_date_options;
+DROP POLICY IF EXISTS "Operators can update championship dates" ON championship_date_options;
+
+-- Drop existing trigger if it exists
+DROP TRIGGER IF EXISTS championship_date_options_updated_at_trigger ON championship_date_options;
+
+-- Drop existing function if it exists
+DROP FUNCTION IF EXISTS update_championship_date_options_updated_at();
+
+-- Drop existing indexes if they exist
+DROP INDEX IF EXISTS unique_dates_per_org_year;
+DROP INDEX IF EXISTS idx_championship_org_year;
+DROP INDEX IF EXISTS idx_championship_end_date;
+DROP INDEX IF EXISTS idx_championship_dev_verified;
+
+-- Drop the table if it exists (WARNING: This will delete all data!)
+DROP TABLE IF EXISTS championship_date_options;
+
+-- Create the table
+CREATE TABLE championship_date_options (
   -- Primary identification
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
@@ -27,23 +48,23 @@ CREATE TABLE IF NOT EXISTS championship_date_options (
 );
 
 -- Prevent duplicate date entries for same organization/year
-CREATE UNIQUE INDEX IF NOT EXISTS unique_dates_per_org_year
+CREATE UNIQUE INDEX unique_dates_per_org_year
 ON championship_date_options (organization, year, start_date, end_date);
 
 -- Index for common queries (organization + year filtering)
-CREATE INDEX IF NOT EXISTS idx_championship_org_year
+CREATE INDEX idx_championship_org_year
 ON championship_date_options (organization, year);
 
 -- Index for filtering future dates
-CREATE INDEX IF NOT EXISTS idx_championship_end_date
+CREATE INDEX idx_championship_end_date
 ON championship_date_options (end_date);
 
 -- Index for finding dev-verified dates quickly
-CREATE INDEX IF NOT EXISTS idx_championship_dev_verified
+CREATE INDEX idx_championship_dev_verified
 ON championship_date_options (organization, year, dev_verified);
 
 -- Trigger to auto-update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_championship_date_options_updated_at()
+CREATE FUNCTION update_championship_date_options_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();

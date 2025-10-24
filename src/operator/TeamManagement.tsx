@@ -439,14 +439,39 @@ export const TeamManagement: React.FC = () => {
               <p className="text-gray-600 mt-1">
                 Assign venues and create teams for your league
               </p>
+              <div className="mt-2">
+                <InfoButton title="Quick Tip" label="Team Management Tips">
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-700">
+                      All you have to do is pick a captain for each team.
+                      After that, the captain can fill in the rest—team name, venue, and players.
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Feel free to add more info if you have it, but it's optional.
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      If a team ever wants to change captains, that's something only you can do.
+                    </p>
+                  </div>
+                </InfoButton>
+              </div>
             </div>
             {teams.length > 0 && seasonId && (
-              <Button
-                size="lg"
-                onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
-              >
-                Next: Create Schedule
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate(`/league/${leagueId}`)}
+                >
+                  Save & Exit
+                </Button>
+                <Button
+                  size="lg"
+                  onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
+                >
+                  Save & Continue →
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -645,9 +670,16 @@ export const TeamManagement: React.FC = () => {
           <div className="flex justify-center gap-4 mt-6">
             <Button
               size="lg"
+              variant="outline"
+              onClick={() => navigate(`/league/${leagueId}`)}
+            >
+              Save & Exit
+            </Button>
+            <Button
+              size="lg"
               onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
             >
-              Next: Create Schedule
+              Save & Continue →
             </Button>
           </div>
         )}

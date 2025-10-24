@@ -9,6 +9,8 @@ import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
 import { QuickStats } from '@/components/operator/QuickStats';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MessageSquare, Users, Building2, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone } from 'lucide-react';
 
 /**
  * OperatorDashboard Component
@@ -73,7 +75,7 @@ export const OperatorDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Row 1 - Quick Actions */}
           <DashboardCard
-            icon="💬"
+            icon={<MessageSquare className="h-6 w-6" />}
             iconColor="text-purple-600"
             title="Messaging"
             description="Send messages and announcements"
@@ -82,7 +84,7 @@ export const OperatorDashboard: React.FC = () => {
           />
 
           <DashboardCard
-            icon="👥"
+            icon={<Users className="h-6 w-6" />}
             iconColor="text-green-600"
             title="Manage Players"
             description="View registrations and player stats"
@@ -91,7 +93,7 @@ export const OperatorDashboard: React.FC = () => {
           />
 
           <DashboardCard
-            icon="🏢"
+            icon={<Building2 className="h-6 w-6" />}
             iconColor="text-orange-600"
             title="Venue Partners"
             description="Manage your pool hall relationships"
@@ -106,7 +108,7 @@ export const OperatorDashboard: React.FC = () => {
 
           <div className="space-y-6">
             <DashboardCard
-              icon="⚙️"
+              icon={<Settings className="h-6 w-6" />}
               iconColor="text-indigo-600"
               title="Organization Settings"
               description="Edit your contact info and address"
@@ -118,34 +120,46 @@ export const OperatorDashboard: React.FC = () => {
             <QuickStats activeLeagues={leagueCount} />
 
             {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-              <div className="text-center py-6">
-                <div className="text-3xl mb-2">📈</div>
-                <p className="text-gray-600 text-sm">
-                  Activity will appear here once you start managing leagues
-                </p>
-              </div>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-6">
+                  <TrendingUp className="h-12 w-12 mx-auto text-gray-400 mb-2" />
+                  <p className="text-gray-600 text-sm">
+                    Activity will appear here once you start managing leagues
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Help & Resources */}
-            <div className="bg-blue-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Need Help?</h3>
-              <div className="space-y-3 text-sm">
-                <Link to="#" className="block text-blue-700 hover:text-blue-900">
-                  📚 Operator Handbook
-                </Link>
-                <Link to="#" className="block text-blue-700 hover:text-blue-900">
-                  🎥 Video Tutorials
-                </Link>
-                <Link to="#" className="block text-blue-700 hover:text-blue-900">
-                  💬 Community Forum
-                </Link>
-                <Link to="#" className="block text-blue-700 hover:text-blue-900">
-                  📞 Contact Support
-                </Link>
-              </div>
-            </div>
+            <Card className="bg-blue-50 border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-lg text-blue-900">Need Help?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <Link to="#" className="flex items-center gap-2 text-blue-700 hover:text-blue-900">
+                    <BookOpen className="h-4 w-4" />
+                    Operator Handbook
+                  </Link>
+                  <Link to="#" className="flex items-center gap-2 text-blue-700 hover:text-blue-900">
+                    <Video className="h-4 w-4" />
+                    Video Tutorials
+                  </Link>
+                  <Link to="#" className="flex items-center gap-2 text-blue-700 hover:text-blue-900">
+                    <MessageCircle className="h-4 w-4" />
+                    Community Forum
+                  </Link>
+                  <Link to="#" className="flex items-center gap-2 text-blue-700 hover:text-blue-900">
+                    <Phone className="h-4 w-4" />
+                    Contact Support
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

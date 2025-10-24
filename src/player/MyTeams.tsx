@@ -16,40 +16,43 @@ import { fetchPlayerTeams, fetchCaptainTeamEditData } from '@/utils/playerQuerie
 import { TeamEditorModal } from '@/operator/TeamEditorModal';
 
 interface TeamData {
-  id: string;
-  team_name: string;
-  captain_id: string;
-  roster_size: number;
-  captain: {
+  team_id: string;
+  teams: {
     id: string;
-    first_name: string;
-    last_name: string;
-    system_player_number: number;
-    bca_member_number: string | null;
-  };
-  venue: {
-    id: string;
-    name: string;
-  } | null;
-  team_players: Array<{
-    member_id: string;
-    is_captain: boolean;
-    members: {
+    team_name: string;
+    captain_id: string;
+    roster_size: number;
+    captain: {
       id: string;
       first_name: string;
       last_name: string;
       system_player_number: number;
       bca_member_number: string | null;
     };
-  }>;
-  season: {
-    id: string;
-    season_name: string;
-    league: {
+    venue: {
       id: string;
-      game_type: string;
-      day_of_week: string;
-      division: string | null;
+      name: string;
+    } | null;
+    team_players: Array<{
+      member_id: string;
+      is_captain: boolean;
+      members: {
+        id: string;
+        first_name: string;
+        last_name: string;
+        system_player_number: number;
+        bca_member_number: string | null;
+      };
+    }>;
+    season: {
+      id: string;
+      season_name: string;
+      league: {
+        id: string;
+        game_type: string;
+        day_of_week: string;
+        division: string | null;
+      };
     };
   };
 }
@@ -106,7 +109,7 @@ export function MyTeams() {
         return;
       }
 
-      setTeams(data || []);
+      setTeams((data || []) as unknown as TeamData[]);
       setLoading(false);
     }
 
@@ -152,7 +155,7 @@ export function MyTeams() {
       return;
     }
 
-    setTeams(data || []);
+    setTeams((data || []) as unknown as TeamData[]);
     setLoading(false);
   };
 
@@ -198,7 +201,8 @@ export function MyTeams() {
         </p>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {teams.map((team) => {
+          {teams.map((teamData) => {
+            const team = teamData.teams;
             const isCaptain = team.captain_id === memberId;
 
             return (

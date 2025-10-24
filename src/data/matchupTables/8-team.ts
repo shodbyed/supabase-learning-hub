@@ -43,3 +43,4 @@ export const eightTeamSchedule = [
   [[3, 2], [5, 8], [1, 4], [7, 6]], // Week 34
   [[7, 4], [1, 6], [2, 8], [5, 3]], // Week 35
 ];
+// if more than 35 weeks repeat starting at week 1

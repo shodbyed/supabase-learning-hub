@@ -9,13 +9,14 @@ import { formatDateForDB } from '@/types/season';
 
 /**
  * Generates season schedule with all regular weeks and playoffs
- * Skips any dates that exist in blackoutWeeks array
+ * Blackout weeks are inserted as extra weeks, extending the season end date
  *
  * @param startDate - Season start date
  * @param leagueDayOfWeek - Day of week league plays (e.g., 'tuesday')
- * @param seasonLength - Number of regular season weeks
- * @param blackoutWeeks - Array of blackout week entries to skip (optional)
- * @returns Array of WeekEntry objects for the schedule
+ * @param seasonLength - Number of regular season weeks (always this many regular weeks in final schedule)
+ * @param blackoutWeeks - Array of blackout week entries to insert as extra weeks (optional)
+ * @param seasonEndBreakWeeks - Number of season-end break weeks to add before playoffs
+ * @returns Array of WeekEntry objects for the schedule (regular weeks only, blackouts handled separately)
  */
 export function generateSchedule(
   startDate: Date,
@@ -28,15 +29,18 @@ export function generateSchedule(
   let currentDate = new Date(startDate);
   let playWeekCount = 0;
 
-  // Generate regular season weeks, skipping blackout dates
+  // Create a sorted set of blackout dates for efficient lookup
+  const blackoutDates = new Set(blackoutWeeks.map(b => b.date));
+
+  // Generate schedule by walking through weeks chronologically
+  // Insert blackouts where they belong, but keep generating until we have seasonLength regular weeks
   while (playWeekCount < seasonLength) {
     const dateStr = formatDateForDB(currentDate);
 
     // Check if this date is a blackout
-    const isBlackout = blackoutWeeks.some(b => b.date === dateStr);
-
-    if (isBlackout) {
-      // Skip this date, move to next week
+    if (blackoutDates.has(dateStr)) {
+      // This is a blackout week - skip it and move to next week
+      // Don't increment playWeekCount - we need to keep generating regular weeks
       currentDate.setDate(currentDate.getDate() + 7);
       continue;
     }
