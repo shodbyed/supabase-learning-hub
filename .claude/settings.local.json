@@ -6,7 +6,8 @@
       "Bash(pnpm run build)",
       "Bash(pnpm run lint)",
       "Bash(copy:*)",
-      "Bash(pnpm test:run:*)"
+      "Bash(pnpm test:run:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
