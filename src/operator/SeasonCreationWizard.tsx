@@ -9,7 +9,10 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useOperatorId } from '@/hooks/useOperatorId';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
+import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
+import { createSeason } from '@/services/seasonService';
+import { updateLeagueDayOfWeek } from '@/services/leagueService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,11 +25,9 @@ import { SimpleRadioChoice } from '@/components/forms/SimpleRadioChoice';
 import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
-import { fetchChampionshipDateOptions, submitChampionshipDates } from '@/utils/tournamentUtils';
-import type { SeasonInsertData, WeekEntry } from '@/types/season';
-import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/season';
+import { fetchChampionshipDateOptions } from '@/utils/tournamentUtils';
+import type { WeekEntry } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
-import { parseLocalDate } from '@/utils/formatters';
 
 /**
  * Season Creation Wizard Component
@@ -226,73 +227,27 @@ export const SeasonCreationWizard: React.FC = () => {
   });
 
   /**
-   * Auto-populate and auto-advance BCA/APA steps when saved preferences exist
-   * This creates a seamless "breeze through" experience for operators who have saved preferences
+   * Championship auto-fill hook
+   * Auto-populates and auto-advances BCA/APA steps when saved preferences exist
+   * Creates a seamless "breeze through" experience for operators
+   * MUST be called before loading guard to satisfy Rules of Hooks
    */
-  useEffect(() => {
-    if (!leagueId || state.loading || !state.league || state.savedChampionshipPreferences.length === 0) return;
-
-    const steps = getSeasonWizardSteps(
-      leagueId,
-      state.existingSeasons.length > 0,
-      state.existingSeasons.length > 0 ? undefined : state.league.league_start_date,
-      state.league.day_of_week,
-      () => {},
-      state.bcaDateOptions,
-      state.apaDateOptions,
-      state.savedChampionshipPreferences
-    );
-
-    const currentStepData = steps[state.currentStep];
-    if (!currentStepData) return;
-
-    // Check if we're on BCA or APA choice step
-    if (currentStepData.id === 'bcaChoice' || currentStepData.id === 'apaChoice') {
-      const organization = currentStepData.id === 'bcaChoice' ? 'BCA' : 'APA';
-      const preference = state.savedChampionshipPreferences.find(p => p.organization === organization);
-
-      if (preference) {
-        // Auto-populate localStorage with saved preference
-        const STORAGE_KEY = `season-creation-${leagueId}`;
-        const stored = localStorage.getItem(STORAGE_KEY);
-        console.log(`📦 Current localStorage for ${organization}:`, stored);
-        const formData: SeasonFormData = stored ? JSON.parse(stored) : {
-          startDate: '',
-          seasonLength: '16',
-          isCustomLength: false,
-          bcaChoice: '',
-          bcaStartDate: '',
-          bcaEndDate: '',
-          bcaIgnored: false,
-          apaChoice: '',
-          apaStartDate: '',
-          apaEndDate: '',
-          apaIgnored: false,
-        };
-
-        if (organization === 'BCA') {
-          formData.bcaChoice = 'saved-preference';
-          formData.bcaStartDate = preference.startDate;
-          formData.bcaEndDate = preference.endDate;
-          formData.bcaIgnored = preference.ignored;
-        } else {
-          formData.apaChoice = 'saved-preference';
-          formData.apaStartDate = preference.startDate;
-          formData.apaEndDate = preference.endDate;
-          formData.apaIgnored = preference.ignored;
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-        console.log(`✅ Auto-populated ${organization} preference from saved settings`);
-
-        // Auto-advance to next step
-        const nextStep = state.currentStep + 1;
-        dispatch({ type: 'SET_CURRENT_STEP', payload: nextStep });
-        localStorage.setItem(`season-wizard-step-${leagueId}`, nextStep.toString());
-        console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
+  useChampionshipAutoFill({
+    currentStep: state.currentStep,
+    leagueId,
+    loading: state.loading,
+    league: state.league,
+    savedChampionshipPreferences: state.savedChampionshipPreferences,
+    existingSeasons: state.existingSeasons,
+    bcaDateOptions: state.bcaDateOptions,
+    apaDateOptions: state.apaDateOptions,
+    onStepChange: (step) => {
+      dispatch({ type: 'SET_CURRENT_STEP', payload: step });
+      if (leagueId) {
+        localStorage.setItem(`season-wizard-step-${leagueId}`, step.toString());
       }
-    }
-  }, [state.currentStep, leagueId, state.loading, state.league, state.savedChampionshipPreferences, state.existingSeasons, state.bcaDateOptions, state.apaDateOptions]);
+    },
+  });
 
   if (state.loading) {
     return (
@@ -328,31 +283,8 @@ export const SeasonCreationWizard: React.FC = () => {
     if (!state.dayOfWeekWarning || !leagueId) return;
 
     try {
-      // Convert day name to number (0 = Sunday, 6 = Saturday)
-      const dayMap: Record<string, number> = {
-        Sunday: 0,
-        Monday: 1,
-        Tuesday: 2,
-        Wednesday: 3,
-        Thursday: 4,
-        Friday: 5,
-        Saturday: 6,
-      };
-
-      const newDayNumber = dayMap[state.dayOfWeekWarning.newDay];
-      const newDayString = state.dayOfWeekWarning.newDay.toLowerCase() as 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-
-      // Update the league's day_of_week in database
-      console.log('Updating league day_of_week to:', newDayNumber, `(${state.dayOfWeekWarning.newDay})`);
-
-      const { error } = await supabase
-        .from('leagues')
-        .update({ day_of_week: newDayNumber })
-        .eq('id', leagueId);
-
-      if (error) throw error;
-
-      console.log('✅ League day_of_week updated successfully');
+      // Update league day of week using service
+      const newDayString = await updateLeagueDayOfWeek(leagueId, state.dayOfWeekWarning.newDay);
 
       // Update local state
       dispatch({
@@ -371,7 +303,7 @@ export const SeasonCreationWizard: React.FC = () => {
       dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
     } catch (err) {
       console.error('Error updating league day:', err);
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to update league day of week' });
+      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
     }
   };
 
@@ -501,7 +433,7 @@ export const SeasonCreationWizard: React.FC = () => {
   };
 
   const handleCreateSeason = async (destination: 'dashboard' | 'teams' = 'dashboard') => {
-    if (!state.league) return;
+    if (!state.league || !leagueId) return;
 
     dispatch({ type: 'SET_IS_CREATING', payload: true });
 
@@ -514,195 +446,18 @@ export const SeasonCreationWizard: React.FC = () => {
       }
 
       const formData: SeasonFormData = JSON.parse(stored);
+      const existingSeasonId = searchParams.get('seasonId');
 
-      // Submit BCA championship dates to database if custom dates were entered
-      let bcaSavedId: string | undefined;
-      if (formData.bcaChoice === 'custom' && formData.bcaStartDate && formData.bcaEndDate) {
-        console.log('🏆 Submitting BCA championship dates:', formData.bcaStartDate, 'to', formData.bcaEndDate);
-        const bcaResult = await submitChampionshipDates('BCA', formData.bcaStartDate, formData.bcaEndDate);
-        if (bcaResult) {
-          console.log('✅ BCA championship dates saved successfully:', bcaResult);
-          bcaSavedId = bcaResult.id;
-        } else {
-          console.error('❌ Failed to save BCA championship dates - check console for errors');
-        }
-      } else {
-        console.log('ℹ️ Skipping BCA championship date submission:', {
-          choice: formData.bcaChoice,
-          hasStartDate: !!formData.bcaStartDate,
-          hasEndDate: !!formData.bcaEndDate
-        });
-      }
-
-      // Save BCA preference
-      await saveChampionshipPreference(
-        'BCA',
-        formData.bcaChoice,
-        bcaSavedId || (formData.bcaChoice !== 'custom' && formData.bcaChoice !== 'ignore' ? formData.bcaChoice : undefined)
-      );
-
-      // Submit APA championship dates to database if custom dates were entered
-      let apaSavedId: string | undefined;
-      if (formData.apaChoice === 'custom' && formData.apaStartDate && formData.apaEndDate) {
-        console.log('🏆 Submitting APA championship dates:', formData.apaStartDate, 'to', formData.apaEndDate);
-        const apaResult = await submitChampionshipDates('APA', formData.apaStartDate, formData.apaEndDate);
-        if (apaResult) {
-          console.log('✅ APA championship dates saved successfully:', apaResult);
-          apaSavedId = apaResult.id;
-        } else {
-          console.error('❌ Failed to save APA championship dates - check console for errors');
-        }
-      } else {
-        console.log('ℹ️ Skipping APA championship date submission:', {
-          choice: formData.apaChoice,
-          hasStartDate: !!formData.apaStartDate,
-          hasEndDate: !!formData.apaEndDate
-        });
-      }
-
-      // Save APA preference
-      await saveChampionshipPreference(
-        'APA',
-        formData.apaChoice,
-        apaSavedId || (formData.apaChoice !== 'custom' && formData.apaChoice !== 'ignore' ? formData.apaChoice : undefined)
-      );
-
-      // Calculate end date using timezone-safe parsing
-      const startDate = parseLocalDate(formData.startDate);
-      const endDate = calculateEndDate(startDate, parseInt(formData.seasonLength));
-
-      // Generate season name
-      const seasonName = generateSeasonName(
-        startDate,
-        formatDayOfWeek(state.league.day_of_week),
-        formatGameType(state.league.game_type),
-        state.league.division
-      );
-
-      // Build insert data (holidays and championships NOT stored - fetched on-demand)
-      const insertData: SeasonInsertData = {
-        league_id: leagueId,
-        season_name: seasonName,
-        start_date: formatDateForDB(startDate),
-        end_date: formatDateForDB(endDate),
-        season_length: parseInt(formData.seasonLength),
-        status: 'upcoming',
-      };
-
-      console.log('🔄 Creating season:', insertData);
-      console.log('🏆 Championship dates (not stored, baked into schedule):', {
-        bca: formData.bcaIgnored ? 'ignored' : `${formData.bcaStartDate} - ${formData.bcaEndDate}`,
-        apa: formData.apaIgnored ? 'ignored' : `${formData.apaStartDate} - ${formData.apaEndDate}`,
+      // Create season using service
+      const { seasonId } = await createSeason({
+        leagueId,
+        league: state.league,
+        formData,
+        schedule: state.schedule,
+        operatorId,
+        existingSeasonId,
+        onSavePreference: saveChampionshipPreference,
       });
-
-      let seasonId: string | null = null;
-
-      try {
-        // Step 1: Insert season record
-        const { data: newSeason, error: seasonError } = await supabase
-          .from('seasons')
-          .insert([insertData])
-          .select()
-          .single();
-
-        if (seasonError) throw seasonError;
-
-        seasonId = newSeason.id;
-        console.log('✅ Season created:', seasonId);
-
-        // Step 2: Get final schedule from state (already contains regular weeks + blackouts combined)
-        // The ScheduleReview component manages the combination and passes us the complete schedule
-        console.log('📦 Schedule state at save time:', {
-          weekCount: state.schedule.length,
-          byType: {
-            regular: state.schedule.filter(w => w.type === 'regular').length,
-            playoffs: state.schedule.filter(w => w.type === 'playoffs').length,
-            'week-off': state.schedule.filter(w => w.type === 'week-off').length,
-          },
-          weeks: state.schedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
-        });
-
-        // Map UI week types to database week_type values:
-        // - 'regular' → 'regular'
-        // - 'playoffs' → 'playoffs'
-        // - 'week-off' with weekName containing specific strings → determine if 'season_end_break' or 'blackout'
-        const allWeeks = state.schedule.map(week => {
-          let weekType: 'regular' | 'playoffs' | 'blackout' | 'season_end_break';
-
-          // Determine the correct database week_type for each UI type
-          if (week.type === 'week-off') {
-            // Season End Break has a specific name pattern
-            if (week.weekName === 'Season End Break') {
-              weekType = 'season_end_break';
-            } else {
-              // All other week-offs are blackouts (holidays, championships, custom reasons)
-              weekType = 'blackout';
-            }
-          } else if (week.type === 'playoffs') {
-            weekType = 'playoffs';
-          } else {
-            weekType = 'regular';
-          }
-
-          return {
-            season_id: seasonId,
-            scheduled_date: week.date,
-            week_name: week.weekName,
-            week_type: weekType,
-            week_completed: false,
-            notes: null,
-          };
-        });
-
-        console.log('📊 Week insertion summary:', {
-          totalWeeks: allWeeks.length,
-          byType: {
-            regular: allWeeks.filter(w => w.week_type === 'regular').length,
-            playoffs: allWeeks.filter(w => w.week_type === 'playoffs').length,
-            blackout: allWeeks.filter(w => w.week_type === 'blackout').length,
-            season_end_break: allWeeks.filter(w => w.week_type === 'season_end_break').length,
-          }
-        });
-        console.log('📅 Complete schedule to insert:', allWeeks);
-
-        // Step 3: If editing existing season, delete old weeks first
-        const existingSeasonId = searchParams.get('seasonId');
-        if (existingSeasonId) {
-          console.log('🗑️ Deleting old season_weeks for existing season:', existingSeasonId);
-          const { error: deleteError } = await supabase
-            .from('season_weeks')
-            .delete()
-            .eq('season_id', existingSeasonId);
-
-          if (deleteError) {
-            console.error('❌ Failed to delete old weeks:', deleteError);
-            throw deleteError;
-          }
-          console.log('✅ Old weeks deleted successfully');
-        }
-
-        console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table');
-
-        // Step 4: Batch insert all weeks
-        const { error: weeksError } = await supabase
-          .from('season_weeks')
-          .insert(allWeeks);
-
-        if (weeksError) {
-          console.error('❌ Failed to insert weeks, rolling back season creation');
-          throw weeksError;
-        }
-
-        console.log('✅ Season schedule saved:', allWeeks.length, 'weeks');
-      } catch (weeksInsertError) {
-        // Rollback: Delete the season if weeks insertion failed
-        if (seasonId) {
-          console.log('🔄 Rolling back - deleting season:', seasonId);
-          await supabase.from('seasons').delete().eq('id', seasonId);
-          console.log('✅ Rollback complete - season deleted');
-        }
-        throw weeksInsertError;
-      }
 
       // Clear localStorage
       clearSeasonCreationData(leagueId);

@@ -14,9 +14,10 @@ IMPORTANT FEATURES
 1.  messaging system **
 2.  rules **
 3.  invite system **
+4.  payout calculator
 
 FUTURE FEATURES
 
 1. AI integrated rules **
-2. AI integrated video shot ref **
+2. AI integrated video shot referee **
 3.

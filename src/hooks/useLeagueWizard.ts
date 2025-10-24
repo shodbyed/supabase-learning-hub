@@ -116,32 +116,35 @@ export const useLeagueWizard = ({ onSubmit }: UseLeagueWizardParams) => {
 
   /**
    * Save current input to form data
+   * @param valueToSave - Optional formatted value to save (e.g., from CapitalizeInput)
    */
-  const saveCurrentInput = useCallback((): boolean => {
+  const saveCurrentInput = useCallback((valueToSave?: string): boolean => {
     const step = getCurrentStep();
+    const finalValue = valueToSave ?? currentInput;
 
     if (step.validator) {
-      const validation = step.validator(currentInput);
+      const validation = step.validator(finalValue);
       if (!validation.isValid) {
         setError(validation.error || 'Invalid input');
         return false;
       }
     }
 
-    step.setValue(currentInput);
+    step.setValue(finalValue);
     setCurrentInput('');
     return true;
   }, [getCurrentStep, currentInput]);
 
   /**
    * Navigate to next step (simplified - no conditional steps)
+   * @param formattedValue - Optional formatted value from input component (e.g., CapitalizeInput)
    */
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback((formattedValue?: string) => {
     const step = getCurrentStep();
 
     // For input steps, validate before proceeding
     if (step.type === 'input') {
-      if (!saveCurrentInput()) return;
+      if (!saveCurrentInput(formattedValue)) return;
     }
 
     // For choice steps, ensure selection was made
