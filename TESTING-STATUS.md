@@ -4,9 +4,9 @@
 
 This document tracks the status of the test suite for the team building wizard refactoring project.
 
-## Current Status: ✅ BASELINE ESTABLISHED
+## Current Status: ✅ PHASE 2 IN PROGRESS
 
-All baseline tests are passing before refactoring begins.
+Phase 2 refactoring partially complete - CapitalizeInput and TeamManagement checkboxes updated!
 
 ### Test Files Created
 
@@ -73,34 +73,43 @@ pnpm test:ui
 3. ✅ Smoke tests cover critical paths
 
 ### During Refactoring
-- [ ] Run tests after each change
-- [ ] Fix any failing tests immediately
+- [x] Run tests after each change
+- [x] Fix any failing tests immediately
 - [ ] Add new tests for new functionality
-- [ ] Maintain 100% passing rate
+- [x] Maintain 100% passing rate
 
 ### After Each Phase
-- [ ] Run full test suite
-- [ ] Verify no regressions
-- [ ] Update this document
+- [x] Run full test suite
+- [x] Verify no regressions
+- [x] Update this document
 
-## Next Steps
+## Phase 2 Refactoring Progress
 
-1. **Phase 2: Fix CapitalizeInput Component**
-   - Replace raw `<input type="checkbox">` with shadcn Checkbox
-   - Replace raw `<label>` with shadcn Label
-   - Re-run CapitalizeInput tests to verify no breakage
+### ✅ Completed Tasks
 
-2. **Phase 2: Fix TeamManagement Checkboxes**
-   - Replace raw checkboxes with shadcn Checkbox
-   - Re-run TeamManagement smoke tests
-   - Add integration tests for checkbox behavior
+1. **Fix CapitalizeInput Component** ✅
+   - ✅ Installed shadcn Checkbox component
+   - ✅ Replaced raw `<input type="checkbox">` with shadcn Checkbox
+   - ✅ Replaced raw `<label>` with shadcn Label
+   - ✅ Updated tests to use `data-state` attribute
+   - ✅ All 19 tests passing
 
-3. **Phase 2: Update TeamEditorModal**
-   - Replace close button with shadcn Button
-   - Add CapitalizeInput for team name
-   - Create TeamEditorModal integration tests
+2. **Fix TeamManagement Checkboxes** ✅
+   - ✅ Replaced "Select All" checkbox with shadcn Checkbox
+   - ✅ Added proper Label component
+   - ✅ All 7 smoke tests passing
 
-4. **Continue with remaining phases...**
+### 🚧 In Progress
+
+3. **Update TeamEditorModal**
+   - [ ] Replace close button with shadcn Button
+   - [ ] Replace team name Input with CapitalizeInput
+   - [ ] Test changes
+
+### 📋 Next Steps
+
+4. **Update VenueCreationModal** (if exists)
+5. **Phase 3: Extract Reusable Components**
 
 ## Test Maintenance
 
@@ -141,14 +150,15 @@ None currently. All tests passing.
 
 | Metric | Value |
 |--------|-------|
-| Total Test Files | 2 |
-| Total Tests | 26 (19 + 7) |
-| Passing | 26 ✅ |
+| Total Test Files | 5 |
+| Total Tests | 43 |
+| Passing | 43 ✅ |
 | Failing | 0 |
-| Test Runtime | ~1.0s |
-| Last Updated | 2025-10-24 |
+| Test Runtime | ~1.34s |
+| Last Updated | 2025-10-24 (Phase 2) |
 
 ---
 
-**Last Test Run:** All tests passing ✅
-**Next Action:** Begin Phase 2 refactoring with confidence
+**Last Test Run:** All 43 tests passing ✅
+**Phase 2 Progress:** CapitalizeInput ✅ | TeamManagement ✅ | TeamEditorModal 🚧
+**Next Action:** Fix TeamEditorModal close button and add CapitalizeInput

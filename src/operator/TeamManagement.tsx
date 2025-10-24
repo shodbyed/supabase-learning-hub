@@ -11,6 +11,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { useOperatorId } from '@/hooks/useOperatorId';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { VenueLimitModal } from './VenueLimitModal';
@@ -546,16 +548,18 @@ export const TeamManagement: React.FC = () => {
               {/* Select All Checkbox */}
               {venues.length > 0 && (
                 <div className="flex items-center gap-3 p-2 bg-gray-50 rounded mb-2">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    id="select-all-venues"
                     checked={areAllVenuesAssigned()}
-                    onChange={handleSelectAll}
+                    onCheckedChange={() => handleSelectAll()}
                     disabled={selectingAll}
-                    className="mt-0"
                   />
-                  <span className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="select-all-venues"
+                    className="text-sm font-medium text-gray-700 cursor-pointer"
+                  >
                     {selectingAll ? 'Updating...' : 'Select All'}
-                  </span>
+                  </Label>
                 </div>
               )}
 

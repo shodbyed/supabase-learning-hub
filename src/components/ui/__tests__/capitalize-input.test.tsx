@@ -92,8 +92,8 @@ describe('CapitalizeInput', () => {
         />
       );
 
-      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-      expect(checkbox.checked).toBe(true);
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toHaveAttribute('data-state', 'checked');
     });
 
     it('should have checkbox unchecked when defaultCapitalize is false', () => {
@@ -108,8 +108,8 @@ describe('CapitalizeInput', () => {
         />
       );
 
-      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-      expect(checkbox.checked).toBe(false);
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toHaveAttribute('data-state', 'unchecked');
     });
   });
 
@@ -189,14 +189,14 @@ describe('CapitalizeInput', () => {
         />
       );
 
-      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
-      expect(checkbox.checked).toBe(true);
+      const checkbox = screen.getByRole('checkbox');
+      expect(checkbox).toHaveAttribute('data-state', 'checked');
 
       await user.click(checkbox);
-      expect(checkbox.checked).toBe(false);
+      expect(checkbox).toHaveAttribute('data-state', 'unchecked');
 
       await user.click(checkbox);
-      expect(checkbox.checked).toBe(true);
+      expect(checkbox).toHaveAttribute('data-state', 'checked');
     });
   });
 

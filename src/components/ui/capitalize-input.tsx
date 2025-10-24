@@ -16,6 +16,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export interface CapitalizeInputProps {
   /** Initial/controlled value from parent */
@@ -161,15 +162,13 @@ export const CapitalizeInput = React.forwardRef<
       {/* Auto-Capitalize Toggle - hide if hideCheckbox is true */}
       {!hideCheckbox && (
         <div className="flex items-center space-x-2 mt-3">
-          <input
-            type="checkbox"
+          <Checkbox
             id={`${id}-autocap`}
             checked={autoCapitalize}
-            onChange={(e) => setAutoCapitalize(e.target.checked)}
-            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            onCheckedChange={(checked) => setAutoCapitalize(checked === true)}
             disabled={disabled}
           />
-          <label
+          <Label
             htmlFor={`${id}-autocap`}
             className="text-sm text-gray-700 select-none cursor-pointer"
           >
@@ -177,7 +176,7 @@ export const CapitalizeInput = React.forwardRef<
               ? "Auto-capitalize (press Enter to preview, or Next to apply)"
               : "Auto-capitalize off (text will appear exactly as entered)"
             }
-          </label>
+          </Label>
         </div>
       )}
     </div>
