@@ -10,6 +10,7 @@ import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { InfoButton } from '@/components/InfoButton';
@@ -315,13 +316,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             <h2 className="text-2xl font-bold text-gray-900">
               {isEditing ? 'Edit Team' : 'Add New Team'}
             </h2>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
               <X className="h-6 w-6" />
-            </button>
+            </Button>
           </div>
           <p className="text-gray-600 mb-3">Build your team</p>
           <InfoButton
@@ -345,19 +348,19 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         {/* Form */}
         <div className="p-6 space-y-6">
           {/* Team Name */}
-          <div>
-            <Label>Team Name</Label>
-            <Input
-              type="text"
-              value={teamName}
-              onChange={(e) => {
-                setTeamName(e.target.value);
-                setError(null);
-                clearRosterError();
-              }}
-              placeholder="Team 1"
-            />
-          </div>
+          <CapitalizeInput
+            id="team-name"
+            label="Team Name"
+            value={teamName}
+            onChange={(value) => {
+              setTeamName(value);
+              setError(null);
+              clearRosterError();
+            }}
+            placeholder="Team 1"
+            hideCheckbox={false}
+            defaultCapitalize={true}
+          />
 
           {/* Home Venue (Optional) */}
           {assignedVenues.length > 0 && (
