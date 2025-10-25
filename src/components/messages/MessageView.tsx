@@ -15,7 +15,7 @@ import { ConversationHeader } from './ConversationHeader';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation } from '@/utils/messageQueries';
+import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
 import { supabase } from '@/supabaseClient';
 
 interface Message {
@@ -42,12 +42,52 @@ interface MessageViewProps {
 export function MessageView({ conversationId, currentUserId, onBack, onLeaveConversation }: MessageViewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [conversationType, setConversationType] = useState<string | null>(null);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { recipientName, recipientLastRead } = useConversationParticipants(
     conversationId,
     currentUserId
   );
+
+  // Load conversation details (type and participants) when conversation changes
+  useEffect(() => {
+    async function loadConversationDetails() {
+      // Fetch conversation type and auto_managed flag
+      const { data: convData } = await supabase
+        .from('conversations')
+        .select('conversation_type, auto_managed')
+        .eq('id', conversationId)
+        .single();
+
+      if (convData) {
+        setConversationType(convData.conversation_type);
+      }
+
+      // For DMs: conversation_type is null and auto_managed is false
+      // For auto-managed convos: conversation_type is set ('team_chat', 'captains_chat', 'announcements')
+      const isDM = !convData?.auto_managed && convData?.conversation_type === null;
+
+      if (isDM) {
+        const { data: participants } = await supabase
+          .from('conversation_participants')
+          .select('user_id')
+          .eq('conversation_id', conversationId)
+          .is('left_at', null);
+
+        // DMs have exactly 2 participants
+        if (participants && participants.length === 2) {
+          const otherParticipant = participants?.find((p: any) => p.user_id !== currentUserId);
+          if (otherParticipant) {
+            setOtherUserId(otherParticipant.user_id);
+          }
+        }
+      }
+    }
+
+    loadConversationDetails();
+  }, [conversationId, currentUserId]);
 
   // Load messages when conversation changes
   useEffect(() => {
@@ -152,13 +192,39 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     }
   };
 
+  const handleBlock = async () => {
+    if (!otherUserId) return;
+
+    if (!confirm(`Are you sure you want to block this user? They will no longer be able to message you, and this conversation will be removed from your list.`)) {
+      return;
+    }
+
+    const { error } = await blockUser(currentUserId, otherUserId);
+
+    if (error) {
+      console.error('Error blocking user:', error);
+      alert('Failed to block user. Please try again.');
+      return;
+    }
+
+    // Navigate back to conversation list after blocking
+    if (onLeaveConversation) {
+      onLeaveConversation();
+    }
+  };
+
+  // DM conversations have null conversation_type and exactly 1 other participant
+  const isDM = conversationType === null && !!otherUserId;
+
   return (
     <div className="flex flex-col h-full">
       <ConversationHeader
         title={recipientName || 'Direct Message'}
         onBack={onBack}
         onLeave={handleLeave}
+        onBlock={handleBlock}
         canLeave={true}
+        canBlock={isDM}
       />
 
       {/* Messages - Mobile-optimized padding */}

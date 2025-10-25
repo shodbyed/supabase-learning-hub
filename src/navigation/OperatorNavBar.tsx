@@ -5,6 +5,8 @@
  */
 import { NavLink, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
 
 /**
  * OperatorNavBar Component
@@ -16,6 +18,7 @@ import { Button } from '@/components/ui/button';
  * This allows operators to switch between their operator and player views
  */
 export const OperatorNavBar: React.FC = () => {
+  const { count: pendingReportsCount } = usePendingReportsCount();
   return (
     <nav className="flex w-full py-2 border-b border-slate-300 px-6 justify-between items-center bg-blue-50">
       {/* Left side - operator navigation */}
@@ -38,6 +41,21 @@ export const OperatorNavBar: React.FC = () => {
             }
           >
             ➕ Create League
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to="/operator-reports"
+            className={({ isActive }) =>
+              `text-blue-600 hover:underline ${isActive ? 'font-semibold' : ''} flex items-center gap-2`
+            }
+          >
+            🚩 Reports
+            {pendingReportsCount > 0 && (
+              <Badge variant="destructive" className="ml-1">
+                {pendingReportsCount}
+              </Badge>
+            )}
           </NavLink>
         </li>
         {/* Future operator navigation items will go here */}

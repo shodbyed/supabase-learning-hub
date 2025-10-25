@@ -283,6 +283,7 @@ export function Messages() {
       {showSettingsModal && (
         <MessageSettingsModal
           onClose={() => setShowSettingsModal(false)}
+          onUnblocked={() => setRefreshKey((prev) => prev + 1)}
         />
       )}
     </div>

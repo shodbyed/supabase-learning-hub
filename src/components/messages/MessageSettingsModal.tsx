@@ -15,18 +15,23 @@ import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityFilter';
 import { useUser } from '@/context/useUser';
+import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { BlockedUsersModal } from './BlockedUsersModal';
 
 interface MessageSettingsModalProps {
   onClose: () => void;
+  onUnblocked?: () => void; // Callback when a user is unblocked
 }
 
-export function MessageSettingsModal({ onClose }: MessageSettingsModalProps) {
+export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsModalProps) {
   const { user } = useUser();
+  const { memberId } = useCurrentMember();
   const { shouldFilter: initialShouldFilter, canToggle, isLoading } = useProfanityFilter();
   const [shouldFilter, setShouldFilter] = useState(initialShouldFilter);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showBlockedUsersModal, setShowBlockedUsersModal] = useState(false);
 
   const handleToggleProfanityFilter = async () => {
     if (!user || !canToggle) return;
@@ -180,7 +185,10 @@ export function MessageSettingsModal({ onClose }: MessageSettingsModalProps) {
 
                 <div className="border-t pt-4 space-y-2">
                   {/* Blocked Users */}
-                  <button className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-md transition-colors text-left group">
+                  <button
+                    onClick={() => setShowBlockedUsersModal(true)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-gray-50 rounded-md transition-colors text-left group"
+                  >
                     <div className="flex items-center gap-3">
                       <UserX className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
                       <div>
@@ -249,6 +257,15 @@ export function MessageSettingsModal({ onClose }: MessageSettingsModalProps) {
           </Button>
         </div>
       </div>
+
+      {/* Blocked Users Modal */}
+      {showBlockedUsersModal && memberId && (
+        <BlockedUsersModal
+          currentUserId={memberId}
+          onClose={() => setShowBlockedUsersModal(false)}
+          onUnblocked={onUnblocked}
+        />
+      )}
     </div>
   );
 }

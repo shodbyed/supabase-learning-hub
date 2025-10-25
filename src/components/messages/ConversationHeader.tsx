@@ -8,23 +8,26 @@
  * Desktop: Shows only conversation title (back button hidden)
  */
 
-import { ArrowLeft, MoreVertical, LogOut } from 'lucide-react';
+import { ArrowLeft, MoreVertical, LogOut, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface ConversationHeaderProps {
   title: string;
   onBack?: () => void;
   onLeave?: () => void;
+  onBlock?: () => void;
   canLeave?: boolean;
+  canBlock?: boolean;
 }
 
-export function ConversationHeader({ title, onBack, onLeave, canLeave = true }: ConversationHeaderProps) {
+export function ConversationHeader({ title, onBack, onLeave, onBlock, canLeave = true, canBlock = false }: ConversationHeaderProps) {
   return (
     <div className="border-b bg-gray-300 px-3 md:px-6 py-3 md:py-4 flex items-center gap-2 md:gap-3 justify-between">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
@@ -42,7 +45,7 @@ export function ConversationHeader({ title, onBack, onLeave, canLeave = true }: 
       </div>
 
       {/* Options menu */}
-      {canLeave && onLeave && (
+      {(canLeave || canBlock) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -50,10 +53,21 @@ export function ConversationHeader({ title, onBack, onLeave, canLeave = true }: 
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onLeave} className="text-red-600 focus:text-red-600">
-              <LogOut className="h-4 w-4 mr-2" />
-              Leave Conversation
-            </DropdownMenuItem>
+            {canBlock && onBlock && (
+              <>
+                <DropdownMenuItem onClick={onBlock} className="text-orange-600 focus:text-orange-600">
+                  <UserX className="h-4 w-4 mr-2" />
+                  Block User
+                </DropdownMenuItem>
+                {canLeave && <DropdownMenuSeparator />}
+              </>
+            )}
+            {canLeave && onLeave && (
+              <DropdownMenuItem onClick={onLeave} className="text-red-600 focus:text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
+                Leave Conversation
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )}

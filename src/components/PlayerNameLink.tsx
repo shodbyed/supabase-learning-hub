@@ -22,6 +22,7 @@ import { User, MessageSquare, Flag, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { createOrOpenConversation, blockUser, unblockUser, isUserBlocked } from '@/utils/messageQueries';
+import { ReportUserModal } from '@/components/ReportUserModal';
 
 interface PlayerNameLinkProps {
   playerId: string;
@@ -44,6 +45,7 @@ export function PlayerNameLink({
   const { memberId } = useCurrentMember();
   const [open, setOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   // Check if user is blocked when popover opens
   useEffect(() => {
@@ -102,11 +104,12 @@ export function PlayerNameLink({
   const handleReportUser = () => {
     if (onReportUser) {
       onReportUser(playerId);
+      setOpen(false);
     } else {
-      // TODO: Open report modal
-      console.log('Report user:', playerId);
+      // Open report modal
+      setOpen(false);
+      setShowReportModal(true);
     }
-    setOpen(false);
   };
 
   const handleBlockToggle = async () => {
@@ -172,58 +175,69 @@ export function PlayerNameLink({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          className={cn(
-            'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium transition-colors',
-            className
-          )}
-        >
-          {playerName}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-56 p-0" align="start">
-        <div className="flex flex-col">
-          {/* View Profile */}
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
           <button
-            onClick={handleViewProfile}
-            className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
+            className={cn(
+              'text-blue-600 hover:text-blue-800 hover:underline cursor-pointer font-medium transition-colors',
+              className
+            )}
           >
-            <User className="h-4 w-4 text-gray-600" />
-            <span>View Profile</span>
+            {playerName}
           </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-56 p-0" align="start">
+          <div className="flex flex-col">
+            {/* View Profile */}
+            <button
+              onClick={handleViewProfile}
+              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
+            >
+              <User className="h-4 w-4 text-gray-600" />
+              <span>View Profile</span>
+            </button>
 
-          {/* Send Message */}
-          <button
-            onClick={handleSendMessage}
-            className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
-          >
-            <MessageSquare className="h-4 w-4 text-gray-600" />
-            <span>Send Message</span>
-          </button>
+            {/* Send Message */}
+            <button
+              onClick={handleSendMessage}
+              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
+            >
+              <MessageSquare className="h-4 w-4 text-gray-600" />
+              <span>Send Message</span>
+            </button>
 
-          <div className="border-t" />
+            <div className="border-t" />
 
-          {/* Report User */}
-          <button
-            onClick={handleReportUser}
-            className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-orange-600"
-          >
-            <Flag className="h-4 w-4" />
-            <span>Report User</span>
-          </button>
+            {/* Report User */}
+            <button
+              onClick={handleReportUser}
+              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-orange-600"
+            >
+              <Flag className="h-4 w-4" />
+              <span>Report User</span>
+            </button>
 
-          {/* Block/Unblock User */}
-          <button
-            onClick={handleBlockToggle}
-            className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-red-600"
-          >
-            <Ban className="h-4 w-4" />
-            <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
-          </button>
-        </div>
-      </PopoverContent>
-    </Popover>
+            {/* Block/Unblock User */}
+            <button
+              onClick={handleBlockToggle}
+              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-red-600"
+            >
+              <Ban className="h-4 w-4" />
+              <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
+            </button>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <ReportUserModal
+          reportedUserId={playerId}
+          reportedUserName={playerName}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
+    </>
   );
 }

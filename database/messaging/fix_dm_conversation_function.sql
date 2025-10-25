@@ -1,22 +1,26 @@
 /**
- * @fileoverview Function to create conversations bypassing RLS
+ * @fileoverview Fix for create_dm_conversation function
  *
- * This SECURITY DEFINER function allows authenticated users to create conversations
- * without being blocked by RLS policies. Security is still enforced by requiring
- * the user to immediately add themselves as a participant.
+ * BUG FIX: The original function would return ANY conversation with both users,
+ * including group chats. This caused "cool dudes" group to open when trying to
+ * create a new DM with someone who is also in that group.
+ *
+ * FIX: Added check to ensure exactly 2 participants before returning existing conversation.
+ * This ensures only actual DM conversations are returned, not group conversations.
+ *
+ * Run this SQL in your Supabase SQL editor to fix the bug.
  */
 
--- Drop function if it exists
+-- Drop and recreate the function with the fix
 DROP FUNCTION IF EXISTS create_dm_conversation(UUID, UUID);
 
--- Create function that bypasses RLS
 CREATE OR REPLACE FUNCTION create_dm_conversation(
   user1_id UUID,
   user2_id UUID
 )
 RETURNS UUID
 LANGUAGE plpgsql
-SECURITY DEFINER  -- This bypasses RLS
+SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
@@ -69,4 +73,4 @@ $$;
 -- Grant execute permission to authenticated users
 GRANT EXECUTE ON FUNCTION create_dm_conversation(UUID, UUID) TO authenticated;
 
-COMMENT ON FUNCTION create_dm_conversation IS 'Creates or returns existing DM conversation between two users, bypassing RLS for conversation creation';
+COMMENT ON FUNCTION create_dm_conversation IS 'Creates or returns existing DM conversation between two users (NOT groups), bypassing RLS for conversation creation';

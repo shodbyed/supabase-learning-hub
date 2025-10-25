@@ -3,7 +3,7 @@
  * Tests validation logic and data transformation in message queries
  */
 import { describe, it, expect } from 'vitest';
-import { sendMessage, blockUser, createOrOpenConversation } from '@/utils/messageQueries';
+import { sendMessage, blockUser } from '@/utils/messageQueries';
 
 describe('messageQueries', () => {
   describe('sendMessage validation', () => {

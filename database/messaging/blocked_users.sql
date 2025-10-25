@@ -78,19 +78,31 @@ ALTER TABLE blocked_users ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own blocks"
   ON blocked_users
   FOR SELECT
-  USING (auth.uid() = blocker_id);
+  USING (
+    auth.uid() IN (
+      SELECT user_id FROM members WHERE id = blocker_id
+    )
+  );
 
 -- Policy: Users can block other users
 CREATE POLICY "Users can block others"
   ON blocked_users
   FOR INSERT
-  WITH CHECK (auth.uid() = blocker_id);
+  WITH CHECK (
+    auth.uid() IN (
+      SELECT user_id FROM members WHERE id = blocker_id
+    )
+  );
 
 -- Policy: Users can unblock others
 CREATE POLICY "Users can unblock others"
   ON blocked_users
   FOR DELETE
-  USING (auth.uid() = blocker_id);
+  USING (
+    auth.uid() IN (
+      SELECT user_id FROM members WHERE id = blocker_id
+    )
+  );
 
 -- Comments
 COMMENT ON TABLE blocked_users IS 'Tracks user blocking relationships for direct messages';
