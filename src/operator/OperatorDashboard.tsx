@@ -10,7 +10,8 @@ import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
 import { QuickStats } from '@/components/operator/QuickStats';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Users, Building2, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone } from 'lucide-react';
+import { MessageSquare, Users, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone, Flag } from 'lucide-react';
+import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
 
 /**
  * OperatorDashboard Component
@@ -27,6 +28,7 @@ export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
   const [operatorId, setOperatorId] = useState<string | null>(null);
   const [leagueCount, setLeagueCount] = useState(0);
+  const { count: pendingReportsCount } = usePendingReportsCount();
 
   /**
    * Fetch operator ID and league count on mount
@@ -93,12 +95,13 @@ export const OperatorDashboard: React.FC = () => {
           />
 
           <DashboardCard
-            icon={<Building2 className="h-6 w-6" />}
-            iconColor="text-orange-600"
-            title="Venue Partners"
-            description="Manage your pool hall relationships"
-            buttonText="Manage Venues"
-            onClick={() => console.log('Venue Partners - Coming soon')}
+            icon={<Flag className="h-6 w-6" />}
+            iconColor="text-red-600"
+            title="Reports Management"
+            description="Review and manage user reports"
+            buttonText="View Reports"
+            linkTo="/operator-reports"
+            badgeCount={pendingReportsCount}
           />
 
           {/* Row 2 - Active Leagues (2 cols) and Sidebar (1 col) */}

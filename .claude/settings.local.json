@@ -5,6 +5,9 @@
       "Bash(pnpm run typecheck)",
       "Bash(pnpm run build)",
       "Bash(pnpm run lint)",
+      "Bash(supabase status:*)",
+      "Bash(docker exec:*)",
+      "Bash(docker logs:*)",
       "Bash(copy:*)",
       "Bash(pnpm test:run:*)"
     ],

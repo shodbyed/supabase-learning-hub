@@ -47,11 +47,18 @@ export const Dashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
               Your Pool Activities
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <Link to="/my-teams" className="w-full">
                 <Button variant="outline" className="w-full h-32 flex flex-col justify-center border-2 hover:border-blue-300">
                   <span className="font-semibold text-xl mb-2">My Teams</span>
                   <span className="text-sm text-gray-600">View your leagues and teams</span>
+                </Button>
+              </Link>
+
+              <Link to="/messages" className="w-full">
+                <Button variant="outline" className="w-full h-32 flex flex-col justify-center border-2 hover:border-blue-500 hover:bg-blue-50">
+                  <span className="font-semibold text-xl mb-2">Messages</span>
+                  <span className="text-sm text-gray-600">View your messages</span>
                 </Button>
               </Link>
 

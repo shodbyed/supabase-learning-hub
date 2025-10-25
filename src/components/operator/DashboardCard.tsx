@@ -5,6 +5,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface DashboardCardProps {
   /** Icon element to display (lucide-react icon) */
@@ -25,6 +26,8 @@ interface DashboardCardProps {
   variant?: 'default' | 'outline';
   /** Button background color (for primary actions) */
   buttonColor?: string;
+  /** Optional badge count to display */
+  badgeCount?: number;
 }
 
 /**
@@ -46,12 +49,18 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
   onClick,
   variant = 'outline',
   buttonColor,
+  badgeCount,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-2">
         <div className={iconColor}>{icon}</div>
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+          {title}
+          {badgeCount !== undefined && badgeCount > 0 && (
+            <Badge variant="destructive">{badgeCount}</Badge>
+          )}
+        </h3>
       </div>
       <p className="text-sm text-gray-600 mb-4">{description}</p>
 

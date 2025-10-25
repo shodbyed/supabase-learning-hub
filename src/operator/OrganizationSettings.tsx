@@ -10,7 +10,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';
-import { ArrowLeft, CalendarX } from 'lucide-react';
+import { ArrowLeft, CalendarX, Shield } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import type { LeagueOperator, OperatorBlackoutPreference } from '@/types/operator';
@@ -29,6 +29,9 @@ export const OrganizationSettings: React.FC = () => {
   const [operatorProfile, setOperatorProfile] = useState<LeagueOperator | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [profanityFilterEnabled, setProfanityFilterEnabled] = useState(false);
+  const [isSavingFilter, setIsSavingFilter] = useState(false);
+  const [filterSuccess, setFilterSuccess] = useState(false);
 
   // Championship preferences state
   const [bcaPreference, setBcaPreference] = useState<{
@@ -68,6 +71,7 @@ export const OrganizationSettings: React.FC = () => {
         if (error) throw error;
 
         setOperatorProfile(data);
+        setProfanityFilterEnabled(data.profanity_filter_enabled || false);
       } catch (err) {
         console.error('Failed to fetch operator profile:', err);
         setError(err instanceof Error ? err.message : 'Failed to load operator profile');
@@ -209,6 +213,37 @@ export const OrganizationSettings: React.FC = () => {
     } catch (err) {
       console.error('Failed to toggle APA ignore:', err);
     }
+  };
+
+  /**
+   * Toggle profanity filter for organization
+   */
+  const handleToggleProfanityFilter = async () => {
+    if (!operatorProfile) return;
+
+    setIsSavingFilter(true);
+    setFilterSuccess(false);
+
+    const newValue = !profanityFilterEnabled;
+
+    const { error: updateError } = await supabase
+      .from('league_operators')
+      .update({ profanity_filter_enabled: newValue })
+      .eq('id', operatorProfile.id);
+
+    if (updateError) {
+      console.error('Failed to update profanity filter:', updateError);
+      alert('Failed to update profanity filter. Please try again.');
+      setIsSavingFilter(false);
+      return;
+    }
+
+    setProfanityFilterEnabled(newValue);
+    setFilterSuccess(true);
+    setIsSavingFilter(false);
+
+    // Clear success message after 3 seconds
+    setTimeout(() => setFilterSuccess(false), 3000);
   };
 
   /**
@@ -450,6 +485,15 @@ export const OrganizationSettings: React.FC = () => {
           <p className="text-gray-600 mt-2">Manage your organization information and league rules</p>
         </div>
 
+        {/* Success Message */}
+        {filterSuccess && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-700 font-medium">
+              Profanity filter settings updated successfully!
+            </p>
+          </div>
+        )}
+
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Organization Info Card */}
@@ -494,6 +538,58 @@ export const OrganizationSettings: React.FC = () => {
             buttonText="View Rules"
             linkTo="/league-rules"
           />
+
+          {/* Profanity Filter Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Shield className="h-6 w-6 text-purple-600" />
+              <h3 className="font-semibold text-gray-900">Content Moderation</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Control profanity validation for your organization. When enabled, team names and other public content containing inappropriate language will be rejected.
+                </p>
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">Profanity Filter</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {profanityFilterEnabled
+                          ? 'Team names with inappropriate language will be rejected'
+                          : 'Team names are not validated for profanity'}
+                      </p>
+                      <div className="mt-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          profanityFilterEnabled
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {profanityFilterEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleToggleProfanityFilter}
+                      disabled={isSavingFilter}
+                      variant={profanityFilterEnabled ? 'destructive' : 'default'}
+                      size="sm"
+                      className="ml-4"
+                    >
+                      {isSavingFilter ? 'Saving...' : profanityFilterEnabled ? 'Disable' : 'Enable'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              {profanityFilterEnabled && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-700">
+                    <strong>Note:</strong> This setting validates team names and organization-wide content only. Individual messages are filtered based on each user's personal preferences.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Blackout Dates Card */}
           <div className="bg-white rounded-xl shadow-sm p-6">

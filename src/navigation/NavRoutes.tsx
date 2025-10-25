@@ -16,6 +16,7 @@ import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorAppli
 import { OperatorWelcome } from '../operator/OperatorWelcome';
 import { OperatorDashboard } from '../operator/OperatorDashboard';
 import { OrganizationSettings } from '../operator/OrganizationSettings';
+import { ReportsManagement } from '../operator/ReportsManagement';
 import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
 import { LeagueRules } from '../operator/LeagueRules';
 import { LeagueDetail } from '../operator/LeagueDetail';
@@ -25,6 +26,9 @@ import { VenueManagement } from '../operator/VenueManagement';
 import { TeamManagement } from '../operator/TeamManagement';
 import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
 import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
+import { Messages } from '../pages/Messages';
+import { PlayerProfile } from '../pages/PlayerProfile';
+import { AdminReports } from '../pages/AdminReports';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -55,6 +59,8 @@ const authRoutes = [
 const memberRoutes = [
   { path: '/dashboard', element: <Dashboard /> },
   { path: '/profile', element: <Profile /> },
+  { path: '/messages', element: <Messages /> },
+  { path: '/player/:playerId', element: <PlayerProfile /> },
   { path: '/my-teams', element: <MyTeams /> },
   { path: '/score-match', element: <ScoreMatch /> },
 ];
@@ -63,6 +69,7 @@ const memberRoutes = [
 const operatorRoutes = [
   { path: '/operator-welcome', element: <OperatorWelcome /> },
   { path: '/operator-dashboard', element: <OperatorDashboard /> },
+  { path: '/operator-reports', element: <ReportsManagement /> },
   { path: '/create-league', element: <LeagueCreationWizard /> },
   { path: '/operator-settings', element: <OrganizationSettings /> },
   { path: '/league-rules', element: <LeagueRules /> },
@@ -73,6 +80,11 @@ const operatorRoutes = [
   { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
   { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
   { path: '/venues', element: <VenueManagement /> },
+];
+
+// Protected routes - require developer role
+const developerRoutes = [
+  { path: '/admin-reports', element: <AdminReports /> },
 ];
 
 export const NavRoutes: React.FC = () => {
@@ -116,6 +128,19 @@ export const NavRoutes: React.FC = () => {
           path={path}
           element={
             <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+              {element}
+            </ProtectedRoute>
+          }
+        />
+      ))}
+
+      {/* Developer Routes - Require developer role */}
+      {developerRoutes.map(({ path, element }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute requireAuth={true} requiredRole="developer">
               {element}
             </ProtectedRoute>
           }
