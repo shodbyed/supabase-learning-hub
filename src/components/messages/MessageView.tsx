@@ -17,6 +17,8 @@ import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
 import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
 import { supabase } from '@/supabaseClient';
+import { LoadingState, EmptyState } from '@/components/shared';
+import { MessageSquare } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -230,12 +232,16 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       {/* Messages - Mobile-optimized padding */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-gray-50">
         {loading ? (
-          <div className="flex items-center justify-center h-full text-gray-500">
-            <p>Loading messages...</p>
+          <div className="flex items-center justify-center h-full">
+            <LoadingState message="Loading messages..." />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500 px-4">
-            <p className="text-center">No messages yet. Start the conversation!</p>
+          <div className="flex items-center justify-center h-full">
+            <EmptyState
+              icon={MessageSquare}
+              title="No messages yet"
+              description="Start the conversation!"
+            />
           </div>
         ) : (
           messages.map((message) => {

@@ -13,11 +13,12 @@
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, MessageSquarePlus, Settings, Megaphone } from 'lucide-react';
+import { Search, MessageSquarePlus, Settings, Megaphone, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fetchUserConversations } from '@/utils/messageQueries';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/supabaseClient';
+import { LoadingState, EmptyState } from '@/components/shared';
 
 interface Conversation {
   id: string;
@@ -213,13 +214,13 @@ export function ConversationList({
       {/* Conversation list */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-center text-gray-500 text-sm">
-            Loading conversations...
-          </div>
+          <LoadingState message="Loading conversations..." />
         ) : filteredConversations.length === 0 ? (
-          <div className="p-6 text-center text-gray-500 text-sm">
-            No conversations found
-          </div>
+          <EmptyState
+            icon={MessageSquare}
+            title="No conversations found"
+            description="Start a new conversation to get started"
+          />
         ) : (
           filteredConversations.map((conversation) => {
             const isAnnouncement = conversation.conversationType === 'announcements';
