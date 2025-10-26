@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { X, Shield, Lock, UserX, Flag, ChevronRight } from 'lucide-react';
+import { Shield, Lock, UserX, Flag, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -17,6 +17,7 @@ import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityF
 import { useUser } from '@/context/useUser';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { BlockedUsersModal } from './BlockedUsersModal';
+import { Modal } from '@/components/shared';
 
 interface MessageSettingsModalProps {
   onClose: () => void;
@@ -62,40 +63,23 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
-          <h2 className="text-xl font-semibold">Message Settings</h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            aria-label="Close settings"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+    <Modal isOpen={true} onClose={onClose} title="Message Settings">
+      <Modal.Body className="space-y-4">
+        {success && (
+          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-700 font-medium">
+              Settings saved successfully!
+            </p>
+          </div>
+        )}
 
-        {/* Success/Error Messages */}
-        <div className="flex-shrink-0">
-          {success && (
-            <div className="mx-4 mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-700 font-medium">
-                Settings saved successfully!
-              </p>
-            </div>
-          )}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
-          {error && (
-            <div className="mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Settings Content */}
           <Accordion type="single" collapsible className="w-full space-y-2">
             {/* Privacy & Safety Section */}
             <AccordionItem value="privacy" className="border rounded-lg">
@@ -245,19 +229,17 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
               </AccordionTrigger>
             </AccordionItem>
           </Accordion>
-        </div>
+      </Modal.Body>
 
-        {/* Footer */}
-        <div className="p-4 border-t bg-gray-50 flex-shrink-0">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="w-full"
-          >
-            Close
-          </Button>
-        </div>
-      </div>
+      <Modal.Footer>
+        <Button
+          onClick={onClose}
+          variant="outline"
+          className="w-full"
+        >
+          Close
+        </Button>
+      </Modal.Footer>
 
       {/* Blocked Users Modal */}
       {showBlockedUsersModal && memberId && (
@@ -267,6 +249,6 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
           onUnblocked={onUnblocked}
         />
       )}
-    </div>
+    </Modal>
   );
 }
