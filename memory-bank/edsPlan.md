@@ -3,30 +3,36 @@
 ## Design Decisions Made (2025-01-16)
 
 ### UI Approach: Full Page (not modal)
+
 - Messaging deserves dedicated space for readability
 - Less confusing for tech-averse users
 - Better mobile experience for future app
 - Route: `/messages`
 
 ### Layout: Simplified Slack Style
+
 ```
 Two-column layout:
 - Left: Conversation list with search
 - Right: Selected conversation messages + input box
 ```
+
 No channels, @mentions, or reactions initially - keep it simple
 
 ### New Message Flow
+
 - [+ New] button opens modal
 - Search bar + filter tabs: All | My Leagues | My Teams
 - Click user → creates/opens conversation
 - Familiar pattern (like phone texting)
 
 ### Navigation
+
 - Envelope icon in navbar with unread badge
 - Optional: Dashboard card showing recent messages
 
 ### Message Types
+
 1. **Group Chats**: Back-and-forth conversations (everyone can reply)
 2. **Announcements**: No-reply messages (from operators/captains only)
 
@@ -77,3 +83,15 @@ use the same modal as in other places in the code some have blacked out the back
 Medium Priority
 Component Extractions - TeamCard, TeamRosterList, VenueListItem, ConfirmDialog (200+ lines saved, massive reusability gains)
 Separate Create/Update Logic - Better testability
+
+7. fix modals
+   TODO add loading empty state to
+   DayOfWeekWarningModal - Simple confirmation modal
+   VenueLimitModal - Standard modal with form
+   DeleteLeagueModal - Warning modal with confirmation
+   DeleteSeasonModal - Similar pattern
+   WeekOffReasonModal - Form modal
+   SetupGuideModal - Content modal
+   SecurityDisclaimerModal - Info modal
+
+may need adjusting for other modals.
