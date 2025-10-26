@@ -87,13 +87,14 @@ export function BlockedUsersModal({ currentUserId, onClose, onUnblocked }: Block
             <UserX className="h-5 w-5 text-gray-600" />
             <h2 className="text-xl font-semibold">Blocked Users</h2>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

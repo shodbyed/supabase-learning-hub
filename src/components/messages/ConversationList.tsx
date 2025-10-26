@@ -156,37 +156,40 @@ export function ConversationList({
       <div className="px-3 pb-3 pt-0 md:px-4 md:pb-4 md:pt-0 border-b bg-gray-300">
         <div className="flex gap-2 justify-around bg-gray-50 rounded-lg p-2 shadow-sm border border-gray-200">
           {/* New Message */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onNewMessage}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex-1 flex flex-col items-center gap-1"
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-2"
             aria-label="New message"
           >
             <MessageSquarePlus className="h-5 w-5" />
             <span className="text-[10px] text-gray-600">New</span>
-          </button>
+          </Button>
 
           {/* Search Toggle */}
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setShowSearch(!showSearch)}
             className={cn(
-              'p-2 rounded-lg transition-colors flex-1 flex flex-col items-center gap-1',
-              showSearch ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+              'flex-1 flex flex-col items-center gap-1 h-auto py-2',
+              showSearch && 'bg-blue-100 text-blue-600 hover:bg-blue-100'
             )}
             aria-label="Toggle search"
           >
             <Search className="h-5 w-5" />
             <span className="text-[10px] text-gray-600">Search</span>
-          </button>
+          </Button>
 
           {/* Settings */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onSettings}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex-1 flex flex-col items-center gap-1"
+            className="flex-1 flex flex-col items-center gap-1 h-auto py-2"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" />
             <span className="text-[10px] text-gray-600">Settings</span>
-          </button>
+          </Button>
         </div>
       </div>
 

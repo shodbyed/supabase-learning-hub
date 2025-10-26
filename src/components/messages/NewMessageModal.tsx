@@ -13,8 +13,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X, Search, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
 import { getBlockedUsers } from '@/utils/messageQueries';
@@ -142,12 +142,13 @@ export function NewMessageModal({
         {/* Header */}
         <div className="p-6 border-b flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">New Message</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="h-6 w-6" />
-          </button>
+          </Button>
         </div>
 
         {/* Selected Users */}
@@ -210,41 +211,13 @@ export function NewMessageModal({
 
         {/* Filter Tabs */}
         <div className="px-6 pt-4 border-b">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'all'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveFilter('leagues')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'leagues'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              My Leagues
-            </button>
-            <button
-              onClick={() => setActiveFilter('teams')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'teams'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              My Teams
-            </button>
-          </div>
+          <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterTab)}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="leagues">My Leagues</TabsTrigger>
+              <TabsTrigger value="teams">My Teams</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* User List */}

@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { createUserReport, REPORT_CATEGORIES } from '@/utils/reportingQueries';
@@ -98,13 +99,14 @@ export function ReportUserModal({
             <AlertTriangle className="h-5 w-5 text-orange-600" />
             <h2 className="text-xl font-semibold">Report User</h2>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -142,12 +144,12 @@ export function ReportUserModal({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description *</Label>
-            <textarea
+            <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Please describe the issue in detail. Include specific examples if possible."
-              className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              className="min-h-[120px]"
               required
               minLength={10}
             />

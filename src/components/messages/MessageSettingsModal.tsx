@@ -67,13 +67,14 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
           <h2 className="text-xl font-semibold">Message Settings</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             aria-label="Close settings"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Success/Error Messages */}

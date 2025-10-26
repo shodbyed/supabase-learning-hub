@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { X, Megaphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
@@ -198,12 +199,13 @@ export function AnnouncementModal({
             <Megaphone className="h-6 w-6 text-blue-600" />
             <h2 className="text-2xl font-bold text-gray-900">Create Announcement</h2>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="h-6 w-6" />
-          </button>
+          </Button>
         </div>
 
         {/* Selected Targets */}
@@ -282,9 +284,9 @@ export function AnnouncementModal({
               <Label htmlFor="announcement" className="text-base font-semibold mb-3 block">
                 Announcement Message
               </Label>
-              <textarea
+              <Textarea
                 id="announcement"
-                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="min-h-[120px]"
                 placeholder="Enter your announcement message..."
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value.slice(0, maxLength))}
