@@ -33,13 +33,15 @@ export function ConversationHeader({ title, onBack, onLeave, onBlock, canLeave =
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         {/* Back button - only visible on mobile */}
         {onBack && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onBack}
-            className="md:hidden p-2 -ml-2 hover:bg-gray-400 rounded-lg transition-colors flex-shrink-0"
+            className="md:hidden -ml-2 flex-shrink-0"
             aria-label="Back to conversations"
           >
             <ArrowLeft className="h-5 w-5" />
-          </button>
+          </Button>
         )}
         <h2 className="text-base md:text-lg font-semibold truncate">{title}</h2>
       </div>

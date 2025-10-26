@@ -13,11 +13,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { X, Search, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { X, Search, Users, MessageSquare } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
 import { getBlockedUsers } from '@/utils/messageQueries';
+import { Modal, LoadingState, EmptyState } from '@/components/shared';
 
 interface Member {
   id: string;
@@ -131,25 +132,14 @@ export function NewMessageModal({
     selectedMembers.length > 0 ? selectedMembers.map((m) => m.first_name).join(', ') : '';
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="New Message"
+      icon={<MessageSquare className="h-5 w-5 text-gray-600" />}
+      maxWidth="2xl"
     >
-      <div
-        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="p-6 border-b flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">New Message</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
+      <Modal.Body className="p-0">
         {/* Selected Users */}
         {selectedUserIds.length > 0 && (
           <div className="px-6 pt-4 border-b bg-blue-50">
@@ -210,54 +200,25 @@ export function NewMessageModal({
 
         {/* Filter Tabs */}
         <div className="px-6 pt-4 border-b">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'all'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveFilter('leagues')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'leagues'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              My Leagues
-            </button>
-            <button
-              onClick={() => setActiveFilter('teams')}
-              className={cn(
-                'pb-3 px-2 text-sm font-medium border-b-2 transition-colors',
-                activeFilter === 'teams'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              )}
-            >
-              My Teams
-            </button>
-          </div>
+          <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as FilterTab)}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="leagues">My Leagues</TabsTrigger>
+              <TabsTrigger value="teams">My Teams</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* User List */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 min-h-[300px]">
           {loading ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>Loading members...</p>
-            </div>
+            <LoadingState message="Loading members..." />
           ) : filteredMembers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No members found</p>
-              <p className="text-sm mt-2">Try a different search term</p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No members found"
+              description="Try a different search term"
+            />
           ) : (
             <div className="space-y-1">
               {filteredMembers.map((member) => (
@@ -273,21 +234,20 @@ export function NewMessageModal({
             </div>
           )}
         </div>
+      </Modal.Body>
 
-        {/* Footer */}
-        <div className="p-6 border-t bg-gray-50 flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
-            Cancel
-          </Button>
-          <Button onClick={handleCreate} disabled={selectedUserIds.length === 0} className="flex-1">
-            {selectedUserIds.length === 0
-              ? 'Select People'
-              : selectedUserIds.length === 1
-                ? 'Message'
-                : `Create Group (${selectedUserIds.length})`}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <Modal.Footer>
+        <Button variant="outline" onClick={onClose} className="flex-1">
+          Cancel
+        </Button>
+        <Button onClick={handleCreate} disabled={selectedUserIds.length === 0} className="flex-1">
+          {selectedUserIds.length === 0
+            ? 'Select People'
+            : selectedUserIds.length === 1
+              ? 'Message'
+              : `Create Group (${selectedUserIds.length})`}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

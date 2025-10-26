@@ -21,13 +21,15 @@
  */
 
 import { useState } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { createUserReport, REPORT_CATEGORIES } from '@/utils/reportingQueries';
 import type { ReportCategory } from '@/utils/reportingQueries';
+import { Modal } from '@/components/shared';
 
 interface ReportUserModalProps {
   reportedUserId: string;
@@ -90,25 +92,14 @@ export function ReportUserModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0 bg-white">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <h2 className="text-xl font-semibold">Report User</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Report User"
+      icon={<AlertTriangle className="h-5 w-5 text-orange-600" />}
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <Modal.Body className="space-y-4">
           {/* Reporting */}
           <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
             <p className="text-sm text-orange-800">
@@ -142,12 +133,12 @@ export function ReportUserModal({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description *</Label>
-            <textarea
+            <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Please describe the issue in detail. Include specific examples if possible."
-              className="w-full min-h-[120px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              className="min-h-[120px]"
               required
               minLength={10}
             />
@@ -169,10 +160,9 @@ export function ReportUserModal({
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
-        </form>
+        </Modal.Body>
 
-        {/* Footer */}
-        <div className="p-4 border-t bg-gray-50 flex-shrink-0 flex gap-2 justify-end">
+        <Modal.Footer>
           <Button
             type="button"
             onClick={onClose}
@@ -189,8 +179,8 @@ export function ReportUserModal({
           >
             {isSubmitting ? 'Submitting...' : 'Submit Report'}
           </Button>
-        </div>
-      </div>
-    </div>
+        </Modal.Footer>
+      </form>
+    </Modal>
   );
 }

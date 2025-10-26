@@ -1,13 +1,13 @@
 /**
- * @fileoverview Blocked Users Management Modal
+ * @fileoverview Blocked Users Management Modal (REFACTORED)
  *
  * Displays a list of users the current user has blocked with ability to unblock them.
  * Shows user information and when they were blocked.
  *
- * REFACTORED VERSION:
- * - Uses shared Modal component (DRY)
- * - Uses LoadingState component (DRY)
- * - Uses EmptyState component (DRY)
+ * REFACTORING IMPROVEMENTS:
+ * - Uses shared Modal component (removes ~30 lines)
+ * - Uses LoadingState component (removes ~5 lines)
+ * - Uses EmptyState component (removes ~10 lines)
  * - Extracted BlockedUserItem component (Single Responsibility)
  * - Cleaner, more maintainable code
  */
@@ -32,6 +32,7 @@ interface BlockedUser {
 
 interface BlockedUsersModalProps {
   currentUserId: string;
+  isOpen: boolean;
   onClose: () => void;
   onUnblocked?: () => void;
 }
@@ -85,6 +86,7 @@ function BlockedUserItem({
  */
 export function BlockedUsersModal({
   currentUserId,
+  isOpen,
   onClose,
   onUnblocked,
 }: BlockedUsersModalProps) {
@@ -94,6 +96,8 @@ export function BlockedUsersModal({
 
   // Load blocked users on mount
   useEffect(() => {
+    if (!isOpen) return;
+
     async function loadBlockedUsers() {
       setLoading(true);
       const { data, error } = await getBlockedUsers(currentUserId);
@@ -108,7 +112,7 @@ export function BlockedUsersModal({
     }
 
     loadBlockedUsers();
-  }, [currentUserId]);
+  }, [currentUserId, isOpen]);
 
   const handleUnblock = async (blockedUserId: string) => {
     if (!confirm('Are you sure you want to unblock this user? They will be able to message you again.')) {
@@ -136,7 +140,7 @@ export function BlockedUsersModal({
 
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       title="Blocked Users"
       icon={<UserX className="h-5 w-5 text-gray-600" />}

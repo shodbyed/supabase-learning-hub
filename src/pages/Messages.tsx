@@ -192,13 +192,15 @@ export function Messages() {
         )}
       >
         {/* Back button - only on mobile */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate('/dashboard')}
-          className="md:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+          className="md:hidden -ml-2 flex-shrink-0"
           aria-label="Back to dashboard"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Button>
         <div className="text-xl md:text-4xl font-semibold">
           {firstName ? `${firstName}'s Messages` : 'Messages'}
         </div>

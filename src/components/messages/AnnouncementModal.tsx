@@ -13,9 +13,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X, Megaphone } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Megaphone, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
+import { Modal, LoadingState, EmptyState } from '@/components/shared';
 
 interface AnnouncementTarget {
   id: string;
@@ -184,28 +186,14 @@ export function AnnouncementModal({
   const selectedTargets = targets.filter((t) => selectedTargetIds.includes(t.id));
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Create Announcement"
+      icon={<Megaphone className="h-5 w-5 text-blue-600" />}
+      maxWidth="2xl"
     >
-      <div
-        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="p-6 border-b flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Megaphone className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Create Announcement</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-
+      <Modal.Body className="p-0">
         {/* Selected Targets */}
         {selectedTargetIds.length > 0 && (
           <div className="px-6 pt-4 border-b bg-blue-50">
@@ -243,14 +231,13 @@ export function AnnouncementModal({
           </Label>
 
           {loading ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>Loading targets...</p>
-            </div>
+            <LoadingState message="Loading targets..." />
           ) : targets.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <p>No announcement targets available</p>
-              <p className="text-sm mt-2">You must be a captain or operator to send announcements</p>
-            </div>
+            <EmptyState
+              icon={Megaphone}
+              title="No announcement targets available"
+              description="You must be a captain or operator to send announcements"
+            />
           ) : (
             <div className="space-y-2">
               {targets.map((target) => (
@@ -282,9 +269,9 @@ export function AnnouncementModal({
               <Label htmlFor="announcement" className="text-base font-semibold mb-3 block">
                 Announcement Message
               </Label>
-              <textarea
+              <Textarea
                 id="announcement"
-                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="min-h-[120px]"
                 placeholder="Enter your announcement message..."
                 value={announcementText}
                 onChange={(e) => setAnnouncementText(e.target.value.slice(0, maxLength))}
@@ -296,23 +283,22 @@ export function AnnouncementModal({
             </div>
           )}
         </div>
+      </Modal.Body>
 
-        {/* Footer */}
-        <div className="p-6 border-t bg-gray-50 flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={selectedTargetIds.length === 0 || !announcementText.trim()}
-            className="flex-1"
-          >
-            {selectedTargetIds.length === 0
-              ? 'Select Target'
-              : `Send to ${selectedTargetIds.length} Target${selectedTargetIds.length > 1 ? 's' : ''}`}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <Modal.Footer>
+        <Button variant="outline" onClick={onClose} className="flex-1">
+          Cancel
+        </Button>
+        <Button
+          onClick={handleCreate}
+          disabled={selectedTargetIds.length === 0 || !announcementText.trim()}
+          className="flex-1"
+        >
+          {selectedTargetIds.length === 0
+            ? 'Select Target'
+            : `Send to ${selectedTargetIds.length} Target${selectedTargetIds.length > 1 ? 's' : ''}`}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
