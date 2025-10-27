@@ -1,136 +1,283 @@
-review established tables for reference
+# 🎱 3v3 League Match Scoring Specification
 
-1. teams
-2. team_players
-3. season_weeks
-4. matches
+This document outlines the complete specification for implementing a 3v3 league match scoring system.
 
-matches is basically the scheduled dates that these teams play and which team plays which on a specific date.
+---
 
-so a player on team A would go to his team viewer. that perhaps would have a link to upcoming matches. he clicks on the match he is going to be playing that night.
+## Implementation Philosophy
 
-flow
-page 1.
+**UI-First Approach**: Build the UI components first to understand data requirements, then create database tables based on actual needs. This prevents premature table design and ensures we only build what's necessary.
 
-1. line up
-   list of all players on the team with handicaps (h/c)
-   3 dropdown to enter line up/ player order
-   team handicap (3 players h/c added together plus team h/c which is derived from current standings which we wont have until we finish scoring)
-   ready button to show the other team the lineup is complete
-   page 2.
-1. scoreboard.  
-   score board should have a lot of information in a small area.
-   team name - team h/c
-   total h/c
-   line up information players name - h/c -games won
-   team games won/needed to win needed to tie.
+**Mobile-First Design**: All pages must be designed with mobile-first mentality using shadcn/ui components throughout.
 
-1. score keeping.
-   game 1. rack: <button>{playerName}<button> vs. break: <button>{opponentName}<button>
-   the players will see a button group and know who racks and who breaks in that game
-   play is double round robin
-   team 1 player 1 = T1P1. B= Breaks team 1 is home
-   order is B T1P1 vs T1P1, B T1P2 VS T2P2, B T1P3 VS T2P3
-   T1P1 VS B T2P2, T1P2 VS B T2P3, T1P3 VS B T2P1,
-   B T1P1 VS T2P3, B T1P2 VS T2P1, B T1P3 VS T2P2
+---
 
-   the order starts over with the opposite person breaking
-   each player plays 2 games with each player on opposing team breaking once and racking once.
-   18 total games played all games must be played in order for the night to be complete.
+## Database Schema Overview
 
-   once a game is played either team (or perhaps both teams) press the button of the winner to get a popup to verify this player was the winner
+### Existing Tables (Already Created)
 
-   'completed' game:
-   <div>{playerName}<div><button>{edit/reverse/undo game}<button><div>{opponentName}<div> winner highlighted somehow with bg or badge etc
+1. **teams** - Stores static team information
+2. **team_players** - Maps players to teams
+3. **season_weeks** - Defines scheduled weeks of the season
+4. **matches** - Defines scheduled date, home team, and away team for each match
+5. **members** - Stores all player information (NOT including handicap)
+6. **handicap_chart_3vs3** - Static lookup table for handicap-based win/tie/lose thresholds
 
-   games can be played out of order if necessary. completed games should go to the bottom of the "list"
+### Handicap Calculation Rules
 
-   in sheets scoring they both have access to the sheet even after the match is completed. it has not happened in my small league but a player could go back later on and change scores unbeknownst to the opposing team.  
-   here i would like some sort of confirmation/agreement. both teams agree games are scored correctly to "end" session. perhaps each game as well.
-   team 1 presses player 1 as winner. opposing team gets a popup to confirm or presses player 1 as well to confirm. both must agree to edit/reverse/undo a game?
+**Individual Player Handicap**:
+- Calculated as: `(wins - losses) / weeks_played`
+- Weeks played can be derived as: `total_games / 6` (since a usual week = 6 games)
+- Range: +2 to −2
 
-   once all 18 games are played either one of the teams "won" the match/night or it ended in a tie.
+**Team Handicap Total**:
+- Sum of three individual player handicaps
+- Range: −6 to +6
+- **Team handicap from standings**: Set to 0 for now (will be implemented later when standings page is built)
 
-page 3 1. tie breaker
-each team must enter their lineup. (order may change) 2. 3 games will be played
-home team breaks in game 1 and 3 away teams breaks game 2
-best 2 out of 3 breaks the tie and wins.
-all 3 games need not be played if a team wins first 2 in a row game is decided
-NOTE: winning team: players ALL get a winning game affecting their handicaps regardless if they won lost or did not play. losing team get NO game(win or loss) recorded
-there will never be a time when all 3 players on a team will have a win as 2 in a row ends the match but 3 players will always get a recorded win vs tiebreaker to affect their handicap. (this rule is to further prevent sandbagging)
+**Handicap Difference (hcp_diff)**:
+- Calculated as: `TeamA_Total_HCP - TeamB_Total_HCP`
+- Maximum difference: ±12
+- **Capping rule**: If absolute difference ≥13, cap at ±12
+  - Example: +14 → +12; −13 → −12
 
-    example.
-    T1P1 vs T2P1.  T1P1 wins
-    T1P2 vs T2P2.  T2P2 wins
-    T1P3 vs T2P3.  T2P3 wins
-    team 2 wins the match.
-    T2P1, T2P2 and T2P3 game won vs tiebreaker
-    T1P1, T1P2 and T1P3 no game recorded
+### Handicap Chart Lookup Table
 
-    @CLAUDE please go over this with the developer to be sure you understand how this works.
+Table: `handicap_chart_3vs3`
 
-    # Handicap Scoring Rules — Lookup Table Specification
+| Column | Type | Notes |
+|--------|------|-------|
+| `hcp_diff` | integer | Primary Key. Range −12 to +12 |
+| `games_to_win` | integer | Minimum wins for this team to win the match |
+| `games_to_tie` | integer / NULL | Wins for this team to tie (NULL if tie impossible) |
+| `games_to_lose` | integer | Maximum wins for this team to lose the match |
 
-## Overview
+**Usage**: Each team queries the lookup table based on their own calculated `hcp_diff`.
 
-League matches consist of **18 total games**.  
-Each team has **3 players**, each with a handicap ranging from **+2 to −2**.  
-The **team handicap total** is the sum of the three individual player handicaps.
-
-The **handicap difference** between two teams is calculated as:
-difference = teamA_handicap_total − teamB_handicap_total
-
-## Handicap Difference Range
-
-- Maximum team handicap total = +6
-- Minimum team handicap total = −6
-- Therefore, the **maximum difference** is **±12**
-
-If the calculated difference exceeds this range, it is **capped**:
-
-| Actual Difference | Capped Difference |
-| ----------------- | ----------------- |
-| ≥ +13             | +12               |
-| ≤ −13             | −12               |
-
-Example:
-actualDiff = +14 → cappedDiff = +12
-actualDiff = −13 → cappedDiff = −12
-
-## Lookup Table Purpose
-
-The lookup table determines how many wins a team needs to:
-
-| Outcome  | Condition                                        |
-| -------- | ------------------------------------------------ |
-| **Win**  | Wins ≥ `games_to_win`                            |
-| **Tie**  | Wins == `games_to_tie` (NULL = tie not possible) |
-| **Lose** | Wins ≤ `games_to_lose`                           |
-
-Each team uses the lookup based on **their own** perspective.  
-Example:
-
-- Team A diff = +6 → Team B diff = −6 (opposite sign)
-
-## Database Strategy
-
-A static table (`handicap_chart`) is stored in Supabase/PostgreSQL for quick lookup.
-
-Schema:
-
-| Column          | Type           | Notes                                           |
-| --------------- | -------------- | ----------------------------------------------- |
-| `hcp_diff`      | integer        | Primary key, range −12 to +12                   |
-| `games_to_win`  | integer        | Required wins to secure a win                   |
-| `games_to_tie`  | integer / NULL | Required wins to tie (NULL if tie not possible) |
-| `games_to_lose` | integer        | Wins threshold for a loss                       |
-
-Example SQL query:
-
+Example SQL:
 ```sql
 SELECT games_to_win, games_to_tie, games_to_lose
-FROM handicap_chart
+FROM handicap_chart_3vs3
 WHERE hcp_diff = :cappedDiff;
-
-
 ```
+
+### Tables to be Created (As Needed)
+
+Design these tables during UI implementation based on actual requirements:
+
+1. **match_lineups** (or similar) - Store selected lineup for each team
+2. **match_games** - Store individual game results (18 regular games + up to 3 tiebreaker games)
+   - Needs to track: game_number, players, winner, confirmation status from both teams, is_tiebreaker flag
+
+---
+
+## User Flow Overview
+
+A player navigates to their team viewer → clicks on an upcoming match → enters the match scoring flow.
+
+### Three-Page Flow
+
+1. **Page 1: Lineup Entry** (Pre-Match)
+2. **Page 2: Scoreboard & Score Keeping** (During Match)
+3. **Page 3: Tie Breaker** (If Necessary)
+
+---
+
+## Page 1: Lineup Entry (Pre-Match)
+
+### Display Requirements
+
+1. **Player List**: Show all players on the team with their current individual handicap (h/c)
+2. **Lineup Selection**: Three dropdowns to select starting players and their order (P1, P2, P3)
+3. **Team Handicap Display**:
+   - Show calculated Total h/c (sum of 3 selected players' h/c)
+   - Team h/c from standings = 0 (placeholder for future implementation)
+4. **Ready Button**: Indicates lineup is complete and shows it to opposing team
+
+### Rules
+
+- Both teams must complete lineup entry before proceeding to Scoreboard
+- Once lineup is locked, teams can proceed to Page 2
+
+---
+
+## Page 2: Scoreboard & Score Keeping
+
+This page displays critical information concisely and allows for game scoring.
+
+### A. Scoreboard Display
+
+Must show (in a compact mobile-friendly layout):
+
+**Team Headers** (for both teams):
+- Team Name
+- Team Total h/c
+- Games Won / Games Needed to Win / Games Needed to Tie
+
+**Lineup Details** (for each player on both teams):
+- Player Name
+- Individual h/c
+- Games Won (in this match)
+
+### B. Game Order & Format
+
+**Match Format**: Double round-robin
+- Total Games: **18**
+- Each player plays each opposing player **twice** (once breaking, once racking)
+- Home team (T1) breaks first in initial rotation
+
+**Game Order Table**:
+
+| Game | Home Player (T1) | T1 Action | Away Player (T2) | T2 Action |
+|------|------------------|-----------|------------------|-----------|
+| 1 | P1 | Breaks | P1 | Racks |
+| 2 | P2 | Breaks | P2 | Racks |
+| 3 | P3 | Breaks | P3 | Racks |
+| 4 | P1 | Racks | P2 | Breaks |
+| 5 | P2 | Racks | P3 | Breaks |
+| 6 | P3 | Racks | P1 | Breaks |
+| 7 | P1 | Breaks | P3 | Racks |
+| 8 | P2 | Breaks | P1 | Racks |
+| 9 | P3 | Breaks | P2 | Racks |
+| 10 | P1 | Racks | P1 | Breaks |
+| 11 | P2 | Racks | P2 | Breaks |
+| 12 | P3 | Racks | P3 | Breaks |
+| 13 | P1 | Racks | P3 | Breaks |
+| 14 | P2 | Racks | P1 | Breaks |
+| 15 | P3 | Racks | P2 | Breaks |
+| 16 | P1 | Breaks | P2 | Racks |
+| 17 | P2 | Breaks | P3 | Racks |
+| 18 | P3 | Breaks | P1 | Racks |
+
+### C. Score Keeping Mechanism
+
+**Game Display (Unplayed)**:
+```
+Game X. Rack: <Button>{T1 Player Name}</Button> vs. Break: <Button>{T2 Player Name}</Button>
+```
+
+**Scoring Process**:
+
+1. Either team presses the button of the winner
+2. **Confirmation Required**: Opposing team receives popup/prompt to confirm the winner
+3. **Both teams must agree** for the game to be officially recorded
+4. This prevents unilateral score changes (unlike Google Sheets approach)
+
+**Completed Game Display**:
+```
+<div>{Winner Name (highlighted)}</div>
+<button>{Edit/Reverse/Undo}</button>
+<div>{Loser Name}</div>
+```
+
+**Game Management Rules**:
+- Games can be played out of order
+- Completed games move to the bottom of the list
+- Editing/Reversing/Undoing a game requires **both teams to agree**
+
+### D. Match End Condition
+
+The match ends when:
+- A team reaches its `games_to_win` threshold, OR
+- All 18 games are played
+
+Results in: **Win**, **Loss**, or **Tie** (based on `games_to_tie`)
+
+---
+
+## Page 3: Tie Breaker (If Necessary)
+
+Only triggered if the 18-game match ends in a Tie.
+
+### Format
+
+- **Best 2 out of 3** games
+- Lineup can be changed (teams re-enter lineup, order may differ)
+- If a team wins first 2 games, tie-breaker ends immediately
+
+### Breaking Order
+
+| Game | Who Breaks |
+|------|------------|
+| 1 | Home Team |
+| 2 | Away Team |
+| 3 | Home Team (if needed) |
+
+### Tie Breaker Handicap Rule (CRITICAL)
+
+**Purpose**: Ensures all three players get a handicap-affecting win and prevents sandbagging.
+
+**Winning Team**:
+- ALL three players receive a recorded win ("game_won vs tiebreaker")
+- This affects their individual handicap
+- Recorded regardless of whether they played or won in the tie-breaker
+
+**Losing Team**:
+- NO game (win or loss) is recorded for any player
+
+**Example**:
+```
+T1P1 vs T2P1 → T1P1 wins
+T1P2 vs T2P2 → T2P2 wins
+T1P3 vs T2P3 → T2P3 wins
+
+Team 2 wins the match.
+
+Result:
+- T2P1, T2P2, T2P3: All get "win vs tiebreaker" recorded
+- T1P1, T1P2, T1P3: No game recorded
+```
+
+**Note**: There will never be a time when all 3 players on a team have individual wins in the tiebreaker (since 2 in a row ends it), but all 3 players on the winning team always get a recorded win for handicap calculation.
+
+---
+
+## Technical Implementation Decisions
+
+### Real-time Updates
+- **CONFIRMED**: Use existing Supabase real-time hook for all scoring operations
+- When one team scores/confirms a game, the other team's screen updates automatically
+- When lineup is locked, opposing team sees the update in real-time
+
+### Page Structure
+- **CONFIRMED**: Separate reusable components approach
+  - **Lineup Component**: Reusable for both initial lineup entry AND tiebreaker lineup
+  - **Scoring Component**: Reusable for both regular play (18 games) AND tiebreaker play (3 games)
+- Routing: Separate routes for clarity
+  - `/match/:matchId/lineup` - Initial lineup entry
+  - `/match/:matchId/score` - Scoreboard & scoring
+  - `/match/:matchId/tiebreaker` - Tiebreaker lineup & scoring
+
+### UI Component Library
+- **CONFIRMED**: Always use shadcn/ui components
+- **CONFIRMED**: Use Lucide React icons (the "v something" icons you mentioned)
+
+### Match State Tracking
+- Track match state in the database for real-time sync between teams
+- States: `lineup_entry`, `in_progress`, `completed`, `tiebreaker`
+- Exact table structure TBD during implementation (likely add state fields to `matches` table)
+
+### Database Design Approach
+1. Build UI components first
+2. Identify data requirements during implementation
+3. Get expert guidance on table structure (first full-stack project - learning DB design)
+4. Create database tables based on actual needs
+5. This ensures we only build necessary tables with correct structure
+
+---
+
+## Open Questions / Future Decisions
+
+1. **Match state**: Where and how to track current match state? (during implementation)
+2. **Table design**: Exact structure for lineup and game tables (during implementation with expert guidance)
+3. **Team handicap from standings**: Implementation deferred until standings page is built
+
+---
+
+## Development Priorities
+
+1. **Phase 1**: Page 1 - Lineup Entry
+2. **Phase 2**: Page 2 - Scoreboard & Score Keeping
+3. **Phase 3**: Page 3 - Tie Breaker
+4. **Phase 4**: Integration & Testing
+5. **Future**: Team handicap from standings (after standings page exists)
