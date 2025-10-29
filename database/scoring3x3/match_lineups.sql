@@ -70,28 +70,44 @@ CREATE POLICY "Players can view lineups for their matches"
     EXISTS (
       SELECT 1 FROM matches m
       JOIN team_players tp ON tp.team_id IN (m.home_team_id, m.away_team_id)
+      JOIN members mem ON mem.id = tp.member_id
       WHERE m.id = match_lineups.match_id
-        AND tp.member_id = auth.uid()
+        AND mem.user_id = auth.uid()
     )
   );
 
--- Team members can insert/update lineups for their own team (before locking)
-CREATE POLICY "Team members can manage their own lineup"
+-- Team members can insert lineups for their own team
+CREATE POLICY "Team members can insert lineup"
   ON match_lineups
-  FOR ALL
+  FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM team_players tp
+      JOIN members m ON m.id = tp.member_id
+      WHERE tp.team_id = match_lineups.team_id
+        AND m.user_id = auth.uid()
+    )
+  );
+
+-- Team members can update lineups for their own team (only if not locked)
+CREATE POLICY "Team members can update unlocked lineup"
+  ON match_lineups
+  FOR UPDATE
   USING (
     EXISTS (
       SELECT 1 FROM team_players tp
+      JOIN members m ON m.id = tp.member_id
       WHERE tp.team_id = match_lineups.team_id
-        AND tp.member_id = auth.uid()
+        AND m.user_id = auth.uid()
     )
-    AND (locked = false OR locked IS NULL)  -- Can only modify unlocked lineups
+    AND locked = false  -- Can only modify unlocked lineups
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM team_players tp
+      JOIN members m ON m.id = tp.member_id
       WHERE tp.team_id = match_lineups.team_id
-        AND tp.member_id = auth.uid()
+        AND m.user_id = auth.uid()
     )
   );
 

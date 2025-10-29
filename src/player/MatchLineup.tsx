@@ -24,10 +24,16 @@ import { parseLocalDate } from '@/utils/formatters';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import {
+  calculatePlayerHandicap,
+  calculateTeamHandicap,
+  type HandicapVariant,
+} from '@/utils/handicapCalculations';
 
 interface Match {
   id: string;
   scheduled_date: string;
+  season_id: string;
   home_team_id: string;
   away_team_id: string;
   home_team: {
@@ -67,6 +73,9 @@ export function MatchLineup() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Team handicap bonus (only for home team)
+  const [teamHandicap, setTeamHandicap] = useState<number>(0);
+
   // Lineup selection (value is UUID or "SUBSTITUTE")
   const [player1Id, setPlayer1Id] = useState<string>('');
   const [player2Id, setPlayer2Id] = useState<string>('');
@@ -98,17 +107,21 @@ export function MatchLineup() {
       }
 
       try {
-        // Fetch match details
+        // Fetch match details with league handicap variants
         const { data: matchData, error: matchError } = await supabase
           .from('matches')
           .select(`
             id,
             home_team_id,
             away_team_id,
+            season_id,
             home_team:teams!matches_home_team_id_fkey(id, team_name),
             away_team:teams!matches_away_team_id_fkey(id, team_name),
             scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
-            season_week:season_weeks(scheduled_date)
+            season_week:season_weeks(scheduled_date),
+            season:seasons!matches_season_id_fkey(
+              league:leagues(handicap_variant, team_handicap_variant)
+            )
           `)
           .eq('id', matchId)
           .single();
@@ -116,6 +129,17 @@ export function MatchLineup() {
         if (matchError) throw matchError;
 
         console.log('Match data received:', matchData);
+
+        // Extract handicap variants from nested league data
+        const seasonData = Array.isArray(matchData.season)
+          ? matchData.season[0]
+          : matchData.season;
+        const leagueData = seasonData && Array.isArray((seasonData as any).league)
+          ? (seasonData as any).league[0]
+          : (seasonData as any)?.league;
+        const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
+        const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
+        console.log('League handicap variants:', { playerVariant, teamVariant });
 
         // Transform to include scheduled_date - handle both array and object formats
         const homeTeam = Array.isArray(matchData.home_team)
@@ -134,6 +158,7 @@ export function MatchLineup() {
         const transformedMatch: Match = {
           id: matchData.id,
           scheduled_date: (seasonWeek as any)?.scheduled_date || '',
+          season_id: matchData.season_id,
           home_team_id: matchData.home_team_id,
           away_team_id: matchData.away_team_id,
           home_team: homeTeam as any || null,
@@ -144,6 +169,17 @@ export function MatchLineup() {
 
         console.log('Transformed match:', transformedMatch);
         setMatch(transformedMatch);
+
+        // Calculate team handicap (only for home team)
+        const calculatedTeamHandicap = await calculateTeamHandicap(
+          matchData.home_team_id,
+          matchData.away_team_id,
+          matchData.season_id,
+          teamVariant,
+          true // useRandom = true for testing until we have standings
+        );
+        setTeamHandicap(calculatedTeamHandicap);
+        console.log('Team handicap calculated:', calculatedTeamHandicap);
 
         // Determine which team the user is on
         const { data: teamPlayerData, error: teamPlayerError } = await supabase
@@ -181,27 +217,26 @@ export function MatchLineup() {
 
         if (playersError) throw playersError;
 
-        // Transform and add mock handicaps
-        const mockHandicaps: { [key: string]: number } = {
-          'Jacob Navarro': 1,
-          'Eric Ramos': -1,
-          'Brittany Guerrero': 2,
-          'Captainzo Two': -2,
-        };
+        // Calculate handicaps for all players (use random for testing until scoring is built)
+        const transformedPlayers = await Promise.all(
+          (playersData || []).map(async (p: any) => {
+            const handicap = await calculatePlayerHandicap(
+              p.members.id,
+              playerVariant,
+              true // useRandom = true for testing until we have game history
+            );
 
-        const transformedPlayers = (playersData || []).map((p: any) => {
-          const fullName = `${p.members.first_name} ${p.members.last_name}`;
-          const handicap = mockHandicaps[fullName] ?? 0;
+            return {
+              id: p.members.id,
+              first_name: p.members.first_name,
+              last_name: p.members.last_name,
+              nickname: p.members.nickname,
+              handicap,
+            };
+          })
+        );
 
-          return {
-            id: p.members.id,
-            first_name: p.members.first_name,
-            last_name: p.members.last_name,
-            nickname: p.members.nickname,
-            handicap, // TODO: Calculate from game history
-          };
-        });
-
+        console.log('Players with calculated handicaps:', transformedPlayers);
         setPlayers(transformedPlayers);
 
         // Check if lineup already exists for this team
@@ -213,12 +248,30 @@ export function MatchLineup() {
           .maybeSingle();
 
         if (!lineupError && existingLineup) {
-          // Load existing lineup
+          // Load existing lineup and use stored handicaps for consistency
+          console.log('Loading existing lineup from database:', existingLineup);
+
           setLineupId(existingLineup.id);
           setPlayer1Id(existingLineup.player1_id || 'SUBSTITUTE');
           setPlayer2Id(existingLineup.player2_id || 'SUBSTITUTE');
           setPlayer3Id(existingLineup.player3_id || 'SUBSTITUTE');
           setLineupLocked(existingLineup.locked);
+
+          // Update players array with stored handicaps to ensure consistency
+          // across all team members viewing this lineup
+          const updatedPlayers = transformedPlayers.map((player) => {
+            if (player.id === existingLineup.player1_id) {
+              return { ...player, handicap: parseFloat(existingLineup.player1_handicap) };
+            }
+            if (player.id === existingLineup.player2_id) {
+              return { ...player, handicap: parseFloat(existingLineup.player2_handicap) };
+            }
+            if (player.id === existingLineup.player3_id) {
+              return { ...player, handicap: parseFloat(existingLineup.player3_handicap) };
+            }
+            return player;
+          });
+          setPlayers(updatedPlayers);
 
           // If any player is a substitute, get the handicap
           if (!existingLineup.player1_id) {
@@ -259,6 +312,13 @@ export function MatchLineup() {
 
     const opponentTeamId = isHomeTeam ? match.away_team_id : match.home_team_id;
 
+    console.log('Setting up real-time subscription:', {
+      matchId,
+      userTeamId,
+      opponentTeamId,
+      isHomeTeam,
+    });
+
     // Subscribe to opponent's lineup changes
     const channel = supabase
       .channel(`match-lineup-${matchId}`)
@@ -271,19 +331,36 @@ export function MatchLineup() {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
-          console.log('Lineup change detected:', payload);
+          console.log('Real-time event received:', payload);
+          console.log('Opponent team ID:', opponentTeamId);
+          console.log('Event team ID:', (payload.new as any)?.team_id);
+
           // Only update if it's the opponent's lineup
           if (payload.new && (payload.new as any).team_id === opponentTeamId) {
+            console.log('Updating opponent lineup state');
             setOpponentLineup(payload.new);
+          } else {
+            console.log('Ignoring event - not opponent team');
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [matchId, match, isHomeTeam]);
+  }, [matchId, match, isHomeTeam, userTeamId]);
+
+  // Auto-navigate to scoring page when both lineups are locked
+  useEffect(() => {
+    if (lineupLocked && opponentLineup?.locked) {
+      console.log('Both lineups locked - navigating to scoring page');
+      navigate(`/match/${matchId}/score`);
+    }
+  }, [lineupLocked, opponentLineup, matchId, navigate]);
 
   /**
    * Helper: Check if any player is a substitute
@@ -334,15 +411,27 @@ export function MatchLineup() {
   };
 
   /**
-   * Calculate team total handicap
+   * Calculate total player handicap (sum of 3 players)
    */
-  const calculateTeamHandicap = (): number => {
+  const calculatePlayerHandicapTotal = (): number => {
     const h1 = getPlayerHandicap(player1Id);
     const h2 = getPlayerHandicap(player2Id);
     const h3 = getPlayerHandicap(player3Id);
 
     const total = h1 + h2 + h3;
     return Math.round(total * 10) / 10; // Round to 1 decimal
+  };
+
+  /**
+   * Calculate final team total (player handicaps + team bonus for home team)
+   */
+  const calculateFinalTeamHandicap = (): number => {
+    const playerTotal = calculatePlayerHandicapTotal();
+
+    // Only home team gets team handicap bonus
+    const bonus = isHomeTeam ? teamHandicap : 0;
+
+    return Math.round((playerTotal + bonus) * 10) / 10; // Round to 1 decimal
   };
 
   /**
@@ -372,6 +461,25 @@ export function MatchLineup() {
     }
 
     try {
+      // Verify user is on the team
+      const { data: teamCheck, error: teamCheckError } = await supabase
+        .from('team_players')
+        .select('*')
+        .eq('team_id', userTeamId)
+        .eq('member_id', memberId)
+        .single();
+
+      console.log('Team membership check:', {
+        userTeamId,
+        memberId,
+        teamCheck,
+        error: teamCheckError,
+      });
+
+      if (teamCheckError || !teamCheck) {
+        throw new Error('You are not a member of this team');
+      }
+
       // Prepare lineup data
       const lineupData = {
         match_id: matchId,
@@ -384,6 +492,8 @@ export function MatchLineup() {
         player3_handicap: getPlayerHandicap(player3Id),
         locked: true,
       };
+
+      console.log('Attempting to save lineup:', lineupData);
 
       let result;
 
@@ -404,7 +514,16 @@ export function MatchLineup() {
           .single();
       }
 
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error('Database error details:', {
+          code: result.error.code,
+          message: result.error.message,
+          details: result.error.details,
+          hint: result.error.hint,
+          lineupData,
+        });
+        throw result.error;
+      }
 
       // Update local state
       setLineupId(result.data.id);
@@ -413,7 +532,34 @@ export function MatchLineup() {
       console.log('Lineup locked successfully:', result.data);
     } catch (err: any) {
       console.error('Error saving lineup:', err);
-      alert('Failed to save lineup. Please try again.');
+      alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
+    }
+  };
+
+  /**
+   * Handle unlock lineup - Only allowed if opponent hasn't locked yet
+   */
+  const handleUnlockLineup = async () => {
+    if (!lineupId) {
+      alert('Error: No lineup to unlock');
+      return;
+    }
+
+    try {
+      const result = await supabase
+        .from('match_lineups')
+        .update({ locked: false, locked_at: null })
+        .eq('id', lineupId)
+        .select()
+        .single();
+
+      if (result.error) throw result.error;
+
+      setLineupLocked(false);
+      console.log('Lineup unlocked successfully:', result.data);
+    } catch (err: any) {
+      console.error('Error unlocking lineup:', err);
+      alert('Failed to unlock lineup. Please try again.');
     }
   };
 
@@ -453,7 +599,6 @@ export function MatchLineup() {
   }
 
   const opponent = getOpponentTeam();
-  const teamHandicap = calculateTeamHandicap();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -475,7 +620,7 @@ export function MatchLineup() {
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">
         {/* Match Info Card */}
         <Card>
-          <CardContent className="p-4 space-y-3">
+          <CardContent className="px-4 py-0 space-y-1">
             {/* Date */}
             {match.scheduled_date && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -501,24 +646,22 @@ export function MatchLineup() {
               )}
             </div>
 
-            {/* Venue */}
-            {match.scheduled_venue && (
-              <div className="flex items-start gap-2 text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mt-0.5" />
-                <div>
-                  <p className="font-medium">{match.scheduled_venue.name}</p>
-                  <p className="text-xs">
-                    {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Home/Away */}
-            <div className="text-sm text-gray-600">
+            {/* Home/Away & Venue on same line */}
+            <div className="flex items-center gap-3 text-sm text-gray-600">
               <span className="font-medium">
                 {isHomeTeam ? 'Home Game' : 'Away Game'}
               </span>
+              {match.scheduled_venue && (
+                <>
+                  <span>@</span>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>
+                      {match.scheduled_venue.name}, {match.scheduled_venue.city}, {match.scheduled_venue.state}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -753,19 +896,37 @@ export function MatchLineup() {
             </div>
 
             {/* Team Handicap Display */}
-            <div className="border-t pt-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-900">Team Total Handicap:</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  {formatHandicap(teamHandicap)}
+            <div className="border-t pt-4 space-y-2">
+              <div className="flex justify-between items-center text-sm text-gray-600">
+                <span>Player Handicaps:</span>
+                <span className="font-semibold">{formatHandicap(calculatePlayerHandicapTotal())}</span>
+              </div>
+
+              {/* Always show team bonus, but indicate it only applies to home team */}
+              <div className="flex justify-between items-center text-sm">
+                <span className={isHomeTeam ? "text-gray-600" : "text-gray-400"}>
+                  Team Bonus {isHomeTeam ? "(Applied)" : "(Home Only)"}:
+                </span>
+                <span className={`font-semibold ${isHomeTeam ? "text-gray-600" : "text-gray-400"}`}>
+                  {teamHandicap >= 0 ? '+' : ''}{formatHandicap(teamHandicap)}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Team h/c from standings: 0 (will be added later)
-              </p>
+
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="font-semibold text-gray-900">Team Total Handicap:</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {formatHandicap(calculateFinalTeamHandicap())}
+                </span>
+              </div>
+
+              {!isHomeTeam && (
+                <p className="text-xs text-gray-500 italic">
+                  Team bonus shown above applies to home team only
+                </p>
+              )}
             </div>
 
-            {/* Lock Lineup Button */}
+            {/* Lock/Unlock Lineup Button */}
             {!lineupLocked ? (
               <Button
                 className="w-full"
@@ -776,11 +937,23 @@ export function MatchLineup() {
                 Lock Lineup
               </Button>
             ) : (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle className="h-5 w-5" />
-                  <span className="font-semibold">Lineup Locked</span>
+              <div className="space-y-3">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="font-semibold">Lineup Locked</span>
+                  </div>
                 </div>
+                {/* Only show unlock if opponent hasn't locked yet */}
+                {!opponentLineup?.locked && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handleUnlockLineup}
+                  >
+                    Unlock Lineup
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
@@ -803,23 +976,12 @@ export function MatchLineup() {
               ) : (
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Ready</span>
+                  <span className="text-sm font-medium">Starting match...</span>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
-
-        {/* Start Match Button (shown when both locked) */}
-        {lineupLocked && opponentLineup?.locked && (
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => navigate(`/match/${matchId}/score`)}
-          >
-            Start Match
-          </Button>
-        )}
       </main>
     </div>
   );
