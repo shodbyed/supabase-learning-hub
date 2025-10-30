@@ -66,7 +66,7 @@ const memberRoutes = [
   { path: '/my-teams', element: <MyTeams /> },
   { path: '/team/:teamId/schedule', element: <TeamSchedule /> },
   { path: '/match/:matchId/lineup', element: <MatchLineup /> },
-  { path: '/score-match', element: <ScoreMatch /> },
+  { path: '/match/:matchId/score', element: <ScoreMatch /> },
 ];
 
 // Protected routes - require league_operator role

@@ -45,9 +45,16 @@ ALTER TABLE leagues
 ADD COLUMN IF NOT EXISTS team_handicap_variant TEXT DEFAULT 'standard' NOT NULL
 CHECK (team_handicap_variant IN ('standard', 'reduced', 'none'));
 
+-- Add golden_break_counts_as_win column to leagues table
+ALTER TABLE leagues
+ADD COLUMN IF NOT EXISTS golden_break_counts_as_win BOOLEAN DEFAULT false NOT NULL;
+
 -- Add comments for documentation
 COMMENT ON COLUMN leagues.handicap_variant IS
   'Determines player handicap range: standard (-2 to +2), reduced (-1 to +1), or none (all 0)';
 
 COMMENT ON COLUMN leagues.team_handicap_variant IS
   'Determines team bonus handicap: standard (every 2 ahead), reduced (every 3 ahead), or none (no bonus)';
+
+COMMENT ON COLUMN leagues.golden_break_counts_as_win IS
+  'If true, sinking game ball on break (8BB/9BB) counts as a win. If false, breaker re-racks and breaks again.';
