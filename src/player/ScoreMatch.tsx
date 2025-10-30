@@ -93,6 +93,7 @@ export function ScoreMatch() {
 
   // League variants (will be used for B&R/8BB checkboxes)
   const [goldenBreakCountsAsWin, setGoldenBreakCountsAsWin] = useState(false);
+  const [gameType, setGameType] = useState<string>('8-ball'); // 8-ball, 9-ball, 10-ball, etc.
   void goldenBreakCountsAsWin; // Will be used in scoring UI
 
   // Team handicap calculations
@@ -122,10 +123,40 @@ export function ScoreMatch() {
   const [confirmationGame, setConfirmationGame] = useState<{
     gameNumber: number;
     winnerPlayerName: string;
+    breakAndRun: boolean;
+    goldenBreak: boolean;
   } | null>(null);
+
+  // Queue for pending confirmations (when multiple games need confirmation)
+  const [confirmationQueue, setConfirmationQueue] = useState<Array<{
+    gameNumber: number;
+    winnerPlayerName: string;
+    breakAndRun: boolean;
+    goldenBreak: boolean;
+  }>>([]);
 
   // Scoreboard view toggle (true = home team, false = away team)
   const [showingHomeTeam, setShowingHomeTeam] = useState(true);
+
+  // Auto-confirm setting (bypass confirmation modal)
+  const [autoConfirm, setAutoConfirm] = useState(false);
+
+  // Process confirmation queue when modal closes or queue changes
+  useEffect(() => {
+    // Only process queue when modal is closed
+    if (!confirmationGame && confirmationQueue.length > 0) {
+      console.log('Modal closed, processing queue. Queue length:', confirmationQueue.length);
+      const nextConfirmation = confirmationQueue[0];
+      console.log('Showing game', nextConfirmation.gameNumber, 'from queue');
+
+      // Add delay to allow Dialog component to clean up properly
+      // This prevents the grey screen overlay issue
+      setTimeout(() => {
+        setConfirmationGame(nextConfirmation);
+        setConfirmationQueue(prev => prev.slice(1)); // Remove first item from queue
+      }, 1000);
+    }
+  }, [confirmationGame, confirmationQueue]); // Watch both - but queue updates won't replace modal
 
   // Determine user's team (will be used for permissions and UI)
   const [userTeamId, setUserTeamId] = useState<string | null>(null);
@@ -158,7 +189,8 @@ export function ScoreMatch() {
               league:leagues(
                 handicap_variant,
                 team_handicap_variant,
-                golden_break_counts_as_win
+                golden_break_counts_as_win,
+                game_type
               )
             )
           `)
@@ -180,9 +212,11 @@ export function ScoreMatch() {
         const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
         const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
         const goldenBreakSetting = leagueData?.golden_break_counts_as_win ?? false;
+        const gameTypeSetting = leagueData?.game_type || '8-ball';
 
         setGoldenBreakCountsAsWin(goldenBreakSetting);
-        console.log('League variants:', { playerVariant, teamVariant, goldenBreakSetting });
+        setGameType(gameTypeSetting);
+        console.log('League variants:', { playerVariant, teamVariant, goldenBreakSetting, gameTypeSetting });
 
         // Transform match data
         const homeTeam = Array.isArray(matchData.home_team)
@@ -466,15 +500,24 @@ export function ScoreMatch() {
                   console.log('needsMyConfirmation:', needsMyConfirmation);
 
                   if (needsMyConfirmation) {
-                    // Auto-open confirmation modal
+                    // If auto-confirm is enabled, automatically confirm without showing modal
+                    if (autoConfirm) {
+                      console.log('Auto-confirming game', updatedGame.game_number);
+                      confirmOpponentScore(updatedGame.game_number);
+                      return;
+                    }
+
+                    // Auto-open confirmation modal (or add to queue)
                     // Need to get player name from the refreshed data
                     const winnerPlayer = gamesData.find(g => g.game_number === updatedGame.game_number);
                     if (winnerPlayer && winnerPlayer.winner_player_id) {
                       const winnerName = getPlayerDisplayName(winnerPlayer.winner_player_id);
-                      console.log('Auto-opening confirmation modal for game', updatedGame.game_number, 'winner:', winnerName);
-                      setConfirmationGame({
+                      console.log('Adding confirmation to queue for game', updatedGame.game_number, 'winner:', winnerName);
+                      addToConfirmationQueue({
                         gameNumber: updatedGame.game_number,
-                        winnerPlayerName: winnerName
+                        winnerPlayerName: winnerName,
+                        breakAndRun: updatedGame.break_and_run,
+                        goldenBreak: updatedGame.golden_break
                       });
                     }
                   }
@@ -499,15 +542,12 @@ export function ScoreMatch() {
 
   /**
    * Get display name for a player (nickname or first name, max 12 chars)
-   * Special handling for substitute player IDs
+   * Special handling for substitute player IDs - shows their nicknames from database
    */
   const getPlayerDisplayName = (playerId: string | null): string => {
-    if (!playerId) return 'Substitute';
+    if (!playerId) return 'Unknown';
 
-    // Check for special substitute IDs
-    if (playerId === '00000000-0000-0000-0000-000000000001') return 'Substitute';
-    if (playerId === '00000000-0000-0000-0000-000000000002') return 'Substitute';
-
+    // For substitute IDs, get their names from the players map (they're in the database)
     const player = players.get(playerId);
     if (!player) return 'Unknown';
     return player.nickname || player.first_name;
@@ -587,6 +627,45 @@ export function ScoreMatch() {
   };
 
   /**
+   * Add a confirmation to the queue
+   * The useEffect will automatically show it when the modal is ready
+   * Prevents duplicates by checking if game is already in queue or currently showing
+   */
+  const addToConfirmationQueue = (confirmation: {
+    gameNumber: number;
+    winnerPlayerName: string;
+    breakAndRun: boolean;
+    goldenBreak: boolean;
+  }) => {
+    // Check if this game is already being shown in the modal
+    if (confirmationGame && confirmationGame.gameNumber === confirmation.gameNumber) {
+      console.log('Game', confirmation.gameNumber, 'is already in the confirmation modal, skipping');
+      return;
+    }
+
+    // Check if this game is already in the queue
+    const alreadyInQueue = confirmationQueue.some(item => item.gameNumber === confirmation.gameNumber);
+    if (alreadyInQueue) {
+      console.log('Game', confirmation.gameNumber, 'is already in the queue, skipping');
+      return;
+    }
+
+    console.log('Adding game', confirmation.gameNumber, 'to confirmation queue. Current queue length:', confirmationQueue.length);
+
+    // Always add to queue - the useEffect will handle showing it
+    setConfirmationQueue(prev => {
+      // Double-check it's not in queue (race condition protection)
+      if (prev.some(item => item.gameNumber === confirmation.gameNumber)) {
+        console.log('Game', confirmation.gameNumber, 'already in queue during update, skipping');
+        return prev;
+      }
+      const newQueue = [...prev, confirmation];
+      console.log('Queue updated. New length:', newQueue.length);
+      return newQueue;
+    });
+  };
+
+  /**
    * Handle player button click to score a game
    */
   const handlePlayerClick = (
@@ -605,13 +684,28 @@ export function ScoreMatch() {
       // Determine if this is the opponent team
       const isHomeTeam = userTeamId === match.home_team_id;
       const needsMyConfirmation = isHomeTeam ? !existingGame.confirmed_by_home : !existingGame.confirmed_by_away;
+      const alreadyConfirmedByMe = isHomeTeam ? existingGame.confirmed_by_home : existingGame.confirmed_by_away;
 
       if (needsMyConfirmation) {
-        // Show confirmation modal for opponent
-        setConfirmationGame({
+        // If auto-confirm is enabled, automatically confirm without showing modal
+        if (autoConfirm) {
+          confirmOpponentScore(gameNumber);
+          return;
+        }
+
+        // Add to confirmation queue (will show immediately or queue if modal is open)
+        addToConfirmationQueue({
           gameNumber,
-          winnerPlayerName: getPlayerDisplayName(existingGame.winner_player_id)
+          winnerPlayerName: getPlayerDisplayName(existingGame.winner_player_id),
+          breakAndRun: existingGame.break_and_run,
+          goldenBreak: existingGame.golden_break
         });
+        return;
+      }
+
+      if (alreadyConfirmedByMe) {
+        // This team already confirmed, waiting for opponent - don't allow re-clicking
+        console.log('You already confirmed this game. Waiting for opponent to confirm.');
         return;
       }
     }
@@ -890,7 +984,18 @@ export function ScoreMatch() {
           {/* Team scoreboard (shows one team at a time) */}
           {showingHomeTeam ? (
             <div className="space-y-2">
-              <div className="text-center font-bold text-lg mb-2">HOME</div>
+              <div className="flex flex-col items-center mb-2">
+                <div className="text-center font-bold text-lg">HOME</div>
+                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoConfirm}
+                    onChange={(e) => setAutoConfirm(e.target.checked)}
+                    className="w-3 h-3"
+                  />
+                  Auto-confirm opponent scores
+                </label>
+              </div>
               {/* Two-column layout: Player stats and match stats */}
               <div className="grid grid-cols-[55%_45%] gap-2">
                 {/* Player stats table */}
@@ -954,7 +1059,18 @@ export function ScoreMatch() {
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="text-center font-bold text-lg mb-2">AWAY</div>
+              <div className="flex flex-col items-center mb-2">
+                <div className="text-center font-bold text-lg">AWAY</div>
+                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoConfirm}
+                    onChange={(e) => setAutoConfirm(e.target.checked)}
+                    className="w-3 h-3"
+                  />
+                  Auto-confirm opponent scores
+                </label>
+              </div>
               {/* Two-column layout: Player stats and match stats */}
               <div className="grid grid-cols-[55%_45%] gap-2">
                 {/* Player stats table */}
@@ -1070,9 +1186,9 @@ export function ScoreMatch() {
 
               // Determine styling based on confirmation status
               const winnerClass = isConfirmed ? 'bg-green-200 font-semibold' : 'bg-yellow-100 font-semibold';
-              const loserClass = isConfirmed ? 'bg-gray-100 text-gray-500' : 'bg-gray-50 text-gray-400';
+              const loserClass = 'bg-white text-gray-500';
 
-              // If pending, allow clicking to confirm/deny
+              // If pending, show buttons with NO trophy, NO Edit button - just colored backgrounds
               if (isPending) {
                 return (
                   <div key={game.gameNumber} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
@@ -1084,7 +1200,6 @@ export function ScoreMatch() {
                       onClick={() => handlePlayerClick(game.gameNumber, breakerPlayerId, breakerName, breakerTeamId)}
                     >
                       {breakerName}
-                      {breakerWon && <span className="ml-1 text-xs">⏳</span>}
                     </Button>
                     <div className="text-center font-semibold text-gray-400">vs</div>
                     <Button
@@ -1094,23 +1209,24 @@ export function ScoreMatch() {
                       onClick={() => handlePlayerClick(game.gameNumber, rackerPlayerId, rackerName, rackerTeamId)}
                     >
                       {rackerName}
-                      {rackerWon && <span className="ml-1 text-xs">⏳</span>}
                     </Button>
                   </div>
                 );
               }
 
-              // If confirmed, show as static divs with Edit button
+              // If confirmed, show divs with trophy on winner and Edit button in middle
               return (
                 <div key={game.gameNumber} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
                   <div className="font-semibold">{game.gameNumber}.</div>
                   <div className={`text-center p-2 rounded ${breakerWon ? winnerClass : loserClass}`}>
+                    {breakerWon && <span className="mr-1">🏆</span>}
                     {breakerName}
                   </div>
                   <Button variant="outline" size="sm" className="text-xs">
                     Edit
                   </Button>
                   <div className={`text-center p-2 rounded ${rackerWon ? winnerClass : loserClass}`}>
+                    {rackerWon && <span className="mr-1">🏆</span>}
                     {rackerName}
                   </div>
                 </div>
@@ -1149,14 +1265,8 @@ export function ScoreMatch() {
       </div>
 
       {/* Win Confirmation Modal */}
-      <Dialog open={scoringGame !== null} onOpenChange={(open) => {
-        if (!open) {
-          setScoringGame(null);
-          setBreakAndRun(false);
-          setGoldenBreak(false);
-        }
-      }}>
-        <DialogContent>
+      <Dialog open={scoringGame !== null}>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Confirm Game Winner</DialogTitle>
             <DialogDescription>
@@ -1183,7 +1293,7 @@ export function ScoreMatch() {
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
               <label htmlFor="breakAndRun" className="text-sm font-normal cursor-pointer">
-                Break & Run (B&R)
+                Break & Run
               </label>
             </div>
 
@@ -1201,7 +1311,10 @@ export function ScoreMatch() {
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="goldenBreak" className="text-sm font-normal cursor-pointer">
-                  Golden Break (8BB/9BB)
+                  {gameType === '8-ball' && '8 on the Break'}
+                  {gameType === '9-ball' && '9 on the Break'}
+                  {gameType === '10-ball' && '10 on the Break'}
+                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'Golden Break'}
                 </label>
               </div>
             )}
@@ -1226,12 +1339,8 @@ export function ScoreMatch() {
       </Dialog>
 
       {/* Opponent Confirmation Modal */}
-      <Dialog open={confirmationGame !== null} onOpenChange={(open) => {
-        if (!open) {
-          setConfirmationGame(null);
-        }
-      }}>
-        <DialogContent>
+      <Dialog open={confirmationGame !== null}>
+        <DialogContent onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Confirm Opponent's Score</DialogTitle>
             <DialogDescription>
@@ -1239,19 +1348,52 @@ export function ScoreMatch() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-4">
-            <p className="text-center">
-              Opponent scored game <span className="font-semibold">{confirmationGame?.gameNumber}</span> for{' '}
-              <span className="font-semibold">{confirmationGame?.winnerPlayerName}</span>.
+          <div className="py-4 space-y-4">
+            <p className="text-center text-gray-500 text-sm">
+              Opponent recorded for game {confirmationGame?.gameNumber}:
             </p>
+
+            {/* Dynamic result message based on what was selected */}
+            <div className="text-center text-lg font-semibold">
+              {confirmationGame?.breakAndRun ? (
+                <div className="text-blue-600">
+                  {confirmationGame.winnerPlayerName} had a Break & Run!
+                </div>
+              ) : confirmationGame?.goldenBreak ? (
+                <div className="text-green-600">
+                  {confirmationGame.winnerPlayerName} had{' '}
+                  {gameType === '8-ball' && 'an 8 on the Break!'}
+                  {gameType === '9-ball' && 'a 9 on the Break!'}
+                  {gameType === '10-ball' && 'a 10 on the Break!'}
+                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'a Golden Break!'}
+                </div>
+              ) : (
+                <div>
+                  {confirmationGame?.winnerPlayerName} won the game
+                </div>
+              )}
+            </div>
+
             <p className="text-center mt-4 text-gray-600">
               Do you agree with this result?
             </p>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-row justify-around gap-4">
+            <Button
+              className="flex-1"
+              onClick={() => {
+                if (confirmationGame) {
+                  confirmOpponentScore(confirmationGame.gameNumber);
+                  setConfirmationGame(null);
+                }
+              }}
+            >
+              Confirm
+            </Button>
             <Button
               variant="outline"
+              className="flex-1"
               onClick={() => {
                 if (confirmationGame) {
                   denyOpponentScore(confirmationGame.gameNumber);
@@ -1260,14 +1402,6 @@ export function ScoreMatch() {
               }}
             >
               Deny
-            </Button>
-            <Button onClick={() => {
-              if (confirmationGame) {
-                confirmOpponentScore(confirmationGame.gameNumber);
-                setConfirmationGame(null);
-              }
-            }}>
-              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>

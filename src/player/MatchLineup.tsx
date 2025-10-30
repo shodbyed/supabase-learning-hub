@@ -30,6 +30,10 @@ import {
   type HandicapVariant,
 } from '@/utils/handicapCalculations';
 
+// Special substitute member IDs
+const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
+const SUB_AWAY_ID = '00000000-0000-0000-0000-000000000002';
+
 interface Match {
   id: string;
   scheduled_date: string;
@@ -236,7 +240,25 @@ export function MatchLineup() {
           })
         );
 
-        console.log('Players with calculated handicaps:', transformedPlayers);
+        // Add the appropriate substitute member to the players list
+        const substituteId = isHome ? SUB_HOME_ID : SUB_AWAY_ID;
+        const { data: subData, error: subError } = await supabase
+          .from('members')
+          .select('id, first_name, last_name, nickname')
+          .eq('id', substituteId)
+          .single();
+
+        if (!subError && subData) {
+          transformedPlayers.push({
+            id: subData.id,
+            first_name: subData.first_name,
+            last_name: subData.last_name,
+            nickname: subData.nickname,
+            handicap: 0, // Will be calculated based on highest unused or manual entry
+          });
+        }
+
+        console.log('Players with calculated handicaps (including substitute):', transformedPlayers);
         setPlayers(transformedPlayers);
 
         // Check if lineup already exists for this team
@@ -252,9 +274,15 @@ export function MatchLineup() {
           console.log('Loading existing lineup from database:', existingLineup);
 
           setLineupId(existingLineup.id);
-          setPlayer1Id(existingLineup.player1_id || 'SUBSTITUTE');
-          setPlayer2Id(existingLineup.player2_id || 'SUBSTITUTE');
-          setPlayer3Id(existingLineup.player3_id || 'SUBSTITUTE');
+          // Use substitute ID if player_id is null or already a substitute ID
+          const getPlayerOrSub = (playerId: string | null) => {
+            if (!playerId) return isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID;
+            if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) return playerId;
+            return playerId;
+          };
+          setPlayer1Id(getPlayerOrSub(existingLineup.player1_id));
+          setPlayer2Id(getPlayerOrSub(existingLineup.player2_id));
+          setPlayer3Id(getPlayerOrSub(existingLineup.player3_id));
           setLineupLocked(existingLineup.locked);
 
           // Update players array with stored handicaps to ensure consistency
@@ -366,7 +394,9 @@ export function MatchLineup() {
    * Helper: Check if any player is a substitute
    */
   const hasSub = (): boolean => {
-    return player1Id === 'SUBSTITUTE' || player2Id === 'SUBSTITUTE' || player3Id === 'SUBSTITUTE';
+    return player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID ||
+           player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID ||
+           player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID;
   };
 
   /**
@@ -374,7 +404,7 @@ export function MatchLineup() {
    */
   const getHighestUnusedHandicap = (): number => {
     const usedPlayerIds = [player1Id, player2Id, player3Id].filter(
-      (id) => id && id !== 'SUBSTITUTE'
+      (id) => id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
     );
     const unusedPlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
 
@@ -387,7 +417,7 @@ export function MatchLineup() {
    * Helper: Get handicap for a player slot
    */
   const getPlayerHandicap = (playerId: string): number => {
-    if (playerId === 'SUBSTITUTE') {
+    if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) {
       const highestUnused = getHighestUnusedHandicap();
 
       // If sub handicap is manually entered, use the HIGHER of the two
@@ -480,15 +510,15 @@ export function MatchLineup() {
         throw new Error('You are not a member of this team');
       }
 
-      // Prepare lineup data
+      // Prepare lineup data (keep substitute IDs, don't convert to null)
       const lineupData = {
         match_id: matchId,
         team_id: userTeamId,
-        player1_id: player1Id === 'SUBSTITUTE' ? null : player1Id,
+        player1_id: player1Id,
         player1_handicap: getPlayerHandicap(player1Id),
-        player2_id: player2Id === 'SUBSTITUTE' ? null : player2Id,
+        player2_id: player2Id,
         player2_handicap: getPlayerHandicap(player2Id),
-        player3_id: player3Id === 'SUBSTITUTE' ? null : player3Id,
+        player3_id: player3Id,
         player3_handicap: getPlayerHandicap(player3Id),
         locked: true,
       };
@@ -751,13 +781,10 @@ export function MatchLineup() {
                             {player.nickname || `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
-                        <SelectItem value="SUBSTITUTE" disabled={hasSub() && player1Id !== 'SUBSTITUTE'}>
-                          Substitute
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {player1Id === 'SUBSTITUTE' && (
+                  {(player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID) && (
                     <div className="flex-1">
                       <Select
                         value={subHandicap}
@@ -808,13 +835,10 @@ export function MatchLineup() {
                             {player.nickname || `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
-                        <SelectItem value="SUBSTITUTE" disabled={hasSub() && player2Id !== 'SUBSTITUTE'}>
-                          Substitute
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {player2Id === 'SUBSTITUTE' && (
+                  {(player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID) && (
                     <div className="flex-1">
                       <Select
                         value={subHandicap}
@@ -865,13 +889,10 @@ export function MatchLineup() {
                             {player.nickname || `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
-                        <SelectItem value="SUBSTITUTE" disabled={hasSub() && player3Id !== 'SUBSTITUTE'}>
-                          Substitute
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {player3Id === 'SUBSTITUTE' && (
+                  {(player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID) && (
                     <div className="flex-1">
                       <Select
                         value={subHandicap}

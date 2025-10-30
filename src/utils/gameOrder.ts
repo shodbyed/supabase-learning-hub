@@ -31,35 +31,35 @@ export interface GameMatchup {
  * Pattern repeats for games 13-18
  */
 export const GAME_ORDER_3V3: GameMatchup[] = [
-  // Round 1: Home breaks first (P1 vs P1, P2 vs P2, P3 vs P3)
+  // Round 1: Home breaks (P1, P2, P3), Away racks (P1, P2, P3)
   { gameNumber: 1, homePlayerPosition: 1, awayPlayerPosition: 1, homeAction: 'breaks', awayAction: 'racks' },
   { gameNumber: 2, homePlayerPosition: 2, awayPlayerPosition: 2, homeAction: 'breaks', awayAction: 'racks' },
   { gameNumber: 3, homePlayerPosition: 3, awayPlayerPosition: 3, homeAction: 'breaks', awayAction: 'racks' },
 
-  // Round 2: Away breaks first (P1 vs P2, P2 vs P3, P3 vs P1)
+  // Round 2: Home racks (P1, P2, P3), Away breaks (P2, P3, P1)
   { gameNumber: 4, homePlayerPosition: 1, awayPlayerPosition: 2, homeAction: 'racks', awayAction: 'breaks' },
   { gameNumber: 5, homePlayerPosition: 2, awayPlayerPosition: 3, homeAction: 'racks', awayAction: 'breaks' },
   { gameNumber: 6, homePlayerPosition: 3, awayPlayerPosition: 1, homeAction: 'racks', awayAction: 'breaks' },
 
-  // Round 3: Home breaks first (P1 vs P3, P2 vs P1, P3 vs P2)
+  // Round 3: Home breaks (P1, P2, P3), Away racks (P3, P1, P2)
   { gameNumber: 7, homePlayerPosition: 1, awayPlayerPosition: 3, homeAction: 'breaks', awayAction: 'racks' },
   { gameNumber: 8, homePlayerPosition: 2, awayPlayerPosition: 1, homeAction: 'breaks', awayAction: 'racks' },
   { gameNumber: 9, homePlayerPosition: 3, awayPlayerPosition: 2, homeAction: 'breaks', awayAction: 'racks' },
 
-  // Round 4: Away breaks first (P1 vs P1, P2 vs P2, P3 vs P3) - rematch
+  // Round 4: Home racks (P1, P2, P3), Away breaks (P1, P2, P3)
   { gameNumber: 10, homePlayerPosition: 1, awayPlayerPosition: 1, homeAction: 'racks', awayAction: 'breaks' },
   { gameNumber: 11, homePlayerPosition: 2, awayPlayerPosition: 2, homeAction: 'racks', awayAction: 'breaks' },
   { gameNumber: 12, homePlayerPosition: 3, awayPlayerPosition: 3, homeAction: 'racks', awayAction: 'breaks' },
 
-  // Round 5: Home breaks first (P1 vs P3, P2 vs P1, P3 vs P2) - rematch
-  { gameNumber: 13, homePlayerPosition: 1, awayPlayerPosition: 3, homeAction: 'racks', awayAction: 'breaks' },
-  { gameNumber: 14, homePlayerPosition: 2, awayPlayerPosition: 1, homeAction: 'racks', awayAction: 'breaks' },
-  { gameNumber: 15, homePlayerPosition: 3, awayPlayerPosition: 2, homeAction: 'racks', awayAction: 'breaks' },
+  // Round 5: Home breaks (P1, P2, P3), Away racks (P2, P3, P1)
+  { gameNumber: 13, homePlayerPosition: 1, awayPlayerPosition: 2, homeAction: 'breaks', awayAction: 'racks' },
+  { gameNumber: 14, homePlayerPosition: 2, awayPlayerPosition: 3, homeAction: 'breaks', awayAction: 'racks' },
+  { gameNumber: 15, homePlayerPosition: 3, awayPlayerPosition: 1, homeAction: 'breaks', awayAction: 'racks' },
 
-  // Round 6: Away breaks first (P1 vs P2, P2 vs P3, P3 vs P1) - rematch
-  { gameNumber: 16, homePlayerPosition: 1, awayPlayerPosition: 2, homeAction: 'breaks', awayAction: 'racks' },
-  { gameNumber: 17, homePlayerPosition: 2, awayPlayerPosition: 3, homeAction: 'breaks', awayAction: 'racks' },
-  { gameNumber: 18, homePlayerPosition: 3, awayPlayerPosition: 1, homeAction: 'breaks', awayAction: 'racks' },
+  // Round 6: Home racks (P1, P2, P3), Away breaks (P3, P1, P2)
+  { gameNumber: 16, homePlayerPosition: 1, awayPlayerPosition: 3, homeAction: 'racks', awayAction: 'breaks' },
+  { gameNumber: 17, homePlayerPosition: 2, awayPlayerPosition: 1, homeAction: 'racks', awayAction: 'breaks' },
+  { gameNumber: 18, homePlayerPosition: 3, awayPlayerPosition: 2, homeAction: 'racks', awayAction: 'breaks' },
 ];
 
 /**
