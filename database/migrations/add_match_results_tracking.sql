@@ -30,8 +30,8 @@ ADD COLUMN IF NOT EXISTS away_points_earned INTEGER DEFAULT 0 NOT NULL;
 
 COMMENT ON COLUMN matches.home_games_won IS 'Current count of games won by home team (updated live during match)';
 COMMENT ON COLUMN matches.away_games_won IS 'Current count of games won by away team (updated live during match)';
-COMMENT ON COLUMN matches.home_points_earned IS 'Points earned by home team (games won beyond games_to_win threshold)';
-COMMENT ON COLUMN matches.away_points_earned IS 'Points earned by away team (games won beyond games_to_win threshold)';
+COMMENT ON COLUMN matches.home_points_earned IS 'Points for standings: home_games_won - (home_games_to_tie ?? home_games_to_win). Negative if lost badly, zero if tied, positive if won convincingly.';
+COMMENT ON COLUMN matches.away_points_earned IS 'Points for standings: away_games_won - (away_games_to_tie ?? away_games_to_win). Negative if lost badly, zero if tied, positive if won convincingly.';
 
 -- Add match outcome (set when match completes)
 ALTER TABLE matches

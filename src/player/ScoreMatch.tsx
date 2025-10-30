@@ -428,7 +428,7 @@ export function ScoreMatch() {
                     0 / {homeThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
-                    Points - {Math.max(0, 0 - homeThresholds.games_to_win)}
+                    Points - {0 - (homeThresholds.games_to_tie ?? homeThresholds.games_to_win)}
                   </div>
                 </div>
               </div>
@@ -489,10 +489,10 @@ export function ScoreMatch() {
                     )}
                   </div>
                   <div className="text-center text-4xl font-bold mt-4">
-                    0/{awayThresholds.games_to_win}
+                    0 / {awayThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
-                    Points - {Math.max(0, 0 - awayThresholds.games_to_win)}
+                    Points - {0 - (awayThresholds.games_to_tie ?? awayThresholds.games_to_win)}
                   </div>
                 </div>
               </div>
