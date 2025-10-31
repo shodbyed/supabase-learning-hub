@@ -15,7 +15,7 @@
  * - Match end detection with winner announcement
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -125,6 +125,7 @@ export function ScoreMatch() {
     winnerPlayerName: string;
     breakAndRun: boolean;
     goldenBreak: boolean;
+    isResetRequest?: boolean; // True if this is a request to reset the game
   } | null>(null);
 
   // Queue for pending confirmations (when multiple games need confirmation)
@@ -133,7 +134,18 @@ export function ScoreMatch() {
     winnerPlayerName: string;
     breakAndRun: boolean;
     goldenBreak: boolean;
+    isResetRequest?: boolean;
   }>>([]);
+
+  // Edit game modal state
+  const [editingGame, setEditingGame] = useState<{
+    gameNumber: number;
+    currentWinnerName: string;
+  } | null>(null);
+
+  // Track which games I just vacated (to suppress my own confirmation modal)
+  // Using useRef instead of useState to avoid stale closure issues in real-time subscription
+  const myVacateRequests = useRef<Set<number>>(new Set());
 
   // Scoreboard view toggle (true = home team, false = away team)
   const [showingHomeTeam, setShowingHomeTeam] = useState(true);
@@ -476,6 +488,7 @@ export function ScoreMatch() {
               // Check if this update requires my confirmation
               if (payload.eventType === 'UPDATE' && payload.new) {
                 const updatedGame = payload.new as MatchGame;
+                const oldGame = payload.old as MatchGame | undefined;
 
                 console.log('Checking if confirmation needed for game', updatedGame.game_number);
                 console.log('userTeamId:', userTeamId);
@@ -483,6 +496,12 @@ export function ScoreMatch() {
                 console.log('updatedGame.winner_player_id:', updatedGame.winner_player_id);
                 console.log('updatedGame.confirmed_by_home:', updatedGame.confirmed_by_home);
                 console.log('updatedGame.confirmed_by_away:', updatedGame.confirmed_by_away);
+
+                // Detect if this is a vacate request:
+                // Unique state: winner exists BUT both confirmations are false
+                const isVacateRequest = updatedGame.winner_player_id &&
+                                       !updatedGame.confirmed_by_home &&
+                                       !updatedGame.confirmed_by_away;
 
                 // If game has a winner and is waiting for confirmation
                 if (updatedGame.winner_player_id && (!updatedGame.confirmed_by_home || !updatedGame.confirmed_by_away)) {
@@ -492,7 +511,45 @@ export function ScoreMatch() {
                     return;
                   }
 
-                  // Determine if I need to confirm this
+                  console.log('isVacateRequest:', isVacateRequest);
+                  console.log('myVacateRequests set:', Array.from(myVacateRequests.current));
+                  console.log('Game number:', updatedGame.game_number);
+
+                  // For vacate requests, check if this was initiated by me
+                  if (isVacateRequest) {
+                    // Check if the editingGame modal is currently open for this game
+                    // If so, this is MY action, not the opponent's
+                    if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
+                      console.log('I am currently editing this game, suppressing my own confirmation modal');
+                      return;
+                    }
+
+                    // Check if I initiated this vacate request
+                    if (myVacateRequests.current.has(updatedGame.game_number)) {
+                      console.log('I initiated this vacate request, suppressing my own confirmation modal');
+                      // Remove from set after seeing it once
+                      myVacateRequests.current.delete(updatedGame.game_number);
+                      return;
+                    }
+
+                    // This is from opponent - show the confirmation modal
+                    console.log('Opponent vacate request detected. Showing confirmation modal.');
+                    const winnerPlayer = gamesData.find(g => g.game_number === updatedGame.game_number);
+                    if (winnerPlayer && winnerPlayer.winner_player_id) {
+                      const winnerName = getPlayerDisplayName(winnerPlayer.winner_player_id);
+                      console.log('Adding VACATE confirmation to queue for game', updatedGame.game_number, 'winner:', winnerName);
+                      addToConfirmationQueue({
+                        gameNumber: updatedGame.game_number,
+                        winnerPlayerName: winnerName,
+                        breakAndRun: updatedGame.break_and_run,
+                        goldenBreak: updatedGame.golden_break,
+                        isResetRequest: true
+                      });
+                    }
+                    return;
+                  }
+
+                  // Normal score confirmation flow
                   const isHomeTeam = userTeamId === match.home_team_id;
                   const needsMyConfirmation = isHomeTeam ? !updatedGame.confirmed_by_home : !updatedGame.confirmed_by_away;
 
@@ -508,7 +565,6 @@ export function ScoreMatch() {
                     }
 
                     // Auto-open confirmation modal (or add to queue)
-                    // Need to get player name from the refreshed data
                     const winnerPlayer = gamesData.find(g => g.game_number === updatedGame.game_number);
                     if (winnerPlayer && winnerPlayer.winner_player_id) {
                       const winnerName = getPlayerDisplayName(winnerPlayer.winner_player_id);
@@ -538,7 +594,7 @@ export function ScoreMatch() {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, [matchId, match, userTeamId, players]);
+  }, [matchId, match, userTeamId, players, autoConfirm]);
 
   /**
    * Get display name for a player (nickname or first name, max 12 chars)
@@ -636,7 +692,17 @@ export function ScoreMatch() {
     winnerPlayerName: string;
     breakAndRun: boolean;
     goldenBreak: boolean;
+    isResetRequest?: boolean;
   }) => {
+    console.log('addToConfirmationQueue called for game', confirmation.gameNumber, 'isResetRequest:', confirmation.isResetRequest);
+    console.log('Current myVacateRequests set:', Array.from(myVacateRequests.current));
+
+    // If this is a vacate request and I initiated it, don't add to queue
+    if (confirmation.isResetRequest && myVacateRequests.current.has(confirmation.gameNumber)) {
+      console.log('✓ Skipping queue add - I initiated this vacate request for game', confirmation.gameNumber);
+      return;
+    }
+
     // Check if this game is already being shown in the modal
     if (confirmationGame && confirmationGame.gameNumber === confirmation.gameNumber) {
       console.log('Game', confirmation.gameNumber, 'is already in the confirmation modal, skipping');
@@ -730,7 +796,7 @@ export function ScoreMatch() {
   /**
    * Confirm opponent's score
    */
-  const confirmOpponentScore = async (gameNumber: number) => {
+  const confirmOpponentScore = async (gameNumber: number, isVacateRequest?: boolean) => {
     if (!match) return;
 
     const existingGame = gameResults.get(gameNumber);
@@ -739,16 +805,34 @@ export function ScoreMatch() {
     try {
       const isHomeTeam = userTeamId === match.home_team_id;
 
-      const { error } = await supabase
-        .from('match_games')
-        .update({
-          confirmed_by_home: isHomeTeam ? true : existingGame.confirmed_by_home,
-          confirmed_by_away: !isHomeTeam ? true : existingGame.confirmed_by_away,
-          confirmed_at: new Date().toISOString()
-        })
-        .eq('id', existingGame.id);
+      if (isVacateRequest) {
+        // For vacate requests, clear the game entirely (accept the vacate)
+        const { error } = await supabase
+          .from('match_games')
+          .update({
+            winner_team_id: null,
+            winner_player_id: null,
+            break_and_run: false,
+            golden_break: false,
+            confirmed_by_home: false,
+            confirmed_by_away: false
+          })
+          .eq('id', existingGame.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Normal score confirmation - only update OUR confirmation, don't touch opponent's
+        const updateData = isHomeTeam
+          ? { confirmed_by_home: true }
+          : { confirmed_by_away: true };
+
+        const { error } = await supabase
+          .from('match_games')
+          .update(updateData)
+          .eq('id', existingGame.id);
+
+        if (error) throw error;
+      }
 
       // Refresh game results
       const { data: gamesData } = await supabase
@@ -768,30 +852,43 @@ export function ScoreMatch() {
   };
 
   /**
-   * Deny opponent's score - reset the game back to unscored
+   * Deny opponent's score OR vacate request
    */
-  const denyOpponentScore = async (gameNumber: number) => {
+  const denyOpponentScore = async (gameNumber: number, isVacateRequest?: boolean) => {
     if (!match) return;
 
     const existingGame = gameResults.get(gameNumber);
     if (!existingGame) return;
 
     try {
-      // Reset the game back to unscored state
-      const { error } = await supabase
-        .from('match_games')
-        .update({
-          winner_team_id: null,
-          winner_player_id: null,
-          break_and_run: false,
-          golden_break: false,
-          confirmed_by_home: false,
-          confirmed_by_away: false,
-          confirmed_at: null
-        })
-        .eq('id', existingGame.id);
+      if (isVacateRequest) {
+        // Deny vacate request: restore both confirmations to keep the winner locked
+        const { error } = await supabase
+          .from('match_games')
+          .update({
+            confirmed_by_home: true,
+            confirmed_by_away: true
+          })
+          .eq('id', existingGame.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Deny normal score: reset the game back to unscored state
+        const { error } = await supabase
+          .from('match_games')
+          .update({
+            winner_team_id: null,
+            winner_player_id: null,
+            break_and_run: false,
+            golden_break: false,
+            confirmed_by_home: false,
+            confirmed_by_away: false,
+            confirmed_at: null
+          })
+          .eq('id', existingGame.id);
+
+        if (error) throw error;
+      }
 
       // Refresh game results
       const { data: gamesData } = await supabase
@@ -1222,8 +1319,18 @@ export function ScoreMatch() {
                     {breakerWon && <span className="mr-1">🏆</span>}
                     {breakerName}
                   </div>
-                  <Button variant="outline" size="sm" className="text-xs">
-                    Edit
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs px-1"
+                    onClick={() => {
+                      setEditingGame({
+                        gameNumber: game.gameNumber,
+                        currentWinnerName: breakerWon ? breakerName : rackerName,
+                      });
+                    }}
+                  >
+                    Vacate
                   </Button>
                   <div className={`text-center p-2 rounded ${rackerWon ? winnerClass : loserClass}`}>
                     {rackerWon && <span className="mr-1">🏆</span>}
@@ -1266,9 +1373,9 @@ export function ScoreMatch() {
 
       {/* Win Confirmation Modal */}
       <Dialog open={scoringGame !== null}>
-        <DialogContent onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Confirm Game Winner</DialogTitle>
+            <DialogTitle>Select Game Winner</DialogTitle>
             <DialogDescription>
               Select any special achievements for this game.
             </DialogDescription>
@@ -1340,43 +1447,70 @@ export function ScoreMatch() {
 
       {/* Opponent Confirmation Modal */}
       <Dialog open={confirmationGame !== null}>
-        <DialogContent onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle>Confirm Opponent's Score</DialogTitle>
-            <DialogDescription>
-              Verify the game result submitted by your opponent.
-            </DialogDescription>
+            {confirmationGame?.isResetRequest ? (
+              <>
+                <DialogTitle className="text-orange-600">⚠️ Confirm Vacate Winner</DialogTitle>
+                <DialogDescription>
+                  Your opponent wants to vacate the winner and clear this game result.
+                </DialogDescription>
+              </>
+            ) : (
+              <>
+                <DialogTitle>Confirm Opponent's Score</DialogTitle>
+                <DialogDescription>
+                  Verify the game result submitted by your opponent.
+                </DialogDescription>
+              </>
+            )}
           </DialogHeader>
 
           <div className="py-4 space-y-4">
-            <p className="text-center text-gray-500 text-sm">
-              Opponent recorded for game {confirmationGame?.gameNumber}:
-            </p>
-
-            {/* Dynamic result message based on what was selected */}
-            <div className="text-center text-lg font-semibold">
-              {confirmationGame?.breakAndRun ? (
-                <div className="text-blue-600">
-                  {confirmationGame.winnerPlayerName} had a Break & Run!
+            {confirmationGame?.isResetRequest ? (
+              <>
+                <p className="text-center text-gray-700 font-semibold">
+                  Game {confirmationGame?.gameNumber}
+                </p>
+                <div className="text-center text-lg font-semibold text-orange-600">
+                  Current winner: {confirmationGame.winnerPlayerName}
                 </div>
-              ) : confirmationGame?.goldenBreak ? (
-                <div className="text-green-600">
-                  {confirmationGame.winnerPlayerName} had{' '}
-                  {gameType === '8-ball' && 'an 8 on the Break!'}
-                  {gameType === '9-ball' && 'a 9 on the Break!'}
-                  {gameType === '10-ball' && 'a 10 on the Break!'}
-                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'a Golden Break!'}
+                <div className="bg-orange-50 border border-orange-200 rounded p-3 mt-4">
+                  <p className="text-center text-sm text-gray-700">
+                    Agreeing will <span className="font-semibold">vacate this winner</span> and allow both teams to score this game again.
+                  </p>
                 </div>
-              ) : (
-                <div>
-                  {confirmationGame?.winnerPlayerName} won the game
+              </>
+            ) : (
+              <>
+                <p className="text-center text-gray-500 text-sm">
+                  Opponent recorded for game {confirmationGame?.gameNumber}:
+                </p>
+                {/* Dynamic result message based on what was selected */}
+                <div className="text-center text-lg font-semibold">
+                  {confirmationGame?.breakAndRun ? (
+                    <div className="text-blue-600">
+                      {confirmationGame.winnerPlayerName} had a Break & Run!
+                    </div>
+                  ) : confirmationGame?.goldenBreak ? (
+                    <div className="text-green-600">
+                      {confirmationGame.winnerPlayerName} had{' '}
+                      {gameType === '8-ball' && 'an 8 on the Break!'}
+                      {gameType === '9-ball' && 'a 9 on the Break!'}
+                      {gameType === '10-ball' && 'a 10 on the Break!'}
+                      {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'a Golden Break!'}
+                    </div>
+                  ) : (
+                    <div>
+                      {confirmationGame?.winnerPlayerName} won the game
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <p className="text-center mt-4 text-gray-600">
-              Do you agree with this result?
-            </p>
+                <p className="text-center mt-4 text-gray-600">
+                  Do you agree with this result?
+                </p>
+              </>
+            )}
           </div>
 
           <DialogFooter className="flex flex-row justify-around gap-4">
@@ -1384,24 +1518,90 @@ export function ScoreMatch() {
               className="flex-1"
               onClick={() => {
                 if (confirmationGame) {
-                  confirmOpponentScore(confirmationGame.gameNumber);
+                  confirmOpponentScore(confirmationGame.gameNumber, confirmationGame.isResetRequest);
                   setConfirmationGame(null);
                 }
               }}
             >
-              Confirm
+              {confirmationGame?.isResetRequest ? 'Agree - Vacate Winner' : 'Confirm'}
             </Button>
             <Button
               variant="outline"
               className="flex-1"
               onClick={() => {
                 if (confirmationGame) {
-                  denyOpponentScore(confirmationGame.gameNumber);
+                  denyOpponentScore(confirmationGame.gameNumber, confirmationGame.isResetRequest);
                   setConfirmationGame(null);
                 }
               }}
             >
-              Deny
+              {confirmationGame?.isResetRequest ? 'Deny - Keep Winner' : 'Deny'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Vacate Winner Modal */}
+      <Dialog open={editingGame !== null}>
+        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Vacate Winner - Game {editingGame?.gameNumber}</DialogTitle>
+            <DialogDescription>
+              Request to clear the result and allow both teams to score again.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4 space-y-4">
+            <p className="text-center text-sm text-gray-600">
+              Current winner: <span className="font-semibold">{editingGame?.currentWinnerName}</span>
+            </p>
+
+            <p className="text-center text-sm text-gray-500">
+              This will request your opponent to agree to vacate this result so both teams can score it again.
+            </p>
+          </div>
+
+          <DialogFooter className="flex flex-row justify-around gap-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setEditingGame(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={async () => {
+                if (editingGame && match) {
+                  const existingGame = gameResults.get(editingGame.gameNumber);
+                  if (!existingGame) return;
+
+                  try {
+                    // Track that I initiated this vacate request (to suppress my own confirmation modal)
+                    myVacateRequests.current.add(editingGame.gameNumber);
+                    console.log('Added game', editingGame.gameNumber, 'to myVacateRequests. Set now contains:', Array.from(myVacateRequests.current));
+
+                    // Vacate request: Keep winner but clear BOTH confirmations
+                    // This creates a unique state: winner exists but both confirmations are false
+                    // Opponent will see this as a vacate request, not a normal score
+                    const { error } = await supabase
+                      .from('match_games')
+                      .update({
+                        confirmed_by_home: false,
+                        confirmed_by_away: false
+                      })
+                      .eq('id', existingGame.id);
+
+                    if (error) throw error;
+                    setEditingGame(null);
+                  } catch (err: any) {
+                    console.error('Error requesting reset:', err);
+                    alert(`Failed to request reset: ${err.message}`);
+                  }
+                }
+              }}
+            >
+              Vacate Winner
             </Button>
           </DialogFooter>
         </DialogContent>
