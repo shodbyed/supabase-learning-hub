@@ -29,6 +29,10 @@ import {
   calculateTeamHandicap,
   type HandicapVariant,
 } from '@/utils/handicapCalculations';
+import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
+import { TestModeToggle } from '@/components/lineup/TestModeToggle';
+import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
+import { LineupActions } from '@/components/lineup/LineupActions';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -102,6 +106,7 @@ export function MatchLineup() {
   // Test mode for manual handicap override
   const [testMode, setTestMode] = useState(false);
   const [testHandicaps, setTestHandicaps] = useState<Record<string, number>>({});
+  const [testTeamBonus, setTestTeamBonus] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchMatchAndLineup() {
@@ -179,15 +184,10 @@ export function MatchLineup() {
         setMatch(transformedMatch);
 
         // Calculate team handicap (only for home team)
-        const calculatedTeamHandicap = await calculateTeamHandicap(
-          matchData.home_team_id,
-          matchData.away_team_id,
-          matchData.season_id,
-          teamVariant,
-          true // useRandom = true for testing until we have standings
-        );
+        // NOTE: Set to 0 for now - will be calculated from standings page when built
+        const calculatedTeamHandicap = 0;
         setTeamHandicap(calculatedTeamHandicap);
-        console.log('Team handicap calculated:', calculatedTeamHandicap);
+        console.log('Team handicap set to:', calculatedTeamHandicap);
 
         // Determine which team the user is on
         const { data: teamPlayerData, error: teamPlayerError } = await supabase
@@ -414,7 +414,13 @@ export function MatchLineup() {
 
     if (unusedPlayers.length === 0) return 0;
 
-    return Math.max(...unusedPlayers.map((p) => p.handicap));
+    // Use test mode overrides if available
+    return Math.max(...unusedPlayers.map((p) => {
+      if (testMode && testHandicaps[p.id] !== undefined) {
+        return testHandicaps[p.id];
+      }
+      return p.handicap;
+    }));
   };
 
   /**
@@ -467,7 +473,8 @@ export function MatchLineup() {
   const calculateFinalTeamHandicap = (): number => {
     const playerTotal = calculatePlayerHandicapTotal();
 
-    // Only home team gets team handicap bonus
+    // Team bonus set to 0 for now - will be calculated from standings page when built
+    // Only home team gets team handicap bonus (currently 0)
     const bonus = isHomeTeam ? teamHandicap : 0;
 
     return Math.round((playerTotal + bonus) * 10) / 10; // Round to 1 decimal
@@ -658,52 +665,12 @@ export function MatchLineup() {
       {/* Main Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">
         {/* Match Info Card */}
-        <Card>
-          <CardContent className="px-4 py-0 space-y-1">
-            {/* Date */}
-            {match.scheduled_date && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {parseLocalDate(match.scheduled_date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
-              </div>
-            )}
-
-            {/* Matchup */}
-            <div className="text-lg font-semibold text-gray-900">
-              vs{' '}
-              {opponent ? (
-                <TeamNameLink teamId={opponent.id} teamName={opponent.team_name} />
-              ) : (
-                'BYE'
-              )}
-            </div>
-
-            {/* Home/Away & Venue on same line */}
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <span className="font-medium">
-                {isHomeTeam ? 'Home Game' : 'Away Game'}
-              </span>
-              {match.scheduled_venue && (
-                <>
-                  <span>@</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    <span>
-                      {match.scheduled_venue.name}, {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <MatchInfoCard
+          scheduledDate={match.scheduled_date}
+          opponent={opponent ? { id: opponent.id, name: opponent.team_name } : null}
+          isHomeTeam={isHomeTeam || false}
+          venue={match.scheduled_venue || undefined}
+        />
 
         {/* Lineup Selection Card */}
         <Card>
@@ -715,87 +682,41 @@ export function MatchLineup() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Test Mode Toggle */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={testMode}
-                  onChange={(e) => {
-                    setTestMode(e.target.checked);
-                    if (!e.target.checked) {
-                      setTestHandicaps({});
-                    }
-                  }}
-                  disabled={lineupLocked}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm font-medium text-yellow-800">
-                  Test Mode - Override Handicaps
-                </span>
-              </label>
-              <p className="text-xs text-yellow-700 mt-1 ml-6">
-                Enable to manually set handicaps for testing match scenarios
-              </p>
-            </div>
+            <TestModeToggle
+              enabled={testMode}
+              onChange={(enabled) => {
+                setTestMode(enabled);
+                if (!enabled) {
+                  setTestHandicaps({});
+                  setTestTeamBonus(null);
+                }
+              }}
+              disabled={lineupLocked}
+            />
+
 
             {/* Available Players List */}
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-2">
-                Available Players ({players.length})
-              </p>
-              <div>
-                <div className="flex gap-3 text-xs font-medium text-gray-500 pb-1 border-b">
-                  <span className="flex-1">Player Name</span>
-                  <span className="w-20">Nickname</span>
-                  <span className="w-12 text-center">H/C</span>
-                  {testMode && <span className="w-20 text-center">Override</span>}
-                </div>
-                <div className="space-y-1 mt-1">
-                  {players.map((player) => (
-                    <div
-                      key={player.id}
-                      className="flex gap-3 text-sm py-1 px-2 bg-gray-50 rounded items-center"
-                    >
-                      <div className="flex-1">
-                        <PlayerNameLink
-                          playerId={player.id}
-                          playerName={`${player.first_name} ${player.last_name}`}
-                        />
-                      </div>
-                      <span className="text-gray-600 text-xs w-20 truncate">{player.nickname || '-'}</span>
-                      <span className="text-gray-600 w-12 text-center">
-                        {testMode && testHandicaps[player.id] !== undefined
-                          ? formatHandicap(testHandicaps[player.id])
-                          : formatHandicap(player.handicap)}
-                      </span>
-                      {testMode && (
-                        <Select
-                          value={testHandicaps[player.id]?.toString() || player.handicap.toString()}
-                          onValueChange={(value) => {
-                            setTestHandicaps(prev => ({
-                              ...prev,
-                              [player.id]: parseFloat(value)
-                            }));
-                          }}
-                          disabled={lineupLocked}
-                        >
-                          <SelectTrigger className="w-20 h-7 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="2">+2</SelectItem>
-                            <SelectItem value="1">+1</SelectItem>
-                            <SelectItem value="0">0</SelectItem>
-                            <SelectItem value="-1">-1</SelectItem>
-                            <SelectItem value="-2">-2</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <PlayerRoster
+              players={players
+                .filter(p => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID) // Exclude substitute from roster
+                .map((p): RosterPlayer => ({
+                  id: p.id,
+                  firstName: p.first_name,
+                  lastName: p.last_name,
+                  nickname: p.nickname,
+                  handicap: p.handicap,
+                }))}
+              showHandicaps={true}
+              testMode={testMode}
+              testHandicaps={testHandicaps}
+              onHandicapOverride={(playerId, handicap) => {
+                setTestHandicaps(prev => ({
+                  ...prev,
+                  [playerId]: handicap,
+                }));
+              }}
+              disabled={lineupLocked}
+            />
 
             {/* Player Selection Dropdowns */}
             <div className="pt-2">
@@ -1008,60 +929,18 @@ export function MatchLineup() {
               )}
             </div>
 
-            {/* Lock/Unlock Lineup Button */}
-            {!lineupLocked ? (
-              <Button
-                className="w-full"
-                onClick={handleLockLineup}
-                disabled={!isLineupComplete()}
-              >
-                <Lock className="h-4 w-4 mr-2" />
-                Lock Lineup
-              </Button>
-            ) : (
-              <div className="space-y-3">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <CheckCircle className="h-5 w-5" />
-                    <span className="font-semibold">Lineup Locked</span>
-                  </div>
-                </div>
-                {/* Only show unlock if opponent hasn't locked yet */}
-                {!opponentLineup?.locked && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleUnlockLineup}
-                  >
-                    Unlock Lineup
-                  </Button>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Opponent Status Card */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Opponent Status:</span>
-              {!opponentLineup ? (
-                <span className="text-sm text-gray-500">Waiting for opponent lineup...</span>
-              ) : !opponentLineup.locked ? (
-                <span className="text-sm text-yellow-600">Opponent selecting players...</span>
-              ) : !lineupLocked ? (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Opponent ready - Lock your lineup to start</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Starting match...</span>
-                </div>
-              )}
-            </div>
+            {/* Lock/Unlock and Status */}
+            <LineupActions
+              locked={lineupLocked}
+              opponentLocked={opponentLineup?.locked || false}
+              canLock={isLineupComplete()}
+              canUnlock={!opponentLineup?.locked}
+              onLock={handleLockLineup}
+              onUnlock={handleUnlockLineup}
+              onProceed={() => {
+                navigate(`/match/${matchId}/score`);
+              }}
+            />
           </CardContent>
         </Card>
       </main>
