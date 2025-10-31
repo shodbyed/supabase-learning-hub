@@ -99,6 +99,10 @@ export function MatchLineup() {
   // Lineup ID (for updates after initial save)
   const [lineupId, setLineupId] = useState<string | null>(null);
 
+  // Test mode for manual handicap override
+  const [testMode, setTestMode] = useState(false);
+  const [testHandicaps, setTestHandicaps] = useState<Record<string, number>>({});
+
   useEffect(() => {
     async function fetchMatchAndLineup() {
       // Wait for member data to load
@@ -417,6 +421,11 @@ export function MatchLineup() {
    * Helper: Get handicap for a player slot
    */
   const getPlayerHandicap = (playerId: string): number => {
+    // In test mode, use override handicaps if available
+    if (testMode && testHandicaps[playerId] !== undefined) {
+      return testHandicaps[playerId];
+    }
+
     if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) {
       const highestUnused = getHighestUnusedHandicap();
 
@@ -705,6 +714,30 @@ export function MatchLineup() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Test Mode Toggle */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={testMode}
+                  onChange={(e) => {
+                    setTestMode(e.target.checked);
+                    if (!e.target.checked) {
+                      setTestHandicaps({});
+                    }
+                  }}
+                  disabled={lineupLocked}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm font-medium text-yellow-800">
+                  Test Mode - Override Handicaps
+                </span>
+              </label>
+              <p className="text-xs text-yellow-700 mt-1 ml-6">
+                Enable to manually set handicaps for testing match scenarios
+              </p>
+            </div>
+
             {/* Available Players List */}
             <div>
               <p className="text-sm font-medium text-gray-600 mb-2">
@@ -715,6 +748,7 @@ export function MatchLineup() {
                   <span className="flex-1">Player Name</span>
                   <span className="w-20">Nickname</span>
                   <span className="w-12 text-center">H/C</span>
+                  {testMode && <span className="w-20 text-center">Override</span>}
                 </div>
                 <div className="space-y-1 mt-1">
                   {players.map((player) => (
@@ -729,7 +763,34 @@ export function MatchLineup() {
                         />
                       </div>
                       <span className="text-gray-600 text-xs w-20 truncate">{player.nickname || '-'}</span>
-                      <span className="text-gray-600 w-12 text-center">{formatHandicap(player.handicap)}</span>
+                      <span className="text-gray-600 w-12 text-center">
+                        {testMode && testHandicaps[player.id] !== undefined
+                          ? formatHandicap(testHandicaps[player.id])
+                          : formatHandicap(player.handicap)}
+                      </span>
+                      {testMode && (
+                        <Select
+                          value={testHandicaps[player.id]?.toString() || player.handicap.toString()}
+                          onValueChange={(value) => {
+                            setTestHandicaps(prev => ({
+                              ...prev,
+                              [player.id]: parseFloat(value)
+                            }));
+                          }}
+                          disabled={lineupLocked}
+                        >
+                          <SelectTrigger className="w-20 h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">+2</SelectItem>
+                            <SelectItem value="1">+1</SelectItem>
+                            <SelectItem value="0">0</SelectItem>
+                            <SelectItem value="-1">-1</SelectItem>
+                            <SelectItem value="-2">-2</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
                   ))}
                 </div>
