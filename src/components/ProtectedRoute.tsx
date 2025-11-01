@@ -5,7 +5,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import type { UserRole } from '@/types';
 
 /**

@@ -25,8 +25,7 @@ import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
 import { NewMessageModal } from '@/components/messages/NewMessageModal';
 import { AnnouncementModal } from '@/components/messages/AnnouncementModal';
 import { MessageSettingsModal } from '@/components/messages/MessageSettingsModal';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useCurrentMember, useUserProfile } from '@/api/hooks';
 import {
   createOrOpenConversation,
   createGroupConversation,
@@ -39,7 +38,9 @@ import { supabase } from '@/supabaseClient';
 export function Messages() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { memberId, firstName } = useCurrentMember();
+  const { data: member } = useCurrentMember();
+  const memberId = member?.id;
+  const firstName = member?.first_name;
   const { canAccessLeagueOperatorFeatures } = useUserProfile();
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null

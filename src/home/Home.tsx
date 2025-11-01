@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { LogoutButton } from '../login/LogoutButton';
 import { Button } from '@/components/ui/button';
 import { CurrentSponsors } from '../components/SponsorLogos';

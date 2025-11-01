@@ -6,7 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';

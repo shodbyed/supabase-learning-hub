@@ -28,7 +28,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useCurrentMember } from '@/api/hooks';
 import {
   calculateTeamHandicap,
   type HandicapVariant,
@@ -93,7 +93,8 @@ interface MatchGame {
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { memberId, loading: memberLoading } = useCurrentMember();
+  const { data: member, isLoading: memberLoading } = useCurrentMember();
+  const memberId = member?.id;
 
   const [match, setMatch] = useState<Match | null>(null);
   const [homeLineup, setHomeLineup] = useState<Lineup | null>(null);

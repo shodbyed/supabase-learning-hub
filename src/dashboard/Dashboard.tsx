@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

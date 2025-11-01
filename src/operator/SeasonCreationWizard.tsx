@@ -7,7 +7,7 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { useOperatorId } from '@/hooks/useOperatorId';
+import { useOperatorIdValue } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
@@ -42,7 +42,7 @@ export const SeasonCreationWizard: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { operatorId } = useOperatorId();
+  const operatorId = useOperatorIdValue();
 
   // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));

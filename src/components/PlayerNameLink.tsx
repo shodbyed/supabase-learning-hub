@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/popover';
 import { User, MessageSquare, Flag, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import { createOrOpenConversation, blockUser, unblockUser, isUserBlocked } from '@/utils/messageQueries';
 import { ReportUserModal } from '@/components/ReportUserModal';
 
@@ -42,7 +42,7 @@ export function PlayerNameLink({
   onBlockUser,
 }: PlayerNameLinkProps) {
   const navigate = useNavigate();
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [open, setOpen] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);

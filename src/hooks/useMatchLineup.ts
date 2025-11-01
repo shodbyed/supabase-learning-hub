@@ -12,7 +12,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 
 interface LineupPlayer {
   position: number; // 1-indexed position (1, 2, 3 for 3v3 or 1-5 for 5v5)
@@ -55,7 +55,7 @@ export function useMatchLineup({
   teamId,
   playerCount,
 }: UseMatchLineupOptions): UseMatchLineupReturn {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
 
   const [lineup, setLineup] = useState<Lineup | null>(null);
   const [opponentLineup, setOpponentLineup] = useState<Lineup | null>(null);

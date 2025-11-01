@@ -11,7 +11,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useOperatorId } from '@/hooks/useOperatorId';
+import { useOperatorId } from '@/api/hooks';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { VenueLimitModal } from './VenueLimitModal';
 import { TeamEditorModal } from './TeamEditorModal';
@@ -34,7 +34,8 @@ import type { TeamWithQueryDetails } from '@/types/team';
 export const TeamManagement: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
-  const { operatorId, loading: operatorLoading } = useOperatorId();
+  const { data: operator, isLoading: operatorLoading } = useOperatorId();
+  const operatorId = operator?.id;
 
   // Use custom hook for all data fetching
   const {
@@ -49,7 +50,7 @@ export const TeamManagement: React.FC = () => {
     error,
     refreshTeams,
     setLeagueVenues,
-  } = useTeamManagement(operatorId, leagueId);
+  } = useTeamManagement(operatorId || null, leagueId);
 
   // UI state
   const [assigningVenue, setAssigningVenue] = useState<string | null>(null);

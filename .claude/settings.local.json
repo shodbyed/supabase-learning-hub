@@ -9,7 +9,12 @@
       "Bash(docker exec:*)",
       "Bash(docker logs:*)",
       "Bash(copy:*)",
-      "Bash(pnpm test:run:*)"
+      "Bash(pnpm test:run:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(done)",
+      "Bash(awk:*)",
+      "Bash(pnpm add:*)"
     ],
     "deny": [],
     "ask": []

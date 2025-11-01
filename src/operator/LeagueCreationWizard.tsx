@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';

@@ -1,5 +1,5 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { useUnreadMessageCount } from '../hooks/useUnreadMessageCount';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';

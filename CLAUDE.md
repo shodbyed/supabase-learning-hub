@@ -200,6 +200,22 @@ The format is flexible - focus on capturing valuable insights that help me work 
 
 ## Claude Code Specific Features
 
+### Table of Contents Maintenance
+**CRITICAL**: The project has a comprehensive `TABLE_OF_CONTENTS.md` file at the project root that indexes EVERY file in the project.
+
+**You MUST update this file whenever you:**
+- Create any new file or folder
+- Move or rename any file or folder
+- Delete any file or folder
+
+**Update process:**
+1. Add/update/remove the file entry in the appropriate section
+2. Update the "Last Updated" date at the top of TABLE_OF_CONTENTS.md
+3. If the change affects a feature, update the "Quick Reference: Find By Feature" section
+4. If moving files as part of restructuring, also note changes in RESTRUCTURE_PLAN.md
+
+The table of contents is a critical navigation tool for both you and the user. Keeping it current is mandatory.
+
 ### Task Management
 - I use TodoWrite tool to plan and track complex tasks
 - I break down large tasks into manageable steps

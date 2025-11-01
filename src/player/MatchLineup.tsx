@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, Calendar, MapPin, Users, Lock, CheckCircle } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useCurrentMember } from '@/api/hooks';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import {
@@ -74,7 +74,8 @@ interface Player {
 export function MatchLineup() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { memberId, loading: memberLoading } = useCurrentMember();
+  const { data: member, isLoading: memberLoading } = useCurrentMember();
+  const memberId = member?.id;
 
   const [match, setMatch] = useState<Match | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);

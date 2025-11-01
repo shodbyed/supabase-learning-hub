@@ -11,7 +11,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { VenueCard } from '@/components/operator/VenueCard';
 import { Button } from '@/components/ui/button';
-import { useOperatorId } from '@/hooks/useOperatorId';
+import { useOperatorId } from '@/api/hooks';
 import type { Venue } from '@/types/venue';
 
 /**
@@ -22,7 +22,8 @@ import type { Venue } from '@/types/venue';
  */
 export const VenueManagement: React.FC = () => {
   const navigate = useNavigate();
-  const { operatorId, loading: operatorLoading } = useOperatorId();
+  const { data: operator, isLoading: operatorLoading } = useOperatorId();
+  const operatorId = operator?.id;
   const [venues, setVenues] = useState<Venue[]>([]);
   const [venuesLoading, setVenuesLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

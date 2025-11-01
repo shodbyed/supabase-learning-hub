@@ -25,7 +25,7 @@ import { ApplicationPreview } from '@/components/previews/ApplicationPreview';
 import { SecurityDisclaimerModal } from '@/components/modals/SecurityDisclaimerModal';
 import { SetupGuideModal } from '@/components/modals/SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { supabase } from '../supabaseClient';
 import { generateMockPaymentData } from '@/types/operator';
 import type { LeagueOperatorInsertData } from '@/types/operator';

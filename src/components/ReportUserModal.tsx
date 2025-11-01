@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import { createUserReport, REPORT_CATEGORIES } from '@/utils/reportingQueries';
 import type { ReportCategory } from '@/utils/reportingQueries';
 import { Modal } from '@/components/shared';
@@ -48,7 +48,7 @@ export function ReportUserModal({
   evidenceSnapshot,
   defaultCategory
 }: ReportUserModalProps) {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [category, setCategory] = useState<ReportCategory>(defaultCategory || 'other');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

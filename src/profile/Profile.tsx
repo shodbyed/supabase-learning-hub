@@ -17,7 +17,7 @@
  */
 import React from 'react';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { LoginCard } from '../login/LoginCard';
 import { getMembershipStatus, formatDueDate, getDuesStatusStyling } from '../utils/membershipUtils';
 import { useProfileForm } from './useProfileForm';

@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityFilter';
 import { useUser } from '@/context/useUser';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import { BlockedUsersModal } from './BlockedUsersModal';
 import { Modal } from '@/components/shared';
 
@@ -26,7 +26,7 @@ interface MessageSettingsModalProps {
 
 export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsModalProps) {
   const { user } = useUser();
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const { shouldFilter: initialShouldFilter, canToggle, isLoading } = useProfanityFilter();
   const [shouldFilter, setShouldFilter] = useState(initialShouldFilter);
   const [isSaving, setIsSaving] = useState(false);

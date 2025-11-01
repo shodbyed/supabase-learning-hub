@@ -4,7 +4,7 @@
  */
 import { useState } from 'react';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { personalInfoSchema, contactInfoSchema, addressSchema } from './validationSchemas';
 import { capitalizeWords, formatPhoneNumber } from '../utils/formatters';
 import type {

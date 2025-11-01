@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import {
   getPendingReportsForOperator,
   getReportDetails,
@@ -69,7 +69,7 @@ interface ReportDetails {
 }
 
 export function ReportsManagement() {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportDetails | null>(null);
   const [loading, setLoading] = useState(true);
