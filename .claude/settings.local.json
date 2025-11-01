@@ -14,7 +14,10 @@
       "Bash(find:*)",
       "Bash(done)",
       "Bash(awk:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(for file in MessageView.tsx ConversationHeader.tsx MessageBubble.tsx MessageInput.tsx NewMessageModal.tsx)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

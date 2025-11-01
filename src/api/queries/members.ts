@@ -163,3 +163,30 @@ export async function isOperator(memberId: string): Promise<boolean> {
   // Has operator record
   return !!data;
 }
+
+/**
+ * Checks if a member is a captain of any team
+ *
+ * Used to determine if user should see captain-specific features like team announcements.
+ *
+ * @param memberId - Member's primary key ID
+ * @returns True if member is captain of at least one team, false otherwise
+ *
+ * @example
+ * const isCaptain = await getIsCaptain(memberId);
+ * if (isCaptain) {
+ *   // Show announcement creation button
+ * }
+ */
+export async function getIsCaptain(memberId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('team_players')
+    .select('is_captain')
+    .eq('member_id', memberId)
+    .eq('is_captain', true)
+    .limit(1);
+
+  if (error) throw error;
+
+  return !!data && data.length > 0;
+}

@@ -11,11 +11,13 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus, Settings, Megaphone, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fetchUserConversations } from '@/utils/messageQueries';
+import { useConversations } from '@/api/hooks';
+import { queryKeys } from '@/api/queryKeys';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/supabaseClient';
 import { LoadingState, EmptyState } from '@/components/shared';
@@ -52,27 +54,17 @@ export function ConversationList({
   onAnnouncements,
   showAnnouncements = false,
 }: ConversationListProps) {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showSearch, setShowSearch] = useState(false);
 
-  // Fetch conversations
+  // Fetch conversations using TanStack Query
+  const { data: conversationsData = [], isLoading: loading } = useConversations(userId);
+  const conversations = conversationsData as Conversation[];
+
+  // Subscribe to real-time updates and invalidate cache
   useEffect(() => {
-    async function loadConversations() {
-      const { data, error } = await fetchUserConversations(userId);
-
-      if (error) {
-        console.error('Error loading conversations:', error);
-        setLoading(false);
-        return;
-      }
-
-      setConversations(data || []);
-      setLoading(false);
-    }
-
-    loadConversations();
+    if (!userId) return;
 
     // Subscribe to new messages in any conversation
     const messagesChannel = supabase
@@ -84,12 +76,11 @@ export function ConversationList({
           schema: 'public',
           table: 'messages',
         },
-        async () => {
-          // Reload conversations to get updated preview and timestamp
-          const { data } = await fetchUserConversations(userId);
-          if (data) {
-            setConversations(data);
-          }
+        () => {
+          // Invalidate conversations cache to refetch with updated preview/timestamp
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.messages.conversations(userId),
+          });
         }
       )
       .subscribe();
@@ -105,12 +96,11 @@ export function ConversationList({
           table: 'conversation_participants',
           filter: `user_id=eq.${userId}`,
         },
-        async () => {
-          // Reload conversations to get updated unread counts
-          const { data } = await fetchUserConversations(userId);
-          if (data) {
-            setConversations(data);
-          }
+        () => {
+          // Invalidate conversations cache to refetch with updated unread counts
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.messages.conversations(userId),
+          });
         }
       )
       .subscribe();
@@ -119,7 +109,7 @@ export function ConversationList({
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(participantsChannel);
     };
-  }, [userId]);
+  }, [userId, queryClient]);
 
   // Filter conversations based on search
   const filteredConversations = conversations.filter((conv) => {

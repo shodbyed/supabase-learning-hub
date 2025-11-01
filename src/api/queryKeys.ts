@@ -42,6 +42,10 @@ export const queryKeys = {
 
     /** Current logged-in member */
     current: () => [...queryKeys.members.all, 'current'] as const,
+
+    /** Check if member is captain of any team */
+    isCaptain: (memberId: string) =>
+      [...queryKeys.members.all, 'isCaptain', memberId] as const,
   },
 
   /**

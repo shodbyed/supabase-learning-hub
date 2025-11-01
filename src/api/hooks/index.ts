@@ -13,6 +13,7 @@ export {
   useCurrentMember,
   useMemberId,
   useMemberFirstName,
+  useIsCaptain,
 } from './useCurrentMember';
 
 export {
@@ -49,3 +50,31 @@ export async function fetchTeamsWithDetails(leagueId: string) {
     return { data: null, error };
   }
 }
+
+// Message hooks (queries)
+export {
+  useConversations,
+  useConversationMessages,
+  useBlockedUsers,
+  useUnreadMessageCount,
+  useConversationParticipants,
+} from './useMessages';
+
+// Message mutations
+export {
+  useSendMessage,
+  useUpdateLastRead,
+  useBlockUser,
+  useUnblockUser,
+} from './useMessageMutations';
+
+// Report mutations
+export {
+  useCreateUserReport,
+  useUpdateReportStatus,
+} from './useReportMutations';
+
+// League mutations
+export {
+  useUpdateLeagueDayOfWeek,
+} from './useLeagueMutations';

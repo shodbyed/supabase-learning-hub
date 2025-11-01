@@ -25,7 +25,7 @@ import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
 import { NewMessageModal } from '@/components/messages/NewMessageModal';
 import { AnnouncementModal } from '@/components/messages/AnnouncementModal';
 import { MessageSettingsModal } from '@/components/messages/MessageSettingsModal';
-import { useCurrentMember, useUserProfile } from '@/api/hooks';
+import { useCurrentMember, useUserProfile, useIsCaptain } from '@/api/hooks';
 import {
   createOrOpenConversation,
   createGroupConversation,
@@ -33,7 +33,6 @@ import {
   createOrganizationAnnouncement,
 } from '@/utils/messageQueries';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/supabaseClient';
 
 export function Messages() {
   const navigate = useNavigate();
@@ -49,7 +48,7 @@ export function Messages() {
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isCaptain, setIsCaptain] = useState(false);
+  const { data: isCaptain = false } = useIsCaptain();
 
   // Check if we were passed a conversationId from navigation state
   useEffect(() => {
@@ -60,24 +59,6 @@ export function Messages() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate]);
-
-  // Check if user is a captain of any team
-  useEffect(() => {
-    async function checkCaptainStatus() {
-      if (!memberId) return;
-
-      const { data } = await supabase
-        .from('team_players')
-        .select('is_captain')
-        .eq('member_id', memberId)
-        .eq('is_captain', true)
-        .limit(1);
-
-      setIsCaptain(!!data && data.length > 0);
-    }
-
-    checkCaptainStatus();
-  }, [memberId]);
 
   const handleNewMessage = () => {
     setShowNewMessageModal(true);

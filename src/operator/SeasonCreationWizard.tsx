@@ -7,12 +7,11 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { useOperatorIdValue } from '@/api/hooks';
+import { useOperatorIdValue, useUpdateLeagueDayOfWeek } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
 import { createSeason } from '@/services/seasonService';
-import { updateLeagueDayOfWeek } from '@/services/leagueService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,7 @@ export const SeasonCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const operatorId = useOperatorIdValue();
+  const updateLeagueDayMutation = useUpdateLeagueDayOfWeek();
 
   // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
@@ -282,29 +282,36 @@ export const SeasonCreationWizard: React.FC = () => {
   const handleAcceptDayChange = async () => {
     if (!state.dayOfWeekWarning || !leagueId) return;
 
-    try {
-      // Update league day of week using service
-      const newDayString = await updateLeagueDayOfWeek(leagueId, state.dayOfWeekWarning.newDay);
+    // Update league day of week using TanStack Query mutation
+    updateLeagueDayMutation.mutate(
+      {
+        leagueId,
+        newDay: state.dayOfWeekWarning.newDay,
+      },
+      {
+        onSuccess: (newDayString) => {
+          // Update local state
+          dispatch({
+            type: 'SET_LEAGUE',
+            payload: state.league ? { ...state.league, day_of_week: newDayString } : null
+          });
 
-      // Update local state
-      dispatch({
-        type: 'SET_LEAGUE',
-        payload: state.league ? { ...state.league, day_of_week: newDayString } : null
-      });
+          // Save the new start date to form data
+          const STORAGE_KEY = `season-creation-${leagueId}`;
+          const stored = localStorage.getItem(STORAGE_KEY);
+          const formData = stored ? JSON.parse(stored) : {};
+          formData.startDate = state.dayOfWeekWarning!.newDate;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 
-      // Save the new start date to form data
-      const STORAGE_KEY = `season-creation-${leagueId}`;
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const formData = stored ? JSON.parse(stored) : {};
-      formData.startDate = state.dayOfWeekWarning.newDate;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-
-      // Close modal
-      dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
-    } catch (err) {
-      console.error('Error updating league day:', err);
-      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
-    }
+          // Close modal
+          dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
+        },
+        onError: (err) => {
+          console.error('Error updating league day:', err);
+          dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
+        },
+      }
+    );
   };
 
   /**

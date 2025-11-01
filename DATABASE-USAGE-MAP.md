@@ -1,6 +1,7 @@
 # Database Usage Map & Migration Checklist
 
 > **Created**: 2025-11-01
+> **Updated**: 2025-11-01 - Added Mutations Phase
 > **Purpose**: Complete inventory of all database access patterns for TanStack Query migration
 > **Total Files**: 55 files directly importing supabaseClient
 
@@ -14,6 +15,8 @@
 - **Components with Direct DB**: 28 components
 - **Direct `supabase.from()` calls**: 3 locations (mostly abstracted)
 - **Auth operations** (`supabase.auth`): 8 locations
+- **Mutation Hooks Created**: 7 hooks
+- **Components Using Mutations**: 1 (tested)
 
 ---
 
@@ -64,8 +67,9 @@
    - ✅ SeasonCreationWizard.smoke.test.tsx (test mock updated)
    - ✅ ApplicationPreview.tsx (import updated)
 
-### 🟠 Priority 2: Team & Player Data (Frequently Accessed)
+### ✅ Priority 2: Team & Player Data (COMPLETED)
 **Impact**: High - Used in navigation, dashboards, rosters
+**Status**: ✅ 100% Complete - All 4 files migrated to TanStack Query
 
 #### Query Utilities to Migrate
 - **`utils/playerQueries.ts`** (3 functions):
@@ -87,8 +91,9 @@
 - `operator/TeamEditorModal.tsx` - Team editor
 - `components/TeamNameLink.tsx` - Team link component
 
-### 🟡 Priority 3: Messaging System (Real-time + Cache)
+### ✅ Priority 3: Messaging System (COMPLETED - Read Queries)
 **Impact**: Medium-High - Heavy use, needs real-time integration
+**Status**: ✅ Read-only queries complete, mutation hooks created (not yet migrated to components)
 
 #### Query Utilities to Migrate
 - **`utils/messageQueries.ts`** (14 functions):
@@ -143,6 +148,40 @@
 - `components/operator/ActiveLeagues.tsx` - Active leagues display
 - `components/operator/LeagueOverviewCard.tsx` - League overview
 - `components/operator/ScheduleCard.tsx` - Schedule card
+
+### 🟣 Priority 6: Mutations (Write Operations)
+**Impact**: High - Standardizes all write operations
+**Status**: ✅ Infrastructure complete, 1 component migrated and tested
+
+#### Created Mutation Infrastructure
+- ✅ **`api/mutations/leagues.ts`** - League write operations
+  - `updateLeagueDayOfWeek()` - Update league schedule day ✅ MIGRATED & TESTED
+- ✅ **`api/mutations/reports.ts`** - Report operations
+  - `createUserReport()` - Submit user report
+  - `updateReportStatus()` - Update report status
+- ✅ **`api/mutations/messages.ts`** - Messaging write operations
+  - `sendMessage()` - Send message
+  - `updateLastRead()` - Mark as read
+  - `blockUser()` - Block user
+  - `unblockUser()` - Unblock user
+
+#### Created Mutation Hooks
+- ✅ **`api/hooks/useLeagueMutations.ts`**
+  - `useUpdateLeagueDayOfWeek()` ✅ IN USE (SeasonCreationWizard.tsx)
+- ✅ **`api/hooks/useReportMutations.ts`**
+  - `useCreateUserReport()`
+  - `useUpdateReportStatus()`
+- ✅ **`api/hooks/useMessageMutations.ts`**
+  - `useSendMessage()`
+  - `useUpdateLastRead()`
+  - `useBlockUser()`
+  - `useUnblockUser()`
+
+#### Components Ready to Migrate to Mutations
+- `components/messages/MessageView.tsx` - Can use useSendMessage, useUpdateLastRead
+- `components/messages/BlockedUsersModal.tsx` - Can use useBlockUser, useUnblockUser
+- `operator/ReportsManagement.tsx` - Can use useUpdateReportStatus
+- `components/ReportUserModal.tsx` - Can use useCreateUserReport
 
 ### 🔵 Priority 5: Match/Scoring System (Real-time Critical)
 **Impact**: Medium - Real-time updates essential

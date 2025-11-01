@@ -11,11 +11,14 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ConversationHeader } from './ConversationHeader';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
+import { useConversationMessages } from '@/api/hooks';
+import { queryKeys } from '@/api/queryKeys';
+import { sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
 import { supabase } from '@/supabaseClient';
 import { LoadingState, EmptyState } from '@/components/shared';
 import { MessageSquare } from 'lucide-react';
@@ -42,11 +45,14 @@ interface MessageViewProps {
 }
 
 export function MessageView({ conversationId, currentUserId, onBack, onLeaveConversation }: MessageViewProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [conversationType, setConversationType] = useState<string | null>(null);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch messages using TanStack Query
+  const { data: messagesData = [], isLoading: loading } = useConversationMessages(conversationId);
+  const messages = messagesData as any as Message[];
 
   const { recipientName, recipientLastRead } = useConversationParticipants(
     conversationId,
@@ -91,28 +97,14 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     loadConversationDetails();
   }, [conversationId, currentUserId]);
 
-  // Load messages when conversation changes
+  // Mark conversation as read when messages load
   useEffect(() => {
-    async function loadMessages() {
-      setLoading(true);
-      const { data, error } = await fetchConversationMessages(conversationId);
-
-      if (error) {
-        console.error('Error loading messages:', error);
-        setLoading(false);
-        return;
-      }
-
-      setMessages((data as any) || []);
-      setLoading(false);
-
-      await updateLastRead(conversationId, currentUserId);
+    if (messages.length > 0) {
+      updateLastRead(conversationId, currentUserId);
     }
+  }, [conversationId, currentUserId, messages.length]);
 
-    loadMessages();
-  }, [conversationId, currentUserId]);
-
-  // Subscribe to new messages in this conversation
+  // Subscribe to new messages in this conversation - update cache
   useEffect(() => {
     const channel = supabase
       .channel(`messages:${conversationId}`)
@@ -145,7 +137,12 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
             .single();
 
           if (!error && data) {
-            setMessages((prev) => [...prev, data as any]);
+            // Update TanStack Query cache with new message
+            queryClient.setQueryData(
+              queryKeys.messages.byConversation(conversationId),
+              (old: any) => [...(old || []), data]
+            );
+
             // Update last read if we're viewing the conversation
             await updateLastRead(conversationId, currentUserId);
           }
@@ -156,7 +153,7 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, queryClient]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {

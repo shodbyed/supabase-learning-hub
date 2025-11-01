@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/useUser';
 import { queryKeys } from '../queryKeys';
-import { getCurrentMember } from '../queries/members';
+import { getCurrentMember, getIsCaptain } from '../queries/members';
 import { STALE_TIME } from '../client';
 
 /**
@@ -96,4 +96,30 @@ export function useMemberId(): string | null {
 export function useMemberFirstName(): string {
   const { data } = useCurrentMember();
   return data?.first_name || '';
+}
+
+/**
+ * Hook to check if the current member is a captain of any team
+ *
+ * Caches for 15 minutes. Useful for showing/hiding captain-specific features
+ * like team announcements.
+ *
+ * @returns Query result with boolean indicating captain status
+ *
+ * @example
+ * const { data: isCaptain = false } = useIsCaptain();
+ * {isCaptain && <Button onClick={createAnnouncement}>New Announcement</Button>}
+ */
+export function useIsCaptain() {
+  const { data: member } = useCurrentMember();
+  const memberId = member?.id;
+
+  return useQuery({
+    queryKey: queryKeys.members.isCaptain(memberId || ''),
+    queryFn: () => getIsCaptain(memberId!),
+    enabled: !!memberId,
+    staleTime: STALE_TIME.MEMBER, // 15 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 }
