@@ -20,9 +20,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { calculateTeamHandicap, type HandicapVariant } from '@/utils/handicapCalculations';
+import {
+  calculateTeamHandicap,
+  type HandicapVariant,
+} from '@/utils/handicapCalculations';
 import { getAllGames } from '@/utils/gameOrder';
 
 interface Match {
@@ -100,14 +110,18 @@ export function ScoreMatch() {
   const [homeTeamHandicap, setHomeTeamHandicap] = useState(0);
 
   // Handicap thresholds from lookup table
-  const [homeThresholds, setHomeThresholds] = useState<HandicapThresholds | null>(null);
-  const [awayThresholds, setAwayThresholds] = useState<HandicapThresholds | null>(null);
+  const [homeThresholds, setHomeThresholds] =
+    useState<HandicapThresholds | null>(null);
+  const [awayThresholds, setAwayThresholds] =
+    useState<HandicapThresholds | null>(null);
 
   // Player data (for display names)
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
 
   // Game results
-  const [gameResults, setGameResults] = useState<Map<number, MatchGame>>(new Map());
+  const [gameResults, setGameResults] = useState<Map<number, MatchGame>>(
+    new Map()
+  );
 
   // Scoring modal state
   const [scoringGame, setScoringGame] = useState<{
@@ -129,13 +143,15 @@ export function ScoreMatch() {
   } | null>(null);
 
   // Queue for pending confirmations (when multiple games need confirmation)
-  const [confirmationQueue, setConfirmationQueue] = useState<Array<{
-    gameNumber: number;
-    winnerPlayerName: string;
-    breakAndRun: boolean;
-    goldenBreak: boolean;
-    isResetRequest?: boolean;
-  }>>([]);
+  const [confirmationQueue, setConfirmationQueue] = useState<
+    Array<{
+      gameNumber: number;
+      winnerPlayerName: string;
+      breakAndRun: boolean;
+      goldenBreak: boolean;
+      isResetRequest?: boolean;
+    }>
+  >([]);
 
   // Edit game modal state
   const [editingGame, setEditingGame] = useState<{
@@ -157,7 +173,10 @@ export function ScoreMatch() {
   useEffect(() => {
     // Only process queue when modal is closed
     if (!confirmationGame && confirmationQueue.length > 0) {
-      console.log('Modal closed, processing queue. Queue length:', confirmationQueue.length);
+      console.log(
+        'Modal closed, processing queue. Queue length:',
+        confirmationQueue.length
+      );
       const nextConfirmation = confirmationQueue[0];
       console.log('Showing game', nextConfirmation.gameNumber, 'from queue');
 
@@ -165,7 +184,7 @@ export function ScoreMatch() {
       // This prevents the grey screen overlay issue
       setTimeout(() => {
         setConfirmationGame(nextConfirmation);
-        setConfirmationQueue(prev => prev.slice(1)); // Remove first item from queue
+        setConfirmationQueue((prev) => prev.slice(1)); // Remove first item from queue
       }, 1000);
     }
   }, [confirmationGame, confirmationQueue]); // Watch both - but queue updates won't replace modal
@@ -190,7 +209,8 @@ export function ScoreMatch() {
         // Fetch match details with league variants
         const { data: matchData, error: matchError } = await supabase
           .from('matches')
-          .select(`
+          .select(
+            `
             id,
             season_id,
             home_team_id,
@@ -205,7 +225,8 @@ export function ScoreMatch() {
                 game_type
               )
             )
-          `)
+          `
+          )
           .eq('id', matchId)
           .single();
 
@@ -217,18 +238,27 @@ export function ScoreMatch() {
         const seasonData = Array.isArray(matchData.season)
           ? matchData.season[0]
           : matchData.season;
-        const leagueData = seasonData && Array.isArray((seasonData as any).league)
-          ? (seasonData as any).league[0]
-          : (seasonData as any)?.league;
+        const leagueData =
+          seasonData && Array.isArray((seasonData as any).league)
+            ? (seasonData as any).league[0]
+            : (seasonData as any)?.league;
 
-        const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
-        const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
-        const goldenBreakSetting = leagueData?.golden_break_counts_as_win ?? false;
+        const playerVariant = (leagueData?.handicap_variant ||
+          'standard') as HandicapVariant;
+        const teamVariant = (leagueData?.team_handicap_variant ||
+          'standard') as HandicapVariant;
+        const goldenBreakSetting =
+          leagueData?.golden_break_counts_as_win ?? false;
         const gameTypeSetting = leagueData?.game_type || '8-ball';
 
         setGoldenBreakCountsAsWin(goldenBreakSetting);
         setGameType(gameTypeSetting);
-        console.log('League variants:', { playerVariant, teamVariant, goldenBreakSetting, gameTypeSetting });
+        console.log('League variants:', {
+          playerVariant,
+          teamVariant,
+          goldenBreakSetting,
+          gameTypeSetting,
+        });
 
         // Transform match data
         const homeTeam = Array.isArray(matchData.home_team)
@@ -243,8 +273,8 @@ export function ScoreMatch() {
           season_id: matchData.season_id,
           home_team_id: matchData.home_team_id,
           away_team_id: matchData.away_team_id,
-          home_team: homeTeam as any || null,
-          away_team: awayTeam as any || null,
+          home_team: (homeTeam as any) || null,
+          away_team: (awayTeam as any) || null,
         };
 
         setMatch(transformedMatch);
@@ -264,10 +294,13 @@ export function ScoreMatch() {
           .from('team_players')
           .select('team_id')
           .eq('member_id', memberId)
-          .or(`team_id.eq.${matchData.home_team_id},team_id.eq.${matchData.away_team_id}`)
+          .or(
+            `team_id.eq.${matchData.home_team_id},team_id.eq.${matchData.away_team_id}`
+          )
           .single();
 
-        if (teamPlayerError) throw new Error('You are not on either team in this match');
+        if (teamPlayerError)
+          throw new Error('You are not on either team in this match');
 
         const userTeam = teamPlayerData.team_id;
         const isHome = userTeam === matchData.home_team_id;
@@ -287,23 +320,37 @@ export function ScoreMatch() {
         console.log('Lineups data received:', lineupsData);
 
         // Separate home and away lineups
-        const homeLineupData = lineupsData?.find(l => l.team_id === matchData.home_team_id);
-        const awayLineupData = lineupsData?.find(l => l.team_id === matchData.away_team_id);
+        const homeLineupData = lineupsData?.find(
+          (l) => l.team_id === matchData.home_team_id
+        );
+        const awayLineupData = lineupsData?.find(
+          (l) => l.team_id === matchData.away_team_id
+        );
 
         if (!homeLineupData || !awayLineupData) {
-          throw new Error('Both team lineups must be locked before scoring can begin');
+          throw new Error(
+            'Both team lineups must be locked before scoring can begin'
+          );
         }
 
         if (!homeLineupData.locked || !awayLineupData.locked) {
-          throw new Error('Both team lineups must be locked before scoring can begin');
+          throw new Error(
+            'Both team lineups must be locked before scoring can begin'
+          );
         }
 
         setHomeLineup(homeLineupData);
         setAwayLineup(awayLineupData);
 
         // Calculate player handicap totals
-        const homeTotal = homeLineupData.player1_handicap + homeLineupData.player2_handicap + homeLineupData.player3_handicap;
-        const awayTotal = awayLineupData.player1_handicap + awayLineupData.player2_handicap + awayLineupData.player3_handicap;
+        const homeTotal =
+          homeLineupData.player1_handicap +
+          homeLineupData.player2_handicap +
+          homeLineupData.player3_handicap;
+        const awayTotal =
+          awayLineupData.player1_handicap +
+          awayLineupData.player2_handicap +
+          awayLineupData.player3_handicap;
 
         // Calculate handicap difference and lookup thresholds
         const homeTotalHandicap = homeTotal + calculatedTeamHandicap;
@@ -326,17 +373,19 @@ export function ScoreMatch() {
         });
 
         // Lookup thresholds from handicap_chart_3vs3 table
-        const { data: homeThresholdData, error: homeThresholdError } = await supabase
-          .from('handicap_chart_3vs3')
-          .select('*')
-          .eq('hcp_diff', cappedHomeDiff)
-          .single();
+        const { data: homeThresholdData, error: homeThresholdError } =
+          await supabase
+            .from('handicap_chart_3vs3')
+            .select('*')
+            .eq('hcp_diff', cappedHomeDiff)
+            .single();
 
-        const { data: awayThresholdData, error: awayThresholdError } = await supabase
-          .from('handicap_chart_3vs3')
-          .select('*')
-          .eq('hcp_diff', cappedAwayDiff)
-          .single();
+        const { data: awayThresholdData, error: awayThresholdError } =
+          await supabase
+            .from('handicap_chart_3vs3')
+            .select('*')
+            .eq('hcp_diff', cappedAwayDiff)
+            .single();
 
         if (homeThresholdError) throw homeThresholdError;
         if (awayThresholdError) throw awayThresholdError;
@@ -344,7 +393,10 @@ export function ScoreMatch() {
         setHomeThresholds(homeThresholdData);
         setAwayThresholds(awayThresholdData);
 
-        console.log('Thresholds:', { home: homeThresholdData, away: awayThresholdData });
+        console.log('Thresholds:', {
+          home: homeThresholdData,
+          away: awayThresholdData,
+        });
 
         // Fetch all player names for display
         const allPlayerIds = [
@@ -365,7 +417,7 @@ export function ScoreMatch() {
 
         // Create player lookup map
         const playerMap = new Map<string, Player>();
-        playersData?.forEach(p => {
+        playersData?.forEach((p) => {
           playerMap.set(p.id, p);
         });
         setPlayers(playerMap);
@@ -382,7 +434,7 @@ export function ScoreMatch() {
 
         // Create game results map
         const gamesMap = new Map<number, MatchGame>();
-        gamesData?.forEach(game => {
+        gamesData?.forEach((game) => {
           gamesMap.set(game.game_number, game as MatchGame);
         });
         setGameResults(gamesMap);
@@ -392,9 +444,13 @@ export function ScoreMatch() {
         // If no games exist yet, create all 18 placeholder games
         if (gamesData.length === 0) {
           console.log('No games found, creating placeholders for all 18 games');
-          const gamesToInsert = getAllGames().map(game => {
-            const homePlayerId = homeLineupData[`player${game.homePlayerPosition}_id` as keyof typeof homeLineupData] as string;
-            const awayPlayerId = awayLineupData[`player${game.awayPlayerPosition}_id` as keyof typeof awayLineupData] as string;
+          const gamesToInsert = getAllGames().map((game) => {
+            const homePlayerId = homeLineupData[
+              `player${game.homePlayerPosition}_id` as keyof typeof homeLineupData
+            ] as string;
+            const awayPlayerId = awayLineupData[
+              `player${game.awayPlayerPosition}_id` as keyof typeof awayLineupData
+            ] as string;
 
             return {
               match_id: matchId,
@@ -409,7 +465,7 @@ export function ScoreMatch() {
               golden_break: false,
               confirmed_by_home: false,
               confirmed_by_away: false,
-              is_tiebreaker: false
+              is_tiebreaker: false,
             };
           });
 
@@ -429,13 +485,12 @@ export function ScoreMatch() {
               .eq('match_id', matchId);
 
             const newGamesMap = new Map<number, MatchGame>();
-            newGamesData?.forEach(game => {
+            newGamesData?.forEach((game) => {
               newGamesMap.set(game.game_number, game as MatchGame);
             });
             setGameResults(newGamesMap);
           }
         }
-
       } catch (err: any) {
         console.error('Error fetching match data:', err);
         setError(err.message || 'Failed to load match information');
@@ -465,7 +520,7 @@ export function ScoreMatch() {
           event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'match_games',
-          filter: `match_id=eq.${matchId}`
+          filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
           console.log('Real-time game update received:', payload);
@@ -479,7 +534,7 @@ export function ScoreMatch() {
 
             if (gamesData) {
               const gamesMap = new Map<number, MatchGame>();
-              gamesData.forEach(game => {
+              gamesData.forEach((game) => {
                 gamesMap.set(game.game_number, game as MatchGame);
               });
               setGameResults(gamesMap);
@@ -490,60 +545,100 @@ export function ScoreMatch() {
                 const updatedGame = payload.new as MatchGame;
                 const oldGame = payload.old as MatchGame | undefined;
 
-                console.log('Checking if confirmation needed for game', updatedGame.game_number);
+                console.log(
+                  'Checking if confirmation needed for game',
+                  updatedGame.game_number
+                );
                 console.log('userTeamId:', userTeamId);
                 console.log('match:', match);
-                console.log('updatedGame.winner_player_id:', updatedGame.winner_player_id);
-                console.log('updatedGame.confirmed_by_home:', updatedGame.confirmed_by_home);
-                console.log('updatedGame.confirmed_by_away:', updatedGame.confirmed_by_away);
+                console.log(
+                  'updatedGame.winner_player_id:',
+                  updatedGame.winner_player_id
+                );
+                console.log(
+                  'updatedGame.confirmed_by_home:',
+                  updatedGame.confirmed_by_home
+                );
+                console.log(
+                  'updatedGame.confirmed_by_away:',
+                  updatedGame.confirmed_by_away
+                );
 
                 // Detect if this is a vacate request:
                 // Unique state: winner exists BUT both confirmations are false
-                const isVacateRequest = updatedGame.winner_player_id &&
-                                       !updatedGame.confirmed_by_home &&
-                                       !updatedGame.confirmed_by_away;
+                const isVacateRequest =
+                  updatedGame.winner_player_id &&
+                  !updatedGame.confirmed_by_home &&
+                  !updatedGame.confirmed_by_away;
 
                 // If game has a winner and is waiting for confirmation
-                if (updatedGame.winner_player_id && (!updatedGame.confirmed_by_home || !updatedGame.confirmed_by_away)) {
+                if (
+                  updatedGame.winner_player_id &&
+                  (!updatedGame.confirmed_by_home ||
+                    !updatedGame.confirmed_by_away)
+                ) {
                   // Get match data from state (closure issue - match might be stale)
                   if (!match || !userTeamId) {
-                    console.log('Match or userTeamId not available yet, skipping auto-modal');
+                    console.log(
+                      'Match or userTeamId not available yet, skipping auto-modal'
+                    );
                     return;
                   }
 
                   console.log('isVacateRequest:', isVacateRequest);
-                  console.log('myVacateRequests set:', Array.from(myVacateRequests.current));
+                  console.log(
+                    'myVacateRequests set:',
+                    Array.from(myVacateRequests.current)
+                  );
                   console.log('Game number:', updatedGame.game_number);
 
                   // For vacate requests, check if this was initiated by me
                   if (isVacateRequest) {
                     // Check if the editingGame modal is currently open for this game
                     // If so, this is MY action, not the opponent's
-                    if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
-                      console.log('I am currently editing this game, suppressing my own confirmation modal');
+                    if (
+                      editingGame &&
+                      editingGame.gameNumber === updatedGame.game_number
+                    ) {
+                      console.log(
+                        'I am currently editing this game, suppressing my own confirmation modal'
+                      );
                       return;
                     }
 
                     // Check if I initiated this vacate request
                     if (myVacateRequests.current.has(updatedGame.game_number)) {
-                      console.log('I initiated this vacate request, suppressing my own confirmation modal');
+                      console.log(
+                        'I initiated this vacate request, suppressing my own confirmation modal'
+                      );
                       // Remove from set after seeing it once
                       myVacateRequests.current.delete(updatedGame.game_number);
                       return;
                     }
 
                     // This is from opponent - show the confirmation modal
-                    console.log('Opponent vacate request detected. Showing confirmation modal.');
-                    const winnerPlayer = gamesData.find(g => g.game_number === updatedGame.game_number);
+                    console.log(
+                      'Opponent vacate request detected. Showing confirmation modal.'
+                    );
+                    const winnerPlayer = gamesData.find(
+                      (g) => g.game_number === updatedGame.game_number
+                    );
                     if (winnerPlayer && winnerPlayer.winner_player_id) {
-                      const winnerName = getPlayerDisplayName(winnerPlayer.winner_player_id);
-                      console.log('Adding VACATE confirmation to queue for game', updatedGame.game_number, 'winner:', winnerName);
+                      const winnerName = getPlayerDisplayName(
+                        winnerPlayer.winner_player_id
+                      );
+                      console.log(
+                        'Adding VACATE confirmation to queue for game',
+                        updatedGame.game_number,
+                        'winner:',
+                        winnerName
+                      );
                       addToConfirmationQueue({
                         gameNumber: updatedGame.game_number,
                         winnerPlayerName: winnerName,
                         breakAndRun: updatedGame.break_and_run,
                         goldenBreak: updatedGame.golden_break,
-                        isResetRequest: true
+                        isResetRequest: true,
                       });
                     }
                     return;
@@ -551,7 +646,9 @@ export function ScoreMatch() {
 
                   // Normal score confirmation flow
                   const isHomeTeam = userTeamId === match.home_team_id;
-                  const needsMyConfirmation = isHomeTeam ? !updatedGame.confirmed_by_home : !updatedGame.confirmed_by_away;
+                  const needsMyConfirmation = isHomeTeam
+                    ? !updatedGame.confirmed_by_home
+                    : !updatedGame.confirmed_by_away;
 
                   console.log('isHomeTeam:', isHomeTeam);
                   console.log('needsMyConfirmation:', needsMyConfirmation);
@@ -559,21 +656,33 @@ export function ScoreMatch() {
                   if (needsMyConfirmation) {
                     // If auto-confirm is enabled, automatically confirm without showing modal
                     if (autoConfirm) {
-                      console.log('Auto-confirming game', updatedGame.game_number);
+                      console.log(
+                        'Auto-confirming game',
+                        updatedGame.game_number
+                      );
                       confirmOpponentScore(updatedGame.game_number);
                       return;
                     }
 
                     // Auto-open confirmation modal (or add to queue)
-                    const winnerPlayer = gamesData.find(g => g.game_number === updatedGame.game_number);
+                    const winnerPlayer = gamesData.find(
+                      (g) => g.game_number === updatedGame.game_number
+                    );
                     if (winnerPlayer && winnerPlayer.winner_player_id) {
-                      const winnerName = getPlayerDisplayName(winnerPlayer.winner_player_id);
-                      console.log('Adding confirmation to queue for game', updatedGame.game_number, 'winner:', winnerName);
+                      const winnerName = getPlayerDisplayName(
+                        winnerPlayer.winner_player_id
+                      );
+                      console.log(
+                        'Adding confirmation to queue for game',
+                        updatedGame.game_number,
+                        'winner:',
+                        winnerName
+                      );
                       addToConfirmationQueue({
                         gameNumber: updatedGame.game_number,
                         winnerPlayerName: winnerName,
                         breakAndRun: updatedGame.break_and_run,
-                        goldenBreak: updatedGame.golden_break
+                        goldenBreak: updatedGame.golden_break,
                       });
                     }
                   }
@@ -616,12 +725,13 @@ export function ScoreMatch() {
     let wins = 0;
     let losses = 0;
 
-    gameResults.forEach(game => {
+    gameResults.forEach((game) => {
       // Only count confirmed games
       if (!game.confirmed_by_home || !game.confirmed_by_away) return;
 
       // Check if this player was in the game
-      const wasInGame = game.home_player_id === playerId || game.away_player_id === playerId;
+      const wasInGame =
+        game.home_player_id === playerId || game.away_player_id === playerId;
       if (!wasInGame) return;
 
       // Count win or loss
@@ -643,7 +753,7 @@ export function ScoreMatch() {
     let wins = 0;
     let losses = 0;
 
-    gameResults.forEach(game => {
+    gameResults.forEach((game) => {
       // Only count confirmed games
       if (!game.confirmed_by_home || !game.confirmed_by_away) return;
 
@@ -663,7 +773,7 @@ export function ScoreMatch() {
    */
   const getCompletedGamesCount = () => {
     let count = 0;
-    gameResults.forEach(game => {
+    gameResults.forEach((game) => {
       if (game.confirmed_by_home && game.confirmed_by_away) {
         count++;
       }
@@ -675,7 +785,10 @@ export function ScoreMatch() {
    * Calculate current points for a team
    * Formula: games_won - (games_to_tie ?? games_to_win)
    */
-  const calculatePoints = (teamId: string, thresholds: HandicapThresholds | null) => {
+  const calculatePoints = (
+    teamId: string,
+    thresholds: HandicapThresholds | null
+  ) => {
     if (!thresholds) return 0;
     const { wins } = getTeamStats(teamId);
     const baseline = thresholds.games_to_tie ?? thresholds.games_to_win;
@@ -694,35 +807,71 @@ export function ScoreMatch() {
     goldenBreak: boolean;
     isResetRequest?: boolean;
   }) => {
-    console.log('addToConfirmationQueue called for game', confirmation.gameNumber, 'isResetRequest:', confirmation.isResetRequest);
-    console.log('Current myVacateRequests set:', Array.from(myVacateRequests.current));
+    console.log(
+      'addToConfirmationQueue called for game',
+      confirmation.gameNumber,
+      'isResetRequest:',
+      confirmation.isResetRequest
+    );
+    console.log(
+      'Current myVacateRequests set:',
+      Array.from(myVacateRequests.current)
+    );
 
     // If this is a vacate request and I initiated it, don't add to queue
-    if (confirmation.isResetRequest && myVacateRequests.current.has(confirmation.gameNumber)) {
-      console.log('✓ Skipping queue add - I initiated this vacate request for game', confirmation.gameNumber);
+    if (
+      confirmation.isResetRequest &&
+      myVacateRequests.current.has(confirmation.gameNumber)
+    ) {
+      console.log(
+        '✓ Skipping queue add - I initiated this vacate request for game',
+        confirmation.gameNumber
+      );
       return;
     }
 
     // Check if this game is already being shown in the modal
-    if (confirmationGame && confirmationGame.gameNumber === confirmation.gameNumber) {
-      console.log('Game', confirmation.gameNumber, 'is already in the confirmation modal, skipping');
+    if (
+      confirmationGame &&
+      confirmationGame.gameNumber === confirmation.gameNumber
+    ) {
+      console.log(
+        'Game',
+        confirmation.gameNumber,
+        'is already in the confirmation modal, skipping'
+      );
       return;
     }
 
     // Check if this game is already in the queue
-    const alreadyInQueue = confirmationQueue.some(item => item.gameNumber === confirmation.gameNumber);
+    const alreadyInQueue = confirmationQueue.some(
+      (item) => item.gameNumber === confirmation.gameNumber
+    );
     if (alreadyInQueue) {
-      console.log('Game', confirmation.gameNumber, 'is already in the queue, skipping');
+      console.log(
+        'Game',
+        confirmation.gameNumber,
+        'is already in the queue, skipping'
+      );
       return;
     }
 
-    console.log('Adding game', confirmation.gameNumber, 'to confirmation queue. Current queue length:', confirmationQueue.length);
+    console.log(
+      'Adding game',
+      confirmation.gameNumber,
+      'to confirmation queue. Current queue length:',
+      confirmationQueue.length
+    );
 
     // Always add to queue - the useEffect will handle showing it
-    setConfirmationQueue(prev => {
+    setConfirmationQueue((prev) => {
       // Double-check it's not in queue (race condition protection)
-      if (prev.some(item => item.gameNumber === confirmation.gameNumber)) {
-        console.log('Game', confirmation.gameNumber, 'already in queue during update, skipping');
+      if (prev.some((item) => item.gameNumber === confirmation.gameNumber)) {
+        console.log(
+          'Game',
+          confirmation.gameNumber,
+          'already in queue during update, skipping'
+        );
         return prev;
       }
       const newQueue = [...prev, confirmation];
@@ -746,11 +895,19 @@ export function ScoreMatch() {
     const existingGame = gameResults.get(gameNumber);
 
     // If game has a winner and is waiting for opponent confirmation
-    if (existingGame && existingGame.winner_player_id && (!existingGame.confirmed_by_home || !existingGame.confirmed_by_away)) {
+    if (
+      existingGame &&
+      existingGame.winner_player_id &&
+      (!existingGame.confirmed_by_home || !existingGame.confirmed_by_away)
+    ) {
       // Determine if this is the opponent team
       const isHomeTeam = userTeamId === match.home_team_id;
-      const needsMyConfirmation = isHomeTeam ? !existingGame.confirmed_by_home : !existingGame.confirmed_by_away;
-      const alreadyConfirmedByMe = isHomeTeam ? existingGame.confirmed_by_home : existingGame.confirmed_by_away;
+      const needsMyConfirmation = isHomeTeam
+        ? !existingGame.confirmed_by_home
+        : !existingGame.confirmed_by_away;
+      const alreadyConfirmedByMe = isHomeTeam
+        ? existingGame.confirmed_by_home
+        : existingGame.confirmed_by_away;
 
       if (needsMyConfirmation) {
         // If auto-confirm is enabled, automatically confirm without showing modal
@@ -764,21 +921,29 @@ export function ScoreMatch() {
           gameNumber,
           winnerPlayerName: getPlayerDisplayName(existingGame.winner_player_id),
           breakAndRun: existingGame.break_and_run,
-          goldenBreak: existingGame.golden_break
+          goldenBreak: existingGame.golden_break,
         });
         return;
       }
 
       if (alreadyConfirmedByMe) {
         // This team already confirmed, waiting for opponent - don't allow re-clicking
-        console.log('You already confirmed this game. Waiting for opponent to confirm.');
+        console.log(
+          'You already confirmed this game. Waiting for opponent to confirm.'
+        );
         return;
       }
     }
 
-    if (existingGame && existingGame.confirmed_by_home && existingGame.confirmed_by_away) {
+    if (
+      existingGame &&
+      existingGame.confirmed_by_home &&
+      existingGame.confirmed_by_away
+    ) {
       // Game already confirmed by both teams, don't allow changes
-      alert('This game has already been confirmed by both teams. Use the Edit button to change it.');
+      alert(
+        'This game has already been confirmed by both teams. Use the Edit button to change it.'
+      );
       return;
     }
 
@@ -787,7 +952,7 @@ export function ScoreMatch() {
       gameNumber,
       winnerTeamId: teamId,
       winnerPlayerId: playerId,
-      winnerPlayerName: playerName
+      winnerPlayerName: playerName,
     });
     setBreakAndRun(false);
     setGoldenBreak(false);
@@ -796,7 +961,10 @@ export function ScoreMatch() {
   /**
    * Confirm opponent's score
    */
-  const confirmOpponentScore = async (gameNumber: number, isVacateRequest?: boolean) => {
+  const confirmOpponentScore = async (
+    gameNumber: number,
+    isVacateRequest?: boolean
+  ) => {
     if (!match) return;
 
     const existingGame = gameResults.get(gameNumber);
@@ -815,7 +983,7 @@ export function ScoreMatch() {
             break_and_run: false,
             golden_break: false,
             confirmed_by_home: false,
-            confirmed_by_away: false
+            confirmed_by_away: false,
           })
           .eq('id', existingGame.id);
 
@@ -841,7 +1009,7 @@ export function ScoreMatch() {
         .eq('match_id', match.id);
 
       const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach(game => {
+      gamesData?.forEach((game) => {
         gamesMap.set(game.game_number, game as MatchGame);
       });
       setGameResults(gamesMap);
@@ -854,7 +1022,10 @@ export function ScoreMatch() {
   /**
    * Deny opponent's score OR vacate request
    */
-  const denyOpponentScore = async (gameNumber: number, isVacateRequest?: boolean) => {
+  const denyOpponentScore = async (
+    gameNumber: number,
+    isVacateRequest?: boolean
+  ) => {
     if (!match) return;
 
     const existingGame = gameResults.get(gameNumber);
@@ -867,7 +1038,7 @@ export function ScoreMatch() {
           .from('match_games')
           .update({
             confirmed_by_home: true,
-            confirmed_by_away: true
+            confirmed_by_away: true,
           })
           .eq('id', existingGame.id);
 
@@ -883,7 +1054,7 @@ export function ScoreMatch() {
             golden_break: false,
             confirmed_by_home: false,
             confirmed_by_away: false,
-            confirmed_at: null
+            confirmed_at: null,
           })
           .eq('id', existingGame.id);
 
@@ -897,7 +1068,7 @@ export function ScoreMatch() {
         .eq('match_id', match.id);
 
       const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach(game => {
+      gamesData?.forEach((game) => {
         gamesMap.set(game.game_number, game as MatchGame);
       });
       setGameResults(gamesMap);
@@ -926,15 +1097,21 @@ export function ScoreMatch() {
       }
 
       // Get game definition from game order
-      const gameDefinition = getAllGames().find(g => g.gameNumber === scoringGame.gameNumber);
+      const gameDefinition = getAllGames().find(
+        (g) => g.gameNumber === scoringGame.gameNumber
+      );
       if (!gameDefinition) {
         alert('Invalid game number');
         return;
       }
 
       // Get player IDs from lineups
-      const homePlayerId = homeLineup[`player${gameDefinition.homePlayerPosition}_id` as keyof Lineup] as string;
-      const awayPlayerId = awayLineup[`player${gameDefinition.awayPlayerPosition}_id` as keyof Lineup] as string;
+      const homePlayerId = homeLineup[
+        `player${gameDefinition.homePlayerPosition}_id` as keyof Lineup
+      ] as string;
+      const awayPlayerId = awayLineup[
+        `player${gameDefinition.awayPlayerPosition}_id` as keyof Lineup
+      ] as string;
 
       // Prepare game data
       const gameData = {
@@ -949,7 +1126,7 @@ export function ScoreMatch() {
         break_and_run: breakAndRun,
         golden_break: goldenBreak,
         confirmed_by_home: isHomeTeamScoring,
-        confirmed_by_away: !isHomeTeamScoring
+        confirmed_by_away: !isHomeTeamScoring,
       };
 
       // Check if game already exists
@@ -965,8 +1142,12 @@ export function ScoreMatch() {
           winner_player_id: gameData.winner_player_id,
           break_and_run: gameData.break_and_run,
           golden_break: gameData.golden_break,
-          confirmed_by_home: isHomeTeamScoring ? true : existingGame.confirmed_by_home,
-          confirmed_by_away: !isHomeTeamScoring ? true : existingGame.confirmed_by_away
+          confirmed_by_home: isHomeTeamScoring
+            ? true
+            : existingGame.confirmed_by_home,
+          confirmed_by_away: !isHomeTeamScoring
+            ? true
+            : existingGame.confirmed_by_away,
         };
 
         console.log('Updating game with:', updateData);
@@ -988,17 +1169,19 @@ export function ScoreMatch() {
         }
 
         if (!data || data.length === 0) {
-          console.error('No rows updated - possible RLS policy blocking update');
-          alert('Failed to update game. You may not have permission to score for this team.');
+          console.error(
+            'No rows updated - possible RLS policy blocking update'
+          );
+          alert(
+            'Failed to update game. You may not have permission to score for this team.'
+          );
           return;
         }
 
         console.log('Game updated successfully');
       } else {
         // Insert new game
-        const { error } = await supabase
-          .from('match_games')
-          .insert(gameData);
+        const { error } = await supabase.from('match_games').insert(gameData);
 
         if (error) throw error;
       }
@@ -1010,7 +1193,7 @@ export function ScoreMatch() {
         .eq('match_id', match.id);
 
       const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach(game => {
+      gamesData?.forEach((game) => {
         gamesMap.set(game.game_number, game as MatchGame);
       });
       setGameResults(gamesMap);
@@ -1019,7 +1202,6 @@ export function ScoreMatch() {
       setScoringGame(null);
       setBreakAndRun(false);
       setGoldenBreak(false);
-
     } catch (err: any) {
       console.error('Error saving game score:', err);
       alert(`Failed to save game score: ${err.message}`);
@@ -1030,7 +1212,9 @@ export function ScoreMatch() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-lg font-semibold text-gray-700">Loading match...</div>
+          <div className="text-lg font-semibold text-gray-700">
+            Loading match...
+          </div>
         </div>
       </div>
     );
@@ -1042,7 +1226,9 @@ export function ScoreMatch() {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="text-lg font-semibold text-red-600 mb-2">Error</div>
+              <div className="text-lg font-semibold text-red-600 mb-2">
+                Error
+              </div>
               <div className="text-gray-700 mb-4">{error}</div>
               <Button onClick={() => navigate(-1)}>Go Back</Button>
             </div>
@@ -1052,7 +1238,13 @@ export function ScoreMatch() {
     );
   }
 
-  if (!match || !homeLineup || !awayLineup || !homeThresholds || !awayThresholds) {
+  if (
+    !match ||
+    !homeLineup ||
+    !awayLineup ||
+    !homeThresholds ||
+    !awayThresholds
+  ) {
     return null;
   }
 
@@ -1064,14 +1256,14 @@ export function ScoreMatch() {
           {/* Team selector buttons */}
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4">
             <Button
-              variant={showingHomeTeam ? "default" : "outline"}
+              variant={showingHomeTeam ? 'default' : 'outline'}
               onClick={() => setShowingHomeTeam(true)}
             >
               {match.home_team?.team_name}
             </Button>
             <div className="text-sm text-gray-500 font-semibold px-2">vs</div>
             <Button
-              variant={!showingHomeTeam ? "default" : "outline"}
+              variant={!showingHomeTeam ? 'default' : 'outline'}
               onClick={() => setShowingHomeTeam(false)}
             >
               {match.away_team?.team_name}
@@ -1107,27 +1299,67 @@ export function ScoreMatch() {
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                     <div className="text-center">{homeTeamHandicap}</div>
                     <div className="truncate">Team</div>
-                    <div className="text-center">{getTeamStats(match.home_team_id).wins}</div>
-                    <div className="text-center">{getTeamStats(match.home_team_id).losses}</div>
+                    <div className="text-center">
+                      {getTeamStats(match.home_team_id).wins}
+                    </div>
+                    <div className="text-center">
+                      {getTeamStats(match.home_team_id).losses}
+                    </div>
                   </div>
                   {/* Player rows */}
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{homeLineup.player1_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(homeLineup.player1_id)}</div>
-                    <div className="text-center">{homeLineup.player1_id ? getPlayerStats(homeLineup.player1_id).wins : 0}</div>
-                    <div className="text-center">{homeLineup.player1_id ? getPlayerStats(homeLineup.player1_id).losses : 0}</div>
+                    <div className="text-center">
+                      {homeLineup.player1_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(homeLineup.player1_id)}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player1_id
+                        ? getPlayerStats(homeLineup.player1_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player1_id
+                        ? getPlayerStats(homeLineup.player1_id).losses
+                        : 0}
+                    </div>
                   </div>
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{homeLineup.player2_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(homeLineup.player2_id)}</div>
-                    <div className="text-center">{homeLineup.player2_id ? getPlayerStats(homeLineup.player2_id).wins : 0}</div>
-                    <div className="text-center">{homeLineup.player2_id ? getPlayerStats(homeLineup.player2_id).losses : 0}</div>
+                    <div className="text-center">
+                      {homeLineup.player2_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(homeLineup.player2_id)}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player2_id
+                        ? getPlayerStats(homeLineup.player2_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player2_id
+                        ? getPlayerStats(homeLineup.player2_id).losses
+                        : 0}
+                    </div>
                   </div>
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{homeLineup.player3_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(homeLineup.player3_id)}</div>
-                    <div className="text-center">{homeLineup.player3_id ? getPlayerStats(homeLineup.player3_id).wins : 0}</div>
-                    <div className="text-center">{homeLineup.player3_id ? getPlayerStats(homeLineup.player3_id).losses : 0}</div>
+                    <div className="text-center">
+                      {homeLineup.player3_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(homeLineup.player3_id)}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player3_id
+                        ? getPlayerStats(homeLineup.player3_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {homeLineup.player3_id
+                        ? getPlayerStats(homeLineup.player3_id).losses
+                        : 0}
+                    </div>
                   </div>
                 </div>
 
@@ -1136,20 +1368,26 @@ export function ScoreMatch() {
                   <div className="flex justify-around text-xs mb-2">
                     <div className="text-center">
                       <div className="text-gray-500">To Win</div>
-                      <div className="font-semibold text-lg">{homeThresholds.games_to_win}</div>
+                      <div className="font-semibold text-lg">
+                        {homeThresholds.games_to_win}
+                      </div>
                     </div>
                     {homeThresholds.games_to_tie !== null && (
                       <div className="text-center">
                         <div className="text-gray-500">To Tie</div>
-                        <div className="font-semibold text-lg">{homeThresholds.games_to_tie}</div>
+                        <div className="font-semibold text-lg">
+                          {homeThresholds.games_to_tie}
+                        </div>
                       </div>
                     )}
                   </div>
                   <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.home_team_id).wins} / {homeThresholds.games_to_win}
+                    {getTeamStats(match.home_team_id).wins} /{' '}
+                    {homeThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
-                    Points - {calculatePoints(match.home_team_id, homeThresholds)}
+                    Points -{' '}
+                    {calculatePoints(match.home_team_id, homeThresholds)}
                   </div>
                 </div>
               </div>
@@ -1182,27 +1420,67 @@ export function ScoreMatch() {
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                     <div className="text-center">0</div>
                     <div className="truncate">Team</div>
-                    <div className="text-center">{getTeamStats(match.away_team_id).wins}</div>
-                    <div className="text-center">{getTeamStats(match.away_team_id).losses}</div>
+                    <div className="text-center">
+                      {getTeamStats(match.away_team_id).wins}
+                    </div>
+                    <div className="text-center">
+                      {getTeamStats(match.away_team_id).losses}
+                    </div>
                   </div>
                   {/* Player rows */}
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{awayLineup.player1_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(awayLineup.player1_id)}</div>
-                    <div className="text-center">{awayLineup.player1_id ? getPlayerStats(awayLineup.player1_id).wins : 0}</div>
-                    <div className="text-center">{awayLineup.player1_id ? getPlayerStats(awayLineup.player1_id).losses : 0}</div>
+                    <div className="text-center">
+                      {awayLineup.player1_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(awayLineup.player1_id)}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player1_id
+                        ? getPlayerStats(awayLineup.player1_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player1_id
+                        ? getPlayerStats(awayLineup.player1_id).losses
+                        : 0}
+                    </div>
                   </div>
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{awayLineup.player2_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(awayLineup.player2_id)}</div>
-                    <div className="text-center">{awayLineup.player2_id ? getPlayerStats(awayLineup.player2_id).wins : 0}</div>
-                    <div className="text-center">{awayLineup.player2_id ? getPlayerStats(awayLineup.player2_id).losses : 0}</div>
+                    <div className="text-center">
+                      {awayLineup.player2_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(awayLineup.player2_id)}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player2_id
+                        ? getPlayerStats(awayLineup.player2_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player2_id
+                        ? getPlayerStats(awayLineup.player2_id).losses
+                        : 0}
+                    </div>
                   </div>
                   <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">{awayLineup.player3_handicap}</div>
-                    <div className="truncate">{getPlayerDisplayName(awayLineup.player3_id)}</div>
-                    <div className="text-center">{awayLineup.player3_id ? getPlayerStats(awayLineup.player3_id).wins : 0}</div>
-                    <div className="text-center">{awayLineup.player3_id ? getPlayerStats(awayLineup.player3_id).losses : 0}</div>
+                    <div className="text-center">
+                      {awayLineup.player3_handicap}
+                    </div>
+                    <div className="truncate">
+                      {getPlayerDisplayName(awayLineup.player3_id)}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player3_id
+                        ? getPlayerStats(awayLineup.player3_id).wins
+                        : 0}
+                    </div>
+                    <div className="text-center">
+                      {awayLineup.player3_id
+                        ? getPlayerStats(awayLineup.player3_id).losses
+                        : 0}
+                    </div>
                   </div>
                 </div>
 
@@ -1211,20 +1489,26 @@ export function ScoreMatch() {
                   <div className="flex justify-around text-xs mb-2">
                     <div className="text-center">
                       <div className="text-gray-500">To Win</div>
-                      <div className="font-semibold text-lg">{awayThresholds.games_to_win}</div>
+                      <div className="font-semibold text-lg">
+                        {awayThresholds.games_to_win}
+                      </div>
                     </div>
                     {awayThresholds.games_to_tie !== null && (
                       <div className="text-center">
                         <div className="text-gray-500">To Tie</div>
-                        <div className="font-semibold text-lg">{awayThresholds.games_to_tie}</div>
+                        <div className="font-semibold text-lg">
+                          {awayThresholds.games_to_tie}
+                        </div>
                       </div>
                     )}
                   </div>
                   <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.away_team_id).wins} / {awayThresholds.games_to_win}
+                    {getTeamStats(match.away_team_id).wins} /{' '}
+                    {awayThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
-                    Points - {calculatePoints(match.away_team_id, awayThresholds)}
+                    Points -{' '}
+                    {calculatePoints(match.away_team_id, awayThresholds)}
                   </div>
                 </div>
               </div>
@@ -1238,7 +1522,8 @@ export function ScoreMatch() {
         {/* Fixed header */}
         <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
           <div className="text-sm font-semibold mb-4">
-            Games Complete - <span className="text-lg">{getCompletedGamesCount()} / 18</span>
+            Games Complete -{' '}
+            <span className="text-lg">{getCompletedGamesCount()} / 18</span>
           </div>
           {/* Column headers */}
           <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
@@ -1252,128 +1537,216 @@ export function ScoreMatch() {
         {/* Scrollable game list */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           <div className="space-y-2">
-            {getAllGames().map(game => {
-            const homePlayerId = homeLineup[`player${game.homePlayerPosition}_id` as keyof Lineup] as string;
-            const awayPlayerId = awayLineup[`player${game.awayPlayerPosition}_id` as keyof Lineup] as string;
-            const homePlayerName = getPlayerDisplayName(homePlayerId);
-            const awayPlayerName = getPlayerDisplayName(awayPlayerId);
+            {getAllGames().map((game) => {
+              const homePlayerId = homeLineup[
+                `player${game.homePlayerPosition}_id` as keyof Lineup
+              ] as string;
+              const awayPlayerId = awayLineup[
+                `player${game.awayPlayerPosition}_id` as keyof Lineup
+              ] as string;
+              const homePlayerName = getPlayerDisplayName(homePlayerId);
+              const awayPlayerName = getPlayerDisplayName(awayPlayerId);
 
-            // Determine who breaks and who racks, and which team they're from
-            const breakerName = game.homeAction === 'breaks' ? homePlayerName : awayPlayerName;
-            const breakerPlayerId = game.homeAction === 'breaks' ? homePlayerId : awayPlayerId;
-            const breakerTeamId = game.homeAction === 'breaks' ? match.home_team_id : match.away_team_id;
+              // Determine who breaks and who racks, and which team they're from
+              const breakerName =
+                game.homeAction === 'breaks' ? homePlayerName : awayPlayerName;
+              const breakerPlayerId =
+                game.homeAction === 'breaks' ? homePlayerId : awayPlayerId;
+              const breakerTeamId =
+                game.homeAction === 'breaks'
+                  ? match.home_team_id
+                  : match.away_team_id;
 
-            const rackerName = game.homeAction === 'racks' ? homePlayerName : awayPlayerName;
-            const rackerPlayerId = game.homeAction === 'racks' ? homePlayerId : awayPlayerId;
-            const rackerTeamId = game.homeAction === 'racks' ? match.home_team_id : match.away_team_id;
+              const rackerName =
+                game.homeAction === 'racks' ? homePlayerName : awayPlayerName;
+              const rackerPlayerId =
+                game.homeAction === 'racks' ? homePlayerId : awayPlayerId;
+              const rackerTeamId =
+                game.homeAction === 'racks'
+                  ? match.home_team_id
+                  : match.away_team_id;
 
-            const breakerIsHome = game.homeAction === 'breaks';
-            const rackerIsHome = game.homeAction === 'racks';
+              const breakerIsHome = game.homeAction === 'breaks';
+              const rackerIsHome = game.homeAction === 'racks';
 
-            // Check game status
-            const gameResult = gameResults.get(game.gameNumber);
-            const hasWinner = gameResult && gameResult.winner_player_id;
-            const isConfirmed = gameResult && gameResult.confirmed_by_home && gameResult.confirmed_by_away;
-            const isPending = hasWinner && !isConfirmed;
+              // Check game status
+              const gameResult = gameResults.get(game.gameNumber);
+              const hasWinner = gameResult && gameResult.winner_player_id;
+              const isConfirmed =
+                gameResult &&
+                gameResult.confirmed_by_home &&
+                gameResult.confirmed_by_away;
+              const isPending = hasWinner && !isConfirmed;
 
-            // If game has a winner (pending or confirmed)
-            if (hasWinner) {
-              const breakerWon = gameResult.winner_player_id === breakerPlayerId;
-              const rackerWon = gameResult.winner_player_id === rackerPlayerId;
+              // If game has a winner (pending or confirmed)
+              if (hasWinner) {
+                const breakerWon =
+                  gameResult.winner_player_id === breakerPlayerId;
+                const rackerWon =
+                  gameResult.winner_player_id === rackerPlayerId;
 
-              // Determine styling based on confirmation status
-              const winnerClass = isConfirmed ? 'bg-green-200 font-semibold' : 'bg-yellow-100 font-semibold';
-              const loserClass = 'bg-white text-gray-500';
+                // Determine styling based on confirmation status
+                const winnerClass = isConfirmed
+                  ? 'bg-green-200 font-semibold'
+                  : 'bg-yellow-100 font-semibold';
+                const loserClass = 'bg-white text-gray-500';
 
-              // If pending, show buttons with NO trophy, NO Edit button - just colored backgrounds
-              if (isPending) {
+                // If pending, show buttons with NO trophy, NO Edit button - just colored backgrounds
+                if (isPending) {
+                  return (
+                    <div
+                      key={game.gameNumber}
+                      className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
+                    >
+                      <div className="font-semibold">{game.gameNumber}.</div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`w-full ${
+                          breakerWon ? winnerClass : loserClass
+                        }`}
+                        onClick={() =>
+                          handlePlayerClick(
+                            game.gameNumber,
+                            breakerPlayerId,
+                            breakerName,
+                            breakerTeamId
+                          )
+                        }
+                      >
+                        {breakerName}
+                      </Button>
+                      <div className="text-center font-semibold text-gray-400">
+                        vs
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`w-full ${
+                          rackerWon ? winnerClass : loserClass
+                        }`}
+                        onClick={() =>
+                          handlePlayerClick(
+                            game.gameNumber,
+                            rackerPlayerId,
+                            rackerName,
+                            rackerTeamId
+                          )
+                        }
+                      >
+                        {rackerName}
+                      </Button>
+                    </div>
+                  );
+                }
+
+                // If confirmed, show divs with trophy on winner and Edit button in middle
                 return (
-                  <div key={game.gameNumber} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
+                  <div
+                    key={game.gameNumber}
+                    className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
+                  >
                     <div className="font-semibold">{game.gameNumber}.</div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`w-full ${breakerWon ? winnerClass : loserClass}`}
-                      onClick={() => handlePlayerClick(game.gameNumber, breakerPlayerId, breakerName, breakerTeamId)}
+                    <div
+                      className={`text-center p-2 rounded ${
+                        breakerWon ? winnerClass : loserClass
+                      }`}
                     >
+                      {breakerWon && <span className="mr-1">🏆</span>}
                       {breakerName}
-                    </Button>
-                    <div className="text-center font-semibold text-gray-400">vs</div>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full ${rackerWon ? winnerClass : loserClass}`}
-                      onClick={() => handlePlayerClick(game.gameNumber, rackerPlayerId, rackerName, rackerTeamId)}
+                      className="text-xs px-1"
+                      onClick={() => {
+                        setEditingGame({
+                          gameNumber: game.gameNumber,
+                          currentWinnerName: breakerWon
+                            ? breakerName
+                            : rackerName,
+                        });
+                      }}
                     >
-                      {rackerName}
+                      Vacate
                     </Button>
+                    <div
+                      className={`text-center p-2 rounded ${
+                        rackerWon ? winnerClass : loserClass
+                      }`}
+                    >
+                      {rackerWon && <span className="mr-1">🏆</span>}
+                      {rackerName}
+                    </div>
                   </div>
                 );
               }
 
-              // If confirmed, show divs with trophy on winner and Edit button in middle
               return (
-                <div key={game.gameNumber} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
+                <div
+                  key={game.gameNumber}
+                  className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
+                >
                   <div className="font-semibold">{game.gameNumber}.</div>
-                  <div className={`text-center p-2 rounded ${breakerWon ? winnerClass : loserClass}`}>
-                    {breakerWon && <span className="mr-1">🏆</span>}
-                    {breakerName}
+                  <div className="text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`w-full ${
+                        breakerIsHome
+                          ? 'bg-blue-100 hover:bg-blue-200'
+                          : 'bg-orange-100 hover:bg-orange-200'
+                      }`}
+                      onClick={() =>
+                        handlePlayerClick(
+                          game.gameNumber,
+                          breakerPlayerId,
+                          breakerName,
+                          breakerTeamId
+                        )
+                      }
+                    >
+                      {breakerName}
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs px-1"
-                    onClick={() => {
-                      setEditingGame({
-                        gameNumber: game.gameNumber,
-                        currentWinnerName: breakerWon ? breakerName : rackerName,
-                      });
-                    }}
-                  >
-                    Vacate
-                  </Button>
-                  <div className={`text-center p-2 rounded ${rackerWon ? winnerClass : loserClass}`}>
-                    {rackerWon && <span className="mr-1">🏆</span>}
-                    {rackerName}
+                  <div className="text-center font-semibold text-gray-400">
+                    vs
+                  </div>
+                  <div className="text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`w-full ${
+                        rackerIsHome
+                          ? 'bg-blue-100 hover:bg-blue-200'
+                          : 'bg-orange-100 hover:bg-orange-200'
+                      }`}
+                      onClick={() =>
+                        handlePlayerClick(
+                          game.gameNumber,
+                          rackerPlayerId,
+                          rackerName,
+                          rackerTeamId
+                        )
+                      }
+                    >
+                      {rackerName}
+                    </Button>
                   </div>
                 </div>
               );
-            }
-
-            return (
-              <div key={game.gameNumber} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
-                <div className="font-semibold">{game.gameNumber}.</div>
-                <div className="text-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`w-full ${breakerIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
-                    onClick={() => handlePlayerClick(game.gameNumber, breakerPlayerId, breakerName, breakerTeamId)}
-                  >
-                    {breakerName}
-                  </Button>
-                </div>
-                <div className="text-center font-semibold text-gray-400">vs</div>
-                <div className="text-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`w-full ${rackerIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
-                    onClick={() => handlePlayerClick(game.gameNumber, rackerPlayerId, rackerName, rackerTeamId)}
-                  >
-                    {rackerName}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+            })}
           </div>
         </div>
       </div>
 
       {/* Win Confirmation Modal */}
       <Dialog open={scoringGame !== null}>
-        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent
+          showCloseButton={false}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Select Game Winner</DialogTitle>
             <DialogDescription>
@@ -1383,8 +1756,12 @@ export function ScoreMatch() {
 
           <div className="space-y-4 py-4">
             <div className="text-center">
-              <p className="text-sm text-gray-500">Game {scoringGame?.gameNumber}</p>
-              <p className="text-lg font-semibold mt-2">Winner: {scoringGame?.winnerPlayerName}</p>
+              <p className="text-sm text-gray-500">
+                Game {scoringGame?.gameNumber}
+              </p>
+              <p className="text-lg font-semibold mt-2">
+                Winner: {scoringGame?.winnerPlayerName}
+              </p>
             </div>
 
             {/* Break & Run Checkbox (always visible) */}
@@ -1399,7 +1776,10 @@ export function ScoreMatch() {
                 }}
                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="breakAndRun" className="text-sm font-normal cursor-pointer">
+              <label
+                htmlFor="breakAndRun"
+                className="text-sm font-normal cursor-pointer"
+              >
                 Break & Run
               </label>
             </div>
@@ -1417,11 +1797,15 @@ export function ScoreMatch() {
                   }}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="goldenBreak" className="text-sm font-normal cursor-pointer">
+                <label
+                  htmlFor="goldenBreak"
+                  className="text-sm font-normal cursor-pointer"
+                >
                   {gameType === '8-ball' && '8 on the Break'}
                   {gameType === '9-ball' && '9 on the Break'}
                   {gameType === '10-ball' && '10 on the Break'}
-                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'Golden Break'}
+                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) &&
+                    'Golden Break'}
                 </label>
               </div>
             )}
@@ -1438,22 +1822,27 @@ export function ScoreMatch() {
             >
               Cancel
             </Button>
-            <Button onClick={handleConfirmScore}>
-              Confirm
-            </Button>
+            <Button onClick={handleConfirmScore}>Confirm</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Opponent Confirmation Modal */}
       <Dialog open={confirmationGame !== null}>
-        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent
+          showCloseButton={false}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             {confirmationGame?.isResetRequest ? (
               <>
-                <DialogTitle className="text-orange-600">⚠️ Confirm Vacate Winner</DialogTitle>
+                <DialogTitle className="text-orange-600">
+                  ⚠️ Confirm Vacate Winner
+                </DialogTitle>
                 <DialogDescription>
-                  Your opponent wants to vacate the winner and clear this game result.
+                  Your opponent wants to vacate the winner and clear this game
+                  result.
                 </DialogDescription>
               </>
             ) : (
@@ -1477,7 +1866,9 @@ export function ScoreMatch() {
                 </div>
                 <div className="bg-orange-50 border border-orange-200 rounded p-3 mt-4">
                   <p className="text-center text-sm text-gray-700">
-                    Agreeing will <span className="font-semibold">vacate this winner</span> and allow both teams to score this game again.
+                    Agreeing will{' '}
+                    <span className="font-semibold">vacate this winner</span>{' '}
+                    and allow both teams to score this game again.
                   </p>
                 </div>
               </>
@@ -1498,12 +1889,11 @@ export function ScoreMatch() {
                       {gameType === '8-ball' && 'an 8 on the Break!'}
                       {gameType === '9-ball' && 'a 9 on the Break!'}
                       {gameType === '10-ball' && 'a 10 on the Break!'}
-                      {!['8-ball', '9-ball', '10-ball'].includes(gameType) && 'a Golden Break!'}
+                      {!['8-ball', '9-ball', '10-ball'].includes(gameType) &&
+                        'a Golden Break!'}
                     </div>
                   ) : (
-                    <div>
-                      {confirmationGame?.winnerPlayerName} won the game
-                    </div>
+                    <div>{confirmationGame?.winnerPlayerName} won the game</div>
                   )}
                 </div>
                 <p className="text-center mt-4 text-gray-600">
@@ -1518,19 +1908,27 @@ export function ScoreMatch() {
               className="flex-1"
               onClick={() => {
                 if (confirmationGame) {
-                  confirmOpponentScore(confirmationGame.gameNumber, confirmationGame.isResetRequest);
+                  confirmOpponentScore(
+                    confirmationGame.gameNumber,
+                    confirmationGame.isResetRequest
+                  );
                   setConfirmationGame(null);
                 }
               }}
             >
-              {confirmationGame?.isResetRequest ? 'Agree - Vacate Winner' : 'Confirm'}
+              {confirmationGame?.isResetRequest
+                ? 'Agree - Vacate Winner'
+                : 'Confirm'}
             </Button>
             <Button
               variant="outline"
               className="flex-1"
               onClick={() => {
                 if (confirmationGame) {
-                  denyOpponentScore(confirmationGame.gameNumber, confirmationGame.isResetRequest);
+                  denyOpponentScore(
+                    confirmationGame.gameNumber,
+                    confirmationGame.isResetRequest
+                  );
                   setConfirmationGame(null);
                 }
               }}
@@ -1543,9 +1941,15 @@ export function ScoreMatch() {
 
       {/* Vacate Winner Modal */}
       <Dialog open={editingGame !== null}>
-        <DialogContent showCloseButton={false} onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+        <DialogContent
+          showCloseButton={false}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
-            <DialogTitle>Vacate Winner - Game {editingGame?.gameNumber}</DialogTitle>
+            <DialogTitle>
+              Vacate Winner - Game {editingGame?.gameNumber}
+            </DialogTitle>
             <DialogDescription>
               Request to clear the result and allow both teams to score again.
             </DialogDescription>
@@ -1553,11 +1957,15 @@ export function ScoreMatch() {
 
           <div className="py-4 space-y-4">
             <p className="text-center text-sm text-gray-600">
-              Current winner: <span className="font-semibold">{editingGame?.currentWinnerName}</span>
+              Current winner:{' '}
+              <span className="font-semibold">
+                {editingGame?.currentWinnerName}
+              </span>
             </p>
 
             <p className="text-center text-sm text-gray-500">
-              This will request your opponent to agree to vacate this result so both teams can score it again.
+              This will request your opponent to agree to vacate this result so
+              both teams can score it again.
             </p>
           </div>
 
@@ -1579,7 +1987,12 @@ export function ScoreMatch() {
                   try {
                     // Track that I initiated this vacate request (to suppress my own confirmation modal)
                     myVacateRequests.current.add(editingGame.gameNumber);
-                    console.log('Added game', editingGame.gameNumber, 'to myVacateRequests. Set now contains:', Array.from(myVacateRequests.current));
+                    console.log(
+                      'Added game',
+                      editingGame.gameNumber,
+                      'to myVacateRequests. Set now contains:',
+                      Array.from(myVacateRequests.current)
+                    );
 
                     // Vacate request: Keep winner but clear BOTH confirmations
                     // This creates a unique state: winner exists but both confirmations are false
@@ -1588,7 +2001,7 @@ export function ScoreMatch() {
                       .from('match_games')
                       .update({
                         confirmed_by_home: false,
-                        confirmed_by_away: false
+                        confirmed_by_away: false,
                       })
                       .eq('id', existingGame.id);
 
