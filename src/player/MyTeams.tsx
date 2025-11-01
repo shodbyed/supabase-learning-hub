@@ -1,19 +1,30 @@
 /**
  * @fileoverview MyTeams Page
  *
- * Player-facing view that displays all teams the logged-in user is on.
- * Shows teams grouped by league with minimal information cards.
+ * Mobile-first accordion view of all teams the logged-in user is on.
+ * Each team expands to show full details including roster, venue, and actions.
  *
- * Flow: Dashboard → My Teams (list of teams across all leagues)
- * Future: Clicking edit button (captains only) will open team management modal
+ * Flow: Dashboard → My Teams (accordion list) → Expand to see details
  */
 
 import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '@/context/UserContext';
 import { supabase } from '@/supabaseClient';
-import { TeamCard } from '@/components/player/TeamCard';
 import { fetchPlayerTeams, fetchCaptainTeamEditData } from '@/utils/playerQueries';
 import { TeamEditorModal } from '@/operator/TeamEditorModal';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { formatPartialMemberNumber } from '@/types/member';
+import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { Calendar, MapPin, Users, AlertCircle } from 'lucide-react';
 
 interface TeamData {
   team_id: string;
@@ -192,38 +203,191 @@ export function MyTeams() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">My Teams</h1>
-
-      {teams.length === 0 ? (
-        <p className="text-center text-muted-foreground">
-          You are not currently on any teams
-        </p>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {teams.map((teamData) => {
-            const team = teamData.teams;
-            const isCaptain = team.captain_id === memberId;
-
-            return (
-              <TeamCard
-                key={team.id}
-                teamName={team.team_name}
-                captain={team.captain}
-                venue={team.venue}
-                rosterSize={team.roster_size}
-                players={team.team_players}
-                season={team.season}
-                leagueId={team.season.league.id}
-                seasonId={team.season.id}
-                currentUserId={memberId || undefined}
-                showEditButton={isCaptain}
-                onEditClick={() => handleEditTeam(team.id)}
-              />
-            );
-          })}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header - Mobile First */}
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="px-4 py-3">
+          <div className="text-4xl font-semibold text-gray-900">My Teams</div>
+          <p className="text-xs text-gray-600">
+            {teams.length} {teams.length === 1 ? 'team' : 'teams'}
+          </p>
         </div>
-      )}
+      </header>
+
+      {/* Main Content */}
+      <main className="px-4 py-6 max-w-2xl mx-auto">
+        {teams.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">You are not currently on any teams</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Accordion type="single" collapsible className="space-y-4">
+            {teams.map((teamData) => {
+              const team = teamData.teams;
+              const isCaptain = team.captain_id === memberId;
+
+              // Calculate team readiness
+              const minRoster = team.roster_size === 5 ? 3 : 5;
+              const hasVenue = team.venue !== null;
+              const hasMinRoster = team.team_players.length >= minRoster;
+              const isReady = hasVenue && hasMinRoster;
+
+              // Filter out captain from roster
+              const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
+
+              return (
+                <AccordionItem
+                  key={team.id}
+                  value={team.id}
+                  className="bg-white border rounded-lg shadow-sm"
+                >
+                  <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                    <div className="flex items-start justify-between w-full pr-4">
+                      <div className="text-left flex-1">
+                        <h2 className="font-semibold text-lg text-gray-900">
+                          {team.team_name}
+                        </h2>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {formatGameType(team.season.league.game_type as any)} •{' '}
+                            {formatDayOfWeek(team.season.league.day_of_week as any)}
+                          </span>
+                        </div>
+                        {/* TODO: Add next match date here when query is available */}
+                        {/* <p className="text-xs text-gray-500 mt-1">Next: Jan 15, 2025</p> */}
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4 pt-2">
+                      {/* Team Readiness Warning (Captains Only) */}
+                      {isCaptain && !isReady && (
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-yellow-900">
+                                Team Setup Incomplete
+                              </p>
+                              <ul className="text-sm text-yellow-800 mt-1 space-y-1">
+                                {!hasVenue && <li>• Home venue required</li>}
+                                {!hasMinRoster && (
+                                  <li>
+                                    • Minimum {minRoster} players required (
+                                    {team.team_players.length}/{team.roster_size} currently)
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Home Venue */}
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+                          <MapPin className="h-4 w-4" />
+                          <span>Home Venue</span>
+                        </div>
+                        <p className="text-base text-gray-900 ml-6">
+                          {team.venue?.name || 'No venue assigned'}
+                        </p>
+                      </div>
+
+                      {/* Captain */}
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+                          <Users className="h-4 w-4" />
+                          <span>Captain</span>
+                        </div>
+                        <div
+                          className={`text-base ml-6 ${
+                            team.captain.id === memberId
+                              ? 'font-semibold text-blue-600'
+                              : 'text-gray-900'
+                          }`}
+                        >
+                          <PlayerNameLink
+                            playerId={team.captain.id}
+                            playerName={`${team.captain.first_name} ${team.captain.last_name}`}
+                            className={team.captain.id === memberId ? 'font-semibold' : ''}
+                          />{' '}
+                          {formatPartialMemberNumber(team.captain)}
+                        </div>
+                      </div>
+
+                      {/* Roster */}
+                      <div>
+                        <p className="text-sm font-medium text-gray-600 mb-2">
+                          Roster ({team.team_players.length}/{team.roster_size})
+                        </p>
+                        <ul className="space-y-1 ml-6">
+                          {nonCaptainPlayers.map((player) => (
+                            <li
+                              key={player.member_id}
+                              className={`text-sm ${
+                                player.member_id === memberId
+                                  ? 'font-semibold text-blue-600'
+                                  : 'text-gray-900'
+                              }`}
+                            >
+                              <PlayerNameLink
+                                playerId={player.members.id}
+                                playerName={`${player.members.first_name} ${player.members.last_name}`}
+                                className={player.member_id === memberId ? 'font-semibold' : ''}
+                              />{' '}
+                              {formatPartialMemberNumber(player.members)}
+                            </li>
+                          ))}
+                          {/* Empty roster slots */}
+                          {Array.from({
+                            length: team.roster_size - team.team_players.length,
+                          }).map((_, index) => (
+                            <li
+                              key={`empty-${index}`}
+                              className="text-sm text-gray-400 italic ml-6"
+                            >
+                              Player {nonCaptainPlayers.length + index + 2}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-3 pt-2">
+                        <Link to={`/team/${team.id}/schedule`} className="flex-1">
+                          <Button variant="outline" className="w-full">
+                            View Schedule
+                          </Button>
+                        </Link>
+                        <Link to={`/team/${team.id}/schedule`} className="flex-1">
+                          <Button className="w-full">Score Match</Button>
+                        </Link>
+                      </div>
+
+                      {/* Edit Team Button (Captains Only) */}
+                      {isCaptain && (
+                        <Button
+                          variant="ghost"
+                          className="w-full text-sm"
+                          onClick={() => handleEditTeam(team.id)}
+                        >
+                          Edit Team
+                        </Button>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        )}
+      </main>
 
       {/* Team Editor Modal for Captains */}
       {editingTeamId && editData && !loadingEditData && (
@@ -241,7 +405,7 @@ export function MyTeams() {
             team_name: editData.team.team_name,
             captain_id: editData.team.captain_id,
             home_venue_id: editData.team.home_venue_id,
-            roster_size: editData.team.roster_size
+            roster_size: editData.team.roster_size,
           }}
           onSuccess={handleTeamUpdateSuccess}
           onCancel={handleCancelEdit}

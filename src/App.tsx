@@ -15,10 +15,17 @@ import { UserProvider } from './context/UserProvider';
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
 
+  // Hide navbar for match scoring (full-screen experience)
+  const hideNavbar = location.pathname.includes('/match/') &&
+                     (location.pathname.endsWith('/score') ||
+                      location.pathname.endsWith('/lineup'));
+
   // Show OperatorNavBar for operator routes
   const isOperatorRoute = location.pathname.startsWith('/operator') ||
                          location.pathname.startsWith('/create-league') ||
                          location.pathname.startsWith('/league/');
+
+  if (hideNavbar) return null;
 
   return isOperatorRoute ? <OperatorNavBar /> : <NavBar />;
 };

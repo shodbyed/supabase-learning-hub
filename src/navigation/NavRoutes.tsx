@@ -10,6 +10,8 @@ import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
 import { MyTeams } from '../player/MyTeams';
+import { TeamSchedule } from '../player/TeamSchedule';
+import { MatchLineup } from '../player/MatchLineup';
 import { ScoreMatch } from '../player/ScoreMatch';
 import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
@@ -62,7 +64,9 @@ const memberRoutes = [
   { path: '/messages', element: <Messages /> },
   { path: '/player/:playerId', element: <PlayerProfile /> },
   { path: '/my-teams', element: <MyTeams /> },
-  { path: '/score-match', element: <ScoreMatch /> },
+  { path: '/team/:teamId/schedule', element: <TeamSchedule /> },
+  { path: '/match/:matchId/lineup', element: <MatchLineup /> },
+  { path: '/match/:matchId/score', element: <ScoreMatch /> },
 ];
 
 // Protected routes - require league_operator role
