@@ -19,22 +19,50 @@
 
 ## 🎯 Migration Priority Levels
 
-### 🔴 Priority 1: Core Auth & User Data (Fetch Everywhere)
+### ✅ Priority 1: Core Auth & User Data (COMPLETED)
 **Impact**: Highest - Used across entire app, fetched repeatedly
+**Status**: ✅ 100% Complete - All 25 files migrated to TanStack Query
 
-1. **Members/Auth** (`useCurrentMember`, `UserProvider`)
-   - `hooks/useCurrentMember.ts` - Fetches current user's member data
-   - `context/UserProvider.tsx` - Auth state management
-   - `hooks/useUserProfile.ts` - User profile data
-   - `hooks/useOperatorId.ts` - Operator ID lookup
+1. **Members/Auth Hooks** ✅
+   - ✅ `hooks/useCurrentMember.ts` → `api/hooks/useCurrentMember.ts` (TanStack Query)
+   - ✅ `hooks/useUserProfile.ts` → `api/hooks/useUserProfile.ts` (TanStack Query)
+   - ✅ `hooks/useOperatorId.ts` → `api/hooks/useOperatorId.ts` (TanStack Query)
 
-2. **Authentication Operations**
-   - `login/Login.tsx` - `supabase.auth.signInWithPassword()`
-   - `login/Register.tsx` - `supabase.auth.signUp()`
-   - `login/ForgotPassword.tsx` - `supabase.auth.resetPasswordForEmail()`
-   - `login/ResetPassword.tsx` - `supabase.auth.updateUser()`
-   - `login/EmailConfirmation.tsx` - `supabase.auth.verifyOtp()`
-   - `login/LogoutButton.tsx` - `supabase.auth.signOut()`
+2. **Authentication Operations** ⚠️
+   - `login/Login.tsx` - `supabase.auth.signInWithPassword()` (Keep as-is - auth mutations)
+   - `login/Register.tsx` - `supabase.auth.signUp()` (Keep as-is - auth mutations)
+   - `login/ForgotPassword.tsx` - `supabase.auth.resetPasswordForEmail()` (Keep as-is)
+   - `login/ResetPassword.tsx` - `supabase.auth.updateUser()` (Keep as-is)
+   - `login/EmailConfirmation.tsx` - `supabase.auth.verifyOtp()` (Keep as-is)
+   - `login/LogoutButton.tsx` - `supabase.auth.signOut()` (Keep as-is)
+   - **Note**: Auth operations should stay direct - they're mutations, not queries
+
+3. **Files Migrated to New Hooks** ✅
+   - ✅ PlayerNameLink.tsx
+   - ✅ ReportUserModal.tsx
+   - ✅ MessageSettingsModal.tsx
+   - ✅ AdminReports.tsx
+   - ✅ ReportsManagement.tsx
+   - ✅ OrganizationSettings.tsx
+   - ✅ TeamManagement.tsx
+   - ✅ SeasonCreationWizard.tsx
+   - ✅ VenueManagement.tsx
+   - ✅ MatchLineup.tsx
+   - ✅ ScoreMatch.tsx
+   - ✅ useMatchLineup.ts
+   - ✅ Messages.tsx
+   - ✅ Home.tsx
+   - ✅ NavBar.tsx
+   - ✅ Dashboard.tsx
+   - ✅ LeagueOperatorApplication.tsx
+   - ✅ useApplicationForm.ts
+   - ✅ ProtectedRoute.tsx
+   - ✅ useProfileForm.ts
+   - ✅ Profile.tsx
+   - ✅ OperatorDashboard.tsx
+   - ✅ LeagueCreationWizard.tsx
+   - ✅ SeasonCreationWizard.smoke.test.tsx (test mock updated)
+   - ✅ ApplicationPreview.tsx (import updated)
 
 ### 🟠 Priority 2: Team & Player Data (Frequently Accessed)
 **Impact**: High - Used in navigation, dashboards, rosters

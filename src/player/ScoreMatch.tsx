@@ -544,7 +544,6 @@ export function ScoreMatch() {
               // Check if this update requires my confirmation
               if (payload.eventType === 'UPDATE' && payload.new) {
                 const updatedGame = payload.new as MatchGame;
-                const oldGame = payload.old as MatchGame | undefined;
 
                 console.log(
                   'Checking if confirmation needed for game',

@@ -27,3 +27,25 @@ export {
   useOperatorIdValue,
   useIsCurrentUserOperator,
 } from './useOperatorId';
+
+// Team hooks
+export {
+  usePlayerTeams,
+  useTeamDetails,
+  useTeamsByLeague,
+  useTeamsBySeason,
+  useCaptainTeamEditData,
+} from './useTeams';
+
+// Team query functions (for backward compatibility with non-hook usage)
+// Wraps the new query functions to match old {data, error} pattern
+import { getTeamsByLeague } from '../queries/teams';
+
+export async function fetchTeamsWithDetails(leagueId: string) {
+  try {
+    const data = await getTeamsByLeague(leagueId);
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+}

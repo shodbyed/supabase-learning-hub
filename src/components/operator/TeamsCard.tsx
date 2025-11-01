@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { fetchTeamsWithDetails } from '@/utils/teamQueries';
+import { fetchTeamsWithDetails } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import type { TeamWithQueryDetails } from '@/types/team';
 

@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
-import { fetchTeamsWithDetails } from '@/utils/teamQueries';
+import { fetchTeamsWithDetails } from '@/api/hooks';
 import type { League } from '@/types/league';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
