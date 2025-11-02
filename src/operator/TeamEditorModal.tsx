@@ -10,7 +10,7 @@
  */
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { supabase } from '@/supabaseClient';
+import { useCreateTeam, useUpdateTeam } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,8 +97,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [teamName, setTeamName] = useState(existingTeam?.team_name || defaultTeamName);
   const [captainId, setCaptainId] = useState(existingTeam?.captain_id || '');
   const [homeVenueId, setHomeVenueId] = useState(existingTeam?.home_venue_id || defaultVenueId);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Mutation hooks
+  const createTeamMutation = useCreateTeam();
+  const updateTeamMutation = useUpdateTeam();
+
+  const saving = createTeamMutation.isPending || updateTeamMutation.isPending;
 
   // Check if operator has profanity filter enabled
   const { shouldValidate: operatorProfanityFilterEnabled } = useOperatorProfanityFilter(leagueId);
@@ -149,6 +154,28 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const excludedPlayerIds = getPlayersOnOtherTeams();
 
   /**
+   * Get excluded player IDs for a specific roster slot
+   * Excludes: players on other teams + captain + players in other slots
+   */
+  const getExcludedIdsForSlot = (currentSlotIndex: number): string[] => {
+    const excluded = [...excludedPlayerIds];
+
+    // Exclude captain
+    if (captainId) {
+      excluded.push(captainId);
+    }
+
+    // Exclude players already selected in other roster slots
+    playerIds.forEach((playerId, index) => {
+      if (playerId && index !== currentSlotIndex) {
+        excluded.push(playerId);
+      }
+    });
+
+    return excluded;
+  };
+
+  /**
    * Validate form data
    */
   const validate = (): string | null => {
@@ -175,153 +202,36 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
       return;
     }
 
-    setSaving(true);
     setError(null);
 
     try {
+      const rosterPlayers = getAllPlayerIds();
+
       if (isEditing && existingTeam) {
         // UPDATE existing team
-        const { error: teamError } = await supabase
-          .from('teams')
-          .update({
-            captain_id: captainId,
-            home_venue_id: homeVenueId || null,
-            team_name: teamName.trim(),
-          })
-          .eq('id', existingTeam.id);
-
-        if (teamError) throw teamError;
-
-        console.log('🎱 Team updated:', existingTeam.id);
-
-        // Get current roster to handle captain separately
-        const { data: currentRoster } = await supabase
-          .from('team_players')
-          .select('member_id, is_captain')
-          .eq('team_id', existingTeam.id);
-
-        console.log('📋 Current roster:', currentRoster);
-
-        // If captain variant, captain row cannot be deleted by RLS policy
-        // So we need to update the captain row instead of delete/insert
-        if (isCaptainVariant && currentRoster) {
-          const captainRow = currentRoster.find(r => r.is_captain);
-
-          if (captainRow) {
-            // Update captain's is_captain flag if needed
-            await supabase
-              .from('team_players')
-              .update({ is_captain: captainRow.member_id === captainId })
-              .eq('team_id', existingTeam.id)
-              .eq('member_id', captainRow.member_id);
-          }
-
-          // Delete only non-captain rows (these CAN be deleted by captain)
-          const { error: deleteError } = await supabase
-            .from('team_players')
-            .delete()
-            .eq('team_id', existingTeam.id)
-            .neq('member_id', captainRow?.member_id || '');
-
-          if (deleteError) {
-            console.error('Delete error:', deleteError);
-            throw deleteError;
-          }
-
-          console.log('🗑️ Non-captain roster deleted');
-        } else {
-          // Operator variant - can delete all rows
-          const { data: deletedData, error: deleteError } = await supabase
-            .from('team_players')
-            .delete()
-            .eq('team_id', existingTeam.id)
-            .select();
-
-          if (deleteError) {
-            console.error('Delete error:', deleteError);
-            throw deleteError;
-          }
-
-          console.log('🗑️ Existing roster deleted:', deletedData?.length || 0, 'rows');
-        }
-
-        // Insert new roster using hook's helper
-        const rosterPlayers = getAllPlayerIds();
-        console.log('👥 Inserting roster players:', rosterPlayers);
-        console.log('👤 Captain ID:', captainId);
-
-        // Remove duplicates
-        const uniqueRosterPlayers = [...new Set(rosterPlayers)];
-
-        // Filter out captain if captain variant and they already exist
-        let playersToInsert = uniqueRosterPlayers;
-        if (isCaptainVariant && currentRoster) {
-          const captainRow = currentRoster.find(r => r.is_captain);
-          if (captainRow) {
-            playersToInsert = uniqueRosterPlayers.filter(id => id !== captainRow.member_id);
-            console.log('🔄 Skipping captain insert (already exists)');
-          }
-        }
-
-        const rosterData = playersToInsert.map((memberId) => ({
-          team_id: existingTeam.id,
-          member_id: memberId,
-          season_id: seasonId,
-          is_captain: memberId === captainId,
-        }));
-
-        console.log('📝 Roster data to insert:', rosterData);
-
-        if (rosterData.length > 0) {
-          const { error: rosterError } = await supabase
-            .from('team_players')
-            .insert(rosterData);
-
-          if (rosterError) {
-            console.error('Insert error:', rosterError);
-            throw rosterError;
-          }
-        }
+        await updateTeamMutation.mutateAsync({
+          teamId: existingTeam.id,
+          seasonId,
+          captainId,
+          teamName: teamName.trim(),
+          homeVenueId: homeVenueId || null,
+          rosterPlayerIds: rosterPlayers,
+          isCaptainVariant,
+        });
 
         console.log('✅ Team updated successfully');
       } else {
         // CREATE new team
-        const teamData = {
-          season_id: seasonId,
-          league_id: leagueId,
-          captain_id: captainId,
-          home_venue_id: homeVenueId || null,
-          team_name: teamName.trim(),
-          roster_size: rosterSize,
-        };
+        await createTeamMutation.mutateAsync({
+          seasonId,
+          leagueId,
+          captainId,
+          teamName: teamName.trim(),
+          rosterSize,
+          homeVenueId: homeVenueId || null,
+          rosterPlayerIds: rosterPlayers,
+        });
 
-        const { data: newTeam, error: teamError } = await supabase
-          .from('teams')
-          .insert(teamData)
-          .select()
-          .single();
-
-        if (teamError) throw teamError;
-
-        console.log('🎱 Team created:', newTeam);
-
-        // Prepare roster data using hook's helper
-        const rosterPlayers = getAllPlayerIds();
-        const rosterData = rosterPlayers.map((memberId) => ({
-          team_id: newTeam.id,
-          member_id: memberId,
-          season_id: seasonId,
-          is_captain: memberId === captainId,
-        }));
-
-        // Insert roster players into database
-        const { error: rosterError } = await supabase
-          .from('team_players')
-          .insert(rosterData);
-
-        if (rosterError) throw rosterError;
-
-        console.log('👥 Roster players added:', rosterData.length);
         console.log('✅ Team created successfully');
       }
 
@@ -329,8 +239,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     } catch (err) {
       console.error('❌ Error saving team:', err);
       setError(err instanceof Error ? err.message : 'Failed to save team');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -443,7 +351,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               value={captainId}
               onValueChange={setCaptainId}
               placeholder="Select team captain..."
-              excludeIds={excludedPlayerIds}
+              excludeIds={[...excludedPlayerIds, ...playerIds.filter(id => id)]}
             />
           )}
 
@@ -464,7 +372,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   onValueChange={(memberId) => handlePlayerChange(index, memberId)}
                   placeholder={`Player ${index + 2} (optional)`}
                   showClear={true}
-                  excludeIds={excludedPlayerIds}
+                  excludeIds={getExcludedIdsForSlot(index)}
                 />
               ))}
             </div>

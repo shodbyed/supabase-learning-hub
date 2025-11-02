@@ -8,7 +8,39 @@
  */
 
 import { supabase } from '@/supabaseClient';
-import type { DayOfWeek } from '@/types/league';
+import type { League, LeagueInsertData, DayOfWeek, GameType, TeamFormat } from '@/types/league';
+
+/**
+ * Parameters for creating a new league
+ */
+export interface CreateLeagueParams {
+  operatorId: string;
+  gameType: GameType;
+  dayOfWeek: DayOfWeek;
+  teamFormat: TeamFormat;
+  leagueStartDate: string; // ISO date string
+  division?: string | null;
+}
+
+/**
+ * Parameters for updating a league
+ */
+export interface UpdateLeagueParams {
+  leagueId: string;
+  gameType?: GameType;
+  dayOfWeek?: DayOfWeek;
+  teamFormat?: TeamFormat;
+  leagueStartDate?: string;
+  division?: string | null;
+  status?: 'active' | 'completed' | 'abandoned';
+}
+
+/**
+ * Parameters for deleting a league
+ */
+export interface DeleteLeagueParams {
+  leagueId: string;
+}
 
 /**
  * Update Parameters for league day of week
@@ -16,6 +48,94 @@ import type { DayOfWeek } from '@/types/league';
 export interface UpdateLeagueDayParams {
   leagueId: string;
   newDay: string;
+}
+
+/**
+ * Create a new league
+ *
+ * @param params - League creation parameters
+ * @returns The newly created league
+ * @throws Error if validation fails or database operation fails
+ */
+export async function createLeague(params: CreateLeagueParams): Promise<League> {
+  const insertData: LeagueInsertData = {
+    operator_id: params.operatorId,
+    game_type: params.gameType,
+    day_of_week: params.dayOfWeek,
+    team_format: params.teamFormat,
+    league_start_date: params.leagueStartDate,
+    division: params.division || null,
+  };
+
+  const { data: newLeague, error } = await supabase
+    .from('leagues')
+    .insert([insertData])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create league: ${error.message}`);
+  }
+
+  return newLeague;
+}
+
+/**
+ * Update an existing league
+ *
+ * @param params - League update parameters
+ * @returns The updated league
+ * @throws Error if database operation fails
+ */
+export async function updateLeague(params: UpdateLeagueParams): Promise<League> {
+  const updateData: Partial<League> = {};
+
+  if (params.gameType !== undefined) updateData.game_type = params.gameType;
+  if (params.dayOfWeek !== undefined) updateData.day_of_week = params.dayOfWeek;
+  if (params.teamFormat !== undefined) updateData.team_format = params.teamFormat;
+  if (params.leagueStartDate !== undefined) updateData.league_start_date = params.leagueStartDate;
+  if (params.division !== undefined) updateData.division = params.division;
+  if (params.status !== undefined) updateData.status = params.status;
+
+  const { data: updatedLeague, error } = await supabase
+    .from('leagues')
+    .update(updateData)
+    .eq('id', params.leagueId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update league: ${error.message}`);
+  }
+
+  return updatedLeague;
+}
+
+/**
+ * Delete a league (hard delete with cascade)
+ *
+ * This will cascade delete:
+ * - All seasons for this league
+ * - All teams in those seasons
+ * - All matches in those seasons
+ * - All season weeks
+ * - League-venue relationships
+ *
+ * WARNING: This is a destructive operation. Consider soft delete (status='abandoned') instead.
+ *
+ * @param params - League deletion parameters
+ * @returns void
+ * @throws Error if database operation fails
+ */
+export async function deleteLeague(params: DeleteLeagueParams): Promise<void> {
+  const { error } = await supabase
+    .from('leagues')
+    .delete()
+    .eq('id', params.leagueId);
+
+  if (error) {
+    throw new Error(`Failed to delete league: ${error.message}`);
+  }
 }
 
 /**

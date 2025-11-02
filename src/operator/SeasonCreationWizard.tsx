@@ -7,11 +7,10 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { useOperatorIdValue, useUpdateLeagueDayOfWeek } from '@/api/hooks';
+import { useOperatorIdValue, useUpdateLeagueDayOfWeek, useCreateSeason } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { fetchChampionshipPreferences } from '@/services/championshipService';
-import { createSeason } from '@/services/seasonService';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,6 +42,9 @@ export const SeasonCreationWizard: React.FC = () => {
   const [searchParams] = useSearchParams();
   const operatorId = useOperatorIdValue();
   const updateLeagueDayMutation = useUpdateLeagueDayOfWeek();
+
+  // TanStack Query mutation for season creation
+  const createSeasonMutation = useCreateSeason();
 
   // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
@@ -453,18 +455,27 @@ export const SeasonCreationWizard: React.FC = () => {
       }
 
       const formData: SeasonFormData = JSON.parse(stored);
-      const existingSeasonId = searchParams.get('seasonId');
 
-      // Create season using service
-      const { seasonId } = await createSeason({
+      // Create season using TanStack Query mutation
+      const newSeason = await createSeasonMutation.mutateAsync({
         leagueId,
         league: state.league,
-        formData,
+        startDate: formData.startDate,
+        seasonLength: parseInt(formData.seasonLength),
         schedule: state.schedule,
         operatorId,
-        existingSeasonId,
+        bcaChoice: formData.bcaChoice,
+        bcaStartDate: formData.bcaStartDate,
+        bcaEndDate: formData.bcaEndDate,
+        bcaIgnored: formData.bcaIgnored,
+        apaChoice: formData.apaChoice,
+        apaStartDate: formData.apaStartDate,
+        apaEndDate: formData.apaEndDate,
+        apaIgnored: formData.apaIgnored,
         onSavePreference: saveChampionshipPreference,
       });
+
+      const seasonId = newSeason.id;
 
       // Clear localStorage
       clearSeasonCreationData(leagueId);
