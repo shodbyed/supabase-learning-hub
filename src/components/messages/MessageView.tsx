@@ -16,9 +16,9 @@ import { ConversationHeader } from './ConversationHeader';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { useConversationMessages } from '@/api/hooks';
+import { useConversationMessages, useSendMessage, useUpdateLastRead } from '@/api/hooks';
 import { queryKeys } from '@/api/queryKeys';
-import { sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
+import { leaveConversation, blockUser } from '@/utils/messageQueries';
 import { supabase } from '@/supabaseClient';
 import { LoadingState, EmptyState } from '@/components/shared';
 import { MessageSquare } from 'lucide-react';
@@ -50,9 +50,11 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch messages using TanStack Query
+  // TanStack Query hooks
   const { data: messagesData = [], isLoading: loading } = useConversationMessages(conversationId);
   const messages = messagesData as any as Message[];
+  const sendMessageMutation = useSendMessage();
+  const updateLastReadMutation = useUpdateLastRead();
 
   const { recipientName, recipientLastRead } = useConversationParticipants(
     conversationId,
@@ -100,7 +102,10 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
   // Mark conversation as read when messages load
   useEffect(() => {
     if (messages.length > 0) {
-      updateLastRead(conversationId, currentUserId);
+      updateLastReadMutation.mutate({
+        conversationId,
+        userId: currentUserId,
+      });
     }
   }, [conversationId, currentUserId, messages.length]);
 
@@ -144,7 +149,10 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
             );
 
             // Update last read if we're viewing the conversation
-            await updateLastRead(conversationId, currentUserId);
+            updateLastReadMutation.mutate({
+              conversationId,
+              userId: currentUserId,
+            });
           }
         }
       )
@@ -161,12 +169,19 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    const { error } = await sendMessage(conversationId, currentUserId, content);
-
-    if (error) {
-      console.error('Error sending message:', error);
-      return;
-    }
+    sendMessageMutation.mutate(
+      {
+        conversationId,
+        senderId: currentUserId,
+        content,
+      },
+      {
+        onError: (error) => {
+          console.error('Error sending message:', error);
+          alert('Failed to send message. Please try again.');
+        },
+      }
+    );
 
     // Don't manually fetch - let realtime subscription handle it
     // The message will appear via the realtime subscription

@@ -165,7 +165,7 @@ export async function unblockUser(params: UnblockUserParams) {
     .from('blocked_users')
     .delete()
     .eq('blocker_id', blockerId)
-    .eq('blocked_user_id', blockedUserId);
+    .eq('blocked_id', blockedUserId);
 
   if (error) {
     throw new Error(`Failed to unblock user: ${error.message}`);

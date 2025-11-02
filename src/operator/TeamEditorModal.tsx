@@ -120,6 +120,35 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   });
 
   /**
+   * Get all player IDs from other teams in this season
+   * Used to prevent duplicate player assignments across teams
+   */
+  const getPlayersOnOtherTeams = (): string[] => {
+    const playerIds: string[] = [];
+
+    allTeams.forEach((team) => {
+      // Skip the current team being edited
+      if (existingTeam && team.id === existingTeam.id) return;
+
+      // Add captain
+      if (team.captain_id) {
+        playerIds.push(team.captain_id);
+      }
+
+      // Add roster players
+      team.team_players?.forEach((tp) => {
+        if (tp.member_id) {
+          playerIds.push(tp.member_id);
+        }
+      });
+    });
+
+    return playerIds;
+  };
+
+  const excludedPlayerIds = getPlayersOnOtherTeams();
+
+  /**
    * Validate form data
    */
   const validate = (): string | null => {
@@ -414,6 +443,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               value={captainId}
               onValueChange={setCaptainId}
               placeholder="Select team captain..."
+              excludeIds={excludedPlayerIds}
             />
           )}
 
@@ -434,6 +464,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   onValueChange={(memberId) => handlePlayerChange(index, memberId)}
                   placeholder={`Player ${index + 2} (optional)`}
                   showClear={true}
+                  excludeIds={excludedPlayerIds}
                 />
               ))}
             </div>

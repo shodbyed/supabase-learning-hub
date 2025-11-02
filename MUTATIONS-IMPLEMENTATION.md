@@ -46,11 +46,33 @@ Implement TanStack Query mutations for write operations, providing:
 
 ### Components Migrated
 
-1. **SeasonCreationWizard.tsx** ✅ TESTED
+1. **SeasonCreationWizard.tsx** ✅ USER TESTED
    - Migrated `updateLeagueDayOfWeek` to use mutation hook
    - Proper error handling with onSuccess/onError callbacks
    - Automatic cache invalidation for leagues and seasons
    - User verified: "went thru season creation wizard with no issues"
+
+2. **MessageView.tsx** ✅ MIGRATED
+   - Migrated `sendMessage` to use `useSendMessage()` mutation hook
+   - Migrated `updateLastRead` to use `useUpdateLastRead()` mutation hook (3 places)
+   - Proper error handling with alert on failure
+   - Automatic cache invalidation for conversations and messages
+   - ~15 lines of code simplified
+
+3. **BlockedUsersModal.tsx** ✅ MIGRATED
+   - Migrated `unblockUser` to use `useUnblockUser()` mutation hook
+   - Removed manual state management (useState for blockedUsers/loading/unblockingId)
+   - Now uses TanStack Query's built-in `useBlockedUsers()` for data fetching
+   - Automatic cache invalidation on unblock
+   - Simplified from ~30 lines of manual data fetching to single hook
+   - ~25 lines of code removed
+
+4. **ReportUserModal.tsx** ✅ MIGRATED
+   - Migrated `createUserReport` to use `useCreateUserReport()` mutation hook
+   - Removed `isSubmitting` state (now uses `mutation.isPending`)
+   - Proper error handling with onSuccess/onError callbacks
+   - Automatic cache invalidation for reports
+   - ~10 lines of code simplified
 
 ### Mutation Pattern
 
@@ -170,6 +192,13 @@ These involve transactions, complex business logic, or multiple tables:
 - 3 mutation files with 7 functions
 - 3 hook files with 7 hooks
 - Exported from api/hooks/index.ts
-- 1 component migrated and tested
 
-**Next Phase**: Migrate remaining simple mutations (teams, venues, member profile)
+**Components Migrated**: ✅ 4 components
+- SeasonCreationWizard.tsx - `useUpdateLeagueDayOfWeek()` ✅ USER TESTED
+- MessageView.tsx - `useSendMessage()`, `useUpdateLastRead()`
+- BlockedUsersModal.tsx - `useUnblockUser()`
+- ReportUserModal.tsx - `useCreateUserReport()`
+
+**Code Reduction**: ~50 lines removed (manual state/fetching replaced with hooks)
+
+**Next Phase**: User testing of message mutations, then migrate remaining simple mutations (teams, venues, member profile)

@@ -56,6 +56,7 @@ export {
   useConversations,
   useConversationMessages,
   useBlockedUsers,
+  useBlockedUsersDetails,
   useUnreadMessageCount,
   useConversationParticipants,
 } from './useMessages';
@@ -73,6 +74,32 @@ export {
   useCreateUserReport,
   useUpdateReportStatus,
 } from './useReportMutations';
+
+// League queries
+export {
+  useLeaguesByOperator,
+  useLeagueCount,
+  useLeagueById,
+  useLeaguesWithProgress,
+} from './useLeagues';
+
+// Season queries
+export {
+  useSeasonsByLeague,
+  useSeasonById,
+  useMostRecentSeason,
+  useActiveSeason,
+  useSeasonCount,
+} from './useSeasons';
+
+// Match/Schedule queries
+export {
+  useMatchById,
+  useMatchesBySeason,
+  useMatchesByTeam,
+  useSeasonSchedule,
+  useSeasonWeeks,
+} from './useMatches';
 
 // League mutations
 export {

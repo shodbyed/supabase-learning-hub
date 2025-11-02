@@ -12,11 +12,10 @@
  * - Cleaner, more maintainable code
  */
 
-import { useState, useEffect } from 'react';
 import { UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
-import { getBlockedUsers, unblockUser } from '@/utils/messageQueries';
+import { useBlockedUsersDetails, useUnblockUser } from '@/api/hooks';
 
 interface BlockedUser {
   blocked_id: string;
@@ -43,11 +42,11 @@ interface BlockedUsersModalProps {
 function BlockedUserItem({
   blockedUser,
   onUnblock,
-  isUnblocking,
+  isPending,
 }: {
   blockedUser: BlockedUser;
   onUnblock: (id: string) => void;
-  isUnblocking: boolean;
+  isPending: boolean;
 }) {
   if (!blockedUser.blocked) return null;
 
@@ -68,12 +67,12 @@ function BlockedUserItem({
       </div>
       <Button
         onClick={() => onUnblock(blockedUser.blocked_id)}
-        disabled={isUnblocking}
+        disabled={isPending}
         variant="outline"
         size="sm"
         className="ml-3 flex-shrink-0"
       >
-        {isUnblocking ? 'Unblocking...' : 'Unblock'}
+        {isPending ? 'Unblocking...' : 'Unblock'}
       </Button>
     </div>
   );
@@ -88,50 +87,32 @@ export function BlockedUsersModal({
   onClose,
   onUnblocked,
 }: BlockedUsersModalProps) {
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [unblockingId, setUnblockingId] = useState<string | null>(null);
-
-  // Load blocked users on mount
-  useEffect(() => {
-    async function loadBlockedUsers() {
-      setLoading(true);
-      const { data, error } = await getBlockedUsers(currentUserId);
-
-      if (error) {
-        console.error('Error loading blocked users:', error);
-      } else {
-        setBlockedUsers((data as any) || []);
-      }
-
-      setLoading(false);
-    }
-
-    loadBlockedUsers();
-  }, [currentUserId]);
+  // TanStack Query hooks
+  const { data: blockedUsersData = [], isLoading: loading } = useBlockedUsersDetails(currentUserId);
+  const blockedUsers = blockedUsersData as any as BlockedUser[];
+  const unblockMutation = useUnblockUser();
 
   const handleUnblock = async (blockedUserId: string) => {
     if (!confirm('Are you sure you want to unblock this user? They will be able to message you again.')) {
       return;
     }
 
-    setUnblockingId(blockedUserId);
-
-    const { error } = await unblockUser(currentUserId, blockedUserId);
-
-    if (error) {
-      console.error('Error unblocking user:', error);
-      alert('Failed to unblock user. Please try again.');
-      setUnblockingId(null);
-      return;
-    }
-
-    // Remove from local list
-    setBlockedUsers((prev) => prev.filter((u) => u.blocked_id !== blockedUserId));
-    setUnblockingId(null);
-
-    // Notify parent
-    onUnblocked?.();
+    unblockMutation.mutate(
+      {
+        blockerId: currentUserId,
+        blockedUserId,
+      },
+      {
+        onSuccess: () => {
+          // Notify parent that list was updated
+          onUnblocked?.();
+        },
+        onError: (error) => {
+          console.error('Error unblocking user:', error);
+          alert('Failed to unblock user. Please try again.');
+        },
+      }
+    );
   };
 
   return (
@@ -157,7 +138,7 @@ export function BlockedUsersModal({
                 key={blockedUser.blocked_id}
                 blockedUser={blockedUser}
                 onUnblock={handleUnblock}
-                isUnblocking={unblockingId === blockedUser.blocked_id}
+                isPending={unblockMutation.isPending}
               />
             ))}
           </div>

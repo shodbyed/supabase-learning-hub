@@ -81,6 +81,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
   const [existingMatchCount, setExistingMatchCount] = useState(0);
   const [positionsLocked, setPositionsLocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [shuffling, setShuffling] = useState(false);
 
   /**
    * Check if any matches have been played (completed, in_progress, or forfeited)
@@ -111,12 +112,18 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
   }, [seasonId]);
 
   /**
-   * Randomly shuffle team positions
+   * Randomly shuffle team positions with visual animation
    */
-  const handleShuffle = () => {
+  const handleShuffle = async () => {
+    setShuffling(true);
+    setError(null);
+
+    // Show shuffling animation for 800ms
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     const shuffled = assignRandomPositions(teamPositions);
     setTeamPositions(shuffled);
-    setError(null);
+    setShuffling(false);
   };
 
   /**
@@ -348,10 +355,10 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
         <Button
           variant="outline"
           onClick={handleShuffle}
-          disabled={generating}
+          disabled={generating || shuffling}
         >
-          <Shuffle className="h-4 w-4 mr-2" />
-          Shuffle Teams
+          <Shuffle className={`h-4 w-4 mr-2 ${shuffling ? 'animate-spin' : ''}`} />
+          {shuffling ? 'Shuffling...' : 'Shuffle Teams'}
         </Button>
       </div>
 
@@ -372,7 +379,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
                 onChange={(e) =>
                   handlePositionChange(team.id, parseInt(e.target.value))
                 }
-                disabled={generating || team.id === 'BYE'}
+                disabled={generating || shuffling || team.id === 'BYE'}
                 className="text-center font-mono"
               />
             </div>

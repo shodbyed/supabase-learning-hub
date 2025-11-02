@@ -22,6 +22,7 @@ import {
   getUserConversations,
   getConversationMessages,
   getBlockedUsers,
+  getBlockedUsersDetails,
   getUnreadMessageCount,
   getConversationParticipants,
 } from '../queries/messages';
@@ -110,6 +111,29 @@ export function useBlockedUsers(userId: string | null | undefined) {
     queryFn: () => getBlockedUsers(userId!),
     enabled: !!userId,
     staleTime: STALE_TIME.MESSAGES, // 30 seconds
+  });
+}
+
+/**
+ * Hook to get full details of blocked users
+ *
+ * Used in settings/management UI where we need to display user names and unblock options.
+ * Caches for 30 seconds.
+ *
+ * @param userId - The member ID to fetch blocked users for
+ * @returns Query result with array of blocked user details (with names, numbers, etc.)
+ *
+ * @example
+ * const { data: blockedUsers = [], isLoading } = useBlockedUsersDetails(memberId);
+ * {blockedUsers.map(user => <BlockedUserItem key={user.blocked_id} user={user} />)}
+ */
+export function useBlockedUsersDetails(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.messages.all, 'blockedDetails', userId],
+    queryFn: () => getBlockedUsersDetails(userId!),
+    enabled: !!userId,
+    staleTime: STALE_TIME.MESSAGES, // 30 seconds
+    refetchOnWindowFocus: true, // Refetch when returning to settings
   });
 }
 

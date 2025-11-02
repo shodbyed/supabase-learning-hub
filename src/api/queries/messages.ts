@@ -20,7 +20,7 @@
 import { supabase } from '@/supabaseClient';
 
 /**
- * Fetch list of users that the current user has blocked
+ * Fetch list of users that the current user has blocked (IDs only)
  *
  * Used to filter out blocked users from conversation lists and searches.
  *
@@ -37,6 +37,38 @@ export async function getBlockedUsers(userId: string): Promise<string[]> {
   if (error) throw error;
 
   return (data || []).map((block: any) => block.blocked_id);
+}
+
+/**
+ * Fetch full details of users that the current user has blocked
+ *
+ * Used in settings/management UI to display blocked users with unblock option.
+ * Returns full user info including names and block metadata.
+ *
+ * @param userId - The member ID to fetch blocked users for
+ * @returns Promise with array of blocked user details
+ * @throws Error if query fails
+ */
+export async function getBlockedUsersDetails(userId: string) {
+  const { data, error } = await supabase
+    .from('blocked_users')
+    .select(`
+      blocked_id,
+      blocked_at,
+      reason,
+      blocked:members!blocked_id(
+        id,
+        first_name,
+        last_name,
+        system_player_number
+      )
+    `)
+    .eq('blocker_id', userId)
+    .order('blocked_at', { ascending: false });
+
+  if (error) throw error;
+
+  return data || [];
 }
 
 /**

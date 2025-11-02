@@ -36,7 +36,8 @@ export const LeagueCreationWizard: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   /**
-   * Fetch operator ID on mount
+   * Fetch operator ID and clear old form data on mount
+   * This ensures each new wizard starts with a clean slate
    */
   useEffect(() => {
     const fetchOperatorId = async () => {
@@ -54,6 +55,11 @@ export const LeagueCreationWizard: React.FC = () => {
     };
 
     fetchOperatorId();
+
+    // Clear any previous wizard data when starting a new league creation
+    // This prevents form fields from pre-filling with old data
+    localStorage.removeItem('league-creation-wizard');
+    localStorage.removeItem('league-wizard-step');
   }, [member]);
 
   /**
