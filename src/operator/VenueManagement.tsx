@@ -4,14 +4,13 @@
  * Allows operators to view and manage their venues.
  * Simple test page for venue creation functionality.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { VenueCard } from '@/components/operator/VenueCard';
 import { Button } from '@/components/ui/button';
-import { useOperatorId } from '@/api/hooks';
+import { useOperatorId, useVenuesByOperator } from '@/api/hooks';
 import type { Venue } from '@/types/venue';
 
 /**
@@ -24,52 +23,19 @@ export const VenueManagement: React.FC = () => {
   const navigate = useNavigate();
   const { data: operator, isLoading: operatorLoading } = useOperatorId();
   const operatorId = operator?.id;
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [venuesLoading, setVenuesLoading] = useState(true);
+
+  // Fetch venues using TanStack Query hook
+  const { data: venues = [], isLoading: venuesLoading, refetch } = useVenuesByOperator(operatorId);
+
   const [showModal, setShowModal] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
 
   /**
-   * Fetch venues when operator ID is available
-   */
-  useEffect(() => {
-    if (!operatorId) return;
-
-    const fetchVenues = async () => {
-      setVenuesLoading(true);
-
-      try {
-        const { data: venuesData, error: venuesError } = await supabase
-          .from('venues')
-          .select('*')
-          .eq('created_by_operator_id', operatorId)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-
-        if (venuesError) throw venuesError;
-
-        setVenues(venuesData || []);
-      } catch (err) {
-        console.error('Error fetching venues:', err);
-      } finally {
-        setVenuesLoading(false);
-      }
-    };
-
-    fetchVenues();
-  }, [operatorId]);
-
-  /**
    * Handle successful venue creation or update
    */
-  const handleVenueCreated = (venue: Venue) => {
-    if (editingVenue) {
-      // Update existing venue in list
-      setVenues(prev => prev.map(v => v.id === venue.id ? venue : v));
-    } else {
-      // Add new venue to list
-      setVenues(prev => [venue, ...prev]);
-    }
+  const handleVenueCreated = () => {
+    // Refetch venues to get latest data from cache/server
+    refetch();
     setShowModal(false);
     setEditingVenue(null);
   };

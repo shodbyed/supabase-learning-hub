@@ -101,6 +101,14 @@ export {
   useSeasonWeeks,
 } from './useMatches';
 
+// Venue queries
+export {
+  useVenuesByOperator,
+  useVenueById,
+  useLeagueVenues,
+  useLeagueVenuesWithDetails,
+} from './useVenues';
+
 // League mutations
 export {
   useUpdateLeagueDayOfWeek,

@@ -539,6 +539,16 @@ export const OrganizationSettings: React.FC = () => {
             linkTo="/league-rules"
           />
 
+          {/* Venue Management Card */}
+          <DashboardCard
+            icon="🏢"
+            iconColor="text-blue-600"
+            title="Venue Management"
+            description="Add and manage venues where your leagues play"
+            buttonText="Manage Venues"
+            linkTo="/venues"
+          />
+
           {/* Profanity Filter Card */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-4">
