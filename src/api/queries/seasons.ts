@@ -174,3 +174,34 @@ export async function getSeasonCount(leagueId: string): Promise<number> {
 
   return count || 0;
 }
+
+/**
+ * Get the most recent completed season before a given date
+ *
+ * Finds the previous season that was completed before the current/active season started.
+ * Useful for importing teams from previous seasons.
+ *
+ * @param leagueId - League ID
+ * @param beforeDate - ISO date string to search before (typically current season's created_at)
+ * @returns Previous completed season or null if none found
+ */
+export async function getPreviousCompletedSeason(
+  leagueId: string,
+  beforeDate: string
+): Promise<{ id: string } | null> {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('league_id', leagueId)
+    .eq('status', 'completed')
+    .lt('created_at', beforeDate)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to fetch previous completed season: ${error.message}`);
+  }
+
+  return data;
+}

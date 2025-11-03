@@ -20,7 +20,7 @@ import { InfoButton } from '@/components/InfoButton';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
 import { containsProfanity } from '@/utils/profanityFilter';
-import type { Member } from '@/types/member';
+import type { PartialMember } from '@/types/member';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamFormat } from '@/types/league';
 
@@ -35,8 +35,8 @@ interface TeamEditorModalProps {
   venues: Venue[];
   /** League venues assignments */
   leagueVenues: LeagueVenue[];
-  /** Available members for captain/player selection */
-  members: Member[];
+  /** Available members for captain/player selection (only needs id, name, player number) */
+  members: PartialMember[];
   /** Default team name (e.g., "Team 1") */
   defaultTeamName: string;
   /** All teams (for cross-team duplicate validation) */

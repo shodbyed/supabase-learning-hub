@@ -157,12 +157,13 @@ export interface UseTeamManagementReturn {
   venues: import('./venue').Venue[];
   leagueVenues: import('./venue').LeagueVenue[];
   teams: TeamWithQueryDetails[];
-  members: import('./member').Member[];
+  members: import('./member').PartialMember[]; // Partial members for captain/player selection
   seasonId: string | null;
   previousSeasonId: string | null;
   loading: boolean;
   error: string | null;
   refreshTeams: () => Promise<void>;
+  // TODO: Remove these setters - use TanStack Query mutations/invalidations instead
   setLeagueVenues: React.Dispatch<React.SetStateAction<import('./venue').LeagueVenue[]>>;
   setTeams: React.Dispatch<React.SetStateAction<TeamWithQueryDetails[]>>;
 }

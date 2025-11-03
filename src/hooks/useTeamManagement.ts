@@ -6,7 +6,6 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/supabaseClient';
 import { fetchTeamsWithDetails } from '@/api/hooks';
 import {
   useLeagueById,
@@ -14,6 +13,7 @@ import {
   useLeagueVenues,
   useAllMembers,
   useActiveSeason,
+  usePreviousCompletedSeason,
 } from '@/api/hooks';
 import type { LeagueVenue } from '@/types/venue';
 import type { UseTeamManagementReturn } from '@/types';
@@ -77,12 +77,17 @@ export function useTeamManagement(
     error: seasonError,
   } = useActiveSeason(leagueId);
 
+  // Fetch previous completed season (before active season)
+  const {
+    data: previousSeasonData,
+    isLoading: prevSeasonLoading,
+  } = usePreviousCompletedSeason(leagueId, activeSeasonData?.created_at);
+
   // ============================================================================
   // LOCAL STATE (for data that still needs useEffect/useState)
   // ============================================================================
 
   const [teams, setTeams] = useState<TeamWithQueryDetails[]>([]);
-  const [previousSeasonId, setPreviousSeasonId] = useState<string | null>(null);
   const [leagueVenues, setLeagueVenues] = useState<LeagueVenue[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(true);
 
@@ -94,9 +99,10 @@ export function useTeamManagement(
   const venues = venuesData;
   const members = membersData;
   const seasonId = activeSeasonData?.id || null;
+  const previousSeasonId = previousSeasonData?.id || null;
 
   // Combined loading state
-  const loading = leagueLoading || venuesLoading || leagueVenuesLoading || membersLoading || seasonLoading || teamsLoading;
+  const loading = leagueLoading || venuesLoading || leagueVenuesLoading || membersLoading || seasonLoading || prevSeasonLoading || teamsLoading;
 
   // Combined error state
   const error = useMemo(() => {
@@ -113,7 +119,7 @@ export function useTeamManagement(
   // ============================================================================
 
   /**
-   * Fetch teams and previous season
+   * Fetch teams
    * TODO: Migrate teams to TanStack Query
    */
   useEffect(() => {
@@ -122,7 +128,7 @@ export function useTeamManagement(
       return;
     }
 
-    const fetchTeamsAndPrevSeason = async () => {
+    const fetchTeams = async () => {
       try {
         setTeamsLoading(true);
 
@@ -131,29 +137,11 @@ export function useTeamManagement(
         if (teamsError) throw teamsError;
         setTeams(teamsData || []);
 
-        // Fetch previous season (most recent completed season)
-        if (activeSeasonData?.created_at) {
-          const { data: prevSeasonData, error: prevSeasonError } = await supabase
-            .from('seasons')
-            .select('id')
-            .eq('league_id', leagueId)
-            .eq('status', 'completed')
-            .lt('created_at', activeSeasonData.created_at)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (prevSeasonError) {
-            console.error('Error fetching previous season:', prevSeasonError);
-          } else {
-            setPreviousSeasonId(prevSeasonData?.id || null);
-          }
-        }
-
         console.log('📊 Team Management Data:', {
           leagueId,
           teams: teamsData?.length || 0,
           seasonId: activeSeasonData?.id || 'No active season',
+          previousSeasonId: previousSeasonData?.id || null,
         });
       } catch (err) {
         console.error('Error fetching teams:', err);
@@ -162,10 +150,11 @@ export function useTeamManagement(
       }
     };
 
-    fetchTeamsAndPrevSeason();
-  }, [leagueId, activeSeasonData]);
+    fetchTeams();
+  }, [leagueId, activeSeasonData, previousSeasonData]);
 
   // Sync leagueVenues state with TanStack Query data
+  // TODO: Remove this - component should use TanStack Query mutations
   useEffect(() => {
     setLeagueVenues(leagueVenuesData);
   }, [leagueVenuesData]);
@@ -192,12 +181,13 @@ export function useTeamManagement(
     venues,
     leagueVenues,
     teams,
-    members: members as any, // TanStack Query returns subset, cast to avoid type errors
+    members, // Now correctly typed as PartialMember[]
     seasonId,
     previousSeasonId,
     loading,
     error,
     refreshTeams,
+    // TODO: Remove these setters - should use TanStack Query mutations/invalidations instead
     setLeagueVenues,
     setTeams,
   };

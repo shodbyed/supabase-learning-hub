@@ -7,7 +7,7 @@
  */
 
 // Member and User types
-export type { Member, UserRole } from './member';
+export type { Member, PartialMember, UserRole } from './member';
 
 // League types
 export type {

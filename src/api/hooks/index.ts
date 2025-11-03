@@ -119,6 +119,7 @@ export {
   useMostRecentSeason,
   useActiveSeason,
   useSeasonCount,
+  usePreviousCompletedSeason,
 } from './useSeasons';
 
 // Match/Schedule queries

@@ -19,12 +19,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { Member } from '@/types/member';
+import type { PartialMember } from '@/types/member';
 import { getPlayerDisplayName } from '@/types/member';
 
 interface MemberComboboxProps {
-  /** List of members to choose from */
-  members: Member[];
+  /** List of members to choose from (only needs id, name, player number) */
+  members: PartialMember[];
   /** Currently selected member ID */
   value: string;
   /** Called when selection changes */

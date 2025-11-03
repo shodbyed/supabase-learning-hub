@@ -36,8 +36,9 @@ export interface Member {
 /**
  * Helper function to get display player number
  * Shows BCA number if available, otherwise system player number
+ * Works with both full Member and PartialMember types
  */
-export function getPlayerDisplayNumber(member: Member): string {
+export function getPlayerDisplayNumber(member: Member | PartialMember): string {
   if (member.bca_member_number) {
     return `#BCA-${member.bca_member_number}`;
   }
@@ -47,8 +48,9 @@ export function getPlayerDisplayNumber(member: Member): string {
 /**
  * Helper function to get display name with player number
  * Example: "John Smith #BCA-123456" or "John Smith #P-00042"
+ * Works with both full Member and PartialMember types
  */
-export function getPlayerDisplayName(member: Member): string {
+export function getPlayerDisplayName(member: Member | PartialMember): string {
   const fullName = `${member.first_name} ${member.last_name}`;
   const playerNumber = getPlayerDisplayNumber(member);
   return `${fullName} ${playerNumber}`;

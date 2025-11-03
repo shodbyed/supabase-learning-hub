@@ -11,7 +11,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
-import type { Member } from '@/types';
+import type { Member, PartialMember } from '@/types/member';
 
 /**
  * Fetch current member by auth user ID
@@ -205,10 +205,10 @@ export async function getIsCaptain(memberId: string): Promise<boolean> {
  * const members = await getAllMembers(currentUserId);
  * // Returns all members except current user
  */
-export async function getAllMembers(excludeMemberId?: string) {
+export async function getAllMembers(excludeMemberId?: string): Promise<PartialMember[]> {
   let query = supabase
     .from('members')
-    .select('id, first_name, last_name, system_player_number')
+    .select('id, first_name, last_name, system_player_number, bca_member_number')
     .not('user_id', 'is', null)
     .order('last_name', { ascending: true });
 
@@ -220,7 +220,7 @@ export async function getAllMembers(excludeMemberId?: string) {
 
   if (error) throw error;
 
-  return data || [];
+  return data as PartialMember[] || [];
 }
 
 /**

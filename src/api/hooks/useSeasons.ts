@@ -21,6 +21,7 @@ import {
   getMostRecentSeason,
   getActiveSeason,
   getSeasonCount,
+  getPreviousCompletedSeason,
 } from '../queries/seasons';
 import { STALE_TIME } from '../client';
 
@@ -151,6 +152,35 @@ export function useSeasonCount(leagueId: string | null | undefined) {
     queryFn: () => getSeasonCount(leagueId!),
     enabled: !!leagueId,
     staleTime: STALE_TIME.LEAGUES, // 15 minutes
+    retry: 1,
+  });
+}
+
+/**
+ * Hook to fetch the most recent completed season before a given date
+ *
+ * Useful for importing teams from previous seasons or showing historical data.
+ * Only runs when both leagueId and beforeDate are provided.
+ *
+ * @param leagueId - League's primary key ID
+ * @param beforeDate - ISO date string (typically current season's created_at)
+ * @returns TanStack Query result with previous season ID or null
+ *
+ * @example
+ * const { data: prevSeason } = usePreviousCompletedSeason(leagueId, currentSeason?.created_at);
+ * if (prevSeason) {
+ *   // Show import button
+ * }
+ */
+export function usePreviousCompletedSeason(
+  leagueId: string | null | undefined,
+  beforeDate: string | null | undefined
+) {
+  return useQuery({
+    queryKey: [...queryKeys.seasons.byLeague(leagueId || ''), 'previous', beforeDate || ''],
+    queryFn: () => getPreviousCompletedSeason(leagueId!, beforeDate!),
+    enabled: !!leagueId && !!beforeDate,
+    staleTime: STALE_TIME.LEAGUES, // 15 minutes - previous season doesn't change
     retry: 1,
   });
 }
