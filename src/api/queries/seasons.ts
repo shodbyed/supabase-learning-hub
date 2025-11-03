@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import type { ChampionshipPreference } from '@/data/seasonWizardSteps';
 
 /**
  * Season data structure
@@ -204,4 +205,49 @@ export async function getPreviousCompletedSeason(
   }
 
   return data;
+}
+
+/**
+ * Fetch operator's saved championship preferences from database
+ *
+ * Gets championship date preferences (BCA/APA) that the operator has saved
+ * for consideration during season scheduling.
+ *
+ * @param operatorId - The operator's ID to fetch preferences for
+ * @returns Array of saved championship preferences or empty array if none exist
+ * @throws Error if database query fails
+ *
+ * @example
+ * const preferences = await getChampionshipPreferences('operator-123');
+ * preferences.forEach(pref => {
+ *   console.log(`${pref.organization}: ${pref.startDate} - ${pref.endDate}`);
+ * });
+ */
+export async function getChampionshipPreferences(
+  operatorId: string
+): Promise<ChampionshipPreference[]> {
+  const { data: preferences, error } = await supabase
+    .from('operator_blackout_preferences')
+    .select('*, championship_date_options(*)')
+    .eq('operator_id', operatorId)
+    .eq('preference_type', 'championship');
+
+  if (error) {
+    throw new Error(`Failed to fetch championship preferences: ${error.message}`);
+  }
+
+  if (!preferences || preferences.length === 0) {
+    return [];
+  }
+
+  const prefs: ChampionshipPreference[] = preferences
+    .filter(p => p.championship_date_options && p.preference_action !== null)
+    .map(p => ({
+      organization: p.championship_date_options!.organization as 'BCA' | 'APA',
+      startDate: p.championship_date_options!.start_date,
+      endDate: p.championship_date_options!.end_date,
+      ignored: p.preference_action === 'ignore',
+    }));
+
+  return prefs;
 }

@@ -15,6 +15,7 @@ export {
   useMemberFirstName,
   useIsCaptain,
   useAllMembers,
+  useMemberProfanitySettings,
 } from './useCurrentMember';
 
 export {
@@ -120,6 +121,7 @@ export {
   useActiveSeason,
   useSeasonCount,
   usePreviousCompletedSeason,
+  useChampionshipPreferences,
 } from './useSeasons';
 
 // Match/Schedule queries
@@ -188,3 +190,8 @@ export {
   useLockMatchLineup,
   useUnlockMatchLineup,
 } from './useMatchLineupMutations';
+
+// Member mutations
+export {
+  useUpdateProfanityFilter,
+} from './useMemberMutations';

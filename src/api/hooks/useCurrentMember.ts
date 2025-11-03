@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/useUser';
 import { queryKeys } from '../queryKeys';
-import { getCurrentMember, getIsCaptain, getAllMembers, getMembersByIds } from '../queries/members';
+import { getCurrentMember, getIsCaptain, getAllMembers, getMembersByIds, getMemberProfanitySettings } from '../queries/members';
 import { STALE_TIME } from '../client';
 
 /**
@@ -173,5 +173,33 @@ export function useMembersByIds(memberIds: string[] | undefined | null) {
     staleTime: STALE_TIME.MEMBER, // 15 minutes
     retry: 1,
     refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Hook to get member's profanity filter settings
+ *
+ * Fetches date of birth and profanity filter preference for current user.
+ * Used to calculate age-based filter enforcement:
+ * - Users under 18: Filter forced ON, cannot toggle
+ * - Users 18+: Filter based on preference, can toggle
+ *
+ * Caches for 30 minutes. Profile data doesn't change frequently.
+ *
+ * @param userId - Supabase auth user ID (optional)
+ * @returns Query result with { date_of_birth, profanity_filter_enabled }
+ *
+ * @example
+ * const { data: settings } = useMemberProfanitySettings(user?.id);
+ * const isAdult = isEighteenOrOlder(settings.date_of_birth);
+ * const shouldFilter = isAdult ? settings.profanity_filter_enabled : true;
+ */
+export function useMemberProfanitySettings(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.members.byUser(userId || ''), 'profanitySettings'],
+    queryFn: () => getMemberProfanitySettings(userId!),
+    enabled: !!userId,
+    staleTime: STALE_TIME.MEMBER, // 30 minutes
+    retry: 1,
   });
 }

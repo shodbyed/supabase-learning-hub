@@ -252,3 +252,41 @@ export async function getMembersByIds(memberIds: string[]) {
 
   return data || [];
 }
+
+/**
+ * Profanity filter settings for a member
+ */
+export interface MemberProfanitySettings {
+  date_of_birth: string;
+  profanity_filter_enabled: boolean;
+}
+
+/**
+ * Fetch member's profanity filter settings
+ *
+ * Gets date of birth and filter preference for calculating age-based filter state.
+ * Users under 18 have filter forced ON and cannot toggle.
+ * Users 18+ can control their own filter preference.
+ *
+ * @param userId - Supabase auth user ID
+ * @returns Object with date_of_birth and profanity_filter_enabled
+ * @throws Error if member not found or database error
+ *
+ * @example
+ * const settings = await getMemberProfanitySettings(user.id);
+ * const isAdult = isEighteenOrOlder(settings.date_of_birth);
+ * const shouldFilter = isAdult ? settings.profanity_filter_enabled : true;
+ */
+export async function getMemberProfanitySettings(
+  userId: string
+): Promise<MemberProfanitySettings> {
+  const { data, error } = await supabase
+    .from('members')
+    .select('date_of_birth, profanity_filter_enabled')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}

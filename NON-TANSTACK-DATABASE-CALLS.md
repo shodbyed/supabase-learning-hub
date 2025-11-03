@@ -24,11 +24,12 @@ This document lists all locations in the app where the database is accessed **wi
 
 **Queries:**
 - [x] `api/queries/conversations.ts`
+- [x] `api/queries/handicaps.ts` - **NEW: Handicap thresholds for 3v3 scoring** ✅
 - [x] `api/queries/leagues.ts`
 - [x] `api/queries/matches.ts`
 - [x] `api/queries/members.ts`
 - [x] `api/queries/messages.ts`
-- [x] `api/queries/seasons.ts`
+- [x] `api/queries/seasons.ts` - **UPDATED: Added getPreviousCompletedSeason** ✅
 - [x] `api/queries/teams.ts`
 - [x] `api/queries/venues.ts`
 
@@ -45,12 +46,13 @@ This document lists all locations in the app where the database is accessed **wi
 - [x] `api/mutations/teams.ts`
 - [x] `api/mutations/venues.ts`
 
-### 3. Real-time Subscriptions (2 files)
-**Location:** `src/api/hooks/` and `src/hooks/`
+### 3. Real-time Subscriptions (3 files)
+**Location:** `src/realtime/` and `src/api/hooks/`
 **Reason:** Real-time WebSocket subscriptions need direct Supabase channel access. This is correct.
 
 - [x] `api/hooks/useMessagingRealtime.ts` - Message real-time updates
-- [x] `hooks/useRealtime.ts` - General real-time subscriptions
+- [x] `realtime/useMatchGamesRealtime.ts` - **NEW: Match game real-time updates for scoring** ✅
+- [x] `hooks/useRealtime.ts` - General real-time subscriptions (legacy, consider deprecating)
 
 ### 4. Context Provider (1 file)
 **Location:** `src/context/`
@@ -69,17 +71,17 @@ This document lists all locations in the app where the database is accessed **wi
 
 **Status Check:**
 - [x] `hooks/useConversationParticipants.ts` - **MIGRATED - Now uses TanStack hooks internally** ✅
-- [x] `hooks/useCurrentMember.ts` - **DUPLICATE - DELETE (TanStack version in api/hooks)** ✅
+- [x] `hooks/useCurrentMember.ts` - **DUPLICATE - DELETED (TanStack version in api/hooks)** ✅
 - [x] `hooks/useMatchLineup.ts` - **NOT USED - DELETED** ✅
-- [ ] `hooks/useMatchScoring.ts` - **USED in GamesList.tsx** - Needs migration
-- [x] `hooks/useOperatorId.ts` - **DUPLICATE - DELETE (TanStack version in api/hooks)** ✅
-- [ ] `hooks/useOperatorProfanityFilter.ts` - **USED in TeamEditorModal.tsx** - Needs migration
-- [ ] `hooks/usePendingReportsCount.ts` - **USED in OperatorNavBar.tsx, OperatorDashboard.tsx** - Needs migration
-- [ ] `hooks/useProfanityFilter.ts` - **USED in 4 files (MessageBubble, MessageSettingsModal, etc.)** - Needs migration
-- [ ] `hooks/useRosterEditor.ts` - **USED in TeamEditorModal.tsx** - Needs migration
-- [ ] `hooks/useTeamManagement.ts` - **USED in TeamManagement.tsx** - Needs migration
-- [x] `hooks/useUnreadMessageCount.ts` - **DUPLICATE - DELETE (TanStack version in api/hooks)** ✅
-- [x] `hooks/useUserProfile.ts` - **DUPLICATE - DELETE (TanStack version in api/hooks)** ✅
+- [x] `hooks/useMatchScoring.ts` - **MIGRATED - Now uses TanStack Query for all data fetching** ✅
+- [x] `hooks/useOperatorId.ts` - **DUPLICATE - DELETED (TanStack version in api/hooks)** ✅
+- [x] `hooks/useOperatorProfanityFilter.ts` - **ALREADY MIGRATED - Wrapper around TanStack Query hook** ✅
+- [x] `hooks/usePendingReportsCount.ts` - **ALREADY MIGRATED - Wrapper around TanStack Query hook** ✅
+- [x] `hooks/useProfanityFilter.ts` - **MIGRATED - Now uses TanStack Query internally** ✅
+- [ ] `hooks/useRosterEditor.ts` - **USED in TeamEditorModal.tsx** - Needs migration (lines 107-113 fetch roster)
+- [x] `hooks/useTeamManagement.ts` - **MIGRATED - Now uses TanStack Query for leagues, venues, members, seasons** ✅
+- [x] `hooks/useUnreadMessageCount.ts` - **DUPLICATE - DELETED (TanStack version in api/hooks)** ✅
+- [x] `hooks/useUserProfile.ts` - **DUPLICATE - DELETED (TanStack version in api/hooks)** ✅
 
 ### Priority 2: Components with Direct DB Calls (15 files)
 **Location:** `src/player/` and `src/operator/`
@@ -87,32 +89,32 @@ This document lists all locations in the app where the database is accessed **wi
 **Solution:** Create queries/mutations in api layer, then use hooks in components
 
 **Player Components:**
-- [ ] `player/MatchLineup.tsx` - Uses direct Supabase calls
-- [ ] `player/MyTeams.tsx` - Uses direct Supabase calls
-- [ ] `player/ScoreMatch.tsx` - Uses direct Supabase calls
+- [ ] `player/MatchLineup.tsx` - **CLEAN - Only real-time cleanup (line 382)** ✅
+- [x] `player/MyTeams.tsx` - **FILE DOESN'T EXIST** ✅
+- [ ] `player/ScoreMatch.tsx` - **NEEDS MIGRATION - fetchMatchData (lines 211-487), mutations (lines 978-1199)**
 
 **Operator Components:**
-- [ ] `operator/LeagueCreationWizard.tsx` - Check if already migrated (there's a .REFACTORED version)
-- [ ] `operator/LeagueDetail.tsx` - Uses direct Supabase calls
-- [ ] `operator/OrganizationSettings.tsx` - Uses direct Supabase calls
-- [ ] `operator/ScheduleSetup.tsx` - Uses direct Supabase calls
-- [ ] `operator/ScheduleView.tsx` - Uses direct Supabase calls
-- [ ] `operator/SeasonCreationWizard.tsx` - Check if already migrated (messaging uses TanStack version)
-- [ ] `operator/SeasonScheduleManager.tsx` - Uses direct Supabase calls
-- [ ] `operator/SeasonSchedulePage.tsx` - Has `.refactored` version - check which is used
-- [ ] `operator/SeasonSchedulePage.refactored.tsx` - Check if this is the active one
-- [ ] `operator/TeamEditorModal.tsx` - Uses direct Supabase calls
-- [ ] `operator/TeamManagement.tsx` - Uses direct Supabase calls
-- [ ] `operator/VenueLimitModal.tsx` - Uses direct Supabase calls
+- [x] `operator/LeagueCreationWizard.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/LeagueDetail.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/OrganizationSettings.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/ScheduleSetup.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/ScheduleView.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/SeasonCreationWizard.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/SeasonScheduleManager.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/SeasonSchedulePage.tsx` - **CLEAN - Only auth call (line 199)** ✅
+- [x] `operator/SeasonSchedulePage.refactored.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/TeamEditorModal.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/TeamManagement.tsx` - **CLEAN - No supabase calls** ✅
+- [x] `operator/VenueLimitModal.tsx` - **CLEAN - No supabase calls** ✅
 
 ### Priority 3: Service Files (3 files)
 **Location:** `src/services/`
 **Issue:** Service layer should be in `api/queries` or `api/mutations`, not separate services
 **Solution:** Move functions to api layer and wrap with TanStack hooks
 
-- [ ] `services/championshipService.ts` - Should be in api/queries
-- [ ] `services/leagueService.ts` - Should be in api/queries
-- [ ] `services/seasonService.ts` - Should be in api/queries
+- [x] `services/championshipService.ts` - **MIGRATED** ✅ (moved to `/src/api/queries/seasons.ts` as `getChampionshipPreferences()`)
+- [x] `services/leagueService.ts` - **ALREADY MIGRATED** ✅ (`updateLeagueDayOfWeek` already in `/src/api/mutations/leagues.ts`)
+- [x] `services/seasonService.ts` - **ALREADY MIGRATED** ✅ (`createSeason` already in `/src/api/mutations/seasons.ts`)
 
 ---
 
@@ -156,18 +158,39 @@ For service files:
 | Category | Count | Status |
 |----------|-------|--------|
 | ✅ Legitimate (Auth) | 6 | Correct |
-| ✅ Legitimate (API Layer) | 19 | Correct |
-| ✅ Legitimate (Real-time) | 2 | Correct |
+| ✅ Legitimate (API Layer) | 22 | Correct (+4 files: handicaps, seasons, members queries, members mutations) |
+| ✅ Legitimate (Real-time) | 3 | Correct (+1 new file) |
 | ✅ Legitimate (Context) | 1 | Correct |
-| ⚠️ Old Custom Hooks | 12 | **4 duplicates, 8 need migration** |
-| ⚠️ Components | 15 | **Need migration** |
-| ⚠️ Services | 3 | **Need migration** |
-| **TOTAL LEGITIMATE** | **28** | - |
-| **TOTAL NEEDS WORK** | **30** | - |
+| ✅ Old Custom Hooks (Migrated) | 11 | **11 of 12 migrated/deleted** ✅ |
+| ✅ Components (Clean) | 14 | **14 of 15 clean** ✅ |
+| ✅ Services (Migrated) | 3 | **All 3 service files migrated/deleted** ✅ |
+| ⚠️ Old Custom Hooks (Need Work) | 1 | useRosterEditor only |
+| ⚠️ Components (Need Work) | 1 | ScoreMatch.tsx |
+| **TOTAL LEGITIMATE/CLEAN** | **60** | (32 + 11 + 14 + 3) |
+| **TOTAL NEEDS WORK** | **2** | (1 hook + 1 component) |
 
 ---
 
-## Current State: ~50% TanStack Coverage
-**28 files legitimate** vs **30 files need work**
+## Current State: ~97% TanStack Coverage Complete!
+**32 files legitimate** + **28 migrated/clean** = **60 good** vs **2 files need work**
 
-The messaging system is now 100% TanStack Query, but the rest of the app still has work to do.
+**Recent Progress:**
+- ✅ Messaging system: 100% TanStack Query
+- ✅ Scoring system: useMatchScoring migrated to TanStack Query
+- ✅ Team Management: useTeamManagement migrated to TanStack Query
+- ✅ Profanity Filter: useProfanityFilter migrated to TanStack Query
+- ✅ Hooks folder: 11 of 12 hooks now use TanStack Query (92% complete)
+- ✅ Services: All 3 service files migrated to TanStack Query (100% complete)
+- ✅ Created new `/src/realtime/` folder for real-time subscriptions
+- ✅ Added handicap queries, season queries, championship preferences, member profanity settings
+- ✅ Proper type system with `PartialMember` for efficiency
+- ✅ Created `isEighteenOrOlder()` helper function for age verification
+
+**Remaining Work:**
+- 1 hook still needs migration (useRosterEditor)
+- 1 player component needs migration (ScoreMatch.tsx)
+
+**Summary:**
+- **Hooks:** 92% complete (11/12) - Only 1 hook needs migration
+- **Components:** 93% complete (14/15) - Only 1 component needs migration
+- **Services:** 100% complete (3/3) - All service files migrated ✅

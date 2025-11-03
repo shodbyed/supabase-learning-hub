@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useUpdateProfanityFilter } from '@/api/hooks';
 import { useUser } from '@/context/useUser';
 import { useMemberId } from '@/api/hooks';
 import { BlockedUsersModal } from './BlockedUsersModal';
@@ -27,9 +28,8 @@ interface MessageSettingsModalProps {
 export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsModalProps) {
   const { user } = useUser();
   const memberId = useMemberId();
-  const { shouldFilter: initialShouldFilter, canToggle, isLoading } = useProfanityFilter();
-  const [shouldFilter, setShouldFilter] = useState(initialShouldFilter);
-  const [isSaving, setIsSaving] = useState(false);
+  const { shouldFilter, canToggle, isLoading } = useProfanityFilter();
+  const updateMutation = useUpdateProfanityFilter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showBlockedUsersModal, setShowBlockedUsersModal] = useState(false);
@@ -39,27 +39,20 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
 
     const newValue = !shouldFilter;
 
-    setIsSaving(true);
     setError(null);
     setSuccess(false);
 
-    const { error: updateError } = await updateProfanityFilter(user.id, newValue);
+    try {
+      await updateMutation.mutateAsync({ userId: user.id, enabled: newValue });
+      setSuccess(true);
 
-    if (updateError) {
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess(false);
+      }, 3000);
+    } catch (err) {
       setError('Failed to update profanity filter. Please try again.');
-      setIsSaving(false);
-      return;
     }
-
-    // Update local state to reflect the change
-    setShouldFilter(newValue);
-    setSuccess(true);
-    setIsSaving(false);
-
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setSuccess(false);
-    }, 3000);
   };
 
   return (
@@ -126,7 +119,7 @@ export function MessageSettingsModal({ onClose, onUnblocked }: MessageSettingsMo
                         <Switch
                           checked={shouldFilter}
                           onCheckedChange={handleToggleProfanityFilter}
-                          disabled={!canToggle || isSaving}
+                          disabled={!canToggle || updateMutation.isPending}
                           className="ml-3"
                         />
                       </div>

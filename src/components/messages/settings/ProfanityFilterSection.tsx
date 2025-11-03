@@ -5,11 +5,11 @@
  * Handles toggle logic, displays current status, and shows explanatory text.
  */
 
-import { useState } from 'react';
 import { Shield, Lock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useUpdateProfanityFilter } from '@/api/hooks';
 
 interface ProfanityFilterSectionProps {
   userId: string | undefined;
@@ -18,29 +18,20 @@ interface ProfanityFilterSectionProps {
 }
 
 export function ProfanityFilterSection({ userId, onSuccess, onError }: ProfanityFilterSectionProps) {
-  const { shouldFilter: initialShouldFilter, canToggle, isLoading } = useProfanityFilter();
-  const [shouldFilter, setShouldFilter] = useState(initialShouldFilter);
-  const [isSaving, setIsSaving] = useState(false);
+  const { shouldFilter, canToggle, isLoading } = useProfanityFilter();
+  const updateMutation = useUpdateProfanityFilter();
 
   const handleToggle = async () => {
     if (!userId || !canToggle) return;
 
     const newValue = !shouldFilter;
 
-    setIsSaving(true);
-
-    const { error: updateError } = await updateProfanityFilter(userId, newValue);
-
-    if (updateError) {
+    try {
+      await updateMutation.mutateAsync({ userId, enabled: newValue });
+      onSuccess();
+    } catch (error) {
       onError('Failed to update profanity filter. Please try again.');
-      setIsSaving(false);
-      return;
     }
-
-    // Update local state to reflect the change
-    setShouldFilter(newValue);
-    onSuccess();
-    setIsSaving(false);
   };
 
   if (isLoading) {
@@ -75,7 +66,7 @@ export function ProfanityFilterSection({ userId, onSuccess, onError }: Profanity
           <Switch
             checked={shouldFilter}
             onCheckedChange={handleToggle}
-            disabled={!canToggle || isSaving}
+            disabled={!canToggle || updateMutation.isPending}
             className="ml-3"
           />
         </div>

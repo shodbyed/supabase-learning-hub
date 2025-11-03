@@ -22,6 +22,7 @@ import {
   getActiveSeason,
   getSeasonCount,
   getPreviousCompletedSeason,
+  getChampionshipPreferences,
 } from '../queries/seasons';
 import { STALE_TIME } from '../client';
 
@@ -181,6 +182,31 @@ export function usePreviousCompletedSeason(
     queryFn: () => getPreviousCompletedSeason(leagueId!, beforeDate!),
     enabled: !!leagueId && !!beforeDate,
     staleTime: STALE_TIME.LEAGUES, // 15 minutes - previous season doesn't change
+    retry: 1,
+  });
+}
+
+/**
+ * Hook to fetch operator's saved championship preferences
+ *
+ * Gets saved championship date preferences (BCA/APA) for season scheduling.
+ * Cached for 15 minutes.
+ *
+ * @param operatorId - Operator's primary key ID
+ * @returns TanStack Query result with array of championship preferences
+ *
+ * @example
+ * const { data: preferences = [] } = useChampionshipPreferences(operatorId);
+ * preferences.forEach(pref => {
+ *   console.log(`${pref.organization}: ${pref.ignored ? 'Ignored' : `${pref.startDate} - ${pref.endDate}`}`);
+ * });
+ */
+export function useChampionshipPreferences(operatorId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['championshipPreferences', operatorId || ''],
+    queryFn: () => getChampionshipPreferences(operatorId!),
+    enabled: !!operatorId,
+    staleTime: STALE_TIME.LEAGUES, // 15 minutes - preferences don't change often
     retry: 1,
   });
 }

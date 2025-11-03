@@ -10,7 +10,7 @@ import { supabase } from '@/supabaseClient';
 import { useOperatorIdValue, useUpdateLeagueDayOfWeek, useCreateSeason } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
-import { fetchChampionshipPreferences } from '@/services/championshipService';
+import { getChampionshipPreferences } from '@/api/queries/seasons';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -100,7 +100,7 @@ export const SeasonCreationWizard: React.FC = () => {
         dispatch({ type: 'SET_APA_DATE_OPTIONS', payload: apaDates });
 
         // Fetch operator's saved championship preferences to skip those steps in wizard
-        const prefs = await fetchChampionshipPreferences(operatorId);
+        const prefs = operatorId ? await getChampionshipPreferences(operatorId) : [];
         dispatch({ type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES', payload: prefs });
 
         // If editing existing season, load season data and jump to schedule review

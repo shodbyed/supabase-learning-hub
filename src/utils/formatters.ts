@@ -244,3 +244,32 @@ export const formatRelativeTime = (dateString: string): string => {
     return '';
   }
 };
+
+/**
+ * Check if a person is 18 years or older based on their date of birth
+ *
+ * Calculates age accounting for whether their birthday has occurred this year.
+ * Used for age-restricted features like profanity filter settings.
+ *
+ * @param dateOfBirth - ISO date string (YYYY-MM-DD) or Date object
+ * @returns true if 18 or older, false otherwise
+ *
+ * @example
+ * isEighteenOrOlder('2000-01-15'); // true (if current date is past their 18th birthday)
+ * isEighteenOrOlder('2010-06-20'); // false (under 18)
+ */
+export const isEighteenOrOlder = (dateOfBirth: string | Date): boolean => {
+  const dob = typeof dateOfBirth === 'string' ? parseLocalDate(dateOfBirth) : dateOfBirth;
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  const dayDiff = today.getDate() - dob.getDate();
+
+  // Adjust age if birthday hasn't occurred yet this year
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  return age >= 18;
+};

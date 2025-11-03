@@ -20,7 +20,7 @@ import { parseLocalDate } from '@/utils/formatters';
 import { generateSchedule } from '@/utils/scheduleUtils';
 import { fetchHolidaysForSeason } from '@/utils/holidayUtils';
 import { detectScheduleConflicts } from '@/utils/conflictDetectionUtils';
-import { fetchChampionshipPreferences } from '@/services/championshipService';
+import { getChampionshipPreferences } from '@/api/queries/seasons';
 
 /**
  * Parameters for the useScheduleGeneration hook
@@ -163,7 +163,7 @@ export function useScheduleGeneration(params: UseScheduleGenerationParams) {
         let apaShouldBeIncluded = !formData.apaIgnored; // Default to wizard form data
 
         // Fetch preferences using shared function
-        const preferences = await fetchChampionshipPreferences(operatorId);
+        const preferences = operatorId ? await getChampionshipPreferences(operatorId) : [];
 
         if (preferences.length > 0) {
           // Check if operator has set these championships to 'ignore'
