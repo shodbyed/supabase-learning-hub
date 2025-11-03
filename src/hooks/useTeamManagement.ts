@@ -5,28 +5,19 @@
  * Handles all data fetching for leagues, venues, teams, members, and seasons.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/supabaseClient';
 import { fetchTeamsWithDetails } from '@/api/hooks';
-import type { League } from '@/types/league';
-import type { Venue, LeagueVenue } from '@/types/venue';
+import {
+  useLeagueById,
+  useVenuesByOperator,
+  useLeagueVenues,
+  useAllMembers,
+  useActiveSeason,
+} from '@/api/hooks';
+import type { LeagueVenue } from '@/types/venue';
+import type { UseTeamManagementReturn } from '@/types';
 import type { TeamWithQueryDetails } from '@/types/team';
-import type { Member } from '@/types/member';
-
-interface UseTeamManagementReturn {
-  league: League | null;
-  venues: Venue[];
-  leagueVenues: LeagueVenue[];
-  teams: TeamWithQueryDetails[];
-  members: Member[];
-  seasonId: string | null;
-  previousSeasonId: string | null;
-  loading: boolean;
-  error: string | null;
-  refreshTeams: () => Promise<void>;
-  setLeagueVenues: React.Dispatch<React.SetStateAction<LeagueVenue[]>>;
-  setTeams: React.Dispatch<React.SetStateAction<TeamWithQueryDetails[]>>;
-}
 
 /**
  * Custom hook for managing team data
@@ -47,98 +38,107 @@ export function useTeamManagement(
   operatorId: string | null,
   leagueId: string | undefined
 ): UseTeamManagementReturn {
-  const [league, setLeague] = useState<League | null>(null);
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [leagueVenues, setLeagueVenues] = useState<LeagueVenue[]>([]);
+  // ============================================================================
+  // TANSTACK QUERY HOOKS
+  // ============================================================================
+
+  // Fetch league data
+  const {
+    data: leagueData,
+    isLoading: leagueLoading,
+    error: leagueError,
+  } = useLeagueById(leagueId);
+
+  // Fetch operator's venues
+  const {
+    data: venuesData = [],
+    isLoading: venuesLoading,
+    error: venuesError,
+  } = useVenuesByOperator(operatorId);
+
+  // Fetch league's assigned venues
+  const {
+    data: leagueVenuesData = [],
+    isLoading: leagueVenuesLoading,
+    error: leagueVenuesError,
+  } = useLeagueVenues(leagueId);
+
+  // Fetch all members
+  const {
+    data: membersData = [],
+    isLoading: membersLoading,
+    error: membersError,
+  } = useAllMembers();
+
+  // Fetch active season
+  const {
+    data: activeSeasonData,
+    isLoading: seasonLoading,
+    error: seasonError,
+  } = useActiveSeason(leagueId);
+
+  // ============================================================================
+  // LOCAL STATE (for data that still needs useEffect/useState)
+  // ============================================================================
+
   const [teams, setTeams] = useState<TeamWithQueryDetails[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [seasonId, setSeasonId] = useState<string | null>(null);
   const [previousSeasonId, setPreviousSeasonId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [leagueVenues, setLeagueVenues] = useState<LeagueVenue[]>([]);
+  const [teamsLoading, setTeamsLoading] = useState(true);
+
+  // ============================================================================
+  // DERIVED DATA
+  // ============================================================================
+
+  const league = leagueData || null;
+  const venues = venuesData;
+  const members = membersData;
+  const seasonId = activeSeasonData?.id || null;
+
+  // Combined loading state
+  const loading = leagueLoading || venuesLoading || leagueVenuesLoading || membersLoading || seasonLoading || teamsLoading;
+
+  // Combined error state
+  const error = useMemo(() => {
+    if (leagueError) return leagueError.message || 'Failed to load league';
+    if (venuesError) return venuesError.message || 'Failed to load venues';
+    if (leagueVenuesError) return leagueVenuesError.message || 'Failed to load league venues';
+    if (membersError) return membersError.message || 'Failed to load members';
+    if (seasonError) return seasonError.message || 'Failed to load season';
+    return null;
+  }, [leagueError, venuesError, leagueVenuesError, membersError, seasonError]);
+
+  // ============================================================================
+  // DATA FETCHING (for data not yet in TanStack Query)
+  // ============================================================================
 
   /**
-   * Fetch all data on mount and when dependencies change
+   * Fetch teams and previous season
+   * TODO: Migrate teams to TanStack Query
    */
   useEffect(() => {
-    if (!operatorId || !leagueId) {
-      setLoading(false);
+    if (!leagueId) {
+      setTeamsLoading(false);
       return;
     }
 
-    const fetchData = async () => {
+    const fetchTeamsAndPrevSeason = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch league
-        const { data: leagueData, error: leagueError } = await supabase
-          .from('leagues')
-          .select('*')
-          .eq('id', leagueId)
-          .single();
-
-        if (leagueError) throw leagueError;
-        setLeague(leagueData);
-
-        // Fetch operator's venues
-        const { data: venuesData, error: venuesError } = await supabase
-          .from('venues')
-          .select('*')
-          .eq('created_by_operator_id', operatorId)
-          .eq('is_active', true)
-          .order('name', { ascending: true });
-
-        if (venuesError) throw venuesError;
-        setVenues(venuesData || []);
-
-        // Fetch league's assigned venues
-        const { data: leagueVenuesData, error: leagueVenuesError } = await supabase
-          .from('league_venues')
-          .select('*')
-          .eq('league_id', leagueId);
-
-        if (leagueVenuesError) throw leagueVenuesError;
-        setLeagueVenues(leagueVenuesData || []);
+        setTeamsLoading(true);
 
         // Fetch teams with captain info, roster details, and venue
         const { data: teamsData, error: teamsError } = await fetchTeamsWithDetails(leagueId);
-
         if (teamsError) throw teamsError;
         setTeams(teamsData || []);
 
-        // Fetch all members (for captain/player selection)
-        // Note: Not filtering by role - anyone in the members table can be selected
-        // Future: Add isPlayer boolean column to allow members to opt out
-        const { data: membersData, error: membersError } = await supabase
-          .from('members')
-          .select('*')
-          .order('last_name', { ascending: true });
-
-        if (membersError) throw membersError;
-        setMembers(membersData || []);
-
-        // Fetch current season for this league (upcoming or active)
-        const { data: seasonData, error: seasonError } = await supabase
-          .from('seasons')
-          .select('id, created_at')
-          .eq('league_id', leagueId)
-          .in('status', ['upcoming', 'active'])
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (seasonError) throw seasonError;
-        setSeasonId(seasonData?.id || null);
-
         // Fetch previous season (most recent completed season)
-        if (seasonData) {
+        if (activeSeasonData?.created_at) {
           const { data: prevSeasonData, error: prevSeasonError } = await supabase
             .from('seasons')
             .select('id')
             .eq('league_id', leagueId)
             .eq('status', 'completed')
-            .lt('created_at', seasonData.created_at)
+            .lt('created_at', activeSeasonData.created_at)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -151,23 +151,24 @@ export function useTeamManagement(
         }
 
         console.log('📊 Team Management Data:', {
-          leagueId: leagueId,
-          leagueVenues: leagueVenuesData?.length || 0,
+          leagueId,
           teams: teamsData?.length || 0,
-          members: membersData?.length || 0,
-          seasonId: seasonData?.id || 'No active season',
-          seasonFound: !!seasonData
+          seasonId: activeSeasonData?.id || 'No active season',
         });
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
+        console.error('Error fetching teams:', err);
       } finally {
-        setLoading(false);
+        setTeamsLoading(false);
       }
     };
 
-    fetchData();
-  }, [operatorId, leagueId]);
+    fetchTeamsAndPrevSeason();
+  }, [leagueId, activeSeasonData]);
+
+  // Sync leagueVenues state with TanStack Query data
+  useEffect(() => {
+    setLeagueVenues(leagueVenuesData);
+  }, [leagueVenuesData]);
 
   /**
    * Refresh teams list (useful after create/update/delete)
@@ -191,7 +192,7 @@ export function useTeamManagement(
     venues,
     leagueVenues,
     teams,
-    members,
+    members: members as any, // TanStack Query returns subset, cast to avoid type errors
     seasonId,
     previousSeasonId,
     loading,

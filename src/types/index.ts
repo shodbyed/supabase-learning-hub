@@ -47,3 +47,6 @@ export type {
 
 // Match and Scoring utility functions
 export { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from './match';
+
+// Team types
+export type { Team, TeamWithQueryDetails, UseTeamManagementReturn } from './team';

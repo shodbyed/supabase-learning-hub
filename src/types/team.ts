@@ -149,6 +149,25 @@ export function calculateWinPercentage(team: Team): number {
 }
 
 /**
+ * Return type for useTeamManagement hook
+ * Provides all team management data and control functions
+ */
+export interface UseTeamManagementReturn {
+  league: import('./league').League | null;
+  venues: import('./venue').Venue[];
+  leagueVenues: import('./venue').LeagueVenue[];
+  teams: TeamWithQueryDetails[];
+  members: import('./member').Member[];
+  seasonId: string | null;
+  previousSeasonId: string | null;
+  loading: boolean;
+  error: string | null;
+  refreshTeams: () => Promise<void>;
+  setLeagueVenues: React.Dispatch<React.SetStateAction<import('./venue').LeagueVenue[]>>;
+  setTeams: React.Dispatch<React.SetStateAction<TeamWithQueryDetails[]>>;
+}
+
+/**
  * Utility function to check if roster is full
  */
 export function isRosterFull(currentCount: number, rosterSize: number): boolean {
