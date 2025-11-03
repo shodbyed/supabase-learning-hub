@@ -14,6 +14,7 @@ export {
   useMemberId,
   useMemberFirstName,
   useIsCaptain,
+  useAllMembers,
 } from './useCurrentMember';
 
 export {
@@ -68,6 +69,32 @@ export {
   useBlockUser,
   useUnblockUser,
 } from './useMessageMutations';
+
+// Conversation mutations
+export {
+  useCreateOrOpenConversation,
+  useCreateGroupConversation,
+  useLeaveConversation,
+} from './useConversationMutations';
+
+// Announcement mutations
+export {
+  useCreateLeagueAnnouncement,
+  useCreateOrganizationAnnouncement,
+} from './useAnnouncementMutations';
+
+// Conversation queries
+export {
+  useConversationType,
+  useIsUserBlocked,
+  useOtherParticipantId,
+} from './useConversationQueries';
+
+// Messaging real-time subscriptions (Messages page only)
+export {
+  useConversationsRealtime,
+  useConversationMessagesRealtime,
+} from './useMessagingRealtime';
 
 // Report mutations
 export {
@@ -145,3 +172,16 @@ export {
   useUpdateLeagueVenue,
   useRemoveLeagueVenue,
 } from './useLeagueVenueMutations';
+
+// Schedule mutations
+export {
+  useGenerateSchedule,
+  useDeleteSchedule,
+} from './useScheduleMutations';
+
+// Match Lineup mutations
+export {
+  useSaveMatchLineup,
+  useLockMatchLineup,
+  useUnlockMatchLineup,
+} from './useMatchLineupMutations';

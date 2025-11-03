@@ -160,6 +160,25 @@ export const queryKeys = {
     /** Conversation participants */
     participants: (conversationId: string) =>
       [...queryKeys.messages.all, 'conversation', conversationId, 'participants'] as const,
+
+    /** Conversation type and auto-managed status */
+    conversationType: (conversationId: string) =>
+      [...queryKeys.messages.all, 'conversation', conversationId, 'type'] as const,
+
+    /** Check if user is blocked */
+    isUserBlocked: (userId: string, otherUserId: string) =>
+      [...queryKeys.messages.all, 'blocked', userId, otherUserId] as const,
+
+    /** Get other participant in DM */
+    otherParticipant: (conversationId: string, currentUserId: string) =>
+      [...queryKeys.messages.all, 'conversation', conversationId, 'other', currentUserId] as const,
+
+    /** Blocked users list */
+    blockedUsers: (userId: string) => [...queryKeys.messages.all, 'blockedUsers', userId] as const,
+
+    /** Blocked users with details */
+    blockedUsersDetails: (userId: string) =>
+      [...queryKeys.messages.all, 'blockedUsers', userId, 'details'] as const,
   },
 
   /**

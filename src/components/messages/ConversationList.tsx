@@ -10,16 +10,13 @@
  * - Touch-friendly spacing
  */
 
-import { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus, Settings, Megaphone, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useConversations } from '@/api/hooks';
-import { queryKeys } from '@/api/queryKeys';
+import { useConversations, useConversationsRealtime } from '@/api/hooks';
 import { formatDistanceToNow } from 'date-fns';
-import { supabase } from '@/supabaseClient';
 import { LoadingState, EmptyState } from '@/components/shared';
 
 interface Conversation {
@@ -54,7 +51,6 @@ export function ConversationList({
   onAnnouncements,
   showAnnouncements = false,
 }: ConversationListProps) {
-  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
@@ -62,54 +58,8 @@ export function ConversationList({
   const { data: conversationsData = [], isLoading: loading } = useConversations(userId);
   const conversations = conversationsData as Conversation[];
 
-  // Subscribe to real-time updates and invalidate cache
-  useEffect(() => {
-    if (!userId) return;
-
-    // Subscribe to new messages in any conversation
-    const messagesChannel = supabase
-      .channel('all-messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        () => {
-          // Invalidate conversations cache to refetch with updated preview/timestamp
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.messages.conversations(userId),
-          });
-        }
-      )
-      .subscribe();
-
-    // Subscribe to conversation participant updates (for unread counts)
-    const participantsChannel = supabase
-      .channel('all-participants')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'conversation_participants',
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          // Invalidate conversations cache to refetch with updated unread counts
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.messages.conversations(userId),
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(participantsChannel);
-    };
-  }, [userId, queryClient]);
+  // Real-time subscriptions (auto-manages channels and cleanup)
+  useConversationsRealtime(userId);
 
   // Filter conversations based on search
   const filteredConversations = conversations.filter((conv) => {

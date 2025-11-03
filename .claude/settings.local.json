@@ -17,7 +17,17 @@
       "Bash(pnpm add:*)",
       "Bash(for file in MessageView.tsx ConversationHeader.tsx MessageBubble.tsx MessageInput.tsx NewMessageModal.tsx)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(for file in messageQueries teamQueries playerQueries venueQueries leagueQueries)",
+      "Bash(grep:*)",
+      "Bash(for file in messageQueries teamQueries playerQueries reportingQueries)",
+      "Bash(do echo \"=== Files actively calling $file functions ===\")",
+      "Bash(while read f)",
+      "Bash(do if grep -q \"$file\\.\" \"$f\")",
+      "Bash(then echo \"  $f\")",
+      "Bash(fi)",
+      "Bash(for file in src/components/messages/*.tsx)",
+      "Bash(pnpx shadcn:*)"
     ],
     "deny": [],
     "ask": []

@@ -190,3 +190,35 @@ export async function getIsCaptain(memberId: string): Promise<boolean> {
 
   return !!data && data.length > 0;
 }
+
+/**
+ * Fetch all members with user accounts
+ *
+ * Returns all members who have linked user accounts (can log in).
+ * Used for messaging - showing list of people user can message.
+ *
+ * @param excludeMemberId - Optional member ID to exclude from results (e.g., current user)
+ * @returns Array of member objects with basic info
+ * @throws Error for database errors
+ *
+ * @example
+ * const members = await getAllMembers(currentUserId);
+ * // Returns all members except current user
+ */
+export async function getAllMembers(excludeMemberId?: string) {
+  let query = supabase
+    .from('members')
+    .select('id, first_name, last_name, system_player_number')
+    .not('user_id', 'is', null)
+    .order('last_name', { ascending: true });
+
+  if (excludeMemberId) {
+    query = query.neq('id', excludeMemberId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  return data || [];
+}

@@ -141,12 +141,20 @@ export function useBlockedUsersDetails(userId: string | null | undefined) {
  * Hook to fetch total unread message count
  *
  * Returns sum of unread counts across all conversations.
- * Useful for badge indicators.
+ * Useful for badge indicators in navigation bar.
+ *
+ * Uses POLLING instead of real-time subscriptions to save resources.
+ * - Polls every 2 minutes
+ * - Refetches on window focus (when user returns to tab)
+ * - Caches for 30 seconds to avoid rapid refetches
+ *
+ * Note: Real-time updates are ONLY used on the Messages page itself.
  *
  * @param userId - The member ID to fetch unread count for
  * @returns TanStack Query result with total unread count
  *
  * @example
+ * // Navigation bar - uses polling
  * const { data: unreadCount = 0 } = useUnreadMessageCount(memberId);
  *
  * if (unreadCount > 0) {
@@ -158,8 +166,9 @@ export function useUnreadMessageCount(userId: string | null | undefined) {
     queryKey: queryKeys.messages.unreadCount(userId || ''),
     queryFn: () => getUnreadMessageCount(userId!),
     enabled: !!userId,
-    staleTime: STALE_TIME.MESSAGES, // 30 seconds
-    refetchOnWindowFocus: true, // Show accurate count when returning to app
+    staleTime: 30 * 1000, // 30 seconds - consider fresh briefly to avoid rapid refetches
+    refetchOnWindowFocus: true, // Update when user returns to tab
+    refetchInterval: 2 * 60 * 1000, // Poll every 2 minutes for unread count updates
   });
 }
 

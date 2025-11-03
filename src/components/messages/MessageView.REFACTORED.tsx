@@ -1,24 +1,32 @@
 /**
- * @fileoverview Message View Component
+ * @fileoverview Message View Component (REFACTORED)
  *
  * Displays message thread for selected conversation.
- * Shows message history and input box for sending new messages.
  *
- * Mobile-optimized with:
- * - Responsive padding for message area
- * - Touch-friendly message bubbles
- * - Mobile-optimized input area
+ * REFACTORING IMPROVEMENTS:
+ * - Extracted useConversationDetails hook (replaces direct Supabase calls)
+ * - Extracted MessageList component (message rendering + auto-scroll)
+ * - Uses TanStack Query for ALL data fetching (no direct Supabase calls)
+ * - Main component now only orchestrates sub-components (~100 lines vs 265)
+ * - Each sub-component has single responsibility
+ * - Easier to test and maintain
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ConversationHeader } from './ConversationHeader';
-import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { useConversationMessages, useSendMessage, useUpdateLastRead, useConversationMessagesRealtime, useLeaveConversation, useBlockUser } from '@/api/hooks';
-import { supabase } from '@/supabaseClient';
-import { LoadingState, EmptyState, ConfirmDialog } from '@/components/shared';
-import { MessageSquare } from 'lucide-react';
+import {
+  useConversationMessages,
+  useSendMessage,
+  useUpdateLastRead,
+  useConversationMessagesRealtime,
+  useLeaveConversation,
+  useBlockUser,
+} from '@/api/hooks';
+import { ConfirmDialog } from '@/components/shared';
+import { MessageList } from './messageview/MessageList';
+import { useConversationDetails } from './messageview/useConversationDetails';
 
 interface Message {
   id: string;
@@ -41,20 +49,25 @@ interface MessageViewProps {
   onLeaveConversation?: () => void;
 }
 
-export function MessageView({ conversationId, currentUserId, onBack, onLeaveConversation }: MessageViewProps) {
-  const [conversationType, setConversationType] = useState<string | null>(null);
-  const [otherUserId, setOtherUserId] = useState<string | null>(null);
+export function MessageView({
+  conversationId,
+  currentUserId,
+  onBack,
+  onLeaveConversation,
+}: MessageViewProps) {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // TanStack Query hooks
+  // TanStack Query hooks for data fetching
   const { data: messagesData = [], isLoading: loading } = useConversationMessages(conversationId);
   const messages = messagesData as any as Message[];
   const sendMessageMutation = useSendMessage();
   const updateLastReadMutation = useUpdateLastRead();
   const leaveConversationMutation = useLeaveConversation();
   const blockUserMutation = useBlockUser();
+
+  // Get conversation details (type, isDM, otherUserId) via TanStack Query
+  const { isDM, otherUserId } = useConversationDetails(conversationId, currentUserId);
 
   // Real-time subscriptions (auto-manages channels and cleanup)
   useConversationMessagesRealtime(conversationId, currentUserId, updateLastReadMutation);
@@ -63,44 +76,6 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     conversationId,
     currentUserId
   );
-
-  // Load conversation details (type and participants) when conversation changes
-  useEffect(() => {
-    async function loadConversationDetails() {
-      // Fetch conversation type and auto_managed flag
-      const { data: convData } = await supabase
-        .from('conversations')
-        .select('conversation_type, auto_managed')
-        .eq('id', conversationId)
-        .single();
-
-      if (convData) {
-        setConversationType(convData.conversation_type);
-      }
-
-      // For DMs: conversation_type is null and auto_managed is false
-      // For auto-managed convos: conversation_type is set ('team_chat', 'captains_chat', 'announcements')
-      const isDM = !convData?.auto_managed && convData?.conversation_type === null;
-
-      if (isDM) {
-        const { data: participants } = await supabase
-          .from('conversation_participants')
-          .select('user_id')
-          .eq('conversation_id', conversationId)
-          .is('left_at', null);
-
-        // DMs have exactly 2 participants
-        if (participants && participants.length === 2) {
-          const otherParticipant = participants?.find((p: any) => p.user_id !== currentUserId);
-          if (otherParticipant) {
-            setOtherUserId(otherParticipant.user_id);
-          }
-        }
-      }
-    }
-
-    loadConversationDetails();
-  }, [conversationId, currentUserId]);
 
   // Mark conversation as read when messages load
   useEffect(() => {
@@ -111,11 +86,6 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       });
     }
   }, [conversationId, currentUserId, messages.length]);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const handleSendMessage = async (content: string) => {
     sendMessageMutation.mutate(
@@ -181,9 +151,6 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     }
   };
 
-  // DM conversations have null conversation_type and exactly 1 other participant
-  const isDM = conversationType === null && !!otherUserId;
-
   return (
     <div className="flex flex-col h-full">
       <ConversationHeader
@@ -221,42 +188,12 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
 
       {/* Messages - Mobile-optimized padding */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-3 md:space-y-4 bg-gray-50">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <LoadingState message="Loading messages..." />
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <EmptyState
-              icon={MessageSquare}
-              title="No messages yet"
-              description="Start the conversation!"
-            />
-          </div>
-        ) : (
-          messages.map((message) => {
-            if (!message.sender) {
-              return null;
-            }
-
-            const isCurrentUser = message.sender.id === currentUserId;
-            const senderName = `${message.sender.first_name} ${message.sender.last_name}`;
-
-            return (
-              <MessageBubble
-                key={message.id}
-                content={message.content}
-                createdAt={message.created_at}
-                isEdited={message.is_edited}
-                isCurrentUser={isCurrentUser}
-                senderName={!isCurrentUser ? senderName : undefined}
-                senderId={!isCurrentUser ? message.sender.id : undefined}
-                recipientLastRead={recipientLastRead}
-              />
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
+        <MessageList
+          messages={messages}
+          currentUserId={currentUserId}
+          recipientLastRead={recipientLastRead}
+          loading={loading}
+        />
       </div>
 
       <MessageInput onSend={handleSendMessage} />

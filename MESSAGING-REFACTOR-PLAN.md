@@ -1,790 +1,314 @@
-# 📋 Messaging System Refactoring Plan
+# Messaging System Refactor Plan
 
-**Created**: 2025-11-01
-**Purpose**: Break down messaging system into smaller, testable, reusable components
-**Current Status**: Working but monolithic (2,303 LOC across 12 files)
+## Current State Analysis
+
+### Complexity Overview
+- **Total Lines of Code**: 2,531 lines
+- **Number of Components**: 12 components
+- **Hooks**: 2 custom hooks (useConversations, useMessages)
+- **Utility Files**: messageQueries.ts with 13+ exported functions
+
+### Architecture Issues Identified
+
+#### 1. **Mixed Data Fetching Patterns** ❌
+**Problem**: Components use THREE different ways to fetch data:
+- Old custom hooks (`useConversations`, `useMessages` in `src/hooks/`)
+- TanStack Query hooks (`useConversationMessages`, `useSendMessage` in `src/api/hooks/`)
+- Direct utility function calls (`createOrOpenConversation`, `leaveConversation`, `blockUser`)
+
+**Impact**:
+- Inconsistent state management
+- Duplicate code for similar operations
+- Difficult to test and maintain
+- No unified caching strategy
+
+**Example from MessageView.tsx (lines 19-22)**:
+```tsx
+// THREE DIFFERENT PATTERNS IN ONE COMPONENT:
+import { useConversationMessages, useSendMessage } from '@/api/hooks'; // TanStack Query
+import { useConversationParticipants } from '@/hooks/useConversationParticipants'; // Old hook
+import { leaveConversation, blockUser } from '@/utils/messageQueries'; // Direct utils
+```
+
+#### 2. **Manual Real-time Subscription Management** ❌
+**Problem**: Each component manually sets up Supabase real-time subscriptions
+
+**Files with Real-time Setup**:
+- `ConversationList.tsx` (lines 66-112): Messages + Participants subscriptions
+- `MessageView.tsx` (lines 113-165): Messages subscription with manual cache updates
+
+**Issues**:
+- Repeated subscription setup code
+- Manual `queryClient.invalidateQueries()` calls
+- Easy to forget cleanup
+- Channel naming inconsistencies
+- No centralized subscription management
+
+#### 3. **Duplicate Conversation Type Definitions** ❌
+**Problem**: Multiple interface definitions for Conversation type
+
+**Found in**:
+- `ConversationList.tsx` (lines 25-34)
+- `src/hooks/useConversations.ts` (lines 26-35)
+- `src/api/queries/messages.ts` (different structure)
+
+**Impact**: Type inconsistencies, refactoring difficulty
+
+#### 4. **Complex Component State Management** ❌
+**Problem**: Components manage too much local state
+
+**Messages.tsx** (root component) manages:
+- `selectedConversationId`
+- `showNewMessageModal`
+- `showAnnouncementModal`
+- `showSettingsModal`
+- `refreshKey` (for manual cache invalidation)
+- Plus navigation state handling
+
+**MessageView.tsx** manages:
+- `conversationType`
+- `otherUserId`
+- Plus all the query states
+
+**Impact**: Complex props drilling, hard to debug state changes
+
+#### 5. **Missing TanStack Query Coverage** ❌
+**Operations Still Using Old Utils**:
+- `createOrOpenConversation` - No TanStack mutation
+- `createGroupConversation` - No TanStack mutation
+- `createLeagueAnnouncement` - No TanStack mutation
+- `createOrganizationAnnouncement` - No TanStack mutation
+- `leaveConversation` - No TanStack mutation
+- `blockUser` - Has hook but components don't use it
+- `isUserBlocked` - No TanStack query
+
+#### 6. **Large Component Files** ❌
+**Components Over 250 Lines**:
+- `AnnouncementModal.tsx` - 304 lines
+- `Messages.tsx` - 300+ lines (main page)
+- `MessageView.tsx` - 287 lines
+- `ConversationList.tsx` - 270 lines
+- `MessageSettingsModal.tsx` - 254 lines
+- `NewMessageModal.tsx` - 253 lines
+
+**Impact**: Hard to understand, test, and maintain
+
+#### 7. **Inconsistent Error Handling** ❌
+**Problem**: Mix of error handling patterns
+- Some use try/catch
+- Some use `{ data, error }` destructuring
+- Some use `alert()` for errors
+- Some log to console
+- No centralized error boundary
 
 ---
 
-## 🔍 Current Architecture Analysis
+## Refactor Goals
 
-### File Structure (2,303 total LOC)
-```
-pages/
-  Messages.tsx                    (259 LOC) - Main page coordinator
+### 1. **Single Data Fetching Pattern** ✅
+- Use ONLY TanStack Query hooks throughout
+- Remove all old custom hooks
+- Remove all direct utility calls from components
+- Centralized caching and state management
 
-components/messages/
-  MessageView.tsx                 (272 LOC) - Message display + sending + real-time
-  ConversationList.tsx            (250+ LOC) - Conversation list + real-time
-  NewMessageModal.tsx             (253 LOC) - Create DM/group conversations
-  AnnouncementModal.tsx           (150+ LOC) - League/org announcements
-  MessageSettingsModal.tsx        (100+ LOC) - Blocking, settings
-  ConversationHeader.tsx          (78 LOC) - Header with recipient info
-  MessageBubble.tsx               (84 LOC) - Individual message display
-  MessageInput.tsx                (71 LOC) - Message input field
-  BlockedUsersModal.tsx           (2 versions - needs cleanup)
-  MessagesEmptyState.tsx          (Small) - Empty state display
-  UserListItem.tsx                (Small) - User selection item
+### 2. **Simplified Real-time Integration** ✅
+- Create reusable real-time subscription hooks
+- Automatic cache invalidation on subscription events
+- No manual `queryClient` usage in components
+- Centralized channel management
 
-hooks/
-  useConversationParticipants.ts  (96 LOC) - Fetch participant info + real-time
+### 3. **Unified Type System** ✅
+- Single source of truth for types in `src/api/queries/messages.ts`
+- Export types from API layer
+- Remove duplicate interface definitions
 
-utils/
-  messageQueries.ts               (578 LOC) - 14 functions (read + write mixed)
-```
+### 4. **Reduced Component Complexity** ✅
+- Break large components into smaller pieces
+- Extract reusable logic into custom hooks
+- Simplify state management with URL state where applicable
+- Reduce props drilling
 
-### Problems Identified
+### 5. **Complete TanStack Query Coverage** ✅
+- Create missing mutation functions
+- Create missing query functions
+- All database operations go through TanStack Query
 
-#### 1. **Large Monolithic Components**
-**MessageView.tsx (272 LOC)** does too much:
-- ❌ Fetches messages
-- ❌ Handles real-time subscriptions
-- ❌ Manages conversation details (type, participants)
-- ❌ Sends messages
-- ❌ Updates read receipts
-- ❌ Handles leaving conversations
-- ❌ Handles blocking users
-- ❌ Manages scroll behavior
-
-**ConversationList.tsx (250+ LOC)** does too much:
-- ❌ Fetches conversations
-- ❌ Handles real-time subscriptions (2 channels)
-- ❌ Manages search functionality
-- ❌ Manages UI state (showSearch)
-- ❌ Renders conversation items
-
-**Messages.tsx (259 LOC)** does too much:
-- ❌ Manages navigation state
-- ❌ Checks captain status
-- ❌ Handles announcements
-- ❌ Handles conversation creation
-- ❌ Manages 3 modals
-- ❌ Handles refresh logic
-- ❌ Manages layout (mobile/desktop)
-
-#### 2. **Mixed Concerns in messageQueries.ts (578 LOC)**
-**14 functions with no organization:**
-- ✅ 4 READ operations
-- ✅ 7 WRITE operations (mutations)
-- ✅ 3 ANNOUNCEMENT operations
-- ❌ All in one file
-- ❌ No separation of concerns
-- ❌ Hard to test independently
-
-#### 3. **Duplicate/Inconsistent Hooks**
-- `useConversationParticipants` in `/hooks` (old style)
-- `useConversationParticipants` in `/api/hooks` (TanStack Query)
-- Both exist, creates confusion
-
-#### 4. **Real-Time Logic Scattered**
-**Real-time subscriptions in 3 places:**
-- ConversationList.tsx (2 subscriptions)
-- MessageView.tsx (1 subscription)
-- useConversationParticipants.ts (1 subscription)
-
-**No central pattern**, hard to:
-- Test real-time behavior
-- Debug subscription leaks
-- Ensure consistent cache updates
-
-#### 5. **No Mutation Abstractions**
-**Direct database calls everywhere:**
-```typescript
-// In components
-await sendMessage(conversationId, userId, content);
-await updateLastRead(conversationId, userId);
-await leaveConversation(conversationId, userId);
-```
-
-**Problems:**
-- ❌ No loading states
-- ❌ No error handling
-- ❌ No optimistic updates
-- ❌ No automatic cache invalidation
-- ❌ Hard to test
+### 6. **Consistent Error Handling** ✅
+- Toast notifications for user-facing errors
+- Error boundaries for component crashes
+- Consistent error message formatting
+- Proper error logging
 
 ---
 
-## 🎯 Refactoring Goals
+## Refactor Plan
 
-### 1. **Single Responsibility Principle**
-Each component/hook should do ONE thing well.
+### Phase 1: Complete TanStack Query Migration
+**Goal**: All database operations use TanStack Query
 
-### 2. **Testability**
-Each piece should be testable in isolation without mocking the entire system.
+#### Step 1.1: Create Missing Mutations
+Create in `src/api/mutations/conversations.ts`:
+- `createOrOpenConversation(userId1, userId2)`
+- `createGroupConversation(creatorId, title, memberIds)`
+- `leaveConversation(conversationId, userId)`
 
-### 3. **Reusability**
-Components should be reusable across different contexts.
+Create in `src/api/mutations/announcements.ts`:
+- `createLeagueAnnouncement(leagueId, senderId, message)`
+- `createOrganizationAnnouncement(orgId, senderId, message)`
 
-### 4. **Clear Data Flow**
+#### Step 1.2: Create Missing Queries
+Create in `src/api/queries/conversations.ts`:
+- `getConversationType(conversationId)`
+- `isUserBlocked(userId, otherUserId)`
+
+#### Step 1.3: Create TanStack Hooks
+Create in `src/api/hooks/useConversationMutations.ts`:
+- `useCreateOrOpenConversation()`
+- `useCreateGroupConversation()`
+- `useLeaveConversation()`
+
+Create in `src/api/hooks/useAnnouncementMutations.ts`:
+- `useCreateLeagueAnnouncement()`
+- `useCreateOrganizationAnnouncement()`
+
+Create in `src/api/hooks/useConversationQueries.ts`:
+- `useConversationType(conversationId)`
+- `useIsUserBlocked(userId, otherUserId)`
+
+### Phase 2: Real-time Subscription Hooks
+**Goal**: Reusable hooks for real-time subscriptions
+
+#### Step 2.1: Create Subscription Hook
+Create `src/api/hooks/useMessagingRealtime.ts`:
+```tsx
+/**
+ * Auto-invalidates conversation list when new messages arrive
+ */
+export function useConversationsRealtime(userId: string) {
+  // Subscribes to messages and participant updates
+  // Auto-invalidates queryKeys.messages.conversations(userId)
+}
+
+/**
+ * Auto-updates message list when new messages arrive
+ */
+export function useConversationMessagesRealtime(conversationId: string) {
+  // Subscribes to messages for this conversation
+  // Auto-updates queryKeys.messages.byConversation(conversationId)
+}
 ```
-API Layer (queries/mutations)
-    ↓
-Hooks Layer (TanStack Query + real-time)
-    ↓
-Component Layer (UI only)
-```
+
+### Phase 3: Component Simplification
+**Goal**: Break down large components
+
+#### Step 3.1: Extract Sub-components
+**AnnouncementModal.tsx** (304 lines) → Extract:
+- `AnnouncementTargetSelector` (league/org selection)
+- `AnnouncementForm` (message input)
+- `AnnouncementPreview` (preview before sending)
+
+**NewMessageModal.tsx** (253 lines) → Extract:
+- `RecipientSelector` (user selection with search)
+- `GroupNameInput` (optional group name)
+- `ConversationTypeToggle` (DM vs Group)
+
+**MessageSettingsModal.tsx** (254 lines) → Extract:
+- `BlockedUsersList`
+- `ConversationParticipants`
+- `LeaveConversationButton`
+
+#### Step 3.2: Extract Business Logic Hooks
+**Create `src/hooks/useMessageComposer.ts`**:
+- Handles message drafts
+- Emoji picker state
+- File upload (future)
+
+**Create `src/hooks/useConversationActions.ts`**:
+- Leave conversation
+- Block/unblock user
+- Archive conversation (future)
+
+### Phase 4: Migrate Components
+**Goal**: Update all components to use new hooks
+
+#### Migration Order:
+1. **ConversationList.tsx** - Use new real-time hook, remove manual subscriptions
+2. **MessageView.tsx** - Use new real-time hook, new conversation hooks
+3. **Messages.tsx** - Use new mutation hooks for creating conversations
+4. **NewMessageModal.tsx** - Use new mutation hooks
+5. **AnnouncementModal.tsx** - Use new announcement mutation hooks
+6. **MessageSettingsModal.tsx** - Use new conversation action hooks
+
+### Phase 5: Cleanup
+**Goal**: Remove old code
+
+#### Step 5.1: Remove Old Hooks
+- Delete `src/hooks/useConversations.ts`
+- Delete `src/hooks/useMessages.ts`
+- Delete `src/hooks/useConversationParticipants.ts`
+
+#### Step 5.2: Remove Old Utils
+- Delete `src/utils/messageQueries.ts` (all functions moved to TanStack layer)
+
+#### Step 5.3: Remove Duplicate Interfaces
+- Keep types only in `src/api/queries/messages.ts`
+- Export from `src/api/hooks/index.ts`
 
 ---
 
-## 📐 Proposed New Architecture
+## Success Metrics
 
-### Phase 1: Separate Concerns in API Layer
+### Before Refactor:
+- 2,531 lines of code
+- 3 different data fetching patterns
+- Manual real-time subscription management
+- 6 components over 250 lines
+- Inconsistent error handling
 
-**Current:**
-```
-utils/messageQueries.ts (578 LOC, 14 functions)
-```
+### After Refactor:
+- **Reduced code**: Target ~1,800 lines (-30%)
+- **Single pattern**: 100% TanStack Query
+- **Auto real-time**: Hooks handle subscriptions
+- **Smaller components**: Max 150 lines per component
+- **Consistent errors**: Toast notifications + error boundaries
 
-**Proposed:**
-```
-api/
-├── queries/
-│   └── messages.ts (READ operations only)
-│       ├── getUserConversations()
-│       ├── getConversationMessages()
-│       ├── getBlockedUsers()
-│       └── getConversationDetails()
-│
-└── mutations/
-    └── messages.ts (WRITE operations only)
-        ├── sendMessage()
-        ├── updateLastRead()
-        ├── blockUser()
-        ├── unblockUser()
-        ├── leaveConversation()
-        ├── createOrOpenConversation()
-        ├── createGroupConversation()
-        ├── createLeagueAnnouncement()
-        └── createOrganizationAnnouncement()
-```
-
-**Benefits:**
-- ✅ Clear separation: reads vs writes
-- ✅ Easier to test
-- ✅ Easier to add caching strategies
-- ✅ Easier to add error handling
+### Developer Experience Improvements:
+- ✅ Predictable data flow (all through TanStack Query)
+- ✅ Easier testing (centralized query/mutation functions)
+- ✅ Better caching (automatic with TanStack Query)
+- ✅ Simpler components (less state management)
+- ✅ Reusable hooks (business logic extracted)
 
 ---
 
-### Phase 2: Create Focused Hooks
+## Implementation Timeline
 
-**Current:**
-- Mixed old/new hooks
-- Scattered real-time logic
+### Week 1: TanStack Query Foundation
+- Day 1-2: Create missing mutations and queries
+- Day 3-4: Create mutation/query hooks
+- Day 5: Create real-time subscription hooks
 
-**Proposed:**
+### Week 2: Component Migration
+- Day 1: Migrate ConversationList + MessageView
+- Day 2: Migrate Messages page
+- Day 3: Migrate NewMessageModal + AnnouncementModal
+- Day 4: Migrate MessageSettingsModal
+- Day 5: Testing and bug fixes
 
-#### A. Data Fetching Hooks (TanStack Query)
-```typescript
-// api/hooks/messaging/useConversations.ts
-export function useConversations(userId: string) {
-  // Just fetching + caching
-  // Real-time handled separately
-}
-
-// api/hooks/messaging/useMessages.ts
-export function useMessages(conversationId: string) {
-  // Just fetching + caching
-  // Real-time handled separately
-}
-
-// api/hooks/messaging/useConversationDetails.ts
-export function useConversationDetails(conversationId: string) {
-  // Fetch type, participants, metadata
-}
-
-// api/hooks/messaging/useBlockedUsers.ts
-export function useBlockedUsers(userId: string) {
-  // Cached list of blocked users
-}
-```
-
-#### B. Mutation Hooks (TanStack Mutation)
-```typescript
-// api/hooks/messaging/useSendMessage.ts
-export function useSendMessage() {
-  return useMutation({
-    mutationFn: sendMessage,
-    onMutate: async (newMessage) => {
-      // Optimistic update
-    },
-    onSuccess: () => {
-      // Invalidate queries
-    },
-  });
-}
-
-// api/hooks/messaging/useBlockUser.ts
-export function useBlockUser() {
-  return useMutation({
-    mutationFn: blockUser,
-    onSuccess: () => {
-      // Invalidate conversations, update UI
-    },
-  });
-}
-
-// api/hooks/messaging/useLeaveConversation.ts
-export function useLeaveConversation() {
-  return useMutation({
-    mutationFn: leaveConversation,
-    onSuccess: (_, variables) => {
-      // Invalidate conversation list
-      // Navigate away
-    },
-  });
-}
-
-// api/hooks/messaging/useCreateConversation.ts
-export function useCreateConversation() {
-  return useMutation({
-    mutationFn: createOrOpenConversation,
-    onSuccess: (data) => {
-      // Return conversationId for navigation
-    },
-  });
-}
-```
-
-#### C. Real-Time Integration Hook
-```typescript
-// api/hooks/messaging/useMessageRealtime.ts
-export function useMessageRealtime(conversationId: string) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    // Single subscription handler
-    // Updates cache automatically
-    // Centralized logic
-  }, [conversationId, queryClient]);
-}
-
-// api/hooks/messaging/useConversationRealtime.ts
-export function useConversationRealtime(userId: string) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    // Handle conversation list updates
-    // New messages, unread counts
-  }, [userId, queryClient]);
-}
-```
-
-**Benefits:**
-- ✅ Single responsibility per hook
-- ✅ Easy to test (mock queryClient)
-- ✅ Consistent patterns
-- ✅ Optimistic updates built-in
+### Week 3: Cleanup and Polish
+- Day 1-2: Remove old hooks and utils
+- Day 3: Add error boundaries
+- Day 4: Add loading states
+- Day 5: Final testing and documentation
 
 ---
 
-### Phase 3: Break Down Large Components
-
-#### A. MessageView.tsx (272 LOC → ~100 LOC)
-
-**Current Structure (all in one):**
-```typescript
-MessageView.tsx (272 LOC)
-  ├── Fetch messages
-  ├── Fetch conversation details
-  ├── Real-time subscriptions
-  ├── Send message handler
-  ├── Leave conversation handler
-  ├── Block user handler
-  ├── Scroll management
-  └── Render UI
-```
-
-**Proposed Structure (composition):**
-```typescript
-// MessageView.tsx (100 LOC)
-export function MessageView({ conversationId, userId }) {
-  // Data
-  const { data: messages } = useMessages(conversationId);
-  const sendMessage = useSendMessage();
-
-  // Real-time
-  useMessageRealtime(conversationId);
-
-  // UI only
-  return (
-    <div>
-      <MessageViewHeader conversationId={conversationId} />
-      <MessageList messages={messages} currentUserId={userId} />
-      <MessageViewInput onSend={sendMessage.mutate} />
-    </div>
-  );
-}
-
-// New separate components:
-
-// components/messages/MessageViewHeader.tsx (40 LOC)
-export function MessageViewHeader({ conversationId }) {
-  const { data: details } = useConversationDetails(conversationId);
-  const leaveConversation = useLeaveConversation();
-  const blockUser = useBlockUser();
-
-  // Just header + actions
-}
-
-// components/messages/MessageList.tsx (60 LOC)
-export function MessageList({ messages, currentUserId }) {
-  const scrollRef = useAutoScroll(messages);
-
-  // Just rendering messages + scroll
-  return (
-    <div ref={scrollRef}>
-      {messages.map(msg => (
-        <MessageBubble key={msg.id} message={msg} isOwn={msg.sender.id === currentUserId} />
-      ))}
-    </div>
-  );
-}
-
-// components/messages/MessageViewInput.tsx (40 LOC)
-export function MessageViewInput({ onSend, isLoading }) {
-  // Just input field + send button
-  // No mutation logic
-}
-
-// hooks/useAutoScroll.ts (20 LOC)
-export function useAutoScroll(dependencies) {
-  // Reusable scroll-to-bottom logic
-}
-```
-
-**Benefits:**
-- ✅ Each component < 100 LOC
-- ✅ Easy to test in isolation
-- ✅ Reusable pieces (MessageList, MessageViewInput)
-- ✅ Clear separation: data vs UI vs behavior
-
-#### B. ConversationList.tsx (250+ LOC → ~80 LOC)
-
-**Current Structure:**
-```typescript
-ConversationList.tsx (250 LOC)
-  ├── Fetch conversations
-  ├── Real-time subscriptions (2x)
-  ├── Search functionality
-  ├── Announcement button
-  ├── Settings button
-  ├── Render conversation items
-  └── Handle selection
-```
-
-**Proposed Structure:**
-```typescript
-// ConversationList.tsx (80 LOC)
-export function ConversationList({ userId, onSelect }) {
-  const { data: conversations } = useConversations(userId);
-  useConversationRealtime(userId); // Real-time in hook
-
-  return (
-    <div>
-      <ConversationListHeader />
-      <ConversationSearch />
-      <ConversationItems conversations={conversations} onSelect={onSelect} />
-    </div>
-  );
-}
-
-// components/messages/ConversationListHeader.tsx (40 LOC)
-export function ConversationListHeader({
-  onNewMessage,
-  onAnnouncements,
-  onSettings,
-  showAnnouncements
-}) {
-  // Just buttons
-}
-
-// components/messages/ConversationSearch.tsx (40 LOC)
-export function ConversationSearch({ onSearch }) {
-  // Just search input + filter logic
-}
-
-// components/messages/ConversationItems.tsx (60 LOC)
-export function ConversationItems({ conversations, selectedId, onSelect }) {
-  // Just rendering conversation list
-  return conversations.map(conv => (
-    <ConversationItem
-      key={conv.id}
-      conversation={conv}
-      isSelected={conv.id === selectedId}
-      onSelect={onSelect}
-    />
-  ));
-}
-
-// components/messages/ConversationItem.tsx (50 LOC)
-export function ConversationItem({ conversation, isSelected, onSelect }) {
-  // Single conversation row
-  // Title, preview, timestamp, unread badge
-}
-```
-
-**Benefits:**
-- ✅ Each component < 100 LOC
-- ✅ Testable: Can test ConversationItem without entire list
-- ✅ Reusable: ConversationSearch could be used elsewhere
-- ✅ Clear responsibilities
-
-#### C. Messages.tsx (259 LOC → ~120 LOC)
-
-**Current Structure:**
-```typescript
-Messages.tsx (259 LOC)
-  ├── Navigation state
-  ├── Captain status check
-  ├── Modal management (3 modals)
-  ├── Announcement handler
-  ├── Conversation creation handler
-  ├── Layout (mobile/desktop)
-  └── Render everything
-```
-
-**Proposed Structure:**
-```typescript
-// Messages.tsx (120 LOC)
-export function Messages() {
-  const [selectedId, setSelectedId] = useState(null);
-  const createConversation = useCreateConversation();
-
-  return (
-    <MessagesLayout
-      sidebar={<ConversationList onSelect={setSelectedId} />}
-      main={selectedId && <MessageView conversationId={selectedId} />}
-      selectedId={selectedId}
-    />
-  );
-}
-
-// components/messages/MessagesLayout.tsx (60 LOC)
-export function MessagesLayout({ sidebar, main, selectedId }) {
-  // Just responsive layout logic
-  // Mobile: toggle between sidebar/main
-  // Desktop: side-by-side
-}
-
-// components/messages/useMessagingModals.ts (50 LOC)
-export function useMessagingModals() {
-  // Centralize modal state management
-  const [newMessageOpen, setNewMessageOpen] = useState(false);
-  const [announcementOpen, setAnnouncementOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  return {
-    newMessage: { isOpen: newMessageOpen, open: () => setNewMessageOpen(true), close: () => setNewMessageOpen(false) },
-    // ...
-  };
-}
-```
-
-**Benefits:**
-- ✅ Separation of concerns
-- ✅ Reusable layout component
-- ✅ Centralized modal management
-- ✅ Easier to test
-
----
-
-### Phase 4: Consolidate Real-Time Logic
-
-**Current Problem:** Real-time subscriptions scattered across files
-
-**Proposed Solution:** Custom hook that manages subscriptions
-
-```typescript
-// api/hooks/messaging/useMessagingRealtime.ts
-export function useMessagingRealtime(options: {
-  userId: string;
-  conversationId?: string;
-  onNewMessage?: (message: Message) => void;
-  onConversationUpdate?: () => void;
-}) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const channels: RealtimeChannel[] = [];
-
-    // Conversation list updates
-    if (options.userId) {
-      const conversationsChannel = supabase
-        .channel('user-conversations')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        }, () => {
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.messages.conversations(options.userId)
-          });
-        })
-        .subscribe();
-
-      channels.push(conversationsChannel);
-    }
-
-    // Message updates for specific conversation
-    if (options.conversationId) {
-      const messagesChannel = supabase
-        .channel(`conversation-${options.conversationId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${options.conversationId}`,
-        }, async (payload) => {
-          // Fetch full message with sender info
-          const message = await fetchMessage(payload.new.id);
-
-          // Update cache
-          queryClient.setQueryData(
-            queryKeys.messages.byConversation(options.conversationId),
-            (old: any) => [...(old || []), message]
-          );
-
-          // Optional callback
-          options.onNewMessage?.(message);
-        })
-        .subscribe();
-
-      channels.push(messagesChannel);
-    }
-
-    return () => {
-      channels.forEach(channel => supabase.removeChannel(channel));
-    };
-  }, [options.userId, options.conversationId, queryClient]);
-}
-
-// Usage in components:
-export function MessageView({ conversationId, userId }) {
-  useMessagingRealtime({
-    userId,
-    conversationId,
-    onNewMessage: (msg) => {
-      // Optional: play notification sound
-    }
-  });
-
-  // Component code...
-}
-```
-
-**Benefits:**
-- ✅ Centralized subscription logic
-- ✅ No subscription leaks
-- ✅ Consistent cache updates
-- ✅ Easy to add features (notifications, sounds)
-- ✅ Testable (mock queryClient)
-
----
-
-## 🧪 Testing Strategy
-
-### 1. **Unit Tests for Pure Functions**
-```typescript
-// api/queries/messages.test.ts
-describe('getUserConversations', () => {
-  it('should fetch conversations for user', async () => {
-    const conversations = await getUserConversations('user-123');
-    expect(conversations).toHaveLength(3);
-  });
-
-  it('should filter blocked users', async () => {
-    // Mock blocked users
-    // Verify they don't appear in conversations
-  });
-});
-```
-
-### 2. **Component Tests (React Testing Library)**
-```typescript
-// MessageBubble.test.tsx
-describe('MessageBubble', () => {
-  it('should render message content', () => {
-    render(<MessageBubble message={mockMessage} isOwn={false} />);
-    expect(screen.getByText('Hello world')).toBeInTheDocument();
-  });
-
-  it('should show timestamp', () => {
-    // ...
-  });
-});
-```
-
-### 3. **Integration Tests for Hooks**
-```typescript
-// useSendMessage.test.ts
-describe('useSendMessage', () => {
-  it('should send message and update cache', async () => {
-    const { result } = renderHook(() => useSendMessage());
-
-    await act(async () => {
-      await result.current.mutate({
-        conversationId: 'conv-123',
-        content: 'Test message',
-      });
-    });
-
-    // Verify cache was updated
-    expect(queryClient.getQueryData([...])).toContainMessage('Test message');
-  });
-});
-```
-
-### 4. **E2E Tests for Critical Flows**
-```typescript
-// messaging.e2e.test.ts
-describe('Messaging E2E', () => {
-  it('should send and receive message in real-time', async () => {
-    // User A opens conversation
-    // User B sends message
-    // User A sees message appear (real-time)
-  });
-});
-```
-
----
-
-## 📊 File Structure After Refactoring
-
-```
-src/
-├── api/
-│   ├── queries/
-│   │   └── messages.ts (READ only, ~150 LOC)
-│   │
-│   ├── mutations/
-│   │   └── messages.ts (WRITE only, ~200 LOC)
-│   │
-│   └── hooks/
-│       └── messaging/
-│           ├── useConversations.ts (30 LOC)
-│           ├── useMessages.ts (30 LOC)
-│           ├── useConversationDetails.ts (30 LOC)
-│           ├── useBlockedUsers.ts (20 LOC)
-│           ├── useSendMessage.ts (40 LOC)
-│           ├── useBlockUser.ts (30 LOC)
-│           ├── useLeaveConversation.ts (30 LOC)
-│           ├── useCreateConversation.ts (40 LOC)
-│           ├── useMessagingRealtime.ts (80 LOC)
-│           └── index.ts (exports)
-│
-├── components/
-│   └── messages/
-│       ├── Messages.tsx (120 LOC) - Main page
-│       ├── MessagesLayout.tsx (60 LOC) - Responsive layout
-│       │
-│       ├── conversation-list/
-│       │   ├── ConversationList.tsx (80 LOC)
-│       │   ├── ConversationListHeader.tsx (40 LOC)
-│       │   ├── ConversationSearch.tsx (40 LOC)
-│       │   ├── ConversationItems.tsx (60 LOC)
-│       │   └── ConversationItem.tsx (50 LOC)
-│       │
-│       ├── message-view/
-│       │   ├── MessageView.tsx (100 LOC)
-│       │   ├── MessageViewHeader.tsx (40 LOC)
-│       │   ├── MessageList.tsx (60 LOC)
-│       │   ├── MessageViewInput.tsx (40 LOC)
-│       │   └── MessageBubble.tsx (50 LOC)
-│       │
-│       ├── modals/
-│       │   ├── NewMessageModal.tsx (120 LOC)
-│       │   ├── AnnouncementModal.tsx (100 LOC)
-│       │   ├── MessageSettingsModal.tsx (80 LOC)
-│       │   └── BlockedUsersModal.tsx (80 LOC)
-│       │
-│       └── shared/
-│           ├── MessagesEmptyState.tsx (30 LOC)
-│           └── UserListItem.tsx (40 LOC)
-│
-└── hooks/
-    ├── useAutoScroll.ts (20 LOC)
-    └── useMessagingModals.ts (50 LOC)
-```
-
-**Total LOC: ~2,000** (similar to current, but better organized)
-
-**Key Improvements:**
-- ✅ No file > 150 LOC
-- ✅ Clear folder organization
-- ✅ Easy to find specific functionality
-- ✅ Easy to test each piece
-- ✅ Easy to reuse components
-
----
-
-## 🚀 Migration Strategy
-
-### Step 1: Create New API Layer (2-3 hours)
-- [ ] Create `api/mutations/messages.ts`
-- [ ] Move write operations from `utils/messageQueries.ts`
-- [ ] Add proper error handling
-- [ ] Add JSDoc documentation
-
-### Step 2: Create Mutation Hooks (3-4 hours)
-- [ ] Create `useSendMessage` with optimistic updates
-- [ ] Create `useBlockUser` with cache invalidation
-- [ ] Create `useLeaveConversation`
-- [ ] Create `useCreateConversation`
-- [ ] Test each hook individually
-
-### Step 3: Centralize Real-Time (2-3 hours)
-- [ ] Create `useMessagingRealtime` hook
-- [ ] Migrate ConversationList to use it
-- [ ] Migrate MessageView to use it
-- [ ] Remove scattered subscriptions
-- [ ] Test real-time updates
-
-### Step 4: Break Down Components (4-6 hours)
-- [ ] Extract MessageViewHeader
-- [ ] Extract MessageList
-- [ ] Extract ConversationItem
-- [ ] Extract MessagesLayout
-- [ ] Update imports
-- [ ] Test each component
-
-### Step 5: Cleanup (1-2 hours)
-- [ ] Remove old `utils/messageQueries.ts`
-- [ ] Remove old `hooks/useConversationParticipants.ts`
-- [ ] Update TABLE_OF_CONTENTS.md
-- [ ] Run full test suite
-- [ ] Verify messaging works end-to-end
-
-**Total Estimated Time: 12-18 hours**
-
----
-
-## ✅ Success Criteria
-
-After refactoring, you should have:
-
-1. **No component > 150 LOC** ✅
-2. **Clear separation**: queries / mutations / hooks / components ✅
-3. **Every piece is testable** in isolation ✅
-4. **Consistent patterns** across all messaging features ✅
-5. **Optimistic updates** for better UX ✅
-6. **Centralized real-time** logic ✅
-7. **No code duplication** ✅
-8. **Easy to add new features** ✅
-
----
-
-## 📝 Notes
-
-- This refactoring can be done **incrementally** - one component at a time
-- **Keep old code** until new code is tested
-- Use **feature flags** to gradually roll out changes
-- **Test thoroughly** after each step
-- Focus on **high-impact** areas first (MessageView, ConversationList)
-
----
-
-**Priority:** Medium (messaging works, but would benefit from refactoring)
-**Risk:** Low (can be done incrementally)
-**ROI:** High (easier testing, maintenance, feature additions)
+## Next Steps
+
+1. ✅ Review and approve this plan
+2. ⬜ Create Phase 1 mutations and queries
+3. ⬜ Create Phase 2 real-time hooks
+4. ⬜ Begin Phase 3 component migration
+5. ⬜ Execute Phase 4 cleanup
+
+**Ready to start with Phase 1: Creating missing TanStack Query functions?**

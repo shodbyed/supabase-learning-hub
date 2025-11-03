@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/useUser';
 import { queryKeys } from '../queryKeys';
-import { getCurrentMember, getIsCaptain } from '../queries/members';
+import { getCurrentMember, getIsCaptain, getAllMembers } from '../queries/members';
 import { STALE_TIME } from '../client';
 
 /**
@@ -121,5 +121,30 @@ export function useIsCaptain() {
     staleTime: STALE_TIME.MEMBER, // 15 minutes
     retry: 1,
     refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Hook to fetch all members with user accounts
+ *
+ * Returns all members who can log in (have linked user accounts).
+ * Used for messaging features - showing list of people user can message.
+ * Excludes specified member (typically current user).
+ *
+ * Caches for 5 minutes. Member list doesn't change frequently.
+ *
+ * @param excludeMemberId - Optional member ID to exclude from results
+ * @returns Query result with array of member objects
+ *
+ * @example
+ * const { data: members = [], isLoading } = useAllMembers(currentUserId);
+ * // Returns all members except current user
+ */
+export function useAllMembers(excludeMemberId?: string) {
+  return useQuery({
+    queryKey: [...queryKeys.members.all, 'messageable', excludeMemberId || 'none'],
+    queryFn: () => getAllMembers(excludeMemberId),
+    staleTime: 5 * 60 * 1000, // 5 minutes - member list doesn't change often
+    retry: 1,
   });
 }
