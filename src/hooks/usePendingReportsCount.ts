@@ -1,12 +1,14 @@
 /**
- * @fileoverview usePendingReportsCount Hook
+ * @fileoverview usePendingReportsCount Hook (TanStack Query wrapper)
  *
  * React hook that fetches the count of pending reports for league operators.
  * Updates in real-time and can be used for notification badges.
+ *
+ * Now uses TanStack Query internally for caching and state management,
+ * with real-time subscription for instant updates.
  */
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/supabaseClient';
+import { usePendingReportsCount as usePendingReportsQuery } from '@/api/hooks/useReportQueries';
 
 /**
  * Hook to get count of pending reports for current operator
@@ -14,45 +16,7 @@ import { supabase } from '@/supabaseClient';
  * @returns Count of reports with status 'pending' or 'under_review'
  */
 export function usePendingReportsCount() {
-  const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCount();
-
-    // Set up real-time subscription for changes
-    const subscription = supabase
-      .channel('pending_reports_count')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'user_reports'
-        },
-        () => {
-          // Refetch count when any report changes
-          fetchCount();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchCount = async () => {
-    const { count: reportCount, error } = await supabase
-      .from('user_reports')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['pending', 'under_review']);
-
-    if (!error && reportCount !== null) {
-      setCount(reportCount);
-    }
-    setLoading(false);
-  };
+  const { data: count = 0, isLoading: loading } = usePendingReportsQuery();
 
   return { count, loading };
 }

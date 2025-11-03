@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/useUser';
 import { queryKeys } from '../queryKeys';
-import { getCurrentMember, getIsCaptain, getAllMembers } from '../queries/members';
+import { getCurrentMember, getIsCaptain, getAllMembers, getMembersByIds } from '../queries/members';
 import { STALE_TIME } from '../client';
 
 /**
@@ -146,5 +146,32 @@ export function useAllMembers(excludeMemberId?: string) {
     queryFn: () => getAllMembers(excludeMemberId),
     staleTime: 5 * 60 * 1000, // 5 minutes - member list doesn't change often
     retry: 1,
+  });
+}
+
+/**
+ * Hook to fetch multiple members by IDs
+ *
+ * Gets member records for a list of member IDs.
+ * Returns basic info needed for display (name, nickname).
+ * Used by scoring pages to get player names for lineup.
+ *
+ * Caches for 15 minutes. Player names don't change frequently.
+ *
+ * @param memberIds - Array of member primary key IDs
+ * @returns Query result with array of member objects (id, first_name, last_name, nickname)
+ *
+ * @example
+ * const { data: players = [] } = useMembersByIds(['id1', 'id2', 'id3']);
+ * const playerMap = new Map(players.map(p => [p.id, p]));
+ */
+export function useMembersByIds(memberIds: string[] | undefined | null) {
+  return useQuery({
+    queryKey: [...queryKeys.members.all, 'byIds', ...(memberIds || []).sort()],
+    queryFn: () => getMembersByIds(memberIds!),
+    enabled: !!memberIds && memberIds.length > 0,
+    staleTime: STALE_TIME.MEMBER, // 15 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 }

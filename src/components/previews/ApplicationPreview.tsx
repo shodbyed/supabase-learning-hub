@@ -6,7 +6,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import type { LeagueOperatorApplication as ApplicationData } from '../../schemas/leagueOperatorSchema';
-import { useUserProfile } from '../../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { getVisibilityLabel } from '@/components/privacy/ContactInfoExposure';
 
 interface ApplicationPreviewProps {

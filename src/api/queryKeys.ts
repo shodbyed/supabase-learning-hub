@@ -161,6 +161,14 @@ export const queryKeys = {
     participants: (conversationId: string) =>
       [...queryKeys.messages.all, 'conversation', conversationId, 'participants'] as const,
 
+    /** Conversation participants with member details (for TanStack Query) */
+    conversationParticipants: (conversationId: string) =>
+      [...queryKeys.messages.all, 'conversation', conversationId, 'participantsDetails'] as const,
+
+    /** Conversation title */
+    conversationTitle: (conversationId: string) =>
+      [...queryKeys.messages.all, 'conversation', conversationId, 'title'] as const,
+
     /** Conversation type and auto-managed status */
     conversationType: (conversationId: string) =>
       [...queryKeys.messages.all, 'conversation', conversationId, 'type'] as const,
@@ -217,7 +225,7 @@ export const queryKeys = {
     all: ['reports'] as const,
 
     /** Pending reports count */
-    pendingCount: (operatorId: string) => [...queryKeys.reports.all, 'pending', operatorId] as const,
+    pending: () => [...queryKeys.reports.all, 'pending'] as const,
 
     /** Reports by operator */
     byOperator: (operatorId: string) => [...queryKeys.reports.all, 'operator', operatorId] as const,

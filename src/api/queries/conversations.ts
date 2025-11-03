@@ -19,6 +19,43 @@ export interface ConversationType {
 }
 
 /**
+ * Conversation title information
+ */
+export interface ConversationTitle {
+  title: string | null;
+}
+
+/**
+ * Fetch conversation title
+ *
+ * Gets the title of a conversation (used for group chats and announcements).
+ * DM conversations typically don't have titles.
+ *
+ * @param conversationId - Conversation's primary key ID
+ * @returns Conversation title (null for DMs)
+ * @throws Error if conversation not found or database error
+ *
+ * @example
+ * const { title } = await getConversationTitle('conv-uuid');
+ * const displayName = title || 'Direct Message';
+ */
+export async function getConversationTitle(conversationId: string): Promise<ConversationTitle> {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('title')
+    .eq('id', conversationId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to fetch conversation title: ${error.message}`);
+  }
+
+  return {
+    title: data.title,
+  };
+}
+
+/**
  * Fetch conversation type and auto-managed status
  *
  * Gets conversation metadata to determine if it's a DM, group, or auto-managed conversation
@@ -123,4 +160,70 @@ export async function getOtherParticipantId(
   }
 
   return null;
+}
+
+/**
+ * Participant details with member information
+ */
+export interface ParticipantDetails {
+  userId: string;
+  lastReadAt: string | null;
+  firstName: string;
+  lastName: string;
+  systemPlayerNumber: string | null;
+}
+
+/**
+ * Get conversation participants with member details
+ *
+ * Fetches all active participants in a conversation with their member info.
+ * Returns full participant data including names and last_read_at timestamps.
+ *
+ * @param conversationId - Conversation's primary key ID
+ * @returns Array of participant details
+ * @throws Error if database query fails
+ *
+ * @example
+ * const participants = await getConversationParticipants('conv-uuid');
+ * participants.forEach(p => {
+ *   console.log(`${p.firstName} ${p.lastName} last read at ${p.lastReadAt}`);
+ * });
+ */
+export async function getConversationParticipants(
+  conversationId: string
+): Promise<ParticipantDetails[]> {
+  const { data, error } = await supabase
+    .from('conversation_participants')
+    .select(`
+      user_id,
+      last_read_at,
+      members:user_id (
+        id,
+        first_name,
+        last_name,
+        system_player_number
+      )
+    `)
+    .eq('conversation_id', conversationId)
+    .is('left_at', null);
+
+  if (error) {
+    console.error('Error loading participants:', error);
+    throw new Error(`Failed to fetch conversation participants: ${error.message}`);
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  return data.map((p: any) => {
+    const member = Array.isArray(p.members) ? p.members[0] : p.members;
+    return {
+      userId: p.user_id,
+      lastReadAt: p.last_read_at,
+      firstName: member?.first_name || '',
+      lastName: member?.last_name || '',
+      systemPlayerNumber: member?.system_player_number || null,
+    };
+  });
 }

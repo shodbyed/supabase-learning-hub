@@ -78,6 +78,9 @@ export const STALE_TIME = {
   // Real-time match data - always fresh
   MATCH_LIVE: 0, // Always stale, always refetch
 
+  // Reports - keep fresh for operator notifications
+  REPORTS: 30 * 1000, // 30 seconds
+
   // Static reference data - cache for session
   STATIC: Infinity, // Never stale
 } as const;

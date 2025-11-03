@@ -86,6 +86,8 @@ export {
 // Conversation queries
 export {
   useConversationType,
+  useConversationTitle,
+  useConversationParticipants as useConversationParticipantsQuery,
   useIsUserBlocked,
   useOtherParticipantId,
 } from './useConversationQueries';

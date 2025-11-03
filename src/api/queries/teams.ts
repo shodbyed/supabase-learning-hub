@@ -12,6 +12,47 @@
 import { supabase } from '@/supabaseClient';
 
 /**
+ * Get user's team in a specific match
+ *
+ * Determines which team (home or away) the user is on for a match.
+ * Used by scoring pages to determine user context.
+ *
+ * @param memberId - Member's primary key ID
+ * @param homeTeamId - Home team's primary key ID
+ * @param awayTeamId - Away team's primary key ID
+ * @returns Object with team_id and isHomeTeam boolean
+ * @throws Error if user is not on either team
+ *
+ * @example
+ * const { team_id, isHomeTeam } = await getUserTeamInMatch(memberId, homeTeamId, awayTeamId);
+ */
+export async function getUserTeamInMatch(
+  memberId: string,
+  homeTeamId: string,
+  awayTeamId: string
+): Promise<{ team_id: string; isHomeTeam: boolean }> {
+  const { data: teamPlayerData, error: teamPlayerError } = await supabase
+    .from('team_players')
+    .select('team_id')
+    .eq('member_id', memberId)
+    .or(`team_id.eq.${homeTeamId},team_id.eq.${awayTeamId}`)
+    .single();
+
+  if (teamPlayerError) {
+    throw new Error('You are not on either team in this match');
+  }
+
+  const userTeam = teamPlayerData.team_id;
+  const isHomeTeam = userTeam === homeTeamId;
+
+  return {
+    team_id: userTeam,
+    isHomeTeam,
+  };
+}
+
+
+/**
  * Fetch all teams a player is on across all leagues
  *
  * Returns teams with full details:

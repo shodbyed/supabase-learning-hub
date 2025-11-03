@@ -9,6 +9,8 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   getConversationType,
+  getConversationTitle,
+  getConversationParticipants,
   isUserBlocked,
   getOtherParticipantId,
 } from '../queries/conversations';
@@ -94,5 +96,51 @@ export function useOtherParticipantId(
     queryFn: () => getOtherParticipantId(conversationId!, currentUserId!),
     enabled: !!conversationId && !!currentUserId,
     staleTime: STALE_TIME.LEAGUES, // 15 minutes - participants rarely change
+  });
+}
+
+/**
+ * Hook to fetch conversation title
+ *
+ * Gets the title of a conversation (used for group chats and announcements).
+ * DM conversations typically don't have titles and will return null.
+ *
+ * @param conversationId - Conversation's primary key ID
+ * @returns TanStack Query result with conversation title
+ *
+ * @example
+ * const { data: titleData } = useConversationTitle(conversationId);
+ * const displayName = titleData?.title || 'Direct Message';
+ */
+export function useConversationTitle(conversationId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.messages.conversationTitle(conversationId || ''),
+    queryFn: () => getConversationTitle(conversationId!),
+    enabled: !!conversationId,
+    staleTime: STALE_TIME.LEAGUES, // 15 minutes - titles rarely change
+  });
+}
+
+/**
+ * Hook to fetch conversation participants with member details
+ *
+ * Gets all active participants in a conversation with their member info.
+ * Returns full participant data including names and last_read_at timestamps.
+ * Useful for displaying read receipts and participant lists.
+ *
+ * @param conversationId - Conversation's primary key ID
+ * @returns TanStack Query result with array of participant details
+ *
+ * @example
+ * const { data: participants = [] } = useConversationParticipants(conversationId);
+ * const otherParticipant = participants.find(p => p.userId !== currentUserId);
+ * console.log(`${otherParticipant.firstName} last read at ${otherParticipant.lastReadAt}`);
+ */
+export function useConversationParticipants(conversationId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.messages.conversationParticipants(conversationId || ''),
+    queryFn: () => getConversationParticipants(conversationId!),
+    enabled: !!conversationId,
+    staleTime: STALE_TIME.MESSAGES, // 30 seconds - read status updates frequently
   });
 }

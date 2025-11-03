@@ -23,6 +23,7 @@ import {
   getTeamsByLeague,
   getTeamsBySeason,
   getCaptainTeamEditData,
+  getUserTeamInMatch,
 } from '../queries/teams';
 import { STALE_TIME } from '../client';
 
@@ -146,6 +147,38 @@ export function useCaptainTeamEditData(teamId: string | null | undefined) {
     queryFn: () => getCaptainTeamEditData(teamId!),
     enabled: !!teamId,
     staleTime: STALE_TIME.TEAMS,
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Hook to get user's team in a specific match
+ *
+ * Determines which team (home or away) the user is on for a match.
+ * Used by scoring pages to determine user context.
+ * Cached for 10 minutes (team membership doesn't change during match).
+ *
+ * @param memberId - Member's primary key ID
+ * @param homeTeamId - Home team's primary key ID
+ * @param awayTeamId - Away team's primary key ID
+ * @returns TanStack Query result with { team_id, isHomeTeam }
+ *
+ * @example
+ * const { data, isLoading } = useUserTeamInMatch(memberId, homeTeamId, awayTeamId);
+ * if (data) {
+ *   console.log(`User is on ${data.isHomeTeam ? 'home' : 'away'} team`);
+ * }
+ */
+export function useUserTeamInMatch(
+  memberId: string | null | undefined,
+  homeTeamId: string | null | undefined,
+  awayTeamId: string | null | undefined
+) {
+  return useQuery({
+    queryKey: ['userTeamInMatch', memberId, homeTeamId, awayTeamId],
+    queryFn: () => getUserTeamInMatch(memberId!, homeTeamId!, awayTeamId!),
+    enabled: !!memberId && !!homeTeamId && !!awayTeamId,
+    staleTime: STALE_TIME.TEAMS, // 10 minutes
     refetchOnWindowFocus: false,
   });
 }

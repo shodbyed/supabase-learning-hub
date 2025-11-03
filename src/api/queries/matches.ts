@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import type { MatchWithLeagueSettings } from '@/types';
 
 /**
  * Match with team and venue details
@@ -247,4 +248,143 @@ export async function getSeasonWeeks(seasonId: string): Promise<SeasonWeek[]> {
   }
 
   return (data || []) as SeasonWeek[];
+}
+
+/**
+ * Fetch match details with league settings for scoring
+ *
+ * Gets match with team names and league scoring configuration.
+ * Used by scoring pages to access handicap variants and game rules.
+ *
+ * @param matchId - Match's primary key ID
+ * @returns Match with league settings
+ * @throws Error if match not found or database error
+ *
+ * @example
+ * const match = await getMatchWithLeagueSettings('match-uuid');
+ * console.log(`Handicap variant: ${match.league.handicap_variant}`);
+ */
+export async function getMatchWithLeagueSettings(matchId: string): Promise<MatchWithLeagueSettings> {
+  const { data, error } = await supabase
+    .from('matches')
+    .select(`
+      id,
+      season_id,
+      home_team_id,
+      away_team_id,
+      home_team:teams!matches_home_team_id_fkey(id, team_name),
+      away_team:teams!matches_away_team_id_fkey(id, team_name),
+      season:seasons!matches_season_id_fkey(
+        league:leagues(
+          handicap_variant,
+          team_handicap_variant,
+          golden_break_counts_as_win,
+          game_type
+        )
+      )
+    `)
+    .eq('id', matchId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to fetch match with league settings: ${error.message}`);
+  }
+
+  // Transform nested season/league structure
+  const seasonData = Array.isArray(data.season) ? data.season[0] : data.season;
+  const leagueData = seasonData && Array.isArray((seasonData as any).league)
+    ? (seasonData as any).league[0]
+    : (seasonData as any)?.league;
+
+  const homeTeam = Array.isArray(data.home_team) ? data.home_team[0] : data.home_team;
+  const awayTeam = Array.isArray(data.away_team) ? data.away_team[0] : data.away_team;
+
+  return {
+    id: data.id,
+    season_id: data.season_id,
+    home_team_id: data.home_team_id,
+    away_team_id: data.away_team_id,
+    home_team: homeTeam as any,
+    away_team: awayTeam as any,
+    league: {
+      handicap_variant: (leagueData?.handicap_variant || 'standard') as any,
+      team_handicap_variant: (leagueData?.team_handicap_variant || 'standard') as any,
+      golden_break_counts_as_win: leagueData?.golden_break_counts_as_win ?? false,
+      game_type: leagueData?.game_type || '8-ball',
+    },
+  };
+}
+
+/**
+ * Fetch match lineups for both teams
+ *
+ * Gets lineup records for home and away teams.
+ * Both lineups must be locked before scoring can begin.
+ * Used by scoring pages to access player IDs and handicaps.
+ *
+ * @param matchId - Match's primary key ID
+ * @param homeTeamId - Home team's primary key ID
+ * @param awayTeamId - Away team's primary key ID
+ * @returns Object with homeLineup and awayLineup
+ * @throws Error if lineups not found, not locked, or database error
+ *
+ * @example
+ * const { homeLineup, awayLineup } = await getMatchLineups(matchId, homeTeamId, awayTeamId);
+ * console.log(`Home player 1: ${homeLineup.player1_id}`);
+ */
+export async function getMatchLineups(matchId: string, homeTeamId: string, awayTeamId: string) {
+  const { data: lineupsData, error: lineupsError } = await supabase
+    .from('match_lineups')
+    .select('*')
+    .eq('match_id', matchId)
+    .in('team_id', [homeTeamId, awayTeamId]);
+
+  if (lineupsError) {
+    throw new Error(`Failed to fetch lineups: ${lineupsError.message}`);
+  }
+
+  // Separate home and away lineups
+  const homeLineupData = lineupsData?.find(l => l.team_id === homeTeamId);
+  const awayLineupData = lineupsData?.find(l => l.team_id === awayTeamId);
+
+  if (!homeLineupData || !awayLineupData) {
+    throw new Error('Both team lineups must be locked before scoring can begin');
+  }
+
+  if (!homeLineupData.locked || !awayLineupData.locked) {
+    throw new Error('Both team lineups must be locked before scoring can begin');
+  }
+
+  return {
+    homeLineup: homeLineupData,
+    awayLineup: awayLineupData,
+  };
+}
+
+/**
+ * Fetch match games (scoring results)
+ *
+ * Gets all game records for a match showing winners, confirmations, etc.
+ * Returns empty array if no games exist (should not happen in normal flow).
+ * Used by scoring pages to display and update game results.
+ *
+ * @param matchId - Match's primary key ID
+ * @returns Array of match game records
+ * @throws Error if database error
+ *
+ * @example
+ * const games = await getMatchGames(matchId);
+ * const gamesMap = new Map(games.map(g => [g.game_number, g]));
+ */
+export async function getMatchGames(matchId: string) {
+  const { data: gamesData, error: gamesError } = await supabase
+    .from('match_games')
+    .select('*')
+    .eq('match_id', matchId);
+
+  if (gamesError) {
+    throw new Error(`Failed to fetch match games: ${gamesError.message}`);
+  }
+
+  return gamesData || [];
 }

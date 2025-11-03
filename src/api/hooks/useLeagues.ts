@@ -20,6 +20,7 @@ import {
   getLeagueCount,
   getLeagueById,
   getLeaguesWithProgress,
+  getOperatorProfanityFilter,
 } from '../queries/leagues';
 import { STALE_TIME } from '../client';
 
@@ -125,5 +126,33 @@ export function useLeaguesWithProgress(operatorId: string | null | undefined) {
     staleTime: STALE_TIME.SCHEDULES, // 10 minutes (progress changes more frequently)
     retry: 1,
     refetchOnWindowFocus: true, // Refetch when returning to dashboard
+  });
+}
+
+/**
+ * Hook to fetch operator's profanity filter setting for a league
+ *
+ * Gets whether profanity validation should be enforced for team names
+ * and organization content based on the league operator's setting.
+ * Used by TeamEditorModal to validate team name input.
+ *
+ * Cached for 15 minutes - operator settings don't change frequently.
+ *
+ * @param leagueId - League's primary key ID
+ * @returns TanStack Query result with boolean indicating if filter is enabled
+ *
+ * @example
+ * const { data: shouldValidate = false, isLoading } = useOperatorProfanityFilter(leagueId);
+ * if (shouldValidate && containsProfanity(teamName)) {
+ *   setError('Team name contains inappropriate language');
+ * }
+ */
+export function useOperatorProfanityFilter(leagueId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.leagues.detail(leagueId || ''), 'operatorProfanityFilter'],
+    queryFn: () => getOperatorProfanityFilter(leagueId!),
+    enabled: !!leagueId,
+    staleTime: STALE_TIME.LEAGUES, // 15 minutes
+    retry: 1,
   });
 }

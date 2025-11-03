@@ -27,7 +27,14 @@
       "Bash(then echo \"  $f\")",
       "Bash(fi)",
       "Bash(for file in src/components/messages/*.tsx)",
-      "Bash(pnpx shadcn:*)"
+      "Bash(pnpx shadcn:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\" grep -n \"supabase\\.\" \"$file\")",
+      "Bash(xargs ls:*)",
+      "Bash(do echo \"=== $hook ===\")",
+      "Bash(do if [ -f \"/Users/edpoplet/Programming/supabase-learning-hub/src/hooks/$hook.ts\" ])",
+      "Bash(then echo \"❌ DUPLICATE: $hook exists in /src/hooks/\")",
+      "Bash(else echo \"✓ $hook only in api/hooks\")"
     ],
     "deny": [],
     "ask": []

@@ -243,3 +243,46 @@ export async function getLeaguesWithProgress(operatorId: string): Promise<League
 
   return leaguesWithProgress;
 }
+
+/**
+ * Fetch operator's profanity filter setting for a league
+ *
+ * Gets the league's operator and returns whether profanity validation
+ * should be enforced for team names and organization content.
+ * Used by TeamEditorModal to validate team name input.
+ *
+ * @param leagueId - League's primary key ID
+ * @returns Boolean indicating if profanity filter is enabled
+ * @throws Error if league or operator not found
+ *
+ * @example
+ * const shouldValidate = await getOperatorProfanityFilter('league-uuid');
+ * if (shouldValidate && containsProfanity(teamName)) {
+ *   throw new Error('Team name contains inappropriate language');
+ * }
+ */
+export async function getOperatorProfanityFilter(leagueId: string): Promise<boolean> {
+  // Fetch league to get operator_id
+  const { data: league, error: leagueError } = await supabase
+    .from('leagues')
+    .select('operator_id')
+    .eq('id', leagueId)
+    .single();
+
+  if (leagueError || !league) {
+    throw new Error(`Failed to fetch league: ${leagueError?.message || 'League not found'}`);
+  }
+
+  // Fetch operator's profanity filter setting
+  const { data: operator, error: operatorError } = await supabase
+    .from('league_operators')
+    .select('profanity_filter_enabled')
+    .eq('id', league.operator_id)
+    .single();
+
+  if (operatorError || !operator) {
+    throw new Error(`Failed to fetch operator: ${operatorError?.message || 'Operator not found'}`);
+  }
+
+  return operator.profanity_filter_enabled || false;
+}

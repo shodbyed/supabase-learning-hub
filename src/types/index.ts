@@ -29,3 +29,21 @@ export type {
   TournamentOrganization,
   TournamentType
 } from './tournament';
+
+// Match and Scoring types
+export type {
+  MatchType,
+  Match,
+  MatchWithLeagueSettings,
+  Lineup,
+  Player,
+  HandicapThresholds,
+  MatchGame,
+  ScoringOptions,
+  ConfirmationQueueItem,
+  TeamStats,
+  PlayerStats
+} from './match';
+
+// Match and Scoring utility functions
+export { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from './match';

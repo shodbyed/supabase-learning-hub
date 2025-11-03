@@ -222,3 +222,33 @@ export async function getAllMembers(excludeMemberId?: string) {
 
   return data || [];
 }
+
+/**
+ * Fetch multiple members by IDs
+ *
+ * Gets member records for a list of member IDs.
+ * Returns basic info needed for display (name, nickname).
+ * Used by scoring pages to get player names for lineup.
+ *
+ * @param memberIds - Array of member primary key IDs
+ * @returns Array of member objects with id, first_name, last_name, nickname
+ * @throws Error for database errors
+ *
+ * @example
+ * const players = await getMembersByIds(['id1', 'id2', 'id3']);
+ * const playerMap = new Map(players.map(p => [p.id, p]));
+ */
+export async function getMembersByIds(memberIds: string[]) {
+  if (memberIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('members')
+    .select('id, first_name, last_name, nickname')
+    .in('id', memberIds);
+
+  if (error) throw error;
+
+  return data || [];
+}

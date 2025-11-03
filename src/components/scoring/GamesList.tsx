@@ -7,7 +7,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { type MatchGame, type Lineup } from '@/hooks/useMatchScoring';
+import type { MatchGame, Lineup } from '@/types';
 
 export interface GameDefinition {
   gameNumber: number;
