@@ -17,6 +17,8 @@ interface ConfirmDialogProps {
   confirmText?: string;
   /** Text for the cancel button */
   cancelText?: string;
+  /** Button variant for confirm button (default: 'destructive' for delete actions) */
+  confirmVariant?: 'default' | 'destructive';
   /** Called when user confirms */
   onConfirm: () => void;
   /** Called when user cancels or clicks outside */
@@ -43,6 +45,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
+  confirmVariant = 'destructive',
   onConfirm,
   onCancel,
 }) => {
@@ -61,7 +64,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <Button variant="outline" onClick={onCancel}>
             {cancelText}
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
+          <Button variant={confirmVariant} onClick={onConfirm}>
             {confirmText}
           </Button>
         </div>

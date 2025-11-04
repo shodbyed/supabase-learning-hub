@@ -42,6 +42,8 @@ export interface CapitalizeInputProps {
   disabled?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Maximum character length */
+  maxLength?: number;
 }
 
 /**
@@ -92,6 +94,7 @@ export const CapitalizeInput = React.forwardRef<
   formatFunction = defaultFormat,
   disabled,
   className,
+  maxLength,
 }, ref) => {
   // Internal state for raw input value
   const [internalValue, setInternalValue] = useState(value);
@@ -118,6 +121,10 @@ export const CapitalizeInput = React.forwardRef<
    * Just update internal state - don't format on every keystroke
    */
   const handleChange = (newValue: string) => {
+    // Enforce maxLength if provided
+    if (maxLength && newValue.length > maxLength) {
+      return; // Don't update state if exceeds max length
+    }
     setInternalValue(newValue);
     // Pass raw value to parent so they can see what user is typing
     onChange(newValue);
@@ -152,6 +159,7 @@ export const CapitalizeInput = React.forwardRef<
         placeholder={placeholder}
         disabled={disabled}
         className={error ? 'border-red-500' : ''}
+        maxLength={maxLength}
       />
 
       {errorMessage && error && (

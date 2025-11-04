@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { InfoButton } from '@/components/InfoButton';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
@@ -298,17 +299,22 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         <div className="p-6 space-y-6">
           {/* Team Name */}
           <div>
-            <Label>Team Name</Label>
-            <Input
-              type="text"
+            <CapitalizeInput
+              id="team-name"
+              label="Team Name"
               value={teamName}
-              onChange={(e) => {
-                setTeamName(e.target.value);
+              onChange={(newValue) => {
+                setTeamName(newValue);
                 setError(null);
                 clearRosterError();
               }}
-              placeholder="Team 1"
+              placeholder="e.g., The Hustlers"
+              defaultCapitalize={true}
+              maxLength={20}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Maximum 20 characters ({teamName.length}/20)
+            </p>
           </div>
 
           {/* Home Venue (Optional) */}

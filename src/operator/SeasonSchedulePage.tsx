@@ -12,6 +12,7 @@ import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Calendar, MapPin, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
 import type { Match } from '@/types/schedule';
@@ -129,6 +130,7 @@ export const SeasonSchedulePage: React.FC = () => {
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const [isOperator, setIsOperator] = useState(false);
+  const [showAcceptDialog, setShowAcceptDialog] = useState(false);
 
   /**
    * Handle accepting the schedule
@@ -136,11 +138,6 @@ export const SeasonSchedulePage: React.FC = () => {
    */
   const handleAcceptSchedule = async () => {
     if (!seasonId || !leagueId) return;
-
-    const confirmed = window.confirm(
-      'Accept this schedule and activate the season? You can still make changes later if needed.'
-    );
-    if (!confirmed) return;
 
     setAccepting(true);
 
@@ -160,7 +157,9 @@ export const SeasonSchedulePage: React.FC = () => {
     } catch (err) {
       console.error('❌ Error activating season:', err);
       setError('Failed to activate season');
+    } finally {
       setAccepting(false);
+      setShowAcceptDialog(false);
     }
   };
 
@@ -379,7 +378,7 @@ export const SeasonSchedulePage: React.FC = () => {
                   {clearing ? 'Clearing...' : 'Clear Schedule'}
                 </Button>
                 <Button
-                  onClick={handleAcceptSchedule}
+                  onClick={() => setShowAcceptDialog(true)}
                   disabled={accepting || clearing}
                 >
                   {accepting ? 'Accepting...' : 'Accept Schedule & Complete Setup'}
@@ -508,6 +507,19 @@ export const SeasonSchedulePage: React.FC = () => {
           </Card>
         )}
       </div>
+
+      {/* Accept Schedule Confirmation Dialog */}
+      {showAcceptDialog && (
+        <ConfirmDialog
+          title="Accept Schedule?"
+          message="Accept this schedule and activate the season? You can still make changes later if needed."
+          confirmText="Accept & Activate"
+          cancelText="Cancel"
+          confirmVariant="default"
+          onConfirm={handleAcceptSchedule}
+          onCancel={() => setShowAcceptDialog(false)}
+        />
+      )}
     </div>
   );
 };

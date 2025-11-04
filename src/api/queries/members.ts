@@ -209,7 +209,8 @@ export async function getAllMembers(excludeMemberId?: string): Promise<PartialMe
   let query = supabase
     .from('members')
     .select('id, first_name, last_name, system_player_number, bca_member_number')
-    .not('user_id', 'is', null)
+    // TODO: Re-enable user_id filter for production: .not('user_id', 'is', null)
+    // Temporarily disabled to allow testing with seeded members
     .order('last_name', { ascending: true });
 
   if (excludeMemberId) {
