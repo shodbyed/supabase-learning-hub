@@ -30,6 +30,7 @@ import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
+import { GameButtonRow } from '@/components/scoring/GameButtonRow';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -289,162 +290,36 @@ export function ScoreMatch() {
                 gameResult.confirmed_by_away;
               const isPending = hasWinner && !isConfirmed;
 
-              // If game has a winner (pending or confirmed)
-              if (hasWinner) {
-                const breakerWon =
-                  gameResult.winner_player_id === breakerPlayerId;
-                const rackerWon =
-                  gameResult.winner_player_id === rackerPlayerId;
-
-                // Determine styling based on confirmation status
-                const winnerClass = isConfirmed
-                  ? 'bg-green-200 font-semibold'
-                  : 'bg-yellow-100 font-semibold';
-                const loserClass = 'bg-white text-gray-500';
-
-                // If pending, show buttons with NO trophy, NO Edit button - just colored backgrounds
-                if (isPending) {
-                  return (
-                    <div
-                      key={game.gameNumber}
-                      className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
-                    >
-                      <div className="font-semibold">{game.gameNumber}.</div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`w-full ${
-                          breakerWon ? winnerClass : loserClass
-                        }`}
-                        onClick={() =>
-                          handlePlayerClick(
-                            game.gameNumber,
-                            breakerPlayerId,
-                            breakerName,
-                            breakerTeamId
-                          )
-                        }
-                      >
-                        {breakerName}
-                      </Button>
-                      <div className="text-center font-semibold text-gray-400">
-                        vs
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`w-full ${
-                          rackerWon ? winnerClass : loserClass
-                        }`}
-                        onClick={() =>
-                          handlePlayerClick(
-                            game.gameNumber,
-                            rackerPlayerId,
-                            rackerName,
-                            rackerTeamId
-                          )
-                        }
-                      >
-                        {rackerName}
-                      </Button>
-                    </div>
-                  );
-                }
-
-                // If confirmed, show divs with trophy on winner and Edit button in middle
-                return (
-                  <div
-                    key={game.gameNumber}
-                    className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
-                  >
-                    <div className="font-semibold">{game.gameNumber}.</div>
-                    <div
-                      className={`text-center p-2 rounded ${
-                        breakerWon ? winnerClass : loserClass
-                      }`}
-                    >
-                      {breakerWon && <span className="mr-1">🏆</span>}
-                      {breakerName}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs px-1"
-                      onClick={() => {
-                        setEditingGame({
-                          gameNumber: game.gameNumber,
-                          currentWinnerName: breakerWon
-                            ? breakerName
-                            : rackerName,
-                        });
-                      }}
-                    >
-                      Vacate
-                    </Button>
-                    <div
-                      className={`text-center p-2 rounded ${
-                        rackerWon ? winnerClass : loserClass
-                      }`}
-                    >
-                      {rackerWon && <span className="mr-1">🏆</span>}
-                      {rackerName}
-                    </div>
-                  </div>
-                );
+              // Determine game state
+              let state: 'unscored' | 'pending' | 'confirmed' = 'unscored';
+              if (isConfirmed) {
+                state = 'confirmed';
+              } else if (isPending) {
+                state = 'pending';
               }
 
               return (
-                <div
+                <GameButtonRow
                   key={game.gameNumber}
-                  className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b"
-                >
-                  <div className="font-semibold">{game.gameNumber}.</div>
-                  <div className="text-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`w-full ${
-                        breakerIsHome
-                          ? 'bg-blue-100 hover:bg-blue-200'
-                          : 'bg-orange-100 hover:bg-orange-200'
-                      }`}
-                      onClick={() =>
-                        handlePlayerClick(
-                          game.gameNumber,
-                          breakerPlayerId,
-                          breakerName,
-                          breakerTeamId
-                        )
-                      }
-                    >
-                      {breakerName}
-                    </Button>
-                  </div>
-                  <div className="text-center font-semibold text-gray-400">
-                    vs
-                  </div>
-                  <div className="text-center">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`w-full ${
-                        rackerIsHome
-                          ? 'bg-blue-100 hover:bg-blue-200'
-                          : 'bg-orange-100 hover:bg-orange-200'
-                      }`}
-                      onClick={() =>
-                        handlePlayerClick(
-                          game.gameNumber,
-                          rackerPlayerId,
-                          rackerName,
-                          rackerTeamId
-                        )
-                      }
-                    >
-                      {rackerName}
-                    </Button>
-                  </div>
-                </div>
+                  gameNumber={game.gameNumber}
+                  breakerName={breakerName}
+                  breakerPlayerId={breakerPlayerId}
+                  breakerTeamId={breakerTeamId}
+                  breakerIsHome={breakerIsHome}
+                  rackerName={rackerName}
+                  rackerPlayerId={rackerPlayerId}
+                  rackerTeamId={rackerTeamId}
+                  rackerIsHome={rackerIsHome}
+                  state={state}
+                  winnerPlayerId={gameResult?.winner_player_id}
+                  onPlayerClick={handlePlayerClick}
+                  onVacateClick={(gameNumber, winnerName) => {
+                    setEditingGame({
+                      gameNumber,
+                      currentWinnerName: winnerName,
+                    });
+                  }}
+                />
               );
             })}
           </div>

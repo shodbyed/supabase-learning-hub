@@ -456,6 +456,7 @@ Reusable wizard/form step components
 - `ScoreboardCard.tsx` - Scoreboard display
 - `GamesList.tsx` - Games list
 - `MatchScoreboard.tsx` - Swipeable match scoreboard with team/player stats (extracted from ScoreMatch)
+- `GameButtonRow.tsx` - Game row with breaker vs racker buttons (extracted from ScoreMatch)
 - `ScoringDialog.tsx` - Game winner selection with B&R and Golden Break (extracted from ScoreMatch)
 - `ConfirmationDialog.tsx` - Opponent score confirmation and vacate requests (extracted from ScoreMatch)
 - `EditGameDialog.tsx` - Vacate winner request dialog (extracted from ScoreMatch)
