@@ -8,11 +8,13 @@
  */
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOperatorId } from '@/api/hooks';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
+import { queryKeys } from '@/api/queryKeys';
 import { VenueLimitModal } from './VenueLimitModal';
 import { TeamEditorModal } from './TeamEditorModal';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
@@ -34,6 +36,7 @@ import type { TeamWithQueryDetails } from '@/types/team';
 export const TeamManagement: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: operator, isLoading: operatorLoading } = useOperatorId();
   const operatorId = operator?.id;
 
@@ -115,6 +118,11 @@ export const TeamManagement: React.FC = () => {
         setLeagueVenues(prev => [...prev, ...insertedData]);
         console.log(`✅ ${unassignedVenues.length} venues assigned`);
       }
+
+      // Invalidate TanStack Query cache to refetch updated data
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
+      });
     } catch (err) {
       console.error('Error selecting all venues:', err);
       alert('Failed to update venues. Please try again.');
@@ -175,9 +183,14 @@ export const TeamManagement: React.FC = () => {
         setLeagueVenues(prev => [...prev, newLeagueVenue]);
         console.log('✅ Venue assigned:', venue.name);
       }
-    } catch (err) {
+
+      // Invalidate TanStack Query cache to refetch updated data
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
+      });
+    } catch (err: any) {
       console.error('Error toggling venue:', err);
-      alert('Failed to update venue assignment. Please try again.');
+      alert(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
     } finally {
       setAssigningVenue(null);
     }
@@ -615,7 +628,9 @@ export const TeamManagement: React.FC = () => {
                   disabled={leagueVenues.length === 0 || !seasonId || teams.length >= 48}
                   onClick={() => setShowTeamEditor(true)}
                   title={
-                    !seasonId
+                    leagueVenues.length === 0
+                      ? 'Assign at least one venue before adding teams'
+                      : !seasonId
                       ? 'Create a season before adding teams'
                       : teams.length >= 48
                       ? 'Maximum of 48 teams reached'

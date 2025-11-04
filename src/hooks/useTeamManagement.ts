@@ -13,8 +13,10 @@ import {
   useLeagueVenues,
   useAllMembers,
   useActiveSeason,
+  useMostRecentSeason,
   usePreviousCompletedSeason,
 } from '@/api/hooks';
+import { supabase } from '@/supabaseClient';
 import type { LeagueVenue } from '@/types/venue';
 import type { UseTeamManagementReturn } from '@/types';
 import type { TeamWithQueryDetails } from '@/types/team';
@@ -77,6 +79,14 @@ export function useTeamManagement(
     error: seasonError,
   } = useActiveSeason(leagueId);
 
+  // Fetch most recent season (any status - for team management)
+  // Teams can be added to upcoming, active, or completed seasons
+  const {
+    data: mostRecentSeasonData,
+    isLoading: mostRecentSeasonLoading,
+    error: mostRecentSeasonError,
+  } = useMostRecentSeason(leagueId);
+
   // Fetch previous completed season (before active season)
   const {
     data: previousSeasonData,
@@ -98,11 +108,12 @@ export function useTeamManagement(
   const league = leagueData || null;
   const venues = venuesData;
   const members = membersData;
-  const seasonId = activeSeasonData?.id || null;
+  // Use most recent season for team management (can be upcoming, active, or completed)
+  const seasonId = mostRecentSeasonData?.id || null;
   const previousSeasonId = previousSeasonData?.id || null;
 
   // Combined loading state
-  const loading = leagueLoading || venuesLoading || leagueVenuesLoading || membersLoading || seasonLoading || prevSeasonLoading || teamsLoading;
+  const loading = leagueLoading || venuesLoading || leagueVenuesLoading || membersLoading || seasonLoading || mostRecentSeasonLoading || prevSeasonLoading || teamsLoading;
 
   // Combined error state
   const error = useMemo(() => {
@@ -111,8 +122,9 @@ export function useTeamManagement(
     if (leagueVenuesError) return leagueVenuesError.message || 'Failed to load league venues';
     if (membersError) return membersError.message || 'Failed to load members';
     if (seasonError) return seasonError.message || 'Failed to load season';
+    if (mostRecentSeasonError) return mostRecentSeasonError.message || 'Failed to load season';
     return null;
-  }, [leagueError, venuesError, leagueVenuesError, membersError, seasonError]);
+  }, [leagueError, venuesError, leagueVenuesError, membersError, seasonError, mostRecentSeasonError]);
 
   // ============================================================================
   // DATA FETCHING (for data not yet in TanStack Query)
@@ -137,12 +149,6 @@ export function useTeamManagement(
         if (teamsError) throw teamsError;
         setTeams(teamsData || []);
 
-        console.log('📊 Team Management Data:', {
-          leagueId,
-          teams: teamsData?.length || 0,
-          seasonId: activeSeasonData?.id || 'No active season',
-          previousSeasonId: previousSeasonData?.id || null,
-        });
       } catch (err) {
         console.error('Error fetching teams:', err);
       } finally {
@@ -151,7 +157,7 @@ export function useTeamManagement(
     };
 
     fetchTeams();
-  }, [leagueId, activeSeasonData, previousSeasonData]);
+  }, [leagueId, mostRecentSeasonData, previousSeasonData]);
 
   // Sync leagueVenues state with TanStack Query data
   // TODO: Remove this - component should use TanStack Query mutations
