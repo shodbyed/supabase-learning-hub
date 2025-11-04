@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-03 (Dialog extraction complete)
+> **Last Updated**: 2025-11-04 (AlertDialog component added)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -57,6 +57,7 @@
 | `CUSTOM_5MAN_HANDICAP_SYSTEM.md` | Custom 5-man handicap system | Reference |
 | `OPTIMIZATION_SUMMARY.md` | Performance optimization notes | Active |
 | `TODO-CAPITALIZE-INPUT.md` | Capitalize input component todo | Active |
+| `TODO-REPLACE-ALERTS.md` | TODO: Replace window.alert/confirm with custom dialogs | Active |
 
 ### Build & Package Files
 
@@ -511,7 +512,8 @@ Reusable wizard/form step components
 > These should be categorized or moved to feature directories
 
 - `AllPlayersRosterCard.tsx` - All players roster
-- `ConfirmDialog.tsx` - Confirmation dialog
+- `AlertDialog.tsx` - Alert/info dialog with OK button (success/warning/error/info)
+- `ConfirmDialog.tsx` - Confirmation dialog with Cancel/Confirm buttons
 - `InfoButton.tsx` - Info button with tooltip
 - `MatchCard.tsx` - Match card ⚠️ **DUPLICATE**
 - `MemberCombobox.tsx` - Member selection combobox
