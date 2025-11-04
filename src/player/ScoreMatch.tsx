@@ -15,7 +15,7 @@
  * - Match end detection with winner announcement
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,16 +23,13 @@ import { Button } from '@/components/ui/button';
 import { useCurrentMember } from '@/api/hooks';
 import { getAllGames } from '@/utils/gameOrder';
 import type { Lineup } from '@/types/match';
-import {
-  getPlayerStats,
-  getTeamStats,
-  getCompletedGamesCount,
-  calculatePoints,
-} from '@/types/match';
+import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
+import { useMatchScoringMutations } from '@/hooks/useMatchScoringMutations';
 import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
+import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -136,8 +133,21 @@ export function ScoreMatch() {
    */
   const addToConfirmationQueue = addToConfirmationQueueFromHook;
 
+  // Use mutations hook for all database operations
+  const mutations = useMatchScoringMutations({
+    match,
+    gameResults,
+    homeLineup,
+    awayLineup,
+    userTeamId,
+    autoConfirm,
+    addToConfirmationQueue,
+    getPlayerDisplayName,
+  });
+
   /**
    * Handle player button click to score a game
+   * Delegates to mutations hook
    */
   const handlePlayerClick = (
     gameNumber: number,
@@ -145,295 +155,20 @@ export function ScoreMatch() {
     playerName: string,
     teamId: string
   ) => {
-    if (!match) return;
-
-    // Check if game already has a result
-    const existingGame = gameResults.get(gameNumber);
-
-    // If game has a winner and is waiting for opponent confirmation
-    if (
-      existingGame &&
-      existingGame.winner_player_id &&
-      (!existingGame.confirmed_by_home || !existingGame.confirmed_by_away)
-    ) {
-      // Determine if this is the opponent team
-      const isHomeTeam = userTeamId === match.home_team_id;
-      const needsMyConfirmation = isHomeTeam
-        ? !existingGame.confirmed_by_home
-        : !existingGame.confirmed_by_away;
-      const alreadyConfirmedByMe = isHomeTeam
-        ? existingGame.confirmed_by_home
-        : existingGame.confirmed_by_away;
-
-      if (needsMyConfirmation) {
-        // If auto-confirm is enabled, automatically confirm without showing modal
-        if (autoConfirm) {
-          confirmOpponentScore(gameNumber);
-          return;
-        }
-
-        // Add to confirmation queue (will show immediately or queue if modal is open)
-        addToConfirmationQueue({
-          gameNumber,
-          winnerPlayerName: getPlayerDisplayName(existingGame.winner_player_id),
-          breakAndRun: existingGame.break_and_run,
-          goldenBreak: existingGame.golden_break,
-        });
-        return;
-      }
-
-      if (alreadyConfirmedByMe) {
-        // This team already confirmed, waiting for opponent - don't allow re-clicking
-        console.log(
-          'You already confirmed this game. Waiting for opponent to confirm.'
-        );
-        return;
-      }
-    }
-
-    if (
-      existingGame &&
-      existingGame.confirmed_by_home &&
-      existingGame.confirmed_by_away
-    ) {
-      // Game already confirmed by both teams, don't allow changes
-      alert(
-        'This game has already been confirmed by both teams. Use the Edit button to change it.'
-      );
-      return;
-    }
-
-    // Open confirmation modal to score new game
-    setScoringGame({
+    mutations.handlePlayerClick(
       gameNumber,
-      winnerTeamId: teamId,
-      winnerPlayerId: playerId,
-      winnerPlayerName: playerName,
-    });
-    setBreakAndRun(false);
-    setGoldenBreak(false);
+      playerId,
+      playerName,
+      teamId,
+      (game) => {
+        setScoringGame(game);
+        setBreakAndRun(false);
+        setGoldenBreak(false);
+      },
+      (gameNumber) => mutations.confirmOpponentScore(gameNumber)
+    );
   };
 
-  /**
-   * Confirm opponent's score
-   */
-  const confirmOpponentScore = useCallback(async (
-    gameNumber: number,
-    isVacateRequest?: boolean
-  ) => {
-    if (!match) return;
-
-    const existingGame = gameResults.get(gameNumber);
-    if (!existingGame) return;
-
-    try {
-      const isHomeTeam = userTeamId === match.home_team_id;
-
-      if (isVacateRequest) {
-        // For vacate requests, clear the game entirely (accept the vacate)
-        const { error } = await supabase
-          .from('match_games')
-          .update({
-            winner_team_id: null,
-            winner_player_id: null,
-            break_and_run: false,
-            golden_break: false,
-            confirmed_by_home: false,
-            confirmed_by_away: false,
-          })
-          .eq('id', existingGame.id);
-
-        if (error) throw error;
-      } else {
-        // Normal score confirmation - only update OUR confirmation, don't touch opponent's
-        const updateData = isHomeTeam
-          ? { confirmed_by_home: true }
-          : { confirmed_by_away: true };
-
-        const { error } = await supabase
-          .from('match_games')
-          .update(updateData)
-          .eq('id', existingGame.id);
-
-        if (error) throw error;
-      }
-
-      // Note: Real-time subscription will automatically refresh game results
-    } catch (err: any) {
-      console.error('Error confirming game:', err);
-      alert(`Failed to confirm game: ${err.message}`);
-    }
-  }, [match, userTeamId]);
-
-  // Real-time subscription is now handled by useMatchScoring hook
-
-  /**
-   * Deny opponent's score OR vacate request
-   */
-  const denyOpponentScore = async (
-    gameNumber: number,
-    isVacateRequest?: boolean
-  ) => {
-    if (!match) return;
-
-    const existingGame = gameResults.get(gameNumber);
-    if (!existingGame) return;
-
-    try {
-      if (isVacateRequest) {
-        // Deny vacate request: restore both confirmations to keep the winner locked
-        const { error } = await supabase
-          .from('match_games')
-          .update({
-            confirmed_by_home: true,
-            confirmed_by_away: true,
-          })
-          .eq('id', existingGame.id);
-
-        if (error) throw error;
-      } else {
-        // Deny normal score: reset the game back to unscored state
-        const { error } = await supabase
-          .from('match_games')
-          .update({
-            winner_team_id: null,
-            winner_player_id: null,
-            break_and_run: false,
-            golden_break: false,
-            confirmed_by_home: false,
-            confirmed_by_away: false,
-            confirmed_at: null,
-          })
-          .eq('id', existingGame.id);
-
-        if (error) throw error;
-      }
-
-      // Game results will be automatically refreshed by real-time subscription
-      console.log('Game denied and reset to unscored');
-    } catch (err: any) {
-      console.error('Error denying game:', err);
-      alert(`Failed to deny game: ${err.message}`);
-    }
-  };
-
-  /**
-   * Confirm game score and save to database
-   */
-  const handleConfirmScore = async () => {
-    if (!scoringGame || !match || !homeLineup || !awayLineup) return;
-
-    try {
-      // Determine if this is home or away team confirming (based on WHO is scoring, not who won)
-      const isHomeTeamScoring = userTeamId === match.home_team_id;
-
-      // Check for mutual exclusivity of B&R and golden break
-      if (breakAndRun && goldenBreak) {
-        alert('A game cannot have both Break & Run and Golden Break.');
-        return;
-      }
-
-      // Get game definition from game order
-      const gameDefinition = getAllGames().find(
-        (g) => g.gameNumber === scoringGame.gameNumber
-      );
-      if (!gameDefinition) {
-        alert('Invalid game number');
-        return;
-      }
-
-      // Get player IDs from lineups
-      const homePlayerId = homeLineup[
-        `player${gameDefinition.homePlayerPosition}_id` as keyof Lineup
-      ] as string;
-      const awayPlayerId = awayLineup[
-        `player${gameDefinition.awayPlayerPosition}_id` as keyof Lineup
-      ] as string;
-
-      // Prepare game data
-      const gameData = {
-        match_id: match.id,
-        game_number: scoringGame.gameNumber,
-        home_player_id: homePlayerId,
-        away_player_id: awayPlayerId,
-        home_action: gameDefinition.homeAction,
-        away_action: gameDefinition.awayAction,
-        winner_team_id: scoringGame.winnerTeamId,
-        winner_player_id: scoringGame.winnerPlayerId,
-        break_and_run: breakAndRun,
-        golden_break: goldenBreak,
-        confirmed_by_home: isHomeTeamScoring,
-        confirmed_by_away: !isHomeTeamScoring,
-      };
-
-      // Check if game already exists
-      const existingGame = gameResults.get(scoringGame.gameNumber);
-
-      console.log('Saving game score:', gameData);
-      console.log('Existing game:', existingGame);
-
-      if (existingGame) {
-        // Update existing game
-        const updateData = {
-          winner_team_id: gameData.winner_team_id,
-          winner_player_id: gameData.winner_player_id,
-          break_and_run: gameData.break_and_run,
-          golden_break: gameData.golden_break,
-          confirmed_by_home: isHomeTeamScoring
-            ? true
-            : existingGame.confirmed_by_home,
-          confirmed_by_away: !isHomeTeamScoring
-            ? true
-            : existingGame.confirmed_by_away,
-        };
-
-        console.log('Updating game with:', updateData);
-        console.log('Updating game ID:', existingGame.id);
-
-        const { data, error, count } = await supabase
-          .from('match_games')
-          .update(updateData)
-          .eq('id', existingGame.id)
-          .select();
-
-        console.log('Update result - data:', data);
-        console.log('Update result - count:', count);
-        console.log('Update result - error:', error);
-
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
-
-        if (!data || data.length === 0) {
-          console.error(
-            'No rows updated - possible RLS policy blocking update'
-          );
-          alert(
-            'Failed to update game. You may not have permission to score for this team.'
-          );
-          return;
-        }
-
-        console.log('Game updated successfully');
-      } else {
-        // Insert new game
-        const { error } = await supabase.from('match_games').insert(gameData);
-
-        if (error) throw error;
-      }
-
-      // Note: Real-time subscription will automatically refresh game results
-
-      // Close modal
-      setScoringGame(null);
-      setBreakAndRun(false);
-      setGoldenBreak(false);
-    } catch (err: any) {
-      console.error('Error saving game score:', err);
-      alert(`Failed to save game score: ${err.message}`);
-    }
-  };
 
   if (loading) {
     return (
@@ -478,271 +213,20 @@ export function ScoreMatch() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Scoreboard - Fixed at top */}
-      <div className="bg-white border-b shadow-sm flex-shrink-0">
-        <div className="px-4 py-2">
-          {/* Team selector buttons */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4">
-            <Button
-              variant={showingHomeTeam ? 'default' : 'outline'}
-              onClick={() => setShowingHomeTeam(true)}
-            >
-              {match.home_team?.team_name}
-            </Button>
-            <div className="text-sm text-gray-500 font-semibold px-2">vs</div>
-            <Button
-              variant={!showingHomeTeam ? 'default' : 'outline'}
-              onClick={() => setShowingHomeTeam(false)}
-            >
-              {match.away_team?.team_name}
-            </Button>
-          </div>
-
-          {/* Team scoreboard (shows one team at a time) */}
-          {showingHomeTeam ? (
-            <div className="space-y-2">
-              <div className="flex flex-col items-center mb-2">
-                <div className="text-center font-bold text-lg">HOME</div>
-                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={autoConfirm}
-                    onChange={(e) => setAutoConfirm(e.target.checked)}
-                    className="w-3 h-3"
-                  />
-                  Auto-confirm opponent scores
-                </label>
-              </div>
-              {/* Two-column layout: Player stats and match stats */}
-              <div className="grid grid-cols-[55%_45%] gap-2">
-                {/* Player stats table */}
-                <div className="border border-gray-300 rounded bg-blue-50">
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-xs font-semibold border-b border-gray-300 p-1">
-                    <div className="text-center">H/C</div>
-                    <div>Name</div>
-                    <div className="text-center">W</div>
-                    <div className="text-center">L</div>
-                  </div>
-                  {/* Team row */}
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
-                    <div className="text-center">{homeTeamHandicap}</div>
-                    <div className="truncate">Team</div>
-                    <div className="text-center">
-                      {getTeamStats(match.home_team_id, gameResults).wins}
-                    </div>
-                    <div className="text-center">
-                      {getTeamStats(match.home_team_id, gameResults).losses}
-                    </div>
-                  </div>
-                  {/* Player rows */}
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {homeLineup.player1_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(homeLineup.player1_id)}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player1_id
-                        ? getPlayerStats(homeLineup.player1_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player1_id
-                        ? getPlayerStats(homeLineup.player1_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {homeLineup.player2_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(homeLineup.player2_id)}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player2_id
-                        ? getPlayerStats(homeLineup.player2_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player2_id
-                        ? getPlayerStats(homeLineup.player2_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {homeLineup.player3_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(homeLineup.player3_id)}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player3_id
-                        ? getPlayerStats(homeLineup.player3_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {homeLineup.player3_id
-                        ? getPlayerStats(homeLineup.player3_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Match stats card */}
-                <div className="border border-gray-300 rounded p-2 bg-blue-50">
-                  <div className="flex justify-around text-xs mb-2">
-                    <div className="text-center">
-                      <div className="text-gray-500">To Win</div>
-                      <div className="font-semibold text-lg">
-                        {homeThresholds.games_to_win}
-                      </div>
-                    </div>
-                    {homeThresholds.games_to_tie !== null && (
-                      <div className="text-center">
-                        <div className="text-gray-500">To Tie</div>
-                        <div className="font-semibold text-lg">
-                          {homeThresholds.games_to_tie}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.home_team_id, gameResults).wins} /{' '}
-                    {homeThresholds.games_to_win}
-                  </div>
-                  <div className="text-center text-sm mt-2">
-                    Points -{' '}
-                    {calculatePoints(match.home_team_id, homeThresholds, gameResults)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex flex-col items-center mb-2">
-                <div className="text-center font-bold text-lg">AWAY</div>
-                <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={autoConfirm}
-                    onChange={(e) => setAutoConfirm(e.target.checked)}
-                    className="w-3 h-3"
-                  />
-                  Auto-confirm opponent scores
-                </label>
-              </div>
-              {/* Two-column layout: Player stats and match stats */}
-              <div className="grid grid-cols-[55%_45%] gap-2">
-                {/* Player stats table */}
-                <div className="border border-gray-300 rounded bg-orange-50">
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-xs font-semibold border-b border-gray-300 p-1">
-                    <div className="text-center">H/C</div>
-                    <div>Name</div>
-                    <div className="text-center">W</div>
-                    <div className="text-center">L</div>
-                  </div>
-                  {/* Team row */}
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
-                    <div className="text-center">0</div>
-                    <div className="truncate">Team</div>
-                    <div className="text-center">
-                      {getTeamStats(match.away_team_id, gameResults).wins}
-                    </div>
-                    <div className="text-center">
-                      {getTeamStats(match.away_team_id, gameResults).losses}
-                    </div>
-                  </div>
-                  {/* Player rows */}
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {awayLineup.player1_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(awayLineup.player1_id)}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player1_id
-                        ? getPlayerStats(awayLineup.player1_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player1_id
-                        ? getPlayerStats(awayLineup.player1_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {awayLineup.player2_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(awayLineup.player2_id)}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player2_id
-                        ? getPlayerStats(awayLineup.player2_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player2_id
-                        ? getPlayerStats(awayLineup.player2_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1">
-                    <div className="text-center">
-                      {awayLineup.player3_handicap}
-                    </div>
-                    <div className="truncate">
-                      {getPlayerDisplayName(awayLineup.player3_id)}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player3_id
-                        ? getPlayerStats(awayLineup.player3_id, gameResults).wins
-                        : 0}
-                    </div>
-                    <div className="text-center">
-                      {awayLineup.player3_id
-                        ? getPlayerStats(awayLineup.player3_id, gameResults).losses
-                        : 0}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Match stats card */}
-                <div className="border border-gray-300 rounded p-2 bg-orange-50">
-                  <div className="flex justify-around text-xs mb-2">
-                    <div className="text-center">
-                      <div className="text-gray-500">To Win</div>
-                      <div className="font-semibold text-lg">
-                        {awayThresholds.games_to_win}
-                      </div>
-                    </div>
-                    {awayThresholds.games_to_tie !== null && (
-                      <div className="text-center">
-                        <div className="text-gray-500">To Tie</div>
-                        <div className="font-semibold text-lg">
-                          {awayThresholds.games_to_tie}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.away_team_id, gameResults).wins} /{' '}
-                    {awayThresholds.games_to_win}
-                  </div>
-                  <div className="text-center text-sm mt-2">
-                    Points -{' '}
-                    {calculatePoints(match.away_team_id, awayThresholds, gameResults)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <MatchScoreboard
+        match={match}
+        homeLineup={homeLineup}
+        awayLineup={awayLineup}
+        gameResults={gameResults}
+        homeTeamHandicap={homeTeamHandicap}
+        homeThresholds={homeThresholds}
+        awayThresholds={awayThresholds}
+        showingHomeTeam={showingHomeTeam}
+        onToggleTeam={setShowingHomeTeam}
+        autoConfirm={autoConfirm}
+        onAutoConfirmChange={setAutoConfirm}
+        getPlayerDisplayName={getPlayerDisplayName}
+      />
 
       {/* Game list section */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -988,7 +472,20 @@ export function ScoreMatch() {
           setBreakAndRun(false);
           setGoldenBreak(false);
         }}
-        onConfirm={handleConfirmScore}
+        onConfirm={() => {
+          if (scoringGame) {
+            mutations.handleConfirmScore(
+              scoringGame,
+              breakAndRun,
+              goldenBreak,
+              () => {
+                setScoringGame(null);
+                setBreakAndRun(false);
+                setGoldenBreak(false);
+              }
+            );
+          }
+        }}
       />
 
       {/* Opponent Confirmation Modal */}
@@ -997,10 +494,10 @@ export function ScoreMatch() {
         game={confirmationGame}
         gameType={gameType}
         onConfirm={(gameNumber, isResetRequest) => {
-          confirmOpponentScore(gameNumber, isResetRequest);
+          mutations.confirmOpponentScore(gameNumber, isResetRequest);
         }}
         onDeny={(gameNumber, isResetRequest) => {
-          denyOpponentScore(gameNumber, isResetRequest);
+          mutations.denyOpponentScore(gameNumber, isResetRequest);
         }}
         onClose={() => setConfirmationGame(null)}
       />

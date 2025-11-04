@@ -455,6 +455,7 @@ Reusable wizard/form step components
 #### Scoring Components (`/components/scoring/`)
 - `ScoreboardCard.tsx` - Scoreboard display
 - `GamesList.tsx` - Games list
+- `MatchScoreboard.tsx` - Swipeable match scoreboard with team/player stats (extracted from ScoreMatch)
 - `ScoringDialog.tsx` - Game winner selection with B&R and Golden Break (extracted from ScoreMatch)
 - `ConfirmationDialog.tsx` - Opponent score confirmation and vacate requests (extracted from ScoreMatch)
 - `EditGameDialog.tsx` - Vacate winner request dialog (extracted from ScoreMatch)
@@ -549,7 +550,8 @@ Reusable wizard/form step components
 #### Team & Match Management
 - `useTeamManagement.ts` - Team management
 - `useMatchLineup.ts` - Match lineup editor
-- `useMatchScoring.ts` - Match scoring state
+- `useMatchScoring.ts` - Match scoring state (data fetching)
+- `useMatchScoringMutations.ts` - Match scoring mutations (database operations)
 - `useRosterEditor.ts` - Roster editing
 
 #### Form & Validation
