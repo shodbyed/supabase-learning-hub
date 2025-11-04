@@ -33,7 +33,7 @@ export type {
 // Match and Scoring types
 export type {
   MatchType,
-  Match,
+  MatchBasic,
   MatchWithLeagueSettings,
   Lineup,
   Player,

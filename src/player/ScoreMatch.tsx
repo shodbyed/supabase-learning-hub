@@ -15,114 +15,56 @@
  * - Match end detection with winner announcement
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { useCurrentMember } from '@/api/hooks';
-import {
-  calculateTeamHandicap,
-  type HandicapVariant,
-} from '@/utils/handicapCalculations';
 import { getAllGames } from '@/utils/gameOrder';
-
-interface Match {
-  id: string;
-  season_id: string;
-  home_team_id: string;
-  away_team_id: string;
-  home_team: {
-    id: string;
-    team_name: string;
-  } | null;
-  away_team: {
-    id: string;
-    team_name: string;
-  } | null;
-}
-
-interface Lineup {
-  id: string;
-  team_id: string;
-  player1_id: string | null;
-  player1_handicap: number;
-  player2_id: string | null;
-  player2_handicap: number;
-  player3_id: string | null;
-  player3_handicap: number;
-  locked: boolean;
-}
-
-interface Player {
-  id: string;
-  first_name: string;
-  last_name: string;
-  nickname: string | null;
-}
-
-interface HandicapThresholds {
-  games_to_win: number;
-  games_to_tie: number | null;
-  games_to_lose: number;
-}
-
-interface MatchGame {
-  id: string;
-  game_number: number;
-  home_player_id: string | null;
-  away_player_id: string | null;
-  winner_team_id: string | null;
-  winner_player_id: string | null;
-  home_action: 'breaks' | 'racks';
-  away_action: 'breaks' | 'racks';
-  break_and_run: boolean;
-  golden_break: boolean;
-  confirmed_by_home: boolean;
-  confirmed_by_away: boolean;
-}
+import type { Lineup } from '@/types/match';
+import {
+  getPlayerStats,
+  getTeamStats,
+  getCompletedGamesCount,
+  calculatePoints,
+} from '@/types/match';
+import { useMatchScoring } from '@/hooks/useMatchScoring';
+import { ScoringDialog } from '@/components/scoring/ScoringDialog';
+import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
+import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { data: member, isLoading: memberLoading } = useCurrentMember();
+  const { data: member } = useCurrentMember();
   const memberId = member?.id;
 
-  const [match, setMatch] = useState<Match | null>(null);
-  const [homeLineup, setHomeLineup] = useState<Lineup | null>(null);
-  const [awayLineup, setAwayLineup] = useState<Lineup | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // League variants (will be used for B&R/8BB checkboxes)
-  const [goldenBreakCountsAsWin, setGoldenBreakCountsAsWin] = useState(false);
-  const [gameType, setGameType] = useState<string>('8-ball'); // 8-ball, 9-ball, 10-ball, etc.
-  void goldenBreakCountsAsWin; // Will be used in scoring UI
-
-  // Team handicap calculations
-  const [homeTeamHandicap, setHomeTeamHandicap] = useState(0);
-
-  // Handicap thresholds from lookup table
-  const [homeThresholds, setHomeThresholds] =
-    useState<HandicapThresholds | null>(null);
-  const [awayThresholds, setAwayThresholds] =
-    useState<HandicapThresholds | null>(null);
-
-  // Player data (for display names)
-  const [players, setPlayers] = useState<Map<string, Player>>(new Map());
-
-  // Game results
-  const [gameResults, setGameResults] = useState<Map<number, MatchGame>>(
-    new Map()
-  );
+  // Use central scoring hook (replaces all manual data fetching)
+  const {
+    match,
+    homeLineup,
+    awayLineup,
+    gameResults,
+    homeTeamHandicap,
+    homeThresholds,
+    awayThresholds,
+    userTeamId,
+    isHomeTeam,
+    goldenBreakCountsAsWin,
+    gameType,
+    getPlayerDisplayName: getPlayerDisplayNameFromHook,
+    confirmationQueue,
+    addToConfirmationQueue: addToConfirmationQueueFromHook,
+    removeFromConfirmationQueue,
+    myVacateRequests,
+    loading,
+    error,
+  } = useMatchScoring({
+    matchId,
+    memberId,
+    matchType: '3v3',
+  });
 
   // Scoring modal state
   const [scoringGame, setScoringGame] = useState<{
@@ -143,26 +85,11 @@ export function ScoreMatch() {
     isResetRequest?: boolean; // True if this is a request to reset the game
   } | null>(null);
 
-  // Queue for pending confirmations (when multiple games need confirmation)
-  const [confirmationQueue, setConfirmationQueue] = useState<
-    Array<{
-      gameNumber: number;
-      winnerPlayerName: string;
-      breakAndRun: boolean;
-      goldenBreak: boolean;
-      isResetRequest?: boolean;
-    }>
-  >([]);
-
   // Edit game modal state
   const [editingGame, setEditingGame] = useState<{
     gameNumber: number;
     currentWinnerName: string;
   } | null>(null);
-
-  // Track which games I just vacated (to suppress my own confirmation modal)
-  // Using useRef instead of useState to avoid stale closure issues in real-time subscription
-  const myVacateRequests = useRef<Set<number>>(new Set());
 
   // Scoreboard view toggle (true = home team, false = away team)
   const [showingHomeTeam, setShowingHomeTeam] = useState(true);
@@ -185,700 +112,29 @@ export function ScoreMatch() {
       // This prevents the grey screen overlay issue
       setTimeout(() => {
         setConfirmationGame(nextConfirmation);
-        setConfirmationQueue((prev) => prev.slice(1)); // Remove first item from queue
+        removeFromConfirmationQueue(); // Remove first item from queue
       }, 1000);
     }
-  }, [confirmationGame, confirmationQueue]); // Watch both - but queue updates won't replace modal
+  }, [confirmationGame, confirmationQueue, removeFromConfirmationQueue]); // Watch both - but queue updates won't replace modal
 
-  // Determine user's team (will be used for permissions and UI)
-  const [userTeamId, setUserTeamId] = useState<string | null>(null);
-  const [isHomeTeam, setIsHomeTeam] = useState<boolean | null>(null);
-  void userTeamId; // Will be used for scoring permissions
-  void isHomeTeam; // Will be used for UI display
-
+  // Set showing home team based on user's team (from hook)
   useEffect(() => {
-    async function fetchMatchData() {
-      if (memberLoading) return;
-
-      if (!matchId || !memberId) {
-        setError('Missing match or member information');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Fetch match details with league variants
-        const { data: matchData, error: matchError } = await supabase
-          .from('matches')
-          .select(
-            `
-            id,
-            season_id,
-            home_team_id,
-            away_team_id,
-            home_team:teams!matches_home_team_id_fkey(id, team_name),
-            away_team:teams!matches_away_team_id_fkey(id, team_name),
-            season:seasons!matches_season_id_fkey(
-              league:leagues(
-                handicap_variant,
-                team_handicap_variant,
-                golden_break_counts_as_win,
-                game_type
-              )
-            )
-          `
-          )
-          .eq('id', matchId)
-          .single();
-
-        if (matchError) throw matchError;
-
-        console.log('Match data received:', matchData);
-
-        // Extract league variants
-        const seasonData = Array.isArray(matchData.season)
-          ? matchData.season[0]
-          : matchData.season;
-        const leagueData =
-          seasonData && Array.isArray((seasonData as any).league)
-            ? (seasonData as any).league[0]
-            : (seasonData as any)?.league;
-
-        const playerVariant = (leagueData?.handicap_variant ||
-          'standard') as HandicapVariant;
-        const teamVariant = (leagueData?.team_handicap_variant ||
-          'standard') as HandicapVariant;
-        const goldenBreakSetting =
-          leagueData?.golden_break_counts_as_win ?? false;
-        const gameTypeSetting = leagueData?.game_type || '8-ball';
-
-        setGoldenBreakCountsAsWin(goldenBreakSetting);
-        setGameType(gameTypeSetting);
-        console.log('League variants:', {
-          playerVariant,
-          teamVariant,
-          goldenBreakSetting,
-          gameTypeSetting,
-        });
-
-        // Transform match data
-        const homeTeam = Array.isArray(matchData.home_team)
-          ? matchData.home_team[0]
-          : matchData.home_team;
-        const awayTeam = Array.isArray(matchData.away_team)
-          ? matchData.away_team[0]
-          : matchData.away_team;
-
-        const transformedMatch: Match = {
-          id: matchData.id,
-          season_id: matchData.season_id,
-          home_team_id: matchData.home_team_id,
-          away_team_id: matchData.away_team_id,
-          home_team: (homeTeam as any) || null,
-          away_team: (awayTeam as any) || null,
-        };
-
-        setMatch(transformedMatch);
-
-        // Calculate team handicap (only for home team)
-        const calculatedTeamHandicap = await calculateTeamHandicap(
-          matchData.home_team_id,
-          matchData.away_team_id,
-          matchData.season_id,
-          teamVariant,
-          true // useRandom = true for testing
-        );
-        setHomeTeamHandicap(calculatedTeamHandicap);
-
-        // Determine which team the user is on
-        const { data: teamPlayerData, error: teamPlayerError } = await supabase
-          .from('team_players')
-          .select('team_id')
-          .eq('member_id', memberId)
-          .or(
-            `team_id.eq.${matchData.home_team_id},team_id.eq.${matchData.away_team_id}`
-          )
-          .single();
-
-        if (teamPlayerError)
-          throw new Error('You are not on either team in this match');
-
-        const userTeam = teamPlayerData.team_id;
-        const isHome = userTeam === matchData.home_team_id;
-        setUserTeamId(userTeam);
-        setIsHomeTeam(isHome);
-        setShowingHomeTeam(isHome); // Start by showing user's own team
-
-        // Fetch lineups for both teams
-        const { data: lineupsData, error: lineupsError } = await supabase
-          .from('match_lineups')
-          .select('*')
-          .eq('match_id', matchId)
-          .in('team_id', [matchData.home_team_id, matchData.away_team_id]);
-
-        if (lineupsError) throw lineupsError;
-
-        console.log('Lineups data received:', lineupsData);
-
-        // Separate home and away lineups
-        const homeLineupData = lineupsData?.find(
-          (l) => l.team_id === matchData.home_team_id
-        );
-        const awayLineupData = lineupsData?.find(
-          (l) => l.team_id === matchData.away_team_id
-        );
-
-        if (!homeLineupData || !awayLineupData) {
-          throw new Error(
-            'Both team lineups must be locked before scoring can begin'
-          );
-        }
-
-        if (!homeLineupData.locked || !awayLineupData.locked) {
-          throw new Error(
-            'Both team lineups must be locked before scoring can begin'
-          );
-        }
-
-        setHomeLineup(homeLineupData);
-        setAwayLineup(awayLineupData);
-
-        // Calculate player handicap totals
-        const homeTotal =
-          homeLineupData.player1_handicap +
-          homeLineupData.player2_handicap +
-          homeLineupData.player3_handicap;
-        const awayTotal =
-          awayLineupData.player1_handicap +
-          awayLineupData.player2_handicap +
-          awayLineupData.player3_handicap;
-
-        // Calculate handicap difference and lookup thresholds
-        const homeTotalHandicap = homeTotal + calculatedTeamHandicap;
-        const awayTotalHandicap = awayTotal;
-        const handicapDiff = homeTotalHandicap - awayTotalHandicap;
-
-        // Cap at ±12
-        const cappedHomeDiff = Math.max(-12, Math.min(12, handicapDiff));
-        const cappedAwayDiff = Math.max(-12, Math.min(12, -handicapDiff));
-
-        console.log('Handicap calculations:', {
-          homeTotal,
-          awayTotal,
-          teamHandicap: calculatedTeamHandicap,
-          homeTotalHandicap,
-          awayTotalHandicap,
-          handicapDiff,
-          cappedHomeDiff,
-          cappedAwayDiff,
-        });
-
-        // Lookup thresholds from handicap_chart_3vs3 table
-        const { data: homeThresholdData, error: homeThresholdError } =
-          await supabase
-            .from('handicap_chart_3vs3')
-            .select('*')
-            .eq('hcp_diff', cappedHomeDiff)
-            .single();
-
-        const { data: awayThresholdData, error: awayThresholdError } =
-          await supabase
-            .from('handicap_chart_3vs3')
-            .select('*')
-            .eq('hcp_diff', cappedAwayDiff)
-            .single();
-
-        if (homeThresholdError) throw homeThresholdError;
-        if (awayThresholdError) throw awayThresholdError;
-
-        setHomeThresholds(homeThresholdData);
-        setAwayThresholds(awayThresholdData);
-
-        console.log('Thresholds:', {
-          home: homeThresholdData,
-          away: awayThresholdData,
-        });
-
-        // Fetch all player names for display
-        const allPlayerIds = [
-          homeLineupData.player1_id,
-          homeLineupData.player2_id,
-          homeLineupData.player3_id,
-          awayLineupData.player1_id,
-          awayLineupData.player2_id,
-          awayLineupData.player3_id,
-        ].filter(Boolean);
-
-        const { data: playersData, error: playersError } = await supabase
-          .from('members')
-          .select('id, first_name, last_name, nickname')
-          .in('id', allPlayerIds);
-
-        if (playersError) throw playersError;
-
-        // Create player lookup map
-        const playerMap = new Map<string, Player>();
-        playersData?.forEach((p) => {
-          playerMap.set(p.id, p);
-        });
-        setPlayers(playerMap);
-
-        console.log('Players loaded:', playerMap);
-
-        // Fetch existing game results
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('match_games')
-          .select('*')
-          .eq('match_id', matchId);
-
-        if (gamesError) throw gamesError;
-
-        // Create game results map
-        const gamesMap = new Map<number, MatchGame>();
-        gamesData?.forEach((game) => {
-          gamesMap.set(game.game_number, game as MatchGame);
-        });
-        setGameResults(gamesMap);
-
-        console.log('Game results loaded:', gamesMap);
-
-        // If no games exist yet, create all 18 placeholder games
-        if (gamesData.length === 0) {
-          console.log('No games found, creating placeholders for all 18 games');
-          const gamesToInsert = getAllGames().map((game) => {
-            const homePlayerId = homeLineupData[
-              `player${game.homePlayerPosition}_id` as keyof typeof homeLineupData
-            ] as string;
-            const awayPlayerId = awayLineupData[
-              `player${game.awayPlayerPosition}_id` as keyof typeof awayLineupData
-            ] as string;
-
-            return {
-              match_id: matchId,
-              game_number: game.gameNumber,
-              home_player_id: homePlayerId,
-              away_player_id: awayPlayerId,
-              home_action: game.homeAction,
-              away_action: game.awayAction,
-              winner_team_id: null,
-              winner_player_id: null,
-              break_and_run: false,
-              golden_break: false,
-              confirmed_by_home: false,
-              confirmed_by_away: false,
-              is_tiebreaker: false,
-            };
-          });
-
-          const { error: insertError } = await supabase
-            .from('match_games')
-            .insert(gamesToInsert);
-
-          if (insertError) {
-            console.error('Error creating placeholder games:', insertError);
-          } else {
-            console.log('Successfully created 18 placeholder games');
-
-            // Fetch the newly created games
-            const { data: newGamesData } = await supabase
-              .from('match_games')
-              .select('*')
-              .eq('match_id', matchId);
-
-            const newGamesMap = new Map<number, MatchGame>();
-            newGamesData?.forEach((game) => {
-              newGamesMap.set(game.game_number, game as MatchGame);
-            });
-            setGameResults(newGamesMap);
-          }
-        }
-      } catch (err: any) {
-        console.error('Error fetching match data:', err);
-        setError(err.message || 'Failed to load match information');
-      } finally {
-        setLoading(false);
-      }
+    if (isHomeTeam !== null) {
+      setShowingHomeTeam(isHomeTeam);
     }
+  }, [isHomeTeam]);
 
-    fetchMatchData();
-  }, [matchId, memberId, memberLoading]);
-
-  /**
-   * Real-time subscription to match_games table
-   * Listens for INSERT/UPDATE/DELETE events and refreshes game results
-   * This enables both teams to see opponent's score selections immediately
-   */
-  useEffect(() => {
-    if (!matchId) return;
-
-    console.log('Setting up real-time subscription for match:', matchId);
-
-    const channel = supabase
-      .channel(`match_games_${matchId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'match_games',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          console.log('Real-time game update received:', payload);
-
-          // Fetch updated game results
-          async function refreshGames() {
-            const { data: gamesData } = await supabase
-              .from('match_games')
-              .select('*')
-              .eq('match_id', matchId);
-
-            if (gamesData) {
-              const gamesMap = new Map<number, MatchGame>();
-              gamesData.forEach((game) => {
-                gamesMap.set(game.game_number, game as MatchGame);
-              });
-              setGameResults(gamesMap);
-              console.log('Game results refreshed from real-time update');
-
-              // Check if this update requires my confirmation
-              if (payload.eventType === 'UPDATE' && payload.new) {
-                const updatedGame = payload.new as MatchGame;
-
-                console.log(
-                  'Checking if confirmation needed for game',
-                  updatedGame.game_number
-                );
-                console.log('userTeamId:', userTeamId);
-                console.log('match:', match);
-                console.log(
-                  'updatedGame.winner_player_id:',
-                  updatedGame.winner_player_id
-                );
-                console.log(
-                  'updatedGame.confirmed_by_home:',
-                  updatedGame.confirmed_by_home
-                );
-                console.log(
-                  'updatedGame.confirmed_by_away:',
-                  updatedGame.confirmed_by_away
-                );
-
-                // Detect if this is a vacate request:
-                // Unique state: winner exists BUT both confirmations are false
-                const isVacateRequest =
-                  updatedGame.winner_player_id &&
-                  !updatedGame.confirmed_by_home &&
-                  !updatedGame.confirmed_by_away;
-
-                // If game has a winner and is waiting for confirmation
-                if (
-                  updatedGame.winner_player_id &&
-                  (!updatedGame.confirmed_by_home ||
-                    !updatedGame.confirmed_by_away)
-                ) {
-                  // Get match data from state (closure issue - match might be stale)
-                  if (!match || !userTeamId) {
-                    console.log(
-                      'Match or userTeamId not available yet, skipping auto-modal'
-                    );
-                    return;
-                  }
-
-                  console.log('isVacateRequest:', isVacateRequest);
-                  console.log(
-                    'myVacateRequests set:',
-                    Array.from(myVacateRequests.current)
-                  );
-                  console.log('Game number:', updatedGame.game_number);
-
-                  // For vacate requests, check if this was initiated by me
-                  if (isVacateRequest) {
-                    // Check if the editingGame modal is currently open for this game
-                    // If so, this is MY action, not the opponent's
-                    if (
-                      editingGame &&
-                      editingGame.gameNumber === updatedGame.game_number
-                    ) {
-                      console.log(
-                        'I am currently editing this game, suppressing my own confirmation modal'
-                      );
-                      return;
-                    }
-
-                    // Check if I initiated this vacate request
-                    if (myVacateRequests.current.has(updatedGame.game_number)) {
-                      console.log(
-                        'I initiated this vacate request, suppressing my own confirmation modal'
-                      );
-                      // Remove from set after seeing it once
-                      myVacateRequests.current.delete(updatedGame.game_number);
-                      return;
-                    }
-
-                    // This is from opponent - show the confirmation modal
-                    console.log(
-                      'Opponent vacate request detected. Showing confirmation modal.'
-                    );
-                    const winnerPlayer = gamesData.find(
-                      (g) => g.game_number === updatedGame.game_number
-                    );
-                    if (winnerPlayer && winnerPlayer.winner_player_id) {
-                      const winnerName = getPlayerDisplayName(
-                        winnerPlayer.winner_player_id
-                      );
-                      console.log(
-                        'Adding VACATE confirmation to queue for game',
-                        updatedGame.game_number,
-                        'winner:',
-                        winnerName
-                      );
-                      addToConfirmationQueue({
-                        gameNumber: updatedGame.game_number,
-                        winnerPlayerName: winnerName,
-                        breakAndRun: updatedGame.break_and_run,
-                        goldenBreak: updatedGame.golden_break,
-                        isResetRequest: true,
-                      });
-                    }
-                    return;
-                  }
-
-                  // Normal score confirmation flow
-                  const isHomeTeam = userTeamId === match.home_team_id;
-                  const needsMyConfirmation = isHomeTeam
-                    ? !updatedGame.confirmed_by_home
-                    : !updatedGame.confirmed_by_away;
-
-                  console.log('isHomeTeam:', isHomeTeam);
-                  console.log('needsMyConfirmation:', needsMyConfirmation);
-
-                  if (needsMyConfirmation) {
-                    // If auto-confirm is enabled, automatically confirm without showing modal
-                    if (autoConfirm) {
-                      console.log(
-                        'Auto-confirming game',
-                        updatedGame.game_number
-                      );
-                      confirmOpponentScore(updatedGame.game_number);
-                      return;
-                    }
-
-                    // Auto-open confirmation modal (or add to queue)
-                    const winnerPlayer = gamesData.find(
-                      (g) => g.game_number === updatedGame.game_number
-                    );
-                    if (winnerPlayer && winnerPlayer.winner_player_id) {
-                      const winnerName = getPlayerDisplayName(
-                        winnerPlayer.winner_player_id
-                      );
-                      console.log(
-                        'Adding confirmation to queue for game',
-                        updatedGame.game_number,
-                        'winner:',
-                        winnerName
-                      );
-                      addToConfirmationQueue({
-                        gameNumber: updatedGame.game_number,
-                        winnerPlayerName: winnerName,
-                        breakAndRun: updatedGame.break_and_run,
-                        goldenBreak: updatedGame.golden_break,
-                      });
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          refreshGames();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-      });
-
-    // Cleanup subscription on unmount
-    return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [matchId, match, userTeamId, players, autoConfirm]);
 
   /**
-   * Get display name for a player (nickname or first name, max 12 chars)
-   * Special handling for substitute player IDs - shows their nicknames from database
+   * Get display name for a player (nickname or first name)
+   * Uses function from useMatchScoring hook
    */
-  const getPlayerDisplayName = (playerId: string | null): string => {
-    if (!playerId) return 'Unknown';
-
-    // For substitute IDs, get their names from the players map (they're in the database)
-    const player = players.get(playerId);
-    if (!player) return 'Unknown';
-    return player.nickname || player.first_name;
-  };
+  const getPlayerDisplayName = getPlayerDisplayNameFromHook;
 
   /**
-   * Calculate player wins/losses from game results
+   * Add to confirmation queue (from useMatchScoring hook)
    */
-  const getPlayerStats = (playerId: string) => {
-    let wins = 0;
-    let losses = 0;
-
-    gameResults.forEach((game) => {
-      // Only count confirmed games
-      if (!game.confirmed_by_home || !game.confirmed_by_away) return;
-
-      // Check if this player was in the game
-      const wasInGame =
-        game.home_player_id === playerId || game.away_player_id === playerId;
-      if (!wasInGame) return;
-
-      // Count win or loss
-      if (game.winner_player_id === playerId) {
-        wins++;
-      } else if (game.winner_player_id) {
-        // Game has a winner and it's not this player
-        losses++;
-      }
-    });
-
-    return { wins, losses };
-  };
-
-  /**
-   * Calculate team wins/losses from game results
-   */
-  const getTeamStats = (teamId: string) => {
-    let wins = 0;
-    let losses = 0;
-
-    gameResults.forEach((game) => {
-      // Only count confirmed games
-      if (!game.confirmed_by_home || !game.confirmed_by_away) return;
-
-      if (game.winner_team_id === teamId) {
-        wins++;
-      } else if (game.winner_team_id) {
-        // Game has a winner and it's not this team
-        losses++;
-      }
-    });
-
-    return { wins, losses };
-  };
-
-  /**
-   * Count completed games (confirmed by both teams)
-   */
-  const getCompletedGamesCount = () => {
-    let count = 0;
-    gameResults.forEach((game) => {
-      if (game.confirmed_by_home && game.confirmed_by_away) {
-        count++;
-      }
-    });
-    return count;
-  };
-
-  /**
-   * Calculate current points for a team
-   * Formula: games_won - (games_to_tie ?? games_to_win)
-   */
-  const calculatePoints = (
-    teamId: string,
-    thresholds: HandicapThresholds | null
-  ) => {
-    if (!thresholds) return 0;
-    const { wins } = getTeamStats(teamId);
-    const baseline = thresholds.games_to_tie ?? thresholds.games_to_win;
-    return wins - baseline;
-  };
-
-  /**
-   * Add a confirmation to the queue
-   * The useEffect will automatically show it when the modal is ready
-   * Prevents duplicates by checking if game is already in queue or currently showing
-   */
-  const addToConfirmationQueue = (confirmation: {
-    gameNumber: number;
-    winnerPlayerName: string;
-    breakAndRun: boolean;
-    goldenBreak: boolean;
-    isResetRequest?: boolean;
-  }) => {
-    console.log(
-      'addToConfirmationQueue called for game',
-      confirmation.gameNumber,
-      'isResetRequest:',
-      confirmation.isResetRequest
-    );
-    console.log(
-      'Current myVacateRequests set:',
-      Array.from(myVacateRequests.current)
-    );
-
-    // If this is a vacate request and I initiated it, don't add to queue
-    if (
-      confirmation.isResetRequest &&
-      myVacateRequests.current.has(confirmation.gameNumber)
-    ) {
-      console.log(
-        '✓ Skipping queue add - I initiated this vacate request for game',
-        confirmation.gameNumber
-      );
-      return;
-    }
-
-    // Check if this game is already being shown in the modal
-    if (
-      confirmationGame &&
-      confirmationGame.gameNumber === confirmation.gameNumber
-    ) {
-      console.log(
-        'Game',
-        confirmation.gameNumber,
-        'is already in the confirmation modal, skipping'
-      );
-      return;
-    }
-
-    // Check if this game is already in the queue
-    const alreadyInQueue = confirmationQueue.some(
-      (item) => item.gameNumber === confirmation.gameNumber
-    );
-    if (alreadyInQueue) {
-      console.log(
-        'Game',
-        confirmation.gameNumber,
-        'is already in the queue, skipping'
-      );
-      return;
-    }
-
-    console.log(
-      'Adding game',
-      confirmation.gameNumber,
-      'to confirmation queue. Current queue length:',
-      confirmationQueue.length
-    );
-
-    // Always add to queue - the useEffect will handle showing it
-    setConfirmationQueue((prev) => {
-      // Double-check it's not in queue (race condition protection)
-      if (prev.some((item) => item.gameNumber === confirmation.gameNumber)) {
-        console.log(
-          'Game',
-          confirmation.gameNumber,
-          'already in queue during update, skipping'
-        );
-        return prev;
-      }
-      const newQueue = [...prev, confirmation];
-      console.log('Queue updated. New length:', newQueue.length);
-      return newQueue;
-    });
-  };
+  const addToConfirmationQueue = addToConfirmationQueueFromHook;
 
   /**
    * Handle player button click to score a game
@@ -961,7 +217,7 @@ export function ScoreMatch() {
   /**
    * Confirm opponent's score
    */
-  const confirmOpponentScore = async (
+  const confirmOpponentScore = useCallback(async (
     gameNumber: number,
     isVacateRequest?: boolean
   ) => {
@@ -1002,22 +258,14 @@ export function ScoreMatch() {
         if (error) throw error;
       }
 
-      // Refresh game results
-      const { data: gamesData } = await supabase
-        .from('match_games')
-        .select('*')
-        .eq('match_id', match.id);
-
-      const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach((game) => {
-        gamesMap.set(game.game_number, game as MatchGame);
-      });
-      setGameResults(gamesMap);
+      // Note: Real-time subscription will automatically refresh game results
     } catch (err: any) {
       console.error('Error confirming game:', err);
       alert(`Failed to confirm game: ${err.message}`);
     }
-  };
+  }, [match, userTeamId]);
+
+  // Real-time subscription is now handled by useMatchScoring hook
 
   /**
    * Deny opponent's score OR vacate request
@@ -1061,18 +309,7 @@ export function ScoreMatch() {
         if (error) throw error;
       }
 
-      // Refresh game results
-      const { data: gamesData } = await supabase
-        .from('match_games')
-        .select('*')
-        .eq('match_id', match.id);
-
-      const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach((game) => {
-        gamesMap.set(game.game_number, game as MatchGame);
-      });
-      setGameResults(gamesMap);
-
+      // Game results will be automatically refreshed by real-time subscription
       console.log('Game denied and reset to unscored');
     } catch (err: any) {
       console.error('Error denying game:', err);
@@ -1186,17 +423,7 @@ export function ScoreMatch() {
         if (error) throw error;
       }
 
-      // Refresh game results
-      const { data: gamesData } = await supabase
-        .from('match_games')
-        .select('*')
-        .eq('match_id', match.id);
-
-      const gamesMap = new Map<number, MatchGame>();
-      gamesData?.forEach((game) => {
-        gamesMap.set(game.game_number, game as MatchGame);
-      });
-      setGameResults(gamesMap);
+      // Note: Real-time subscription will automatically refresh game results
 
       // Close modal
       setScoringGame(null);
@@ -1300,10 +527,10 @@ export function ScoreMatch() {
                     <div className="text-center">{homeTeamHandicap}</div>
                     <div className="truncate">Team</div>
                     <div className="text-center">
-                      {getTeamStats(match.home_team_id).wins}
+                      {getTeamStats(match.home_team_id, gameResults).wins}
                     </div>
                     <div className="text-center">
-                      {getTeamStats(match.home_team_id).losses}
+                      {getTeamStats(match.home_team_id, gameResults).losses}
                     </div>
                   </div>
                   {/* Player rows */}
@@ -1316,12 +543,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {homeLineup.player1_id
-                        ? getPlayerStats(homeLineup.player1_id).wins
+                        ? getPlayerStats(homeLineup.player1_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {homeLineup.player1_id
-                        ? getPlayerStats(homeLineup.player1_id).losses
+                        ? getPlayerStats(homeLineup.player1_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1334,12 +561,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {homeLineup.player2_id
-                        ? getPlayerStats(homeLineup.player2_id).wins
+                        ? getPlayerStats(homeLineup.player2_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {homeLineup.player2_id
-                        ? getPlayerStats(homeLineup.player2_id).losses
+                        ? getPlayerStats(homeLineup.player2_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1352,12 +579,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {homeLineup.player3_id
-                        ? getPlayerStats(homeLineup.player3_id).wins
+                        ? getPlayerStats(homeLineup.player3_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {homeLineup.player3_id
-                        ? getPlayerStats(homeLineup.player3_id).losses
+                        ? getPlayerStats(homeLineup.player3_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1382,12 +609,12 @@ export function ScoreMatch() {
                     )}
                   </div>
                   <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.home_team_id).wins} /{' '}
+                    {getTeamStats(match.home_team_id, gameResults).wins} /{' '}
                     {homeThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
                     Points -{' '}
-                    {calculatePoints(match.home_team_id, homeThresholds)}
+                    {calculatePoints(match.home_team_id, homeThresholds, gameResults)}
                   </div>
                 </div>
               </div>
@@ -1421,10 +648,10 @@ export function ScoreMatch() {
                     <div className="text-center">0</div>
                     <div className="truncate">Team</div>
                     <div className="text-center">
-                      {getTeamStats(match.away_team_id).wins}
+                      {getTeamStats(match.away_team_id, gameResults).wins}
                     </div>
                     <div className="text-center">
-                      {getTeamStats(match.away_team_id).losses}
+                      {getTeamStats(match.away_team_id, gameResults).losses}
                     </div>
                   </div>
                   {/* Player rows */}
@@ -1437,12 +664,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {awayLineup.player1_id
-                        ? getPlayerStats(awayLineup.player1_id).wins
+                        ? getPlayerStats(awayLineup.player1_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {awayLineup.player1_id
-                        ? getPlayerStats(awayLineup.player1_id).losses
+                        ? getPlayerStats(awayLineup.player1_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1455,12 +682,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {awayLineup.player2_id
-                        ? getPlayerStats(awayLineup.player2_id).wins
+                        ? getPlayerStats(awayLineup.player2_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {awayLineup.player2_id
-                        ? getPlayerStats(awayLineup.player2_id).losses
+                        ? getPlayerStats(awayLineup.player2_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1473,12 +700,12 @@ export function ScoreMatch() {
                     </div>
                     <div className="text-center">
                       {awayLineup.player3_id
-                        ? getPlayerStats(awayLineup.player3_id).wins
+                        ? getPlayerStats(awayLineup.player3_id, gameResults).wins
                         : 0}
                     </div>
                     <div className="text-center">
                       {awayLineup.player3_id
-                        ? getPlayerStats(awayLineup.player3_id).losses
+                        ? getPlayerStats(awayLineup.player3_id, gameResults).losses
                         : 0}
                     </div>
                   </div>
@@ -1503,12 +730,12 @@ export function ScoreMatch() {
                     )}
                   </div>
                   <div className="text-center text-4xl font-bold mt-4">
-                    {getTeamStats(match.away_team_id).wins} /{' '}
+                    {getTeamStats(match.away_team_id, gameResults).wins} /{' '}
                     {awayThresholds.games_to_win}
                   </div>
                   <div className="text-center text-sm mt-2">
                     Points -{' '}
-                    {calculatePoints(match.away_team_id, awayThresholds)}
+                    {calculatePoints(match.away_team_id, awayThresholds, gameResults)}
                   </div>
                 </div>
               </div>
@@ -1523,7 +750,7 @@ export function ScoreMatch() {
         <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
           <div className="text-sm font-semibold mb-4">
             Games Complete -{' '}
-            <span className="text-lg">{getCompletedGamesCount()} / 18</span>
+            <span className="text-lg">{getCompletedGamesCount(gameResults)} / 18</span>
           </div>
           {/* Column headers */}
           <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
@@ -1741,284 +968,82 @@ export function ScoreMatch() {
       </div>
 
       {/* Win Confirmation Modal */}
-      <Dialog open={scoringGame !== null}>
-        <DialogContent
-          showCloseButton={false}
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>Select Game Winner</DialogTitle>
-            <DialogDescription>
-              Select any special achievements for this game.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="text-center">
-              <p className="text-sm text-gray-500">
-                Game {scoringGame?.gameNumber}
-              </p>
-              <p className="text-lg font-semibold mt-2">
-                Winner: {scoringGame?.winnerPlayerName}
-              </p>
-            </div>
-
-            {/* Break & Run Checkbox (always visible) */}
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="breakAndRun"
-                checked={breakAndRun}
-                onChange={(e) => {
-                  setBreakAndRun(e.target.checked);
-                  if (e.target.checked) setGoldenBreak(false); // Uncheck golden break if B&R is checked
-                }}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label
-                htmlFor="breakAndRun"
-                className="text-sm font-normal cursor-pointer"
-              >
-                Break & Run
-              </label>
-            </div>
-
-            {/* Golden Break Checkbox (only if league allows it) */}
-            {goldenBreakCountsAsWin && (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="goldenBreak"
-                  checked={goldenBreak}
-                  onChange={(e) => {
-                    setGoldenBreak(e.target.checked);
-                    if (e.target.checked) setBreakAndRun(false); // Uncheck B&R if golden break is checked
-                  }}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <label
-                  htmlFor="goldenBreak"
-                  className="text-sm font-normal cursor-pointer"
-                >
-                  {gameType === '8-ball' && '8 on the Break'}
-                  {gameType === '9-ball' && '9 on the Break'}
-                  {gameType === '10-ball' && '10 on the Break'}
-                  {!['8-ball', '9-ball', '10-ball'].includes(gameType) &&
-                    'Golden Break'}
-                </label>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setScoringGame(null);
-                setBreakAndRun(false);
-                setGoldenBreak(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmScore}>Confirm</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ScoringDialog
+        open={scoringGame !== null}
+        game={scoringGame}
+        breakAndRun={breakAndRun}
+        goldenBreak={goldenBreak}
+        goldenBreakCountsAsWin={goldenBreakCountsAsWin}
+        gameType={gameType}
+        onBreakAndRunChange={(checked) => {
+          setBreakAndRun(checked);
+          if (checked) setGoldenBreak(false);
+        }}
+        onGoldenBreakChange={(checked) => {
+          setGoldenBreak(checked);
+          if (checked) setBreakAndRun(false);
+        }}
+        onCancel={() => {
+          setScoringGame(null);
+          setBreakAndRun(false);
+          setGoldenBreak(false);
+        }}
+        onConfirm={handleConfirmScore}
+      />
 
       {/* Opponent Confirmation Modal */}
-      <Dialog open={confirmationGame !== null}>
-        <DialogContent
-          showCloseButton={false}
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            {confirmationGame?.isResetRequest ? (
-              <>
-                <DialogTitle className="text-orange-600">
-                  ⚠️ Confirm Vacate Winner
-                </DialogTitle>
-                <DialogDescription>
-                  Your opponent wants to vacate the winner and clear this game
-                  result.
-                </DialogDescription>
-              </>
-            ) : (
-              <>
-                <DialogTitle>Confirm Opponent's Score</DialogTitle>
-                <DialogDescription>
-                  Verify the game result submitted by your opponent.
-                </DialogDescription>
-              </>
-            )}
-          </DialogHeader>
-
-          <div className="py-4 space-y-4">
-            {confirmationGame?.isResetRequest ? (
-              <>
-                <p className="text-center text-gray-700 font-semibold">
-                  Game {confirmationGame?.gameNumber}
-                </p>
-                <div className="text-center text-lg font-semibold text-orange-600">
-                  Current winner: {confirmationGame.winnerPlayerName}
-                </div>
-                <div className="bg-orange-50 border border-orange-200 rounded p-3 mt-4">
-                  <p className="text-center text-sm text-gray-700">
-                    Agreeing will{' '}
-                    <span className="font-semibold">vacate this winner</span>{' '}
-                    and allow both teams to score this game again.
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="text-center text-gray-500 text-sm">
-                  Opponent recorded for game {confirmationGame?.gameNumber}:
-                </p>
-                {/* Dynamic result message based on what was selected */}
-                <div className="text-center text-lg font-semibold">
-                  {confirmationGame?.breakAndRun ? (
-                    <div className="text-blue-600">
-                      {confirmationGame.winnerPlayerName} had a Break & Run!
-                    </div>
-                  ) : confirmationGame?.goldenBreak ? (
-                    <div className="text-green-600">
-                      {confirmationGame.winnerPlayerName} had{' '}
-                      {gameType === '8-ball' && 'an 8 on the Break!'}
-                      {gameType === '9-ball' && 'a 9 on the Break!'}
-                      {gameType === '10-ball' && 'a 10 on the Break!'}
-                      {!['8-ball', '9-ball', '10-ball'].includes(gameType) &&
-                        'a Golden Break!'}
-                    </div>
-                  ) : (
-                    <div>{confirmationGame?.winnerPlayerName} won the game</div>
-                  )}
-                </div>
-                <p className="text-center mt-4 text-gray-600">
-                  Do you agree with this result?
-                </p>
-              </>
-            )}
-          </div>
-
-          <DialogFooter className="flex flex-row justify-around gap-4">
-            <Button
-              className="flex-1"
-              onClick={() => {
-                if (confirmationGame) {
-                  confirmOpponentScore(
-                    confirmationGame.gameNumber,
-                    confirmationGame.isResetRequest
-                  );
-                  setConfirmationGame(null);
-                }
-              }}
-            >
-              {confirmationGame?.isResetRequest
-                ? 'Agree - Vacate Winner'
-                : 'Confirm'}
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                if (confirmationGame) {
-                  denyOpponentScore(
-                    confirmationGame.gameNumber,
-                    confirmationGame.isResetRequest
-                  );
-                  setConfirmationGame(null);
-                }
-              }}
-            >
-              {confirmationGame?.isResetRequest ? 'Deny - Keep Winner' : 'Deny'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        open={confirmationGame !== null}
+        game={confirmationGame}
+        gameType={gameType}
+        onConfirm={(gameNumber, isResetRequest) => {
+          confirmOpponentScore(gameNumber, isResetRequest);
+        }}
+        onDeny={(gameNumber, isResetRequest) => {
+          denyOpponentScore(gameNumber, isResetRequest);
+        }}
+        onClose={() => setConfirmationGame(null)}
+      />
 
       {/* Vacate Winner Modal */}
-      <Dialog open={editingGame !== null}>
-        <DialogContent
-          showCloseButton={false}
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              Vacate Winner - Game {editingGame?.gameNumber}
-            </DialogTitle>
-            <DialogDescription>
-              Request to clear the result and allow both teams to score again.
-            </DialogDescription>
-          </DialogHeader>
+      <EditGameDialog
+        open={editingGame !== null}
+        game={editingGame ? {
+          gameNumber: editingGame.gameNumber,
+          winnerPlayerName: editingGame.currentWinnerName,
+          gameId: gameResults.get(editingGame.gameNumber)?.id || '',
+        } : null}
+        myVacateRequests={myVacateRequests.current}
+        onVacate={async (gameNumber, gameId) => {
+          try {
+            // Track that I initiated this vacate request (to suppress my own confirmation modal)
+            myVacateRequests.current.add(gameNumber);
+            console.log(
+              'Added game',
+              gameNumber,
+              'to myVacateRequests. Set now contains:',
+              Array.from(myVacateRequests.current)
+            );
 
-          <div className="py-4 space-y-4">
-            <p className="text-center text-sm text-gray-600">
-              Current winner:{' '}
-              <span className="font-semibold">
-                {editingGame?.currentWinnerName}
-              </span>
-            </p>
+            // Vacate request: Keep winner but clear BOTH confirmations
+            // This creates a unique state: winner exists but both confirmations are false
+            // Opponent will see this as a vacate request, not a normal score
+            const { error } = await supabase
+              .from('match_games')
+              .update({
+                confirmed_by_home: false,
+                confirmed_by_away: false,
+              })
+              .eq('id', gameId);
 
-            <p className="text-center text-sm text-gray-500">
-              This will request your opponent to agree to vacate this result so
-              both teams can score it again.
-            </p>
-          </div>
-
-          <DialogFooter className="flex flex-row justify-around gap-4">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setEditingGame(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={async () => {
-                if (editingGame && match) {
-                  const existingGame = gameResults.get(editingGame.gameNumber);
-                  if (!existingGame) return;
-
-                  try {
-                    // Track that I initiated this vacate request (to suppress my own confirmation modal)
-                    myVacateRequests.current.add(editingGame.gameNumber);
-                    console.log(
-                      'Added game',
-                      editingGame.gameNumber,
-                      'to myVacateRequests. Set now contains:',
-                      Array.from(myVacateRequests.current)
-                    );
-
-                    // Vacate request: Keep winner but clear BOTH confirmations
-                    // This creates a unique state: winner exists but both confirmations are false
-                    // Opponent will see this as a vacate request, not a normal score
-                    const { error } = await supabase
-                      .from('match_games')
-                      .update({
-                        confirmed_by_home: false,
-                        confirmed_by_away: false,
-                      })
-                      .eq('id', existingGame.id);
-
-                    if (error) throw error;
-                    setEditingGame(null);
-                  } catch (err: any) {
-                    console.error('Error requesting reset:', err);
-                    alert(`Failed to request reset: ${err.message}`);
-                  }
-                }
-              }}
-            >
-              Vacate Winner
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            if (error) throw error;
+          } catch (err: any) {
+            console.error('Error requesting reset:', err);
+            alert(`Failed to request reset: ${err.message}`);
+          }
+        }}
+        onClose={() => setEditingGame(null)}
+      />
     </div>
   );
 }

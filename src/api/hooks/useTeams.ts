@@ -24,6 +24,7 @@ import {
   getTeamsBySeason,
   getCaptainTeamEditData,
   getUserTeamInMatch,
+  getTeamRoster,
 } from '../queries/teams';
 import { STALE_TIME } from '../client';
 
@@ -179,6 +180,34 @@ export function useUserTeamInMatch(
     queryFn: () => getUserTeamInMatch(memberId!, homeTeamId!, awayTeamId!),
     enabled: !!memberId && !!homeTeamId && !!awayTeamId,
     staleTime: STALE_TIME.TEAMS, // 10 minutes
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Hook to fetch team roster (all players on team)
+ *
+ * Returns team_players records with member_id and is_captain flag.
+ * Captain is returned first, then other players.
+ * Used by roster editor when loading existing team data.
+ * Cached for 10 minutes.
+ *
+ * @param teamId - Team's primary key ID
+ * @returns TanStack Query result with roster data
+ *
+ * @example
+ * const { data: roster, isLoading } = useTeamRoster(teamId);
+ * if (roster) {
+ *   const captain = roster.find(p => p.is_captain);
+ *   const players = roster.filter(p => !p.is_captain);
+ * }
+ */
+export function useTeamRoster(teamId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.teams.detail(teamId || ''), 'roster'],
+    queryFn: () => getTeamRoster(teamId!),
+    enabled: !!teamId,
+    staleTime: STALE_TIME.TEAMS,
     refetchOnWindowFocus: false,
   });
 }

@@ -309,6 +309,33 @@ export async function getTeamsBySeason(seasonId: string) {
 }
 
 /**
+ * Get team roster (players on team)
+ *
+ * Fetches all players on a team from team_players table.
+ * Returns captain first, then other players.
+ * Used by roster editor when editing existing teams.
+ *
+ * @param teamId - Team's primary key ID
+ * @returns Array of team players with member_id and is_captain flag
+ * @throws Error if query fails
+ *
+ * @example
+ * const roster = await getTeamRoster(teamId);
+ * const captain = roster.find(p => p.is_captain);
+ * const players = roster.filter(p => !p.is_captain);
+ */
+export async function getTeamRoster(teamId: string) {
+  const { data, error } = await supabase
+    .from('team_players')
+    .select('member_id, is_captain')
+    .eq('team_id', teamId)
+    .order('is_captain', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
  * Fetch all data needed for captain to edit their team
  *
  * This includes:

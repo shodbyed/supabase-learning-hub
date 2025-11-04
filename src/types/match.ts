@@ -11,9 +11,11 @@ import type { HandicapVariant } from '@/utils/handicapCalculations';
 export type MatchType = '3v3' | 'tiebreaker' | '5v5';
 
 /**
- * Match information with team details
+ * Basic match information with team details (scoring context)
+ * Simplified version of full Match record from schedule.ts
+ * Contains only fields needed for scoring pages
  */
-export interface Match {
+export interface MatchBasic {
   id: string;
   season_id: string;
   home_team_id: string;

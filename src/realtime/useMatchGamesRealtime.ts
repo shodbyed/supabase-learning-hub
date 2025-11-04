@@ -24,13 +24,13 @@
 import { useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
 import { getPlayerNicknameById } from '@/types/member';
-import type { Match, Player, MatchGame } from '@/types';
+import type { MatchBasic, Player, MatchGame } from '@/types';
 
 interface UseMatchGamesRealtimeOptions {
   /** Callback to refetch games data (typically TanStack Query refetch) */
   onUpdate: () => void;
   /** Match data with team IDs */
-  match: Match | null;
+  match: MatchBasic | null;
   /** Current user's team ID */
   userTeamId: string | null;
   /** Player lookup map for getting winner names */
@@ -43,8 +43,14 @@ interface UseMatchGamesRealtimeOptions {
     winnerPlayerName: string;
     breakAndRun: boolean;
     goldenBreak: boolean;
-    isVacateRequest: boolean;
+    isResetRequest?: boolean;
   }) => void;
+  /** Current editing game (to suppress own vacate requests) */
+  editingGame?: { gameNumber: number; currentWinnerName: string } | null;
+  /** Auto-confirm setting (bypass confirmation modal) */
+  autoConfirm?: boolean;
+  /** Function to auto-confirm opponent score */
+  confirmOpponentScore?: (gameNumber: number) => void;
 }
 
 /**
@@ -63,7 +69,17 @@ export function useMatchGamesRealtime(
   matchId: string | null | undefined,
   options: UseMatchGamesRealtimeOptions
 ) {
-  const { onUpdate, match, userTeamId, players, myVacateRequests, addToConfirmationQueue } = options;
+  const {
+    onUpdate,
+    match,
+    userTeamId,
+    players,
+    myVacateRequests,
+    addToConfirmationQueue,
+    editingGame = null,
+    autoConfirm = false,
+    confirmOpponentScore
+  } = options;
 
   useEffect(() => {
     if (!matchId || !match || !userTeamId) return;
@@ -102,6 +118,13 @@ export function useMatchGamesRealtime(
 
               // For vacate requests, check if this was initiated by me
               if (isVacateRequest) {
+                // Check if the editingGame modal is currently open for this game
+                // If so, this is MY action, not the opponent's
+                if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
+                  console.log('I am currently editing this game, suppressing my own confirmation modal');
+                  return;
+                }
+
                 // Check if I initiated this vacate request
                 if (myVacateRequests.current.has(updatedGame.game_number)) {
                   console.log('I initiated this vacate request, suppressing my own confirmation modal');
@@ -118,7 +141,7 @@ export function useMatchGamesRealtime(
                     winnerPlayerName: winnerName,
                     breakAndRun: updatedGame.break_and_run,
                     goldenBreak: updatedGame.golden_break,
-                    isVacateRequest: true
+                    isResetRequest: true
                   });
                 }
                 return;
@@ -132,6 +155,13 @@ export function useMatchGamesRealtime(
               const needMyConfirmation = (isHomeTeamScorer && !iAmHome) || (isAwayTeamScorer && iAmHome);
 
               if (needMyConfirmation) {
+                // If auto-confirm is enabled, automatically confirm without showing modal
+                if (autoConfirm && confirmOpponentScore) {
+                  console.log('Auto-confirming game', updatedGame.game_number);
+                  confirmOpponentScore(updatedGame.game_number);
+                  return;
+                }
+
                 console.log('Opponent scored game', updatedGame.game_number, 'adding to confirmation queue');
                 const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                 addToConfirmationQueue({
@@ -139,7 +169,7 @@ export function useMatchGamesRealtime(
                   winnerPlayerName: winnerName,
                   breakAndRun: updatedGame.break_and_run,
                   goldenBreak: updatedGame.golden_break,
-                  isVacateRequest: false
+                  isResetRequest: false
                 });
               }
             }
@@ -152,5 +182,5 @@ export function useMatchGamesRealtime(
       console.log('Cleaning up real-time subscription for match games:', matchId);
       supabase.removeChannel(channel);
     };
-  }, [matchId, match, userTeamId, players, myVacateRequests, addToConfirmationQueue, onUpdate]);
+  }, [matchId, match, userTeamId, players, myVacateRequests, addToConfirmationQueue, onUpdate, editingGame, autoConfirm, confirmOpponentScore]);
 }

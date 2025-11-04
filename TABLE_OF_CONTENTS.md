@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-01 (TanStack Query added)
+> **Last Updated**: 2025-11-03 (Dialog extraction complete)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -455,9 +455,9 @@ Reusable wizard/form step components
 #### Scoring Components (`/components/scoring/`)
 - `ScoreboardCard.tsx` - Scoreboard display
 - `GamesList.tsx` - Games list
-- `ScoringModal.tsx` - Scoring modal
-- `ConfirmationModal.tsx` - Score confirmation
-- `VacateModal.tsx` - Game vacation modal
+- `ScoringDialog.tsx` - Game winner selection with B&R and Golden Break (extracted from ScoreMatch)
+- `ConfirmationDialog.tsx` - Opponent score confirmation and vacate requests (extracted from ScoreMatch)
+- `EditGameDialog.tsx` - Vacate winner request dialog (extracted from ScoreMatch)
 
 #### Messaging Components (`/components/messages/`)
 - `MessageView.tsx` - Main message view

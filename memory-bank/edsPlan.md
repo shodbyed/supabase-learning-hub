@@ -1,56 +1,6 @@
 ==== Message System ======
 
-## Design Decisions Made (2025-01-16)
-
-### UI Approach: Full Page (not modal)
-
-- Messaging deserves dedicated space for readability
-- Less confusing for tech-averse users
-- Better mobile experience for future app
-- Route: `/messages`
-
-### Layout: Simplified Slack Style
-
-```
-Two-column layout:
-- Left: Conversation list with search
-- Right: Selected conversation messages + input box
-```
-
-No channels, @mentions, or reactions initially - keep it simple
-
-### New Message Flow
-
-- [+ New] button opens modal
-- Search bar + filter tabs: All | My Leagues | My Teams
-- Click user → creates/opens conversation
-- Familiar pattern (like phone texting)
-
-### Navigation
-
-- Envelope icon in navbar with unread badge
-- Optional: Dashboard card showing recent messages
-
-### Message Types
-
-1. **Group Chats**: Back-and-forth conversations (everyone can reply)
-2. **Announcements**: No-reply messages (from operators/captains only)
-
-## Original Requirements
-
-The message system should be global meaning any user should be able to message any other user. searching for those users may be difficult so we should have ways to limit who they have to scroll thru. maybe filters like global(all) my organization (they may be a part of more than one). my league (again maybe more than one) my teams.
-
-1. first we want to get a simple message system ui in place.
-   this should be similar to all the other ones out there lets not reinvent the wheel
-2. it will need to be able to handle group chats and announcement type messages(no reply from devs, operators and maybe captains)
-
-future features
-one button groups like a captains chat(operator included?) for a specific season. a team chat. season active players things like this
-
-    notifications to phone(maybe just for the phone app i don't know if a website can send notifications to a phone without some doing)
-
-    features: real time notifications, message history threads and reply (don't think we need read receipts yet perhaps a future feature)
-
+#
 
     8. optimize
         make sure components follow
