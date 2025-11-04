@@ -10,38 +10,34 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Shield, Lock } from 'lucide-react';
-import { useProfanityFilter, updateProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useProfanityFilter } from '@/hooks/useProfanityFilter';
+import { useUpdateProfanityFilter } from '@/api/hooks';
 import { useUser } from '@/context/useUser';
 
 export const PrivacySettingsSection: React.FC = () => {
   const { user } = useUser();
   const { shouldFilter, canToggle, isLoading } = useProfanityFilter();
-  const [isSaving, setIsSaving] = useState(false);
+  const updateMutation = useUpdateProfanityFilter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleToggle = async () => {
     if (!user || !canToggle) return;
 
-    setIsSaving(true);
     setError(null);
     setSuccess(false);
 
-    const { error: updateError } = await updateProfanityFilter(user.id, !shouldFilter);
+    try {
+      await updateMutation.mutateAsync({ userId: user.id, enabled: !shouldFilter });
+      setSuccess(true);
 
-    if (updateError) {
+      // Reload page to update filter state (cache will automatically update)
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
       setError('Failed to update profanity filter setting. Please try again.');
-      setIsSaving(false);
-      return;
     }
-
-    setSuccess(true);
-    setIsSaving(false);
-
-    // Reload page to update filter state (or use state management)
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
   };
 
   if (isLoading) {
@@ -103,11 +99,11 @@ export const PrivacySettingsSection: React.FC = () => {
           {canToggle && (
             <Button
               onClick={handleToggle}
-              disabled={isSaving}
+              disabled={updateMutation.isPending}
               variant={shouldFilter ? 'destructive' : 'default'}
               size="sm"
             >
-              {isSaving ? 'Saving...' : shouldFilter ? 'Disable' : 'Enable'}
+              {updateMutation.isPending ? 'Saving...' : shouldFilter ? 'Disable' : 'Enable'}
             </Button>
           )}
         </div>

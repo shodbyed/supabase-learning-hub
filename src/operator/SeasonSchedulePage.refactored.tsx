@@ -143,8 +143,8 @@ export const SeasonSchedulePage: React.FC = () => {
             {schedule.map((weekSchedule) => (
               <WeekCard
                 key={weekSchedule.week.id}
-                weekSchedule={weekSchedule}
-                tableNumbers={calculateTableNumbers(weekSchedule.matches)}
+                weekSchedule={weekSchedule as any}
+                tableNumbers={calculateTableNumbers(weekSchedule.matches as any)}
               />
             ))}
           </div>

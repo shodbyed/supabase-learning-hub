@@ -7,10 +7,12 @@
  * Flow: Dashboard → My Teams (accordion list) → Expand to see details
  */
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { UserContext } from '@/context/UserContext';
-import { supabase } from '@/supabaseClient';
-import { fetchPlayerTeams, fetchCaptainTeamEditData } from '@/utils/playerQueries';
+import { useMemberId } from '@/api/hooks';
+import { usePlayerTeams, useCaptainTeamEditData } from '@/api/hooks';
+import { queryKeys } from '@/api/queryKeys';
 import { TeamEditorModal } from '@/operator/TeamEditorModal';
 import {
   Accordion,
@@ -70,110 +72,40 @@ interface TeamData {
 
 export function MyTeams() {
   const userContext = useContext(UserContext);
-  const [teams, setTeams] = useState<TeamData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [memberId, setMemberId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const memberId = useMemberId();
+
+  // Fetch teams using TanStack Query
+  const { data: teamsData = [], isLoading: loading, error: teamsError } = usePlayerTeams(memberId);
+  const teams = (teamsData || []) as unknown as TeamData[];
+  const error = teamsError ? 'Unable to load your teams' : null;
 
   // Team editing modal state
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<any>(null);
-  const [loadingEditData, setLoadingEditData] = useState(false);
 
-  // Get member_id from user_id
-  useEffect(() => {
-    async function getMemberId() {
-      if (!userContext?.user?.id) return;
+  // Fetch edit data when team is selected for editing
+  const { data: editData, isLoading: loadingEditData } = useCaptainTeamEditData(editingTeamId);
 
-      const { data, error } = await supabase
-        .from('members')
-        .select('id')
-        .eq('user_id', userContext.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching member ID:', error);
-        setError('Unable to load your profile');
-        return;
-      }
-
-      setMemberId(data.id);
-    }
-
-    getMemberId();
-  }, [userContext?.user?.id]);
-
-  // Fetch teams once we have member_id
-  useEffect(() => {
-    async function loadTeams() {
-      if (!memberId) return;
-
-      setLoading(true);
-      setError(null);
-
-      const { data, error } = await fetchPlayerTeams(memberId);
-
-      if (error) {
-        console.error('Error fetching teams:', error);
-        setError('Unable to load your teams');
-        setLoading(false);
-        return;
-      }
-
-      setTeams((data || []) as unknown as TeamData[]);
-      setLoading(false);
-    }
-
-    loadTeams();
-  }, [memberId]);
-
-  // Handle edit button click - fetch data needed for editing
-  const handleEditTeam = async (teamId: string) => {
+  // Handle edit button click
+  const handleEditTeam = (teamId: string) => {
     setEditingTeamId(teamId);
-    setLoadingEditData(true);
-
-    const { data, error } = await fetchCaptainTeamEditData(teamId);
-
-    if (error || !data) {
-      console.error('Error loading team edit data:', error);
-      setError('Unable to load team details for editing');
-      setEditingTeamId(null);
-      setLoadingEditData(false);
-      return;
-    }
-
-    setEditData(data);
-    setLoadingEditData(false);
   };
 
   // Handle successful team update
   const handleTeamUpdateSuccess = async () => {
     setEditingTeamId(null);
-    setEditData(null);
 
-    // Reload teams to show updated data
-    if (!memberId) return;
-
-    setLoading(true);
-    setError(null);
-
-    const { data, error } = await fetchPlayerTeams(memberId);
-
-    if (error) {
-      console.error('Error fetching teams:', error);
-      setError('Unable to load your teams');
-      setLoading(false);
-      return;
+    // Invalidate teams cache to refetch updated data
+    if (memberId) {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.teams.byMember(memberId),
+      });
     }
-
-    setTeams((data || []) as unknown as TeamData[]);
-    setLoading(false);
   };
 
   // Handle cancel editing
   const handleCancelEdit = () => {
     setEditingTeamId(null);
-    setEditData(null);
   };
 
   if (userContext?.loading || loading) {

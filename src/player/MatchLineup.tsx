@@ -19,14 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Calendar, MapPin, Users, Lock, CheckCircle } from 'lucide-react';
-import { parseLocalDate } from '@/utils/formatters';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { TeamNameLink } from '@/components/TeamNameLink';
-import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { ArrowLeft, Users } from 'lucide-react';
+import { useCurrentMember } from '@/api/hooks';
 import {
   calculatePlayerHandicap,
-  calculateTeamHandicap,
   type HandicapVariant,
 } from '@/utils/handicapCalculations';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
@@ -74,7 +70,8 @@ interface Player {
 export function MatchLineup() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { memberId, loading: memberLoading } = useCurrentMember();
+  const { data: member, isLoading: memberLoading } = useCurrentMember();
+  const memberId = member?.id;
 
   const [match, setMatch] = useState<Match | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -106,7 +103,7 @@ export function MatchLineup() {
   // Test mode for manual handicap override
   const [testMode, setTestMode] = useState(false);
   const [testHandicaps, setTestHandicaps] = useState<Record<string, number>>({});
-  const [testTeamBonus, setTestTeamBonus] = useState<number | null>(null);
+  const [, setTestTeamBonus] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchMatchAndLineup() {

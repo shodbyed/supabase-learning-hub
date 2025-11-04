@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import {
   getPendingReportsForOperator,
   getReportDetails,
@@ -39,6 +39,8 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { AlertCircle, Clock, CheckCircle, XCircle, ArrowUp } from 'lucide-react';
+import { AlertDialog } from '@/components/AlertDialog';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Report {
   id: string;
@@ -69,12 +71,16 @@ interface ReportDetails {
 }
 
 export function ReportsManagement() {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [reports, setReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionNotes, setActionNotes] = useState('');
   const [actionType, setActionType] = useState<string>('no_action');
+
+  // Dialog states
+  const [alertDialog, setAlertDialog] = useState<{ show: boolean; title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void } | null>(null);
 
   /**
    * Load pending reports on mount
@@ -119,7 +125,12 @@ export function ReportsManagement() {
     if (!selectedReport || !memberId) return;
 
     if (actionNotes.trim().length < 10) {
-      alert('Please provide detailed notes about this action (at least 10 characters)');
+      setAlertDialog({
+        show: true,
+        title: 'Notes Required',
+        message: 'Please provide detailed notes about this action (at least 10 characters)',
+        type: 'warning'
+      });
       return;
     }
 
@@ -132,7 +143,12 @@ export function ReportsManagement() {
     );
 
     if (!error) {
-      alert('Action recorded successfully');
+      setAlertDialog({
+        show: true,
+        title: 'Success',
+        message: 'Action recorded successfully',
+        type: 'success'
+      });
       setActionNotes('');
       setActionType('no_action');
       setSelectedReport(null);
@@ -146,14 +162,25 @@ export function ReportsManagement() {
   const handleEscalate = async () => {
     if (!selectedReport) return;
 
-    if (confirm('Escalate this report to a developer? Use this for serious issues that require developer attention.')) {
-      const { error } = await escalateReport(selectedReport.report.id);
-      if (!error) {
-        alert('Report escalated to developer successfully');
-        setSelectedReport(null);
-        loadReports();
+    setConfirmDialog({
+      show: true,
+      title: 'Escalate Report?',
+      message: 'Escalate this report to a developer? Use this for serious issues that require developer attention.',
+      onConfirm: async () => {
+        const { error } = await escalateReport(selectedReport.report.id);
+        if (!error) {
+          setAlertDialog({
+            show: true,
+            title: 'Success',
+            message: 'Report escalated to developer successfully',
+            type: 'success'
+          });
+          setSelectedReport(null);
+          loadReports();
+        }
+        setConfirmDialog(null);
       }
-    }
+    });
   };
 
   /**
@@ -162,14 +189,25 @@ export function ReportsManagement() {
   const handleResolve = async () => {
     if (!selectedReport) return;
 
-    if (confirm('Mark this report as resolved?')) {
-      const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
-      if (!error) {
-        alert('Report marked as resolved');
-        setSelectedReport(null);
-        loadReports();
+    setConfirmDialog({
+      show: true,
+      title: 'Resolve Report?',
+      message: 'Mark this report as resolved?',
+      onConfirm: async () => {
+        const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
+        if (!error) {
+          setAlertDialog({
+            show: true,
+            title: 'Success',
+            message: 'Report marked as resolved',
+            type: 'success'
+          });
+          setSelectedReport(null);
+          loadReports();
+        }
+        setConfirmDialog(null);
       }
-    }
+    });
   };
 
   /**
@@ -178,14 +216,25 @@ export function ReportsManagement() {
   const handleDismiss = async () => {
     if (!selectedReport) return;
 
-    if (confirm('Dismiss this report? This indicates the report was reviewed but no action is needed.')) {
-      const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
-      if (!error) {
-        alert('Report dismissed');
-        setSelectedReport(null);
-        loadReports();
+    setConfirmDialog({
+      show: true,
+      title: 'Dismiss Report?',
+      message: 'Dismiss this report? This indicates the report was reviewed but no action is needed.',
+      onConfirm: async () => {
+        const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
+        if (!error) {
+          setAlertDialog({
+            show: true,
+            title: 'Success',
+            message: 'Report dismissed',
+            type: 'success'
+          });
+          setSelectedReport(null);
+          loadReports();
+        }
+        setConfirmDialog(null);
       }
-    }
+    });
   };
 
   /**
@@ -462,6 +511,29 @@ export function ReportsManagement() {
           )}
         </div>
       </div>
+
+      {/* Alert Dialog (success/warning messages with OK button) */}
+      {alertDialog?.show && (
+        <AlertDialog
+          title={alertDialog.title}
+          message={alertDialog.message}
+          type={alertDialog.type}
+          onOk={() => setAlertDialog(null)}
+        />
+      )}
+
+      {/* Confirm Dialog (actions requiring confirmation) */}
+      {confirmDialog?.show && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText="Confirm"
+          cancelText="Cancel"
+          confirmVariant="default"
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+        />
+      )}
     </div>
   );
 }

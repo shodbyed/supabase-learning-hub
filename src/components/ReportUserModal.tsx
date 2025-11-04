@@ -26,8 +26,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { createUserReport, REPORT_CATEGORIES } from '@/utils/reportingQueries';
+import { useMemberId, useCreateUserReport } from '@/api/hooks';
+import { REPORT_CATEGORIES } from '@/utils/reportingQueries';
 import type { ReportCategory } from '@/utils/reportingQueries';
 import { Modal } from '@/components/shared';
 
@@ -48,10 +48,10 @@ export function ReportUserModal({
   evidenceSnapshot,
   defaultCategory
 }: ReportUserModalProps) {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
+  const createReportMutation = useCreateUserReport();
   const [category, setCategory] = useState<ReportCategory>(defaultCategory || 'other');
   const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,28 +67,28 @@ export function ReportUserModal({
       return;
     }
 
-    setIsSubmitting(true);
     setError(null);
 
-    const { error: submitError } = await createUserReport(
-      memberId,
-      reportedUserId,
-      category,
-      description.trim(),
-      evidenceSnapshot,
-      contextData
+    createReportMutation.mutate(
+      {
+        reporterId: memberId,
+        reportedUserId,
+        category,
+        description: description.trim(),
+        evidenceSnapshot,
+        contextData,
+      },
+      {
+        onSuccess: () => {
+          alert('Report submitted successfully. A league operator will review it shortly.');
+          onClose();
+        },
+        onError: (error) => {
+          console.error('Failed to submit report:', error);
+          setError('Failed to submit report. Please try again.');
+        },
+      }
     );
-
-    setIsSubmitting(false);
-
-    if (submitError) {
-      setError('Failed to submit report. Please try again.');
-      return;
-    }
-
-    // Success - close modal
-    alert('Report submitted successfully. A league operator will review it shortly.');
-    onClose();
   };
 
   return (
@@ -167,17 +167,17 @@ export function ReportUserModal({
             type="button"
             onClick={onClose}
             variant="outline"
-            disabled={isSubmitting}
+            disabled={createReportMutation.isPending}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             onClick={handleSubmit}
-            disabled={isSubmitting || description.trim().length < 10}
+            disabled={createReportMutation.isPending || description.trim().length < 10}
             className="bg-orange-600 hover:bg-orange-700"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            {createReportMutation.isPending ? 'Submitting...' : 'Submit Report'}
           </Button>
         </Modal.Footer>
       </form>

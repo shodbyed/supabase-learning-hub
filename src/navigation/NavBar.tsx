@@ -1,12 +1,12 @@
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { useUserProfile } from '../hooks/useUserProfile';
-import { useUnreadMessageCount } from '../hooks/useUnreadMessageCount';
+import { useUserProfile, useMemberId, useUnreadMessageCount } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 
 export const NavBar: React.FC = () => {
   const { hasMemberRecord, canAccessLeagueOperatorFeatures } = useUserProfile();
-  const unreadCount = useUnreadMessageCount();
+  const memberId = useMemberId();
+  const { data: unreadCount = 0 } = useUnreadMessageCount(memberId);
   const location = useLocation();
 
   // Hide navbar on mobile when on Messages page

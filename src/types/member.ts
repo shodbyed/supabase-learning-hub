@@ -36,8 +36,9 @@ export interface Member {
 /**
  * Helper function to get display player number
  * Shows BCA number if available, otherwise system player number
+ * Works with both full Member and PartialMember types
  */
-export function getPlayerDisplayNumber(member: Member): string {
+export function getPlayerDisplayNumber(member: Member | PartialMember): string {
   if (member.bca_member_number) {
     return `#BCA-${member.bca_member_number}`;
   }
@@ -47,8 +48,9 @@ export function getPlayerDisplayNumber(member: Member): string {
 /**
  * Helper function to get display name with player number
  * Example: "John Smith #BCA-123456" or "John Smith #P-00042"
+ * Works with both full Member and PartialMember types
  */
-export function getPlayerDisplayName(member: Member): string {
+export function getPlayerDisplayName(member: Member | PartialMember): string {
   const fullName = `${member.first_name} ${member.last_name}`;
   const playerNumber = getPlayerDisplayNumber(member);
   return `${fullName} ${playerNumber}`;
@@ -72,8 +74,57 @@ export interface PartialMember {
  * Example: "#BCA-123456" or "#P-00042"
  */
 export function formatPartialMemberNumber(member: PartialMember): string {
-  if (member.bca_member_number) {
-    return `#BCA-${member.bca_member_number}`;
-  }
-  return `#P-${String(member.system_player_number).padStart(5, '0')}`;
+  // Reuse the main getPlayerDisplayNumber logic
+  return getPlayerDisplayNumber(member as Member);
+}
+
+/**
+ * Minimal player interface for nickname display
+ * Only includes fields needed for showing player name (nickname or full name)
+ */
+export interface PlayerForDisplay {
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+}
+
+/**
+ * Get player nickname or full name (no player number)
+ *
+ * Returns the player's nickname if available, otherwise returns their full name.
+ * Used for casual display in game scoring, chat, etc. where player numbers aren't needed.
+ *
+ * @param player - Player object with first_name, last_name, and optional nickname
+ * @returns Nickname or "FirstName LastName"
+ *
+ * @example
+ * getPlayerNickname({ first_name: 'John', last_name: 'Doe', nickname: 'JD' }); // Returns: "JD"
+ * getPlayerNickname({ first_name: 'Jane', last_name: 'Smith', nickname: null }); // Returns: "Jane Smith"
+ */
+export function getPlayerNickname(player: PlayerForDisplay | null | undefined): string {
+  if (!player) return 'Unknown';
+  return player.nickname || `${player.first_name} ${player.last_name}`;
+}
+
+/**
+ * Get player nickname by ID from a player Map
+ *
+ * Helper function for looking up a player by ID and returning their nickname.
+ * Commonly used in scoring systems where players are stored in a Map.
+ *
+ * @param playerId - Player's ID to look up
+ * @param playersMap - Map of player IDs to player objects
+ * @returns Nickname or "FirstName LastName" or "Unknown" if not found
+ *
+ * @example
+ * const players = new Map([['id1', { first_name: 'John', last_name: 'Doe', nickname: 'JD' }]]);
+ * getPlayerNicknameById('id1', players); // Returns: "JD"
+ */
+export function getPlayerNicknameById(
+  playerId: string | null | undefined,
+  playersMap: Map<string, PlayerForDisplay>
+): string {
+  if (!playerId) return 'Unknown';
+  const player = playersMap.get(playerId);
+  return getPlayerNickname(player);
 }

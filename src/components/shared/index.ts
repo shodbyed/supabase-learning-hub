@@ -7,3 +7,5 @@
 export { Modal } from './Modal';
 export { LoadingState } from './LoadingState';
 export { EmptyState } from './EmptyState';
+export { ConfirmDialog } from './ConfirmDialog';
+export { SelectedUserChips } from './SelectedUserChips';

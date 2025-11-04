@@ -8,7 +8,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils';
 import { SeasonCreationWizard } from '@/operator/SeasonCreationWizard';
-import * as useOperatorIdModule from '@/hooks/useOperatorId';
+import * as useOperatorIdModule from '@/api/hooks';
 
 // Mock the Supabase client with chainable query builder
 vi.mock('@/supabaseClient', () => {
@@ -66,10 +66,10 @@ vi.mock('@/supabaseClient', () => {
 
 // Mock the useOperatorId hook
 vi.spyOn(useOperatorIdModule, 'useOperatorId').mockReturnValue({
-  operatorId: 'test-operator-id',
-  loading: false,
+  data: { id: 'test-operator-id' },
+  isLoading: false,
   error: null,
-});
+} as any);
 
 // Mock date-holidays package (used by holidayUtils)
 vi.mock('date-holidays', () => {

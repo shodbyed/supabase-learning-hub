@@ -1,0 +1,197 @@
+/**
+ * @fileoverview API Hooks Index
+ *
+ * Central export point for all TanStack Query hooks.
+ * Import hooks from here for cleaner imports.
+ *
+ * @example
+ * import { useCurrentMember, useUserProfile } from '@/api/hooks';
+ */
+
+// Member/Auth hooks
+export {
+  useCurrentMember,
+  useMemberId,
+  useMemberFirstName,
+  useIsCaptain,
+  useAllMembers,
+  useMemberProfanitySettings,
+} from './useCurrentMember';
+
+export {
+  useUserProfile,
+  useIsOperator,
+  useIsDeveloper,
+  useMemberRole,
+} from './useUserProfile';
+
+export {
+  useOperatorId,
+  useOperatorIdValue,
+  useIsCurrentUserOperator,
+} from './useOperatorId';
+
+// Team hooks
+export {
+  usePlayerTeams,
+  useTeamDetails,
+  useTeamsByLeague,
+  useTeamsBySeason,
+  useCaptainTeamEditData,
+} from './useTeams';
+
+// Team query functions (for backward compatibility with non-hook usage)
+// Wraps the new query functions to match old {data, error} pattern
+import { getTeamsByLeague } from '../queries/teams';
+
+export async function fetchTeamsWithDetails(leagueId: string) {
+  try {
+    const data = await getTeamsByLeague(leagueId);
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+}
+
+// Message hooks (queries)
+export {
+  useConversations,
+  useConversationMessages,
+  useBlockedUsers,
+  useBlockedUsersDetails,
+  useUnreadMessageCount,
+  useConversationParticipants,
+} from './useMessages';
+
+// Message mutations
+export {
+  useSendMessage,
+  useUpdateLastRead,
+  useBlockUser,
+  useUnblockUser,
+} from './useMessageMutations';
+
+// Conversation mutations
+export {
+  useCreateOrOpenConversation,
+  useCreateGroupConversation,
+  useLeaveConversation,
+} from './useConversationMutations';
+
+// Announcement mutations
+export {
+  useCreateLeagueAnnouncement,
+  useCreateOrganizationAnnouncement,
+} from './useAnnouncementMutations';
+
+// Conversation queries
+export {
+  useConversationType,
+  useConversationTitle,
+  useConversationParticipants as useConversationParticipantsQuery,
+  useIsUserBlocked,
+  useOtherParticipantId,
+} from './useConversationQueries';
+
+// Messaging real-time subscriptions (Messages page only)
+export {
+  useConversationsRealtime,
+  useConversationMessagesRealtime,
+} from './useMessagingRealtime';
+
+// Report mutations
+export {
+  useCreateUserReport,
+  useUpdateReportStatus,
+} from './useReportMutations';
+
+// League queries
+export {
+  useLeaguesByOperator,
+  useLeagueCount,
+  useLeagueById,
+  useLeaguesWithProgress,
+} from './useLeagues';
+
+// Season queries
+export {
+  useSeasonsByLeague,
+  useSeasonById,
+  useMostRecentSeason,
+  useActiveSeason,
+  useSeasonCount,
+  usePreviousCompletedSeason,
+  useChampionshipPreferences,
+} from './useSeasons';
+
+// Match/Schedule queries
+export {
+  useMatchById,
+  useMatchesBySeason,
+  useMatchesByTeam,
+  useSeasonSchedule,
+  useSeasonWeeks,
+} from './useMatches';
+
+// Venue queries
+export {
+  useVenuesByOperator,
+  useVenueById,
+  useLeagueVenues,
+  useLeagueVenuesWithDetails,
+} from './useVenues';
+
+// Venue mutations
+export {
+  useCreateVenue,
+  useUpdateVenue,
+  useDeleteVenue,
+} from './useVenueMutations';
+
+// Team mutations
+export {
+  useCreateTeam,
+  useUpdateTeam,
+  useDeleteTeam,
+} from './useTeamMutations';
+
+// Season mutations
+export {
+  useCreateSeason,
+  useUpdateSeason,
+  useActivateSeason,
+  useDeleteSeason,
+} from './useSeasonMutations';
+
+// League mutations
+export {
+  useCreateLeague,
+  useUpdateLeague,
+  useDeleteLeague,
+  useUpdateLeagueDayOfWeek,
+} from './useLeagueMutations';
+
+// League Venue mutations
+export {
+  useAddLeagueVenue,
+  useUpdateLeagueVenue,
+  useRemoveLeagueVenue,
+} from './useLeagueVenueMutations';
+
+// Schedule mutations
+export {
+  useGenerateSchedule,
+  useDeleteSchedule,
+} from './useScheduleMutations';
+
+// Match Lineup mutations
+export {
+  useSaveMatchLineup,
+  useLockMatchLineup,
+  useUnlockMatchLineup,
+} from './useMatchLineupMutations';
+
+// Member mutations
+export {
+  useUpdateProfanityFilter,
+} from './useMemberMutations';

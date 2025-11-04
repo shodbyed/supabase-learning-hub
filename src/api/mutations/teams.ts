@@ -1,0 +1,272 @@
+/**
+ * @fileoverview Team Mutation Functions
+ *
+ * Pure functions for team create/update/delete operations.
+ * These functions are wrapped by TanStack Query mutation hooks.
+ *
+ * Teams are associated with a season and league. Each team has:
+ * - A captain (member_id)
+ * - A roster of players (team_players table)
+ * - Optional home venue
+ * - Stats (wins, losses, points, etc.)
+ *
+ * @see api/hooks/useTeamMutations.ts - Mutation hooks that wrap these functions
+ */
+
+import { supabase } from '@/supabaseClient';
+import type { Team, TeamInsertData, TeamPlayerInsertData } from '@/types/team';
+
+/**
+ * Parameters for creating a new team
+ */
+export interface CreateTeamParams {
+  seasonId: string;
+  leagueId: string;
+  captainId: string;
+  teamName: string;
+  rosterSize: number;
+  homeVenueId?: string | null;
+  rosterPlayerIds: string[]; // Array of member IDs to add to roster
+}
+
+/**
+ * Parameters for updating an existing team
+ */
+export interface UpdateTeamParams {
+  teamId: string;
+  seasonId: string;
+  captainId: string;
+  teamName: string;
+  homeVenueId?: string | null;
+  rosterPlayerIds: string[]; // Complete roster to sync
+  isCaptainVariant?: boolean; // If true, preserves captain row during roster sync
+}
+
+/**
+ * Parameters for deleting a team
+ */
+export interface DeleteTeamParams {
+  teamId: string;
+}
+
+/**
+ * Create a new team with roster
+ *
+ * This creates both the team record and all team_players roster records
+ * in a transaction-like operation (if one fails, both should fail).
+ *
+ * @param params - Team creation parameters
+ * @returns The newly created team
+ * @throws Error if validation fails or database operation fails
+ */
+export async function createTeam(params: CreateTeamParams): Promise<Team> {
+  // Validation
+  if (!params.teamName.trim()) {
+    throw new Error('Team name is required');
+  }
+
+  if (!params.captainId) {
+    throw new Error('Captain is required');
+  }
+
+  if (params.rosterSize !== 5 && params.rosterSize !== 8) {
+    throw new Error('Roster size must be 5 or 8');
+  }
+
+  if (params.rosterPlayerIds.length === 0) {
+    throw new Error('Team must have at least one player');
+  }
+
+  if (!params.rosterPlayerIds.includes(params.captainId)) {
+    throw new Error('Captain must be included in roster');
+  }
+
+  // Create team record
+  const teamData: TeamInsertData = {
+    season_id: params.seasonId,
+    league_id: params.leagueId,
+    captain_id: params.captainId,
+    home_venue_id: params.homeVenueId || null,
+    team_name: params.teamName.trim(),
+    roster_size: params.rosterSize,
+  };
+
+  const { data: newTeam, error: teamError } = await supabase
+    .from('teams')
+    .insert([teamData])
+    .select()
+    .single();
+
+  if (teamError) {
+    throw new Error(`Failed to create team: ${teamError.message}`);
+  }
+
+  // Create roster records
+  const rosterData: TeamPlayerInsertData[] = params.rosterPlayerIds.map((memberId) => ({
+    team_id: newTeam.id,
+    member_id: memberId,
+    season_id: params.seasonId,
+    is_captain: memberId === params.captainId,
+  }));
+
+  const { error: rosterError } = await supabase
+    .from('team_players')
+    .insert(rosterData);
+
+  if (rosterError) {
+    // If roster insert fails, we should ideally rollback the team creation
+    // but Supabase doesn't support transactions directly
+    // For now, throw error and let caller handle cleanup if needed
+    throw new Error(`Failed to create team roster: ${rosterError.message}`);
+  }
+
+  return newTeam;
+}
+
+/**
+ * Update an existing team
+ *
+ * This updates the team record AND synchronizes the roster:
+ * - Deletes old roster entries (except captain in captain variant)
+ * - Inserts new roster entries
+ *
+ * @param params - Team update parameters
+ * @returns The updated team
+ * @throws Error if validation fails or database operation fails
+ */
+export async function updateTeam(params: UpdateTeamParams): Promise<Team> {
+  // Validation
+  if (!params.teamName.trim()) {
+    throw new Error('Team name is required');
+  }
+
+  if (!params.captainId) {
+    throw new Error('Captain is required');
+  }
+
+  if (params.rosterPlayerIds.length === 0) {
+    throw new Error('Team must have at least one player');
+  }
+
+  if (!params.rosterPlayerIds.includes(params.captainId)) {
+    throw new Error('Captain must be included in roster');
+  }
+
+  // Update team record
+  const { data: updatedTeam, error: teamError } = await supabase
+    .from('teams')
+    .update({
+      captain_id: params.captainId,
+      home_venue_id: params.homeVenueId || null,
+      team_name: params.teamName.trim(),
+    })
+    .eq('id', params.teamId)
+    .select()
+    .single();
+
+  if (teamError) {
+    throw new Error(`Failed to update team: ${teamError.message}`);
+  }
+
+  // Sync roster - get current roster first
+  const { data: currentRoster, error: fetchError } = await supabase
+    .from('team_players')
+    .select('member_id, is_captain')
+    .eq('team_id', params.teamId);
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch current roster: ${fetchError.message}`);
+  }
+
+  // Handle captain variant (captain row protected by RLS)
+  if (params.isCaptainVariant && currentRoster) {
+    const captainRow = currentRoster.find(r => r.is_captain);
+
+    if (captainRow) {
+      // Update captain's is_captain flag if needed
+      await supabase
+        .from('team_players')
+        .update({ is_captain: captainRow.member_id === params.captainId })
+        .eq('team_id', params.teamId)
+        .eq('member_id', captainRow.member_id);
+
+      // Delete only non-captain rows
+      const { error: deleteError } = await supabase
+        .from('team_players')
+        .delete()
+        .eq('team_id', params.teamId)
+        .neq('member_id', captainRow.member_id);
+
+      if (deleteError) {
+        throw new Error(`Failed to delete roster: ${deleteError.message}`);
+      }
+    }
+  } else {
+    // Operator variant - delete all roster rows
+    const { error: deleteError } = await supabase
+      .from('team_players')
+      .delete()
+      .eq('team_id', params.teamId);
+
+    if (deleteError) {
+      throw new Error(`Failed to delete roster: ${deleteError.message}`);
+    }
+  }
+
+  // Prepare new roster (remove duplicates)
+  const uniquePlayerIds = [...new Set(params.rosterPlayerIds)];
+
+  // Filter out captain if captain variant and they already exist
+  let playersToInsert = uniquePlayerIds;
+  if (params.isCaptainVariant && currentRoster) {
+    const captainRow = currentRoster.find(r => r.is_captain);
+    if (captainRow) {
+      playersToInsert = uniquePlayerIds.filter(id => id !== captainRow.member_id);
+    }
+  }
+
+  // Insert new roster
+  if (playersToInsert.length > 0) {
+    const rosterData: TeamPlayerInsertData[] = playersToInsert.map((memberId) => ({
+      team_id: params.teamId,
+      member_id: memberId,
+      season_id: params.seasonId,
+      is_captain: memberId === params.captainId,
+    }));
+
+    const { error: insertError } = await supabase
+      .from('team_players')
+      .insert(rosterData);
+
+    if (insertError) {
+      throw new Error(`Failed to insert roster: ${insertError.message}`);
+    }
+  }
+
+  return updatedTeam;
+}
+
+/**
+ * Delete a team (soft delete by setting status to 'withdrawn')
+ *
+ * This does NOT delete team_players records - they remain for historical data.
+ * Only the team status is changed to 'withdrawn'.
+ *
+ * @param params - Team deletion parameters
+ * @returns The updated (withdrawn) team
+ * @throws Error if database operation fails
+ */
+export async function deleteTeam(params: DeleteTeamParams): Promise<Team> {
+  const { data: withdrawnTeam, error } = await supabase
+    .from('teams')
+    .update({ status: 'withdrawn' })
+    .eq('id', params.teamId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to withdraw team: ${error.message}`);
+  }
+
+  return withdrawnTeam;
+}

@@ -25,21 +25,23 @@ import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
 import { NewMessageModal } from '@/components/messages/NewMessageModal';
 import { AnnouncementModal } from '@/components/messages/AnnouncementModal';
 import { MessageSettingsModal } from '@/components/messages/MessageSettingsModal';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import {
-  createOrOpenConversation,
-  createGroupConversation,
-  createLeagueAnnouncement,
-  createOrganizationAnnouncement,
-} from '@/utils/messageQueries';
+  useCurrentMember,
+  useUserProfile,
+  useIsCaptain,
+  useCreateOrOpenConversation,
+  useCreateGroupConversation,
+  useCreateLeagueAnnouncement,
+  useCreateOrganizationAnnouncement,
+} from '@/api/hooks';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/supabaseClient';
 
 export function Messages() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { memberId, firstName } = useCurrentMember();
+  const { data: member } = useCurrentMember();
+  const memberId = member?.id;
+  const firstName = member?.first_name;
   const { canAccessLeagueOperatorFeatures } = useUserProfile();
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
@@ -47,8 +49,13 @@ export function Messages() {
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [isCaptain, setIsCaptain] = useState(false);
+  const { data: isCaptain = false } = useIsCaptain();
+
+  // Mutation hooks
+  const createOrOpenConversationMutation = useCreateOrOpenConversation();
+  const createGroupConversationMutation = useCreateGroupConversation();
+  const createLeagueAnnouncementMutation = useCreateLeagueAnnouncement();
+  const createOrganizationAnnouncementMutation = useCreateOrganizationAnnouncement();
 
   // Check if we were passed a conversationId from navigation state
   useEffect(() => {
@@ -59,24 +66,6 @@ export function Messages() {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, location.pathname, navigate]);
-
-  // Check if user is a captain of any team
-  useEffect(() => {
-    async function checkCaptainStatus() {
-      if (!memberId) return;
-
-      const { data } = await supabase
-        .from('team_players')
-        .select('is_captain')
-        .eq('member_id', memberId)
-        .eq('is_captain', true)
-        .limit(1);
-
-      setIsCaptain(!!data && data.length > 0);
-    }
-
-    checkCaptainStatus();
-  }, [memberId]);
 
   const handleNewMessage = () => {
     setShowNewMessageModal(true);
@@ -94,33 +83,35 @@ export function Messages() {
       return;
     }
 
-    // Send announcement to each selected target
-    for (const target of targets) {
-      if (target.type === 'league') {
-        const { error } = await createLeagueAnnouncement(target.id, memberId, message);
-        if (error) {
-          console.error(`Error creating announcement for league ${target.id}:`, error);
-          alert(`Failed to send announcement to one or more targets. Please try again.`);
-          return;
-        }
-      } else if (target.type === 'organization') {
-        const { error } = await createOrganizationAnnouncement(target.id, memberId, message);
-        if (error) {
-          console.error(`Error creating announcement for organization ${target.id}:`, error);
-          alert(`Failed to send announcement to one or more targets. Please try again.`);
-          return;
+    try {
+      // Send announcement to each selected target
+      for (const target of targets) {
+        if (target.type === 'league') {
+          await createLeagueAnnouncementMutation.mutateAsync({
+            leagueId: target.id,
+            senderId: memberId,
+            message,
+          });
+        } else if (target.type === 'organization') {
+          await createOrganizationAnnouncementMutation.mutateAsync({
+            operatorId: target.id,
+            senderId: memberId,
+            message,
+          });
         }
       }
+
+      // Close modal (cache auto-refreshed by mutations)
+      setShowAnnouncementModal(false);
+
+      // Show success message
+      alert(
+        `Announcement sent successfully to ${targets.length} target${targets.length > 1 ? 's' : ''}!`
+      );
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+      alert(`Failed to send announcement. Please try again.`);
     }
-
-    // Close modal and refresh conversations
-    setShowAnnouncementModal(false);
-    setRefreshKey((prev) => prev + 1);
-
-    // Show success message
-    alert(
-      `Announcement sent successfully to ${targets.length} target${targets.length > 1 ? 's' : ''}!`
-    );
   };
 
   const handleCreateConversation = async (
@@ -131,49 +122,42 @@ export function Messages() {
       return;
     }
 
-    let conversationId: string | null = null;
+    try {
+      let conversationId: string | null = null;
 
-    if (userIds.length === 1) {
-      // Direct message
-      const { data, error } = await createOrOpenConversation(
-        memberId,
-        userIds[0]
-      );
+      if (userIds.length === 1) {
+        // Direct message
+        const result = await createOrOpenConversationMutation.mutateAsync({
+          userId1: memberId,
+          userId2: userIds[0],
+        });
+        conversationId = result.conversationId;
+      } else {
+        // Group conversation
+        if (!groupName) {
+          console.error('Group name is required for group conversations');
+          return;
+        }
 
-      if (error) {
-        console.error('Error creating/opening conversation:', error);
-        return;
+        // Include current user in the group
+        const allMemberIds = [memberId, ...userIds];
+
+        const result = await createGroupConversationMutation.mutateAsync({
+          creatorId: memberId,
+          groupName,
+          memberIds: allMemberIds,
+        });
+        conversationId = result.conversationId;
       }
 
-      conversationId = data?.conversationId || null;
-    } else {
-      // Group conversation
-      if (!groupName) {
-        console.error('Group name is required for group conversations');
-        return;
+      if (conversationId) {
+        setSelectedConversationId(conversationId);
+        setShowNewMessageModal(false);
+        // Cache auto-refreshed by mutations - no need for refreshKey
       }
-
-      // Include current user in the group
-      const allMemberIds = [memberId, ...userIds];
-
-      const { data, error } = await createGroupConversation(
-        memberId,
-        groupName,
-        allMemberIds
-      );
-
-      if (error) {
-        console.error('Error creating group conversation:', error);
-        return;
-      }
-
-      conversationId = data?.conversationId || null;
-    }
-
-    if (conversationId) {
-      setSelectedConversationId(conversationId);
-      setShowNewMessageModal(false);
-      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      alert('Failed to create conversation. Please try again.');
     }
   };
 
@@ -218,7 +202,6 @@ export function Messages() {
         >
           {memberId && (
             <ConversationList
-              key={refreshKey}
               userId={memberId}
               selectedConversationId={selectedConversationId}
               onSelectConversation={setSelectedConversationId}
@@ -246,7 +229,7 @@ export function Messages() {
               onBack={handleBackToList}
               onLeaveConversation={() => {
                 setSelectedConversationId(null);
-                setRefreshKey((prev) => prev + 1);
+                // Cache auto-refreshed by mutation
               }}
             />
           ) : (
@@ -285,7 +268,9 @@ export function Messages() {
       {showSettingsModal && (
         <MessageSettingsModal
           onClose={() => setShowSettingsModal(false)}
-          onUnblocked={() => setRefreshKey((prev) => prev + 1)}
+          onUnblocked={() => {
+            // Cache auto-refreshed by unblock mutation
+          }}
         />
       )}
     </div>

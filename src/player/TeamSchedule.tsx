@@ -7,9 +7,9 @@
  * Flow: My Teams → View Schedule → See all team matches
  */
 
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '@/supabaseClient';
+import { useMatchesByTeam, useTeamDetails } from '@/api/hooks';
+import type { MatchWithDetails } from '@/api/queries/matches';
 import {
   Accordion,
   AccordionContent,
@@ -22,104 +22,20 @@ import { Calendar, MapPin, ArrowLeft, Trophy } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TeamNameLink } from '@/components/TeamNameLink';
 
-interface Match {
-  id: string;
-  scheduled_date: string;
-  status: string;
-  home_team_id: string;
-  away_team_id: string;
-  home_team: {
-    id: string;
-    team_name: string;
-  } | null;
-  away_team: {
-    id: string;
-    team_name: string;
-  } | null;
-  scheduled_venue: {
-    id: string;
-    name: string;
-    city: string;
-    state: string;
-  } | null;
-  season_week: {
-    id: string;
-    week_name: string;
-    scheduled_date: string;
-  } | null;
-}
-
-interface Team {
-  id: string;
-  team_name: string;
-}
-
 export function TeamSchedule() {
   const { teamId } = useParams<{ teamId: string }>();
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchTeamSchedule() {
-      if (!teamId) {
-        setError('No team ID provided');
-        setLoading(false);
-        return;
-      }
+  // Fetch team details and matches using TanStack Query hooks
+  const { data: team, isLoading: teamLoading, error: teamError } = useTeamDetails(teamId);
+  const { data: matches = [], isLoading: matchesLoading, error: matchesError } = useMatchesByTeam(teamId);
 
-      try {
-        // Fetch team info
-        const { data: teamData, error: teamError } = await supabase
-          .from('teams')
-          .select('id, team_name')
-          .eq('id', teamId)
-          .single();
-
-        if (teamError) throw teamError;
-        setTeam(teamData);
-
-        // Fetch all matches for this team (home or away)
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select(`
-            id,
-            status,
-            home_team_id,
-            away_team_id,
-            home_team:teams!matches_home_team_id_fkey(id, team_name),
-            away_team:teams!matches_away_team_id_fkey(id, team_name),
-            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
-            season_week:season_weeks(id, week_name, scheduled_date)
-          `)
-          .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
-          .order('season_week(scheduled_date)', { ascending: true });
-
-        if (matchesError) throw matchesError;
-
-        // Transform data to include scheduled_date at top level
-        const transformedMatches = (matchesData || []).map((match: any) => ({
-          ...match,
-          scheduled_date: match.season_week?.scheduled_date || null,
-        }));
-
-        setMatches(transformedMatches);
-      } catch (err) {
-        console.error('Error fetching team schedule:', err);
-        setError('Failed to load team schedule');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTeamSchedule();
-  }, [teamId]);
+  const loading = teamLoading || matchesLoading;
+  const error = teamError || matchesError ? 'Failed to load team schedule' : null;
 
   /**
    * Determine if this team is home or away
    */
-  const getTeamRole = (match: Match): 'home' | 'away' | null => {
+  const getTeamRole = (match: MatchWithDetails): 'home' | 'away' | null => {
     if (match.home_team_id === teamId) return 'home';
     if (match.away_team_id === teamId) return 'away';
     return null;

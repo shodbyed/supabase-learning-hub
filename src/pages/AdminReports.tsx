@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
+import { useMemberId } from '@/api/hooks';
 import {
   getReportDetails,
   updateReportStatus,
@@ -77,7 +77,7 @@ interface ReportDetails {
 }
 
 export function AdminReports() {
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [allReports, setAllReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportDetails | null>(null);

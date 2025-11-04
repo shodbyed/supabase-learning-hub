@@ -2,10 +2,9 @@
  * @fileoverview OperatorDashboard Component
  * Main dashboard for league operators with access to all operator-specific features
  */
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { useUserProfile } from '../hooks/useUserProfile';
-import { supabase } from '@/supabaseClient';
+import { useUserProfile, useOperatorIdValue, useLeagueCount } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
 import { QuickStats } from '@/components/operator/QuickStats';
@@ -26,39 +25,11 @@ import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
  */
 export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
-  const [operatorId, setOperatorId] = useState<string | null>(null);
-  const [leagueCount, setLeagueCount] = useState(0);
   const { count: pendingReportsCount } = usePendingReportsCount();
 
-  /**
-   * Fetch operator ID and league count on mount
-   */
-  useEffect(() => {
-    const fetchOperatorData = async () => {
-      if (!member) return;
-
-      // Get operator ID
-      const { data: operatorData } = await supabase
-        .from('league_operators')
-        .select('id')
-        .eq('member_id', member.id)
-        .single();
-
-      if (operatorData) {
-        setOperatorId(operatorData.id);
-
-        // Get league count
-        const { count } = await supabase
-          .from('leagues')
-          .select('*', { count: 'exact', head: true })
-          .eq('operator_id', operatorData.id);
-
-        setLeagueCount(count || 0);
-      }
-    };
-
-    fetchOperatorData();
-  }, [member]);
+  // Fetch operator ID and league count using TanStack Query hooks
+  const operatorId = useOperatorIdValue();
+  const { data: leagueCount = 0 } = useLeagueCount(operatorId);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

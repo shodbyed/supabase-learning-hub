@@ -1,0 +1,158 @@
+/**
+ * @fileoverview Confirmation Dialog Component
+ *
+ * Modal for confirming or denying opponent's score submissions.
+ * Handles both normal score confirmations and vacate requests.
+ */
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+
+interface ConfirmationDialogProps {
+  /** Whether dialog is open */
+  open: boolean;
+  /** Game needing confirmation */
+  game: {
+    gameNumber: number;
+    winnerPlayerName: string;
+    breakAndRun: boolean;
+    goldenBreak: boolean;
+    isResetRequest?: boolean;
+  } | null;
+  /** Game type for golden break label (8-ball, 9-ball, 10-ball, etc.) */
+  gameType: string;
+  /** Handler for confirm/agree button */
+  onConfirm: (gameNumber: number, isResetRequest?: boolean) => void;
+  /** Handler for deny button */
+  onDeny: (gameNumber: number, isResetRequest?: boolean) => void;
+  /** Handler when dialog closes */
+  onClose: () => void;
+}
+
+/**
+ * Dialog for confirming opponent's game score or vacate request
+ *
+ * Two modes:
+ * 1. Normal confirmation - opponent scored a game
+ * 2. Vacate request - opponent wants to clear a game result
+ */
+export function ConfirmationDialog({
+  open,
+  game,
+  gameType,
+  onConfirm,
+  onDeny,
+  onClose,
+}: ConfirmationDialogProps) {
+  if (!game) return null;
+
+  const isVacateRequest = game.isResetRequest;
+
+  // Get golden break label based on game type
+  const getGoldenBreakLabel = () => {
+    if (gameType === '8-ball') return 'an 8 on the Break!';
+    if (gameType === '9-ball') return 'a 9 on the Break!';
+    if (gameType === '10-ball') return 'a 10 on the Break!';
+    return 'a Golden Break!';
+  };
+
+  const handleConfirm = () => {
+    onConfirm(game.gameNumber, isVacateRequest);
+    onClose();
+  };
+
+  const handleDeny = () => {
+    onDeny(game.gameNumber, isVacateRequest);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open}>
+      <DialogContent
+        showCloseButton={false}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          {isVacateRequest ? (
+            <>
+              <DialogTitle className="text-orange-600">
+                ⚠️ Confirm Vacate Winner
+              </DialogTitle>
+              <DialogDescription>
+                Your opponent wants to vacate the winner and clear this game
+                result.
+              </DialogDescription>
+            </>
+          ) : (
+            <>
+              <DialogTitle>Confirm Opponent's Score</DialogTitle>
+              <DialogDescription>
+                Verify the game result submitted by your opponent.
+              </DialogDescription>
+            </>
+          )}
+        </DialogHeader>
+
+        <div className="py-4 space-y-4">
+          {isVacateRequest ? (
+            <>
+              <p className="text-center text-gray-700 font-semibold">
+                Game {game.gameNumber}
+              </p>
+              <div className="text-center text-lg font-semibold text-orange-600">
+                Current winner: {game.winnerPlayerName}
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded p-3 mt-4">
+                <p className="text-center text-sm text-gray-700">
+                  Agreeing will{' '}
+                  <span className="font-semibold">vacate this winner</span> and
+                  allow both teams to score this game again.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-center text-gray-500 text-sm">
+                Opponent recorded for game {game.gameNumber}:
+              </p>
+              {/* Dynamic result message based on what was selected */}
+              <div className="text-center text-lg font-semibold">
+                {game.breakAndRun ? (
+                  <div className="text-blue-600">
+                    {game.winnerPlayerName} had a Break & Run!
+                  </div>
+                ) : game.goldenBreak ? (
+                  <div className="text-green-600">
+                    {game.winnerPlayerName} had {getGoldenBreakLabel()}
+                  </div>
+                ) : (
+                  <div>{game.winnerPlayerName} won the game</div>
+                )}
+              </div>
+              <p className="text-center mt-4 text-gray-600">
+                Do you agree with this result?
+              </p>
+            </>
+          )}
+        </div>
+
+        <DialogFooter className="flex flex-row justify-around gap-4">
+          <Button className="flex-1" onClick={handleConfirm}>
+            {isVacateRequest ? 'Agree - Vacate Winner' : 'Confirm'}
+          </Button>
+          <Button variant="outline" className="flex-1" onClick={handleDeny}>
+            {isVacateRequest ? 'Deny - Keep Winner' : 'Deny'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

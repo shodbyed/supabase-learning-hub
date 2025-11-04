@@ -1,95 +1,48 @@
 /**
  * @fileoverview useConversationParticipants Hook
  *
- * Single responsibility: Fetch conversation participant data.
- * Reusable hook for getting recipient name and last_read_at timestamp.
+ * DEPRECATED: Use TanStack Query versions instead:
+ * - useConversationTitle (from @/api/hooks)
+ * - useConversationParticipantsQuery (from @/api/hooks)
+ *
+ * This hook is a wrapper around the TanStack Query hooks for backward compatibility.
+ * It will be removed once all usages are migrated.
  */
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/supabaseClient';
+import { useMemo } from 'react';
+import { useConversationTitle, useConversationParticipantsQuery } from '@/api/hooks';
 
 export function useConversationParticipants(conversationId: string, currentUserId: string) {
-  const [recipientName, setRecipientName] = useState<string>('');
-  const [recipientLastRead, setRecipientLastRead] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Fetch conversation title (for group chats/announcements)
+  const { data: titleData, isLoading: titleLoading } = useConversationTitle(conversationId);
 
-  useEffect(() => {
-    async function loadRecipient() {
-      // First, fetch the conversation to see if it has a title (group chat)
-      const { data: conversationData } = await supabase
-        .from('conversations')
-        .select('title')
-        .eq('id', conversationId)
-        .single();
+  // Fetch participants with member details
+  const { data: participants = [], isLoading: participantsLoading } =
+    useConversationParticipantsQuery(conversationId);
 
-      // If conversation has a title (group chat), use that
-      if (conversationData?.title) {
-        setRecipientName(conversationData.title);
-        setLoading(false);
-        return;
-      }
-
-      // Otherwise, it's a DM - fetch the other participant
-      const { data, error } = await supabase
-        .from('conversation_participants')
-        .select(`
-          user_id,
-          last_read_at,
-          members:user_id (
-            id,
-            first_name,
-            last_name,
-            system_player_number
-          )
-        `)
-        .eq('conversation_id', conversationId)
-        .is('left_at', null);
-
-      if (error) {
-        console.error('Error loading participants:', error);
-        setLoading(false);
-        return;
-      }
-
-      const otherParticipant = data?.find((p: any) => p.user_id !== currentUserId);
-      if (otherParticipant?.members && !Array.isArray(otherParticipant.members)) {
-        const member = otherParticipant.members as any;
-        setRecipientName(`${member.first_name} ${member.last_name}`);
-        setRecipientLastRead(otherParticipant.last_read_at);
-      } else {
-        // Fallback if no participant found
-        setRecipientName('Conversation');
-      }
-
-      setLoading(false);
+  // Calculate recipientName based on title or other participant
+  const recipientName = useMemo(() => {
+    // If conversation has a title, use it
+    if (titleData?.title) {
+      return titleData.title;
     }
 
-    loadRecipient();
+    // Otherwise, find the other participant's name
+    const otherParticipant = participants.find(p => p.userId !== currentUserId);
+    if (otherParticipant) {
+      return `${otherParticipant.firstName} ${otherParticipant.lastName}`;
+    }
 
-    // Subscribe to read receipt updates
-    const channel = supabase
-      .channel(`participants:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'conversation_participants',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        (payload) => {
-          // Update last_read_at if it's the other participant
-          if (payload.new.user_id !== currentUserId) {
-            setRecipientLastRead((payload.new as any).last_read_at);
-          }
-        }
-      )
-      .subscribe();
+    return 'Conversation';
+  }, [titleData, participants, currentUserId]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, currentUserId]);
+  // Get recipient's last_read_at
+  const recipientLastRead = useMemo(() => {
+    const otherParticipant = participants.find(p => p.userId !== currentUserId);
+    return otherParticipant?.lastReadAt || null;
+  }, [participants, currentUserId]);
+
+  const loading = titleLoading || participantsLoading;
 
   return { recipientName, recipientLastRead, loading };
 }

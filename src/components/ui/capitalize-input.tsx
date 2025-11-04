@@ -42,6 +42,8 @@ export interface CapitalizeInputProps {
   disabled?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Maximum character length */
+  maxLength?: number;
 }
 
 /**
@@ -92,17 +94,24 @@ export const CapitalizeInput = React.forwardRef<
   formatFunction = defaultFormat,
   disabled,
   className,
+  maxLength,
 }, ref) => {
-  // Internal state for raw input value
+  // Internal state for raw input value (what user types)
   const [internalValue, setInternalValue] = useState(value);
 
   // Auto-capitalize toggle state (forced on if hideCheckbox is true)
   const [autoCapitalize, setAutoCapitalize] = useState(hideCheckbox ? true : defaultCapitalize);
 
-  // Sync internal value when external value changes
+  // Track if value is being controlled externally (initial load only)
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Sync internal value when external value changes (only on initial load)
   useEffect(() => {
-    setInternalValue(value);
-  }, [value]);
+    if (!isInitialized && value) {
+      setInternalValue(value);
+      setIsInitialized(true);
+    }
+  }, [value, isInitialized]);
 
   /**
    * Expose method to get the current value (formatted or raw based on checkbox)
@@ -115,16 +124,26 @@ export const CapitalizeInput = React.forwardRef<
 
   /**
    * Handle internal value changes
-   * Just update internal state - don't format on every keystroke
+   * Always pass formatted or raw value to parent based on checkbox state
    */
   const handleChange = (newValue: string) => {
+    // Enforce maxLength if provided
+    if (maxLength && newValue.length > maxLength) {
+      return; // Don't update state if exceeds max length
+    }
     setInternalValue(newValue);
-    // Pass raw value to parent so they can see what user is typing
-    onChange(newValue);
+
+    // If auto-capitalize is on, send formatted value to parent
+    // If auto-capitalize is off, send raw value to parent
+    if (hideCheckbox || autoCapitalize) {
+      onChange(formatFunction(newValue));
+    } else {
+      onChange(newValue);
+    }
   };
 
   /**
-   * Handle Enter key press - preview/apply capitalization
+   * Handle Enter key press - preview capitalization in the input field
    */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && (hideCheckbox || autoCapitalize) && internalValue.trim()) {
@@ -152,6 +171,7 @@ export const CapitalizeInput = React.forwardRef<
         placeholder={placeholder}
         disabled={disabled}
         className={error ? 'border-red-500' : ''}
+        maxLength={maxLength}
       />
 
       {errorMessage && error && (
@@ -174,7 +194,7 @@ export const CapitalizeInput = React.forwardRef<
             className="text-sm text-gray-700 select-none cursor-pointer"
           >
             {autoCapitalize
-              ? "Auto-capitalize (press Enter to preview, or Next to apply)"
+              ? "Auto-capitalize enabled (formatting applied when saved)"
               : "Auto-capitalize off (text will appear exactly as entered)"
             }
           </label>

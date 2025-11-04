@@ -6,9 +6,9 @@
  * Optional fields can be added later via venue editing.
  */
 import React, { useState } from 'react';
-import { supabase } from '@/supabaseClient';
 import { X } from 'lucide-react';
-import type { VenueFormData, VenueInsertData, Venue } from '@/types/venue';
+import { useCreateVenue, useUpdateVenue } from '@/api/hooks';
+import type { VenueFormData, Venue } from '@/types/venue';
 import { US_STATES } from '@/constants/states';
 import { formatPhoneNumber } from '@/utils/formatters';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -55,8 +55,13 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     regulation_tables: existingVenue?.regulation_tables || 0
   });
 
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Mutation hooks
+  const createVenueMutation = useCreateVenue();
+  const updateVenueMutation = useUpdateVenue();
+
+  const saving = createVenueMutation.isPending || updateVenueMutation.isPending;
 
   /**
    * Update form field value
@@ -100,13 +105,13 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
       return;
     }
 
-    setSaving(true);
     setError(null);
 
     try {
       if (isEditing && existingVenue) {
         // UPDATE existing venue
-        const updateData = {
+        const venue = await updateVenueMutation.mutateAsync({
+          venueId: existingVenue.id,
           name: formData.name.trim(),
           street_address: formData.street_address.trim(),
           city: formData.city.trim(),
@@ -115,25 +120,14 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           phone: formData.phone.trim(),
           bar_box_tables: formData.bar_box_tables,
           regulation_tables: formData.regulation_tables,
-        };
+        });
 
-        console.log('✏️ Updating venue:', updateData);
-
-        const { data: updatedVenue, error: dbError } = await supabase
-          .from('venues')
-          .update(updateData)
-          .eq('id', existingVenue.id)
-          .select()
-          .single();
-
-        if (dbError) throw dbError;
-
-        console.log('✅ Venue updated:', updatedVenue);
-        onSuccess(updatedVenue);
+        console.log('✅ Venue updated:', venue);
+        onSuccess(venue);
       } else {
         // INSERT new venue
-        const insertData: VenueInsertData = {
-          created_by_operator_id: operatorId,
+        const venue = await createVenueMutation.mutateAsync({
+          operatorId,
           name: formData.name.trim(),
           street_address: formData.street_address.trim(),
           city: formData.city.trim(),
@@ -142,35 +136,23 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           phone: formData.phone.trim(),
           bar_box_tables: formData.bar_box_tables,
           regulation_tables: formData.regulation_tables,
-          // Optional fields - null if not provided
-          proprietor_name: formData.proprietor_name?.trim() || null,
-          proprietor_phone: formData.proprietor_phone?.trim() || null,
-          league_contact_name: formData.league_contact_name?.trim() || null,
-          league_contact_phone: formData.league_contact_phone?.trim() || null,
-          league_contact_email: formData.league_contact_email?.trim() || null,
-          website: formData.website?.trim() || null,
-          business_hours: formData.business_hours?.trim() || null,
-          notes: formData.notes?.trim() || null
-        };
+          // Optional fields - only include if provided
+          proprietor_name: formData.proprietor_name?.trim() || undefined,
+          proprietor_phone: formData.proprietor_phone?.trim() || undefined,
+          league_contact_name: formData.league_contact_name?.trim() || undefined,
+          league_contact_phone: formData.league_contact_phone?.trim() || undefined,
+          league_contact_email: formData.league_contact_email?.trim() || undefined,
+          website: formData.website?.trim() || undefined,
+          business_hours: formData.business_hours?.trim() || undefined,
+          notes: formData.notes?.trim() || undefined,
+        });
 
-        console.log('🏢 Creating venue:', insertData);
-
-        const { data: newVenue, error: dbError } = await supabase
-          .from('venues')
-          .insert([insertData])
-          .select()
-          .single();
-
-        if (dbError) throw dbError;
-
-        console.log('✅ Venue created:', newVenue);
-        onSuccess(newVenue);
+        console.log('✅ Venue created:', venue);
+        onSuccess(venue);
       }
     } catch (err) {
       console.error('❌ Error saving venue:', err);
       setError(err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'create'} venue`);
-    } finally {
-      setSaving(false);
     }
   };
 

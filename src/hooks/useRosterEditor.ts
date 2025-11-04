@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/supabaseClient';
+import { useTeamRoster } from '@/api/hooks/useTeams';
 import type { TeamWithQueryDetails } from '@/types/team';
 
 interface UseRosterEditorParams {
@@ -60,7 +60,9 @@ export function useRosterEditor({
 }: UseRosterEditorParams): UseRosterEditorReturn {
   const [playerIds, setPlayerIds] = useState<string[]>(Array(rosterSize - 1).fill(''));
   const [rosterError, setRosterError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  // Use TanStack Query to fetch existing roster when editing
+  const { data: rosterData, isLoading } = useTeamRoster(existingTeamId);
 
   /**
    * Check if a player is on another team in the SAME SEASON (excluding the current team being edited)
@@ -97,41 +99,22 @@ export function useRosterEditor({
 
   /**
    * Load existing roster when editing a team
+   * Uses TanStack Query data (rosterData) to populate player IDs
    */
   useEffect(() => {
-    if (!existingTeamId) return;
+    if (!rosterData) return;
 
-    const loadRoster = async () => {
-      setLoading(true);
-      try {
-        const { data: rosterData, error: rosterError } = await supabase
-          .from('team_players')
-          .select('member_id, is_captain')
-          .eq('team_id', existingTeamId)
-          .order('is_captain', { ascending: false });
+    // Filter out captain, get just the other players
+    const nonCaptainPlayers = rosterData.filter(p => !p.is_captain).map(p => p.member_id);
 
-        if (rosterError) throw rosterError;
+    // Fill the roster array with existing players, pad with empty strings
+    const filledRoster = [...nonCaptainPlayers];
+    while (filledRoster.length < rosterSize - 1) {
+      filledRoster.push('');
+    }
 
-        // Filter out captain, get just the other players
-        const nonCaptainPlayers = rosterData?.filter(p => !p.is_captain).map(p => p.member_id) || [];
-
-        // Fill the roster array with existing players, pad with empty strings
-        const filledRoster = [...nonCaptainPlayers];
-        while (filledRoster.length < rosterSize - 1) {
-          filledRoster.push('');
-        }
-
-        setPlayerIds(filledRoster.slice(0, rosterSize - 1));
-      } catch (err) {
-        console.error('Error loading roster:', err);
-        setRosterError('Failed to load existing roster');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRoster();
-  }, [existingTeamId, rosterSize]);
+    setPlayerIds(filledRoster.slice(0, rosterSize - 1));
+  }, [rosterData, rosterSize]);
 
   /**
    * Update player at specific roster index with validation
@@ -219,6 +202,6 @@ export function useRosterEditor({
     validateRoster,
     clearRosterError,
     getAllPlayerIds,
-    loading,
+    loading: isLoading,
   };
 }

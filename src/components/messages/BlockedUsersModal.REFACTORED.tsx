@@ -12,11 +12,11 @@
  * - Cleaner, more maintainable code
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Modal, LoadingState, EmptyState } from '@/components/shared';
-import { getBlockedUsers, unblockUser } from '@/utils/messageQueries';
+import { Modal, LoadingState, EmptyState, ConfirmDialog } from '@/components/shared';
+import { useBlockedUsersDetails, useUnblockUser } from '@/api/hooks';
 
 interface BlockedUser {
   blocked_id: string;
@@ -90,52 +90,44 @@ export function BlockedUsersModal({
   onClose,
   onUnblocked,
 }: BlockedUsersModalProps) {
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [loading, setLoading] = useState(true);
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
+  const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
+  const [userToUnblock, setUserToUnblock] = useState<string | null>(null);
 
-  // Load blocked users on mount
-  useEffect(() => {
-    if (!isOpen) return;
+  // Fetch blocked users with TanStack Query
+  const { data: blockedUsersData = [], isLoading: loading } = useBlockedUsersDetails(currentUserId);
+  const unblockUserMutation = useUnblockUser();
 
-    async function loadBlockedUsers() {
-      setLoading(true);
-      const { data, error } = await getBlockedUsers(currentUserId);
+  // Cast to correct type (Supabase returns blocked as object, not array)
+  const blockedUsers = blockedUsersData as any as BlockedUser[];
 
-      if (error) {
-        console.error('Error loading blocked users:', error);
-      } else {
-        setBlockedUsers((data as any) || []);
-      }
+  const handleUnblockClick = (blockedUserId: string) => {
+    setUserToUnblock(blockedUserId);
+    setShowUnblockConfirm(true);
+  };
 
-      setLoading(false);
-    }
+  const handleUnblockConfirm = async () => {
+    if (!userToUnblock) return;
 
-    loadBlockedUsers();
-  }, [currentUserId, isOpen]);
+    setUnblockingId(userToUnblock);
 
-  const handleUnblock = async (blockedUserId: string) => {
-    if (!confirm('Are you sure you want to unblock this user? They will be able to message you again.')) {
-      return;
-    }
+    try {
+      await unblockUserMutation.mutateAsync({
+        blockerId: currentUserId,
+        blockedUserId: userToUnblock,
+      });
 
-    setUnblockingId(blockedUserId);
+      setUnblockingId(null);
+      setUserToUnblock(null);
 
-    const { error } = await unblockUser(currentUserId, blockedUserId);
-
-    if (error) {
+      // Notify parent
+      onUnblocked?.();
+    } catch (error) {
       console.error('Error unblocking user:', error);
       alert('Failed to unblock user. Please try again.');
       setUnblockingId(null);
-      return;
+      setUserToUnblock(null);
     }
-
-    // Remove from local list
-    setBlockedUsers((prev) => prev.filter((u) => u.blocked_id !== blockedUserId));
-    setUnblockingId(null);
-
-    // Notify parent
-    onUnblocked?.();
   };
 
   return (
@@ -160,7 +152,7 @@ export function BlockedUsersModal({
               <BlockedUserItem
                 key={blockedUser.blocked_id}
                 blockedUser={blockedUser}
-                onUnblock={handleUnblock}
+                onUnblock={handleUnblockClick}
                 isUnblocking={unblockingId === blockedUser.blocked_id}
               />
             ))}
@@ -173,6 +165,18 @@ export function BlockedUsersModal({
           Close
         </Button>
       </Modal.Footer>
+
+      {/* Unblock Confirmation Dialog */}
+      <ConfirmDialog
+        open={showUnblockConfirm}
+        onOpenChange={setShowUnblockConfirm}
+        title="Unblock User?"
+        description="Are you sure you want to unblock this user? They will be able to message you again."
+        confirmLabel="Unblock"
+        cancelLabel="Cancel"
+        onConfirm={handleUnblockConfirm}
+        variant="default"
+      />
     </Modal>
   );
 }

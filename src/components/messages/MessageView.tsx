@@ -15,9 +15,9 @@ import { ConversationHeader } from './ConversationHeader';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { useConversationParticipants } from '@/hooks/useConversationParticipants';
-import { fetchConversationMessages, sendMessage, updateLastRead, leaveConversation, blockUser } from '@/utils/messageQueries';
+import { useConversationMessages, useSendMessage, useUpdateLastRead, useConversationMessagesRealtime, useLeaveConversation, useBlockUser } from '@/api/hooks';
 import { supabase } from '@/supabaseClient';
-import { LoadingState, EmptyState } from '@/components/shared';
+import { LoadingState, EmptyState, ConfirmDialog } from '@/components/shared';
 import { MessageSquare } from 'lucide-react';
 
 interface Message {
@@ -42,11 +42,22 @@ interface MessageViewProps {
 }
 
 export function MessageView({ conversationId, currentUserId, onBack, onLeaveConversation }: MessageViewProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
   const [conversationType, setConversationType] = useState<string | null>(null);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // TanStack Query hooks
+  const { data: messagesData = [], isLoading: loading } = useConversationMessages(conversationId);
+  const messages = messagesData as any as Message[];
+  const sendMessageMutation = useSendMessage();
+  const updateLastReadMutation = useUpdateLastRead();
+  const leaveConversationMutation = useLeaveConversation();
+  const blockUserMutation = useBlockUser();
+
+  // Real-time subscriptions (auto-manages channels and cleanup)
+  useConversationMessagesRealtime(conversationId, currentUserId, updateLastReadMutation);
 
   const { recipientName, recipientLastRead } = useConversationParticipants(
     conversationId,
@@ -91,72 +102,15 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
     loadConversationDetails();
   }, [conversationId, currentUserId]);
 
-  // Load messages when conversation changes
+  // Mark conversation as read when messages load
   useEffect(() => {
-    async function loadMessages() {
-      setLoading(true);
-      const { data, error } = await fetchConversationMessages(conversationId);
-
-      if (error) {
-        console.error('Error loading messages:', error);
-        setLoading(false);
-        return;
-      }
-
-      setMessages((data as any) || []);
-      setLoading(false);
-
-      await updateLastRead(conversationId, currentUserId);
+    if (messages.length > 0) {
+      updateLastReadMutation.mutate({
+        conversationId,
+        userId: currentUserId,
+      });
     }
-
-    loadMessages();
-  }, [conversationId, currentUserId]);
-
-  // Subscribe to new messages in this conversation
-  useEffect(() => {
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        async (payload) => {
-          // Fetch the complete message with sender info
-          const { data, error } = await supabase
-            .from('messages')
-            .select(`
-              id,
-              content,
-              created_at,
-              edited_at,
-              is_edited,
-              sender:members!sender_id(
-                id,
-                first_name,
-                last_name,
-                system_player_number
-              )
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (!error && data) {
-            setMessages((prev) => [...prev, data as any]);
-            // Update last read if we're viewing the conversation
-            await updateLastRead(conversationId, currentUserId);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, messages.length]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -164,54 +118,66 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
   }, [messages]);
 
   const handleSendMessage = async (content: string) => {
-    const { error } = await sendMessage(conversationId, currentUserId, content);
-
-    if (error) {
-      console.error('Error sending message:', error);
-      return;
-    }
+    sendMessageMutation.mutate(
+      {
+        conversationId,
+        senderId: currentUserId,
+        content,
+      },
+      {
+        onError: (error) => {
+          console.error('Error sending message:', error);
+          alert('Failed to send message. Please try again.');
+        },
+      }
+    );
 
     // Don't manually fetch - let realtime subscription handle it
     // The message will appear via the realtime subscription
   };
 
-  const handleLeave = async () => {
-    if (!confirm('Are you sure you want to leave this conversation? You can always start a new one later.')) {
-      return;
-    }
+  const handleLeaveClick = () => {
+    setShowLeaveConfirm(true);
+  };
 
-    const { error } = await leaveConversation(conversationId, currentUserId);
+  const handleLeaveConfirm = async () => {
+    try {
+      await leaveConversationMutation.mutateAsync({
+        conversationId,
+        userId: currentUserId,
+      });
 
-    if (error) {
+      // Navigate back to conversation list
+      if (onLeaveConversation) {
+        onLeaveConversation();
+      }
+    } catch (error) {
       console.error('Error leaving conversation:', error);
       alert('Failed to leave conversation. Please try again.');
-      return;
-    }
-
-    // Navigate back to conversation list
-    if (onLeaveConversation) {
-      onLeaveConversation();
     }
   };
 
-  const handleBlock = async () => {
+  const handleBlockClick = () => {
+    if (!otherUserId) return;
+    setShowBlockConfirm(true);
+  };
+
+  const handleBlockConfirm = async () => {
     if (!otherUserId) return;
 
-    if (!confirm(`Are you sure you want to block this user? They will no longer be able to message you, and this conversation will be removed from your list.`)) {
-      return;
-    }
+    try {
+      await blockUserMutation.mutateAsync({
+        blockerId: currentUserId,
+        blockedUserId: otherUserId,
+      });
 
-    const { error } = await blockUser(currentUserId, otherUserId);
-
-    if (error) {
+      // Navigate back to conversation list after blocking
+      if (onLeaveConversation) {
+        onLeaveConversation();
+      }
+    } catch (error) {
       console.error('Error blocking user:', error);
       alert('Failed to block user. Please try again.');
-      return;
-    }
-
-    // Navigate back to conversation list after blocking
-    if (onLeaveConversation) {
-      onLeaveConversation();
     }
   };
 
@@ -223,10 +189,34 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       <ConversationHeader
         title={recipientName || 'Direct Message'}
         onBack={onBack}
-        onLeave={handleLeave}
-        onBlock={handleBlock}
+        onLeave={handleLeaveClick}
+        onBlock={handleBlockClick}
         canLeave={true}
         canBlock={isDM}
+      />
+
+      {/* Leave Conversation Confirmation */}
+      <ConfirmDialog
+        open={showLeaveConfirm}
+        onOpenChange={setShowLeaveConfirm}
+        title="Leave Conversation?"
+        description="Are you sure you want to leave this conversation? You can always start a new one later."
+        confirmLabel="Leave"
+        cancelLabel="Cancel"
+        onConfirm={handleLeaveConfirm}
+        variant="default"
+      />
+
+      {/* Block User Confirmation */}
+      <ConfirmDialog
+        open={showBlockConfirm}
+        onOpenChange={setShowBlockConfirm}
+        title="Block User?"
+        description="They will no longer be able to message you, and this conversation will be removed from your list."
+        confirmLabel="Block"
+        cancelLabel="Cancel"
+        onConfirm={handleBlockConfirm}
+        variant="destructive"
       />
 
       {/* Messages - Mobile-optimized padding */}

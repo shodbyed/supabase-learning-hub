@@ -7,7 +7,7 @@
  */
 
 // Member and User types
-export type { Member, UserRole } from './member';
+export type { Member, PartialMember, UserRole } from './member';
 
 // League types
 export type {
@@ -29,3 +29,24 @@ export type {
   TournamentOrganization,
   TournamentType
 } from './tournament';
+
+// Match and Scoring types
+export type {
+  MatchType,
+  MatchBasic,
+  MatchWithLeagueSettings,
+  Lineup,
+  Player,
+  HandicapThresholds,
+  MatchGame,
+  ScoringOptions,
+  ConfirmationQueueItem,
+  TeamStats,
+  PlayerStats
+} from './match';
+
+// Match and Scoring utility functions
+export { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from './match';
+
+// Team types
+export type { Team, TeamWithQueryDetails, UseTeamManagementReturn } from './team';

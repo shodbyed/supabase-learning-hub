@@ -1,0 +1,70 @@
+/**
+ * @fileoverview Member Mutation Functions
+ *
+ * Write operations for member records (update profanity filter, etc.).
+ * These functions are used by TanStack Query useMutation hooks.
+ *
+ * @see api/hooks/useMemberMutations.ts - React hooks wrapper
+ */
+
+import { supabase } from '@/supabaseClient';
+import { isEighteenOrOlder } from '@/utils/formatters';
+
+/**
+ * Parameters for updating profanity filter
+ */
+export interface UpdateProfanityFilterParams {
+  userId: string;
+  enabled: boolean;
+}
+
+/**
+ * Update member's profanity filter preference
+ *
+ * Only allows updates for users 18+. Users under 18 have filter forced ON.
+ * Validates age before allowing the update.
+ *
+ * @param params - Update parameters (userId, enabled)
+ * @throws Error if user is under 18 or database update fails
+ *
+ * @example
+ * await updateProfanityFilter({
+ *   userId: 'user-123',
+ *   enabled: false
+ * });
+ */
+export async function updateProfanityFilter(
+  params: UpdateProfanityFilterParams
+): Promise<void> {
+  const { userId, enabled } = params;
+
+  // First check if user is 18+
+  const { data: member, error: fetchError } = await supabase
+    .from('members')
+    .select('date_of_birth')
+    .eq('user_id', userId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch member data: ${fetchError.message}`);
+  }
+
+  if (!member) {
+    throw new Error('Member not found');
+  }
+
+  // Check age using helper function
+  if (!isEighteenOrOlder(member.date_of_birth)) {
+    throw new Error('Users under 18 cannot modify profanity filter settings');
+  }
+
+  // Update filter preference
+  const { error: updateError } = await supabase
+    .from('members')
+    .update({ profanity_filter_enabled: enabled })
+    .eq('user_id', userId);
+
+  if (updateError) {
+    throw new Error(`Failed to update profanity filter: ${updateError.message}`);
+  }
+}

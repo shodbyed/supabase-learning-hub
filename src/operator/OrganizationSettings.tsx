@@ -6,7 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';
@@ -537,6 +537,16 @@ export const OrganizationSettings: React.FC = () => {
             description="Access official BCA rules and manage optional house rules for your leagues"
             buttonText="View Rules"
             linkTo="/league-rules"
+          />
+
+          {/* Venue Management Card */}
+          <DashboardCard
+            icon="🏢"
+            iconColor="text-blue-600"
+            title="Venue Management"
+            description="Add and manage venues where your leagues play"
+            buttonText="Manage Venues"
+            linkTo="/venues"
           />
 
           {/* Profanity Filter Card */}

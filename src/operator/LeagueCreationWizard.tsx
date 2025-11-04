@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile, useCreateLeague } from '@/api/hooks';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
@@ -16,7 +16,7 @@ import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
 import { supabase } from '@/supabaseClient';
-import type { LeagueInsertData, GameType, DayOfWeek, TeamFormat } from '@/types/league';
+import type { GameType, DayOfWeek, TeamFormat } from '@/types/league';
 
 /**
  * League Creation Wizard Component
@@ -33,10 +33,14 @@ export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
   const [operatorId, setOperatorId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+
+  // Use TanStack Query mutation for league creation
+  const createLeagueMutation = useCreateLeague();
+  const isCreating = createLeagueMutation.isPending;
 
   /**
-   * Fetch operator ID on mount
+   * Fetch operator ID and clear old form data on mount
+   * This ensures each new wizard starts with a clean slate
    */
   useEffect(() => {
     const fetchOperatorId = async () => {
@@ -54,6 +58,11 @@ export const LeagueCreationWizard: React.FC = () => {
     };
 
     fetchOperatorId();
+
+    // Clear any previous wizard data when starting a new league creation
+    // This prevents form fields from pre-filling with old data
+    localStorage.removeItem('league-creation-wizard');
+    localStorage.removeItem('league-wizard-step');
   }, [member]);
 
   /**
@@ -64,8 +73,6 @@ export const LeagueCreationWizard: React.FC = () => {
       console.error('❌ No operator profile found');
       return;
     }
-
-    setIsCreating(true);
 
     try {
       console.group('🏆 LEAGUE CREATION - DATABASE OPERATIONS');
@@ -83,28 +90,17 @@ export const LeagueCreationWizard: React.FC = () => {
       };
       const gameType = gameTypeMap[formData.gameType] || 'eight_ball';
 
-      const insertData: LeagueInsertData = {
-        operator_id: operatorId,
-        game_type: gameType,
-        day_of_week: dayOfWeek,
-        division: formData.qualifier || null, // UI still uses 'qualifier' field name
-        team_format: formData.teamFormat as TeamFormat,
-        league_start_date: formData.startDate, // Already in YYYY-MM-DD format
-      };
+      console.log('📋 Creating league with TanStack Query mutation');
 
-      console.log('📋 League data to insert:', insertData);
-
-      // Insert into database
-      const { data: newLeague, error: insertError } = await supabase
-        .from('leagues')
-        .insert([insertData])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('❌ Error creating league:', insertError);
-        throw insertError;
-      }
+      // Create league using TanStack Query mutation
+      const newLeague = await createLeagueMutation.mutateAsync({
+        operatorId,
+        gameType,
+        dayOfWeek,
+        teamFormat: formData.teamFormat as TeamFormat,
+        leagueStartDate: formData.startDate,
+        division: formData.qualifier || null,
+      });
 
       console.log('✅ League created successfully!');
       console.log('📊 New league:', newLeague);
@@ -137,7 +133,6 @@ export const LeagueCreationWizard: React.FC = () => {
 
     } catch (error) {
       console.error('❌ Failed to create league:', error);
-      setIsCreating(false);
       // TODO: Show error message to user
     }
   };

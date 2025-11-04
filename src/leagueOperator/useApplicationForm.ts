@@ -5,7 +5,7 @@
 import { useReducer, useState } from 'react';
 import { applicationReducer, getInitialApplicationState } from './applicationReducer';
 import { getQuestionDefinitions } from './questionDefinitions';
-import { useUserProfile } from '../hooks/useUserProfile';
+import { useUserProfile } from '@/api/hooks';
 
 /**
  * Custom hook for managing league operator application form state

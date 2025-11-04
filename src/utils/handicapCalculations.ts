@@ -11,6 +11,8 @@
  * - none: 0
  */
 
+import type { Lineup } from '@/types';
+
 export type HandicapVariant = 'standard' | 'reduced' | 'none';
 
 /**
@@ -274,4 +276,52 @@ export async function calculateTeamHandicap(
 
   // Placeholder: Return random team handicap for testing
   return Math.floor(Math.random() * 5) - 2;
+}
+
+/**
+ * Calculate handicap differences for a 3v3 match
+ *
+ * Calculates the total handicap for each team including player handicaps and team handicap bonus.
+ * The home team gets a team handicap bonus based on standings, while away team does not.
+ * Handicap differences are capped at ±12.
+ *
+ * @param homeLineup - Home team's lineup with player handicaps
+ * @param awayLineup - Away team's lineup with player handicaps
+ * @param teamHandicap - Team handicap bonus (applied to home team only)
+ * @returns Object with homeDiff and awayDiff (both capped at ±12)
+ *
+ * @example
+ * const { homeDiff, awayDiff } = calculate3v3HandicapDiffs(homeLineup, awayLineup, 1);
+ * // homeDiff might be 5, awayDiff might be -5
+ * // These are then used to look up the handicap thresholds from the chart
+ */
+export function calculate3v3HandicapDiffs(
+  homeLineup: Lineup,
+  awayLineup: Lineup,
+  teamHandicap: number
+): { homeDiff: number; awayDiff: number } {
+  // Sum player handicaps for home team
+  const homeTotal =
+    homeLineup.player1_handicap +
+    homeLineup.player2_handicap +
+    homeLineup.player3_handicap;
+
+  // Sum player handicaps for away team
+  const awayTotal =
+    awayLineup.player1_handicap +
+    awayLineup.player2_handicap +
+    awayLineup.player3_handicap;
+
+  // Home team gets team handicap bonus
+  const homeTotalHandicap = homeTotal + teamHandicap;
+  const awayTotalHandicap = awayTotal;
+
+  // Calculate raw difference
+  const handicapDiff = homeTotalHandicap - awayTotalHandicap;
+
+  // Cap at ±12
+  const homeDiff = Math.max(-12, Math.min(12, handicapDiff));
+  const awayDiff = Math.max(-12, Math.min(12, -handicapDiff));
+
+  return { homeDiff, awayDiff };
 }

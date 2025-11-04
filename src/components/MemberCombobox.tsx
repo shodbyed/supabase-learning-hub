@@ -19,12 +19,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { Member } from '@/types/member';
+import type { PartialMember } from '@/types/member';
 import { getPlayerDisplayName } from '@/types/member';
 
 interface MemberComboboxProps {
-  /** List of members to choose from */
-  members: Member[];
+  /** List of members to choose from (only needs id, name, player number) */
+  members: PartialMember[];
   /** Currently selected member ID */
   value: string;
   /** Called when selection changes */
@@ -39,6 +39,8 @@ interface MemberComboboxProps {
   showClear?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Member IDs to exclude from dropdown (e.g., players already on other teams) */
+  excludeIds?: string[];
 }
 
 /**
@@ -56,6 +58,7 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
   disabled = false,
   showClear = false,
   className = '',
+  excludeIds = [],
 }) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,13 +70,15 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
     console.warn('MemberCombobox opened but no members available');
   }
 
-  // Filter and sort members alphabetically by last name, then first name
+  // Filter out excluded IDs (players on other teams), then filter by search and sort
   const filteredMembers = (searchQuery
     ? members.filter((member) => {
+        // Exclude members in excludeIds list (unless it's the currently selected value)
+        if (excludeIds.includes(member.id) && member.id !== value) return false;
         const searchValue = getPlayerDisplayName(member).toLowerCase();
         return searchValue.includes(searchQuery.toLowerCase());
       })
-    : members
+    : members.filter((member) => !excludeIds.includes(member.id) || member.id === value)
   ).sort((a, b) => {
     // Sort by last name first
     const lastNameCompare = a.last_name.localeCompare(b.last_name);

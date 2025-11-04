@@ -11,7 +11,7 @@
  * to provide consistent user interaction patterns.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Popover,
@@ -20,9 +20,9 @@ import {
 } from '@/components/ui/popover';
 import { User, MessageSquare, Flag, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCurrentMember } from '@/hooks/useCurrentMember';
-import { createOrOpenConversation, blockUser, unblockUser, isUserBlocked } from '@/utils/messageQueries';
+import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked } from '@/api/hooks';
 import { ReportUserModal } from '@/components/ReportUserModal';
+import { ConfirmDialog } from '@/components/shared';
 
 interface PlayerNameLinkProps {
   playerId: string;
@@ -42,22 +42,24 @@ export function PlayerNameLink({
   onBlockUser,
 }: PlayerNameLinkProps) {
   const navigate = useNavigate();
-  const { memberId } = useCurrentMember();
+  const memberId = useMemberId();
   const [open, setOpen] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
 
-  // Check if user is blocked when popover opens
-  useEffect(() => {
-    async function checkBlockStatus() {
-      if (!memberId || !open) return;
+  // TanStack Query hooks
+  const createOrOpenConversationMutation = useCreateOrOpenConversation();
+  const blockUserMutation = useBlockUser();
+  const unblockUserMutation = useUnblockUser();
 
-      const { data } = await isUserBlocked(memberId, playerId);
-      setIsBlocked(data || false);
-    }
-
-    checkBlockStatus();
-  }, [memberId, playerId, open]);
+  // Check if user is blocked (only fetch when popover is open)
+  // Note: We can't conditionally enable this hook based on `open` state because hooks can't be conditional.
+  // The hook itself already has `enabled: !!userId && !!otherUserId` built-in.
+  const { data: isBlocked = false } = useIsUserBlocked(
+    open && memberId ? memberId : undefined,
+    open ? playerId : undefined
+  );
 
   const handleViewProfile = () => {
     navigate(`/player/${playerId}`);
@@ -85,20 +87,22 @@ export function PlayerNameLink({
       return;
     }
 
-    const { data, error } = await createOrOpenConversation(memberId, playerId);
+    try {
+      const result = await createOrOpenConversationMutation.mutateAsync({
+        userId1: memberId,
+        userId2: playerId,
+      });
 
-    if (error) {
+      if (result?.conversationId) {
+        // Navigate to messages with the conversation ID as state
+        navigate('/messages', { state: { conversationId: result.conversationId } });
+      }
+
+      setOpen(false);
+    } catch (error) {
       console.error('Error creating/opening conversation:', error);
       setOpen(false);
-      return;
     }
-
-    if (data?.conversationId) {
-      // Navigate to messages with the conversation ID as state
-      navigate('/messages', { state: { conversationId: data.conversationId } });
-    }
-
-    setOpen(false);
   };
 
   const handleReportUser = () => {
@@ -112,7 +116,7 @@ export function PlayerNameLink({
     }
   };
 
-  const handleBlockToggle = async () => {
+  const handleBlockToggle = () => {
     if (onBlockUser) {
       onBlockUser(playerId);
       setOpen(false);
@@ -132,46 +136,45 @@ export function PlayerNameLink({
       return;
     }
 
-    // Handle unblock
+    // Show appropriate confirmation dialog
     if (isBlocked) {
-      if (!confirm(`Unblock ${playerName}? You'll be able to message each other again.`)) {
-        setOpen(false);
-        return;
-      }
-
-      const { error } = await unblockUser(memberId, playerId);
-
-      if (error) {
-        console.error('Error unblocking user:', error);
-        alert('Failed to unblock user. Please try again.');
-        setOpen(false);
-        return;
-      }
-
-      alert(`${playerName} has been unblocked.`);
-      setIsBlocked(false);
-      setOpen(false);
-      return;
+      setShowUnblockConfirm(true);
+    } else {
+      setShowBlockConfirm(true);
     }
+    setOpen(false);
+  };
 
-    // Handle block
-    if (!confirm(`Are you sure you want to block ${playerName}? You won't be able to message each other.`)) {
-      setOpen(false);
-      return;
-    }
+  const handleBlockConfirm = async () => {
+    if (!memberId) return;
 
-    const { error } = await blockUser(memberId, playerId);
+    try {
+      await blockUserMutation.mutateAsync({
+        blockerId: memberId,
+        blockedUserId: playerId,
+      });
 
-    if (error) {
+      alert(`${playerName} has been blocked. You won't see messages from them.`);
+    } catch (error) {
       console.error('Error blocking user:', error);
       alert('Failed to block user. Please try again.');
-      setOpen(false);
-      return;
     }
+  };
 
-    alert(`${playerName} has been blocked. You won't see messages from them.`);
-    setIsBlocked(true);
-    setOpen(false);
+  const handleUnblockConfirm = async () => {
+    if (!memberId) return;
+
+    try {
+      await unblockUserMutation.mutateAsync({
+        blockerId: memberId,
+        blockedUserId: playerId,
+      });
+
+      alert(`${playerName} has been unblocked.`);
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      alert('Failed to unblock user. Please try again.');
+    }
   };
 
   return (
@@ -238,6 +241,30 @@ export function PlayerNameLink({
           onClose={() => setShowReportModal(false)}
         />
       )}
+
+      {/* Block User Confirmation */}
+      <ConfirmDialog
+        open={showBlockConfirm}
+        onOpenChange={setShowBlockConfirm}
+        title="Block User?"
+        description={`Are you sure you want to block ${playerName}? You won't be able to message each other.`}
+        confirmLabel="Block"
+        cancelLabel="Cancel"
+        onConfirm={handleBlockConfirm}
+        variant="destructive"
+      />
+
+      {/* Unblock User Confirmation */}
+      <ConfirmDialog
+        open={showUnblockConfirm}
+        onOpenChange={setShowUnblockConfirm}
+        title="Unblock User?"
+        description={`Unblock ${playerName}? You'll be able to message each other again.`}
+        confirmLabel="Unblock"
+        cancelLabel="Cancel"
+        onConfirm={handleUnblockConfirm}
+        variant="default"
+      />
     </>
   );
 }

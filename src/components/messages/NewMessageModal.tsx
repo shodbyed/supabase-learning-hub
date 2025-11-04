@@ -17,7 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X, Search, Users, MessageSquare } from 'lucide-react';
 import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
-import { getBlockedUsers } from '@/utils/messageQueries';
+import { useBlockedUsers } from '@/api/hooks';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 
 interface Member {
@@ -46,24 +46,10 @@ export function NewMessageModal({
   const [loading, setLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
-  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([]);
 
-  // Fetch blocked users
-  useEffect(() => {
-    async function fetchBlockedUsers() {
-      const { data, error } = await getBlockedUsers(currentUserId);
-
-      if (error) {
-        console.error('Error fetching blocked users:', error);
-        return;
-      }
-
-      // Extract IDs of blocked users
-      setBlockedUserIds((data || []).map((block: any) => block.blocked_id));
-    }
-
-    fetchBlockedUsers();
-  }, [currentUserId]);
+  // Fetch blocked users with TanStack Query
+  const { data: blockedUsersData = [] } = useBlockedUsers(currentUserId);
+  const blockedUserIds = blockedUsersData.map((block: any) => block.blocked_id);
 
   // Fetch members (excluding current user and blocked users)
   useEffect(() => {

@@ -7,12 +7,10 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { useOperatorId } from '@/hooks/useOperatorId';
+import { useOperatorIdValue, useUpdateLeagueDayOfWeek, useCreateSeason } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
-import { fetchChampionshipPreferences } from '@/services/championshipService';
-import { createSeason } from '@/services/seasonService';
-import { updateLeagueDayOfWeek } from '@/services/leagueService';
+import { getChampionshipPreferences } from '@/api/queries/seasons';
 import { wizardReducer, createInitialState } from './wizardReducer';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,7 +40,11 @@ export const SeasonCreationWizard: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { operatorId } = useOperatorId();
+  const operatorId = useOperatorIdValue();
+  const updateLeagueDayMutation = useUpdateLeagueDayOfWeek();
+
+  // TanStack Query mutation for season creation
+  const createSeasonMutation = useCreateSeason();
 
   // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
@@ -98,7 +100,7 @@ export const SeasonCreationWizard: React.FC = () => {
         dispatch({ type: 'SET_APA_DATE_OPTIONS', payload: apaDates });
 
         // Fetch operator's saved championship preferences to skip those steps in wizard
-        const prefs = await fetchChampionshipPreferences(operatorId);
+        const prefs = operatorId ? await getChampionshipPreferences(operatorId) : [];
         dispatch({ type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES', payload: prefs });
 
         // If editing existing season, load season data and jump to schedule review
@@ -282,29 +284,36 @@ export const SeasonCreationWizard: React.FC = () => {
   const handleAcceptDayChange = async () => {
     if (!state.dayOfWeekWarning || !leagueId) return;
 
-    try {
-      // Update league day of week using service
-      const newDayString = await updateLeagueDayOfWeek(leagueId, state.dayOfWeekWarning.newDay);
+    // Update league day of week using TanStack Query mutation
+    updateLeagueDayMutation.mutate(
+      {
+        leagueId,
+        newDay: state.dayOfWeekWarning.newDay,
+      },
+      {
+        onSuccess: (newDayString) => {
+          // Update local state
+          dispatch({
+            type: 'SET_LEAGUE',
+            payload: state.league ? { ...state.league, day_of_week: newDayString } : null
+          });
 
-      // Update local state
-      dispatch({
-        type: 'SET_LEAGUE',
-        payload: state.league ? { ...state.league, day_of_week: newDayString } : null
-      });
+          // Save the new start date to form data
+          const STORAGE_KEY = `season-creation-${leagueId}`;
+          const stored = localStorage.getItem(STORAGE_KEY);
+          const formData = stored ? JSON.parse(stored) : {};
+          formData.startDate = state.dayOfWeekWarning!.newDate;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
 
-      // Save the new start date to form data
-      const STORAGE_KEY = `season-creation-${leagueId}`;
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const formData = stored ? JSON.parse(stored) : {};
-      formData.startDate = state.dayOfWeekWarning.newDate;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-
-      // Close modal
-      dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
-    } catch (err) {
-      console.error('Error updating league day:', err);
-      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
-    }
+          // Close modal
+          dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
+        },
+        onError: (err) => {
+          console.error('Error updating league day:', err);
+          dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
+        },
+      }
+    );
   };
 
   /**
@@ -446,18 +455,27 @@ export const SeasonCreationWizard: React.FC = () => {
       }
 
       const formData: SeasonFormData = JSON.parse(stored);
-      const existingSeasonId = searchParams.get('seasonId');
 
-      // Create season using service
-      const { seasonId } = await createSeason({
+      // Create season using TanStack Query mutation
+      const newSeason = await createSeasonMutation.mutateAsync({
         leagueId,
         league: state.league,
-        formData,
+        startDate: formData.startDate,
+        seasonLength: parseInt(formData.seasonLength),
         schedule: state.schedule,
         operatorId,
-        existingSeasonId,
+        bcaChoice: formData.bcaChoice,
+        bcaStartDate: formData.bcaStartDate,
+        bcaEndDate: formData.bcaEndDate,
+        bcaIgnored: formData.bcaIgnored,
+        apaChoice: formData.apaChoice,
+        apaStartDate: formData.apaStartDate,
+        apaEndDate: formData.apaEndDate,
+        apaIgnored: formData.apaIgnored,
         onSavePreference: saveChampionshipPreference,
       });
+
+      const seasonId = newSeason.id;
 
       // Clear localStorage
       clearSeasonCreationData(leagueId);

@@ -1,0 +1,293 @@
+/**
+ * @fileoverview Member Query Functions
+ *
+ * Pure data fetching functions for member-related queries.
+ * These functions return plain data and throw errors (no loading states).
+ * Used by TanStack Query hooks for caching and state management.
+ *
+ * @see api/hooks/useCurrentMember.ts - React hook wrapper
+ * @see api/hooks/useUserProfile.ts - React hook wrapper
+ * @see api/hooks/useOperatorId.ts - React hook wrapper
+ */
+
+import { supabase } from '@/supabaseClient';
+import type { Member, PartialMember } from '@/types/member';
+
+/**
+ * Fetch current member by auth user ID
+ *
+ * Connects authenticated user to their member record.
+ * Used across the app to get member ID and basic info.
+ *
+ * @param userId - Supabase auth user ID
+ * @returns Member data with id, user_id, and first_name
+ * @throws Error if member not found or database error
+ *
+ * @example
+ * const member = await getCurrentMember(user.id);
+ * console.log(member.id, member.first_name);
+ */
+export async function getCurrentMember(userId: string) {
+  const { data, error } = await supabase
+    .from('members')
+    .select('id, user_id, first_name, last_name')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Fetch complete member profile by auth user ID
+ *
+ * Gets full member record including all profile fields, role, and metadata.
+ * Used for profile pages and role-based access control.
+ *
+ * @param userId - Supabase auth user ID
+ * @returns Complete member record
+ * @throws Error with code 'PGRST116' if member not found (user hasn't completed application)
+ * @throws Error for other database errors
+ *
+ * @example
+ * const profile = await getMemberProfile(user.id);
+ * if (profile.role === 'league_operator') { ... }
+ */
+export async function getMemberProfile(userId: string): Promise<Member> {
+  const { data, error } = await supabase
+    .from('members')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Fetch member by member ID
+ *
+ * Gets full member record by the member's primary key ID.
+ * Used when you already have a member ID (e.g., from a team roster).
+ *
+ * @param memberId - Member's primary key ID
+ * @returns Complete member record
+ * @throws Error if member not found or database error
+ *
+ * @example
+ * const member = await getMemberById('member-uuid');
+ */
+export async function getMemberById(memberId: string): Promise<Member> {
+  const { data, error } = await supabase
+    .from('members')
+    .select('*')
+    .eq('id', memberId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Fetch operator ID for a member
+ *
+ * Looks up the league_operator record for a member to get their operator ID.
+ * Used across operator dashboard features.
+ *
+ * @param memberId - Member's primary key ID
+ * @returns Object with operator ID
+ * @throws Error if member is not an operator or database error
+ *
+ * @example
+ * const { id } = await getOperatorId(memberId);
+ * // Use operator ID for operator-specific queries
+ */
+export async function getOperatorId(memberId: string): Promise<{ id: string }> {
+  const { data, error } = await supabase
+    .from('league_operators')
+    .select('id')
+    .eq('member_id', memberId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Fetch operator ID by auth user ID (convenience function)
+ *
+ * Combines member lookup + operator lookup in one function.
+ * Useful when you only have the auth user ID.
+ *
+ * @param userId - Supabase auth user ID
+ * @returns Object with operator ID
+ * @throws Error if user is not a member, not an operator, or database error
+ *
+ * @example
+ * const { id } = await getOperatorIdByUserId(user.id);
+ */
+export async function getOperatorIdByUserId(userId: string): Promise<{ id: string }> {
+  // First get member ID
+  const member = await getCurrentMember(userId);
+
+  // Then get operator ID
+  return getOperatorId(member.id);
+}
+
+/**
+ * Check if member is a league operator
+ *
+ * Quick check to see if a member has an operator record.
+ *
+ * @param memberId - Member's primary key ID
+ * @returns True if member is an operator, false otherwise
+ *
+ * @example
+ * if (await isOperator(memberId)) {
+ *   // Show operator features
+ * }
+ */
+export async function isOperator(memberId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('league_operators')
+    .select('id')
+    .eq('member_id', memberId)
+    .single();
+
+  // If error code is PGRST116 (no rows), member is not an operator
+  if (error?.code === 'PGRST116') return false;
+
+  // Other errors should be thrown
+  if (error) throw error;
+
+  // Has operator record
+  return !!data;
+}
+
+/**
+ * Checks if a member is a captain of any team
+ *
+ * Used to determine if user should see captain-specific features like team announcements.
+ *
+ * @param memberId - Member's primary key ID
+ * @returns True if member is captain of at least one team, false otherwise
+ *
+ * @example
+ * const isCaptain = await getIsCaptain(memberId);
+ * if (isCaptain) {
+ *   // Show announcement creation button
+ * }
+ */
+export async function getIsCaptain(memberId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('team_players')
+    .select('is_captain')
+    .eq('member_id', memberId)
+    .eq('is_captain', true)
+    .limit(1);
+
+  if (error) throw error;
+
+  return !!data && data.length > 0;
+}
+
+/**
+ * Fetch all members with user accounts
+ *
+ * Returns all members who have linked user accounts (can log in).
+ * Used for messaging - showing list of people user can message.
+ *
+ * @param excludeMemberId - Optional member ID to exclude from results (e.g., current user)
+ * @returns Array of member objects with basic info
+ * @throws Error for database errors
+ *
+ * @example
+ * const members = await getAllMembers(currentUserId);
+ * // Returns all members except current user
+ */
+export async function getAllMembers(excludeMemberId?: string): Promise<PartialMember[]> {
+  let query = supabase
+    .from('members')
+    .select('id, first_name, last_name, system_player_number, bca_member_number')
+    // TODO: Re-enable user_id filter for production: .not('user_id', 'is', null)
+    // Temporarily disabled to allow testing with seeded members
+    .order('last_name', { ascending: true });
+
+  if (excludeMemberId) {
+    query = query.neq('id', excludeMemberId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) throw error;
+
+  return data as PartialMember[] || [];
+}
+
+/**
+ * Fetch multiple members by IDs
+ *
+ * Gets member records for a list of member IDs.
+ * Returns basic info needed for display (name, nickname).
+ * Used by scoring pages to get player names for lineup.
+ *
+ * @param memberIds - Array of member primary key IDs
+ * @returns Array of member objects with id, first_name, last_name, nickname
+ * @throws Error for database errors
+ *
+ * @example
+ * const players = await getMembersByIds(['id1', 'id2', 'id3']);
+ * const playerMap = new Map(players.map(p => [p.id, p]));
+ */
+export async function getMembersByIds(memberIds: string[]) {
+  if (memberIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('members')
+    .select('id, first_name, last_name, nickname')
+    .in('id', memberIds);
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+/**
+ * Profanity filter settings for a member
+ */
+export interface MemberProfanitySettings {
+  date_of_birth: string;
+  profanity_filter_enabled: boolean;
+}
+
+/**
+ * Fetch member's profanity filter settings
+ *
+ * Gets date of birth and filter preference for calculating age-based filter state.
+ * Users under 18 have filter forced ON and cannot toggle.
+ * Users 18+ can control their own filter preference.
+ *
+ * @param userId - Supabase auth user ID
+ * @returns Object with date_of_birth and profanity_filter_enabled
+ * @throws Error if member not found or database error
+ *
+ * @example
+ * const settings = await getMemberProfanitySettings(user.id);
+ * const isAdult = isEighteenOrOlder(settings.date_of_birth);
+ * const shouldFilter = isAdult ? settings.profanity_filter_enabled : true;
+ */
+export async function getMemberProfanitySettings(
+  userId: string
+): Promise<MemberProfanitySettings> {
+  const { data, error } = await supabase
+    .from('members')
+    .select('date_of_birth, profanity_filter_enabled')
+    .eq('user_id', userId)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
