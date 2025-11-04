@@ -28,6 +28,8 @@ interface UseMatchScoringOptions {
   matchId: string | undefined | null;
   memberId: string | undefined | null;
   matchType: MatchType;
+  autoConfirm?: boolean;
+  confirmOpponentScore?: (gameNumber: number, isVacateRequest?: boolean) => Promise<void>;
 }
 
 // ============================================================================
@@ -37,7 +39,9 @@ interface UseMatchScoringOptions {
 export function useMatchScoring({
   matchId,
   memberId,
-  matchType
+  matchType,
+  autoConfirm = false,
+  confirmOpponentScore
 }: UseMatchScoringOptions) {
   // ============================================================================
   // TANSTACK QUERY HOOKS
@@ -332,6 +336,8 @@ export function useMatchScoring({
     players,
     myVacateRequests,
     addToConfirmationQueue,
+    autoConfirm,
+    confirmOpponentScore,
   });
 
   // ============================================================================

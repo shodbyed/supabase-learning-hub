@@ -15,7 +15,7 @@
  * - Match end detection with winner announcement
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,6 +37,12 @@ export function ScoreMatch() {
   const navigate = useNavigate();
   const { data: member } = useCurrentMember();
   const memberId = member?.id;
+
+  // Auto-confirm setting (bypass confirmation modal)
+  const [autoConfirm, setAutoConfirm] = useState(false);
+
+  // Ref to store mutations for use in real-time subscription
+  const mutationsRef = useRef<any>(null);
 
   // Use central scoring hook (replaces all manual data fetching)
   const {
@@ -62,6 +68,13 @@ export function ScoreMatch() {
     matchId,
     memberId,
     matchType: '3v3',
+    autoConfirm,
+    confirmOpponentScore: async (gameNumber, isVacateRequest) => {
+      // This will be called by real-time subscription when autoConfirm is enabled
+      if (mutationsRef.current) {
+        await mutationsRef.current.confirmOpponentScore(gameNumber, isVacateRequest);
+      }
+    },
   });
 
   // Scoring modal state
@@ -91,9 +104,6 @@ export function ScoreMatch() {
 
   // Scoreboard view toggle (true = home team, false = away team)
   const [showingHomeTeam, setShowingHomeTeam] = useState(true);
-
-  // Auto-confirm setting (bypass confirmation modal)
-  const [autoConfirm, setAutoConfirm] = useState(false);
 
   // Process confirmation queue when modal closes or queue changes
   useEffect(() => {
@@ -145,6 +155,9 @@ export function ScoreMatch() {
     addToConfirmationQueue,
     getPlayerDisplayName,
   });
+
+  // Store mutations in ref for use in real-time subscription callback
+  mutationsRef.current = mutations;
 
   /**
    * Handle player button click to score a game
