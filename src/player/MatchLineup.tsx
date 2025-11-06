@@ -222,13 +222,13 @@ export function MatchLineup() {
 
         if (playersError) throw playersError;
 
-        // Calculate handicaps for all players (use random for testing until scoring is built)
+        // Calculate handicaps for all players (returns 0 until real implementation)
+        // Use Test Mode to manually set handicaps for testing
         const transformedPlayers = await Promise.all(
           (playersData || []).map(async (p: any) => {
             const handicap = await calculatePlayerHandicap(
               p.members.id,
-              playerVariant,
-              true // useRandom = true for testing until we have game history
+              playerVariant
             );
 
             return {

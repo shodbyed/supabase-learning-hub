@@ -256,8 +256,7 @@ export function useMatchScoring({
           matchData.home_team_id,
           matchData.away_team_id,
           matchData.season_id,
-          matchData.league.team_handicap_variant,
-          true // useRandom = true for testing
+          matchData.league.team_handicap_variant
         );
         setHomeTeamHandicap(calculatedTeamHandicap);
 
