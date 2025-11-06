@@ -88,7 +88,16 @@ export function GameButtonRow({
         >
           {breakerName}
         </Button>
-        <div className="text-center font-semibold text-gray-400">vs</div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs px-1 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold"
+          onClick={() =>
+            onPlayerClick(gameNumber, breakerWon ? breakerPlayerId : rackerPlayerId, breakerWon ? breakerName : rackerName, breakerWon ? breakerTeamId : rackerTeamId)
+          }
+        >
+          Confirm
+        </Button>
         <Button
           variant="outline"
           size="sm"
