@@ -98,6 +98,8 @@ export const LeagueCreationWizard: React.FC = () => {
         gameType,
         dayOfWeek,
         teamFormat: formData.teamFormat as TeamFormat,
+        handicapVariant: (formData.handicapVariant as 'standard' | 'reduced' | 'none') || 'standard',
+        teamHandicapVariant: (formData.teamHandicapVariant as 'standard' | 'reduced' | 'none') || 'standard',
         leagueStartDate: formData.startDate,
         division: formData.qualifier || null,
       });

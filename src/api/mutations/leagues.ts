@@ -8,7 +8,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
-import type { League, LeagueInsertData, DayOfWeek, GameType, TeamFormat } from '@/types/league';
+import type { League, LeagueInsertData, DayOfWeek, GameType, TeamFormat, HandicapVariant } from '@/types/league';
 
 /**
  * Parameters for creating a new league
@@ -18,6 +18,8 @@ export interface CreateLeagueParams {
   gameType: GameType;
   dayOfWeek: DayOfWeek;
   teamFormat: TeamFormat;
+  handicapVariant: HandicapVariant;
+  teamHandicapVariant: HandicapVariant;
   leagueStartDate: string; // ISO date string
   division?: string | null;
 }
@@ -63,6 +65,8 @@ export async function createLeague(params: CreateLeagueParams): Promise<League> 
     game_type: params.gameType,
     day_of_week: params.dayOfWeek,
     team_format: params.teamFormat,
+    handicap_variant: params.handicapVariant,
+    team_handicap_variant: params.teamHandicapVariant,
     league_start_date: params.leagueStartDate,
     division: params.division || null,
   };

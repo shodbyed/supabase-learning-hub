@@ -21,10 +21,8 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, Users } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
-import {
-  calculatePlayerHandicap,
-  type HandicapVariant,
-} from '@/utils/handicapCalculations';
+import { calculatePlayerHandicap } from '@/utils/calculatePlayerHandicap';
+import type { HandicapVariant } from '@/utils/handicapCalculations';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
@@ -130,7 +128,12 @@ export function MatchLineup() {
             scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
             season_week:season_weeks(scheduled_date),
             season:seasons!matches_season_id_fkey(
-              league:leagues(handicap_variant, team_handicap_variant)
+              league:leagues(
+                handicap_variant,
+                team_handicap_variant,
+                game_type,
+                team_format
+              )
             )
           `)
           .eq('id', matchId)
@@ -149,7 +152,9 @@ export function MatchLineup() {
           : (seasonData as any)?.league;
         const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
         const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
-        console.log('League handicap variants:', { playerVariant, teamVariant });
+        const gameType = (leagueData?.game_type || 'eight_ball') as 'eight_ball' | 'nine_ball' | 'ten_ball';
+        const teamFormat = (leagueData?.team_format || '5_man') as '5_man' | '8_man';
+        console.log('League settings:', { playerVariant, teamVariant, gameType, teamFormat });
 
         // Transform to include scheduled_date - handle both array and object formats
         const homeTeam = Array.isArray(matchData.home_team)
@@ -222,13 +227,17 @@ export function MatchLineup() {
 
         if (playersError) throw playersError;
 
-        // Calculate handicaps for all players (returns 0 until real implementation)
-        // Use Test Mode to manually set handicaps for testing
+        // Calculate handicaps for all players
+        // Handicaps are game-type specific (8-ball games don't count for 9-ball, etc.)
+        // Use Test Mode to manually override handicaps for testing
         const transformedPlayers = await Promise.all(
           (playersData || []).map(async (p: any) => {
             const handicap = await calculatePlayerHandicap(
               p.members.id,
-              playerVariant
+              teamFormat,
+              playerVariant,
+              gameType,
+              matchData.season_id // Prioritize current season games
             );
 
             return {

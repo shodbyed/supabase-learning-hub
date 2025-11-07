@@ -43,7 +43,8 @@ CREATE TABLE IF NOT EXISTS match_games (
   confirmed_by_away BOOLEAN DEFAULT false NOT NULL,
   confirmed_at TIMESTAMPTZ,
 
-  -- Game type
+  -- Game type (denormalized from league for performance)
+  game_type VARCHAR(20) NOT NULL CHECK (game_type IN ('eight_ball', 'nine_ball', 'ten_ball')),
   is_tiebreaker BOOLEAN DEFAULT false NOT NULL,
 
   -- Audit timestamps
@@ -61,6 +62,17 @@ CREATE TABLE IF NOT EXISTS match_games (
 CREATE INDEX IF NOT EXISTS idx_match_games_match_id ON match_games(match_id);
 CREATE INDEX IF NOT EXISTS idx_match_games_winner_player ON match_games(winner_player_id);
 CREATE INDEX IF NOT EXISTS idx_match_games_tiebreaker ON match_games(is_tiebreaker);
+CREATE INDEX IF NOT EXISTS idx_match_games_game_type ON match_games(game_type);
+
+-- Composite indexes for handicap calculation performance
+-- (player + game_type + date ordering for optimal query performance)
+CREATE INDEX IF NOT EXISTS idx_match_games_player_game_type_created
+  ON match_games(home_player_id, game_type, created_at DESC)
+  WHERE winner_player_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_match_games_player_game_type_created_away
+  ON match_games(away_player_id, game_type, created_at DESC)
+  WHERE winner_player_id IS NOT NULL;
 
 -- Comments for documentation
 COMMENT ON COLUMN match_games.break_and_run IS
@@ -74,6 +86,9 @@ COMMENT ON COLUMN match_games.confirmed_by_home IS
 
 COMMENT ON COLUMN match_games.confirmed_by_away IS
   'True when away team has confirmed this game result. Both teams must confirm for game to be official.';
+
+COMMENT ON COLUMN match_games.game_type IS
+  'Denormalized from league for performance. Game type (eight_ball, nine_ball, ten_ball) enables fast filtering without joins. Used heavily in handicap calculations to ensure 8-ball games do not count toward 9-ball handicaps.';
 
 -- Enable Row Level Security
 ALTER TABLE match_games ENABLE ROW LEVEL SECURITY;

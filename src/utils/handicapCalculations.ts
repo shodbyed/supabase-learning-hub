@@ -24,13 +24,6 @@ interface HandicapConfig {
 }
 
 /**
- * Default configuration - can be overridden by organization settings
- */
-const DEFAULT_CONFIG: HandicapConfig = {
-  gameHistoryLimit: 200,
-};
-
-/**
  * Get the valid handicap range for a given variant
  */
 function getHandicapRange(variant: HandicapVariant): number[] {
@@ -68,58 +61,33 @@ void roundToValidHandicap;
 /**
  * Calculate handicap for a player based on their game history
  *
+ * NOTE: This is a wrapper for backward compatibility.
+ * For new code, import from '@/utils/calculatePlayerHandicap' directly.
+ *
  * @param playerId - The player's member ID
  * @param variant - The league's handicap variant ('standard', 'reduced', or 'none')
- * @param config - Optional configuration overrides
+ * @param config - Optional configuration overrides (currently unused)
  * @returns The calculated handicap value
  *
- * Formula: (wins - losses) / weeks_played
- * where weeks_played = games_played / 6
- *
- * Usage:
- * - calculatePlayerHandicap(playerId, 'standard') → Calculate standard handicap
- * - calculatePlayerHandicap(playerId, 'reduced') → Calculate reduced handicap
- * - calculatePlayerHandicap(playerId, 'none') → Always returns 0
+ * @deprecated Use calculatePlayerHandicap from '@/utils/calculatePlayerHandicap' instead
+ * WARNING: This wrapper cannot provide game_type or currentSeasonId - returns 0 for safety.
+ * Update calling code to use the new function directly.
  */
 export async function calculatePlayerHandicap(
   playerId: string,
   variant: HandicapVariant,
   config: Partial<HandicapConfig> = {}
 ): Promise<number> {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
-
-  // For 'none' variant, always return 0
-  if (variant === 'none') {
-    return 0;
-  }
-
-  // Suppress unused variable warnings - these will be used when implementing real calculations
+  // Suppress unused variable warning
+  void config;
   void playerId;
-  void finalConfig;
+  void variant;
 
-  // TODO: Implement real calculation from match_games table
-  // 1. Query match_games for this player's last N games:
-  //    SELECT * FROM match_games
-  //    WHERE (home_player_id = playerId OR away_player_id = playerId)
-  //      AND winner_player_id IS NOT NULL
-  //    ORDER BY created_at DESC
-  //    LIMIT config.gameHistoryLimit
-  //
-  // 2. Count wins and losses:
-  //    wins = games where winner_player_id = playerId
-  //    losses = games where winner_player_id != playerId
-  //
-  // 3. Calculate:
-  //    gamesPlayed = wins + losses
-  //    weeksPlayed = gamesPlayed / 6
-  //    if (weeksPlayed === 0) return 0  // New player
-  //    rawHandicap = (wins - losses) / weeksPlayed
-  //
-  // 4. Round to valid handicap:
-  //    return roundToValidHandicap(rawHandicap, variant)
-
-  // Placeholder: Return 0 until real implementation is ready
-  // Use Test Mode in lineup entry to manually set handicaps for testing
+  // This wrapper is deprecated and cannot provide required game_type parameter
+  // Return 0 to avoid errors - calling code must be updated
+  console.warn(
+    'calculatePlayerHandicap wrapper is deprecated. Update to use @/utils/calculatePlayerHandicap directly with game_type parameter.'
+  );
   return 0;
 }
 

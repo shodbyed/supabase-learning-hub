@@ -41,6 +41,8 @@ export const useLeagueWizard = ({ onSubmit }: UseLeagueWizardParams) => {
     qualifier: '',
     teamFormat: '',
     handicapSystem: '',
+    handicapVariant: '',
+    teamHandicapVariant: '',
   });
 
   /**

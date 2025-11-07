@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-04 (AlertDialog component added)
+> **Last Updated**: 2025-11-06 (game_type denormalization for performance)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -223,7 +223,9 @@
 
 | File | Purpose |
 |------|---------|
-| `migrations/` | Database migration tracking |
+| `migrations/add_handicap_variant_to_leagues.sql` | Migration: Add handicap_variant fields to leagues table |
+| `migrations/add_match_results_tracking.sql` | Migration: Add match results tracking system |
+| `scoring3x3/add_game_type_to_match_games.sql` | **Add game_type column to match_games (denormalized for performance)** |
 | `tests/` | Database test files |
 | `README_DATABASE_INTEGRATION.md` | Database integration guide |
 | `MESSAGING_AND_REPORTING_COMPLETE.md` | Messaging/reporting completion notes |
@@ -588,7 +590,8 @@ Reusable wizard/form step components
 #### Team & Player
 - `teamQueries.ts` - Team database queries
 - `playerQueries.ts` - Player database queries
-- `handicapCalculations.ts` - Handicap calculations
+- `calculatePlayerHandicap.ts` - **Self-contained player handicap calculator** (3v3 & 5v5 support)
+- `handicapCalculations.ts` - Handicap calculations and team handicap utilities
 - `nicknameGenerator.ts` - Player nickname generation
 
 #### League & Tournament
@@ -630,6 +633,7 @@ High-level business logic services
 *Migration from `/utils/*Queries.ts` in progress*
 
 - `members.ts` - **✅ Member queries** (getCurrentMember, getMemberProfile, getOperatorId, etc.)
+- `matchGames.ts` - **✅ Match game queries** (fetchPlayerGameHistory for handicap calculations)
 
 #### Mutations (`/mutations/`) - Write Operations
 *Create/Update/Delete operations with automatic cache invalidation*
