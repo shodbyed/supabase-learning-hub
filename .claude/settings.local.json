@@ -35,7 +35,9 @@
       "Bash(do if [ -f \"/Users/edpoplet/Programming/supabase-learning-hub/src/hooks/$hook.ts\" ])",
       "Bash(then echo \"❌ DUPLICATE: $hook exists in /src/hooks/\")",
       "Bash(else echo \"✓ $hook only in api/hooks\")",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
