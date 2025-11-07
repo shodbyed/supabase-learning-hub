@@ -24,13 +24,6 @@ interface HandicapConfig {
 }
 
 /**
- * Default configuration - can be overridden by organization settings
- */
-const DEFAULT_CONFIG: HandicapConfig = {
-  gameHistoryLimit: 200,
-};
-
-/**
  * Get the valid handicap range for a given variant
  */
 function getHandicapRange(variant: HandicapVariant): number[] {
@@ -66,84 +59,36 @@ function roundToValidHandicap(rawHandicap: number, variant: HandicapVariant): nu
 void roundToValidHandicap;
 
 /**
- * Generate a random handicap for testing purposes
- */
-function getRandomHandicap(variant: HandicapVariant): number {
-  const range = getHandicapRange(variant);
-  return range[Math.floor(Math.random() * range.length)];
-}
-
-/**
  * Calculate handicap for a player based on their game history
+ *
+ * NOTE: This is a wrapper for backward compatibility.
+ * For new code, import from '@/utils/calculatePlayerHandicap' directly.
  *
  * @param playerId - The player's member ID
  * @param variant - The league's handicap variant ('standard', 'reduced', or 'none')
- * @param useRandom - If true, return random handicap for testing (default: false)
- * @param config - Optional configuration overrides
+ * @param config - Optional configuration overrides (currently unused)
  * @returns The calculated handicap value
  *
- * Formula: (wins - losses) / weeks_played
- * where weeks_played = games_played / 6
- *
- * Usage:
- * - calculatePlayerHandicap(playerId, 'standard', true) → Random standard handicap (for testing)
- * - calculatePlayerHandicap(playerId, 'reduced', false) → Real reduced handicap (when implemented)
- * - calculatePlayerHandicap(playerId, 'none') → Always returns 0
- *
- * TODO: Implement the full calculation logic:
- * 1. Query the last N games for this player (N = config.gameHistoryLimit)
- * 2. Count total wins and losses from those games
- * 3. Calculate weeks_played = games_played / 6
- * 4. Calculate raw_handicap = (wins - losses) / weeks_played
- * 5. Round to nearest valid handicap in the variant's range
- * 6. Return the final handicap value
+ * @deprecated Use calculatePlayerHandicap from '@/utils/calculatePlayerHandicap' instead
+ * WARNING: This wrapper cannot provide game_type or currentSeasonId - returns 0 for safety.
+ * Update calling code to use the new function directly.
  */
 export async function calculatePlayerHandicap(
   playerId: string,
   variant: HandicapVariant,
-  useRandom: boolean = false,
   config: Partial<HandicapConfig> = {}
 ): Promise<number> {
-  const finalConfig = { ...DEFAULT_CONFIG, ...config };
-
-  // Suppress unused variable warnings - these will be used when implementing real calculations
+  // Suppress unused variable warning
+  void config;
   void playerId;
-  void finalConfig;
+  void variant;
 
-  // For testing: return random handicap
-  if (useRandom) {
-    return getRandomHandicap(variant);
-  }
-
-  // TODO: Fetch game history from database
-  // const gameHistory = await supabase
-  //   .from('games')
-  //   .select('*')
-  //   .eq('player_id', playerId)
-  //   .order('created_at', { ascending: false })
-  //   .limit(finalConfig.gameHistoryLimit);
-
-  // TODO: Calculate wins and losses from game history
-  // let wins = 0;
-  // let losses = 0;
-  // for (const game of gameHistory.data) {
-  //   if (game.winner_id === playerId) wins++;
-  //   else losses++;
-  // }
-
-  // TODO: Calculate weeks played
-  // const gamesPlayed = gameHistory.data?.length || 0;
-  // const weeksPlayed = gamesPlayed / 6;
-
-  // TODO: Calculate raw handicap
-  // if (weeksPlayed === 0) return 0; // New player with no history
-  // const rawHandicap = (wins - losses) / weeksPlayed;
-
-  // TODO: Round to valid handicap for this variant
-  // return roundToValidHandicap(rawHandicap, variant);
-
-  // Placeholder: Return random handicap for testing until real implementation is ready
-  return getRandomHandicap(variant);
+  // This wrapper is deprecated and cannot provide required game_type parameter
+  // Return 0 to avoid errors - calling code must be updated
+  console.warn(
+    'calculatePlayerHandicap wrapper is deprecated. Update to use @/utils/calculatePlayerHandicap directly with game_type parameter.'
+  );
+  return 0;
 }
 
 /**
@@ -151,14 +96,12 @@ export async function calculatePlayerHandicap(
  *
  * @param playerIds - Array of player member IDs
  * @param variant - The league's handicap variant
- * @param useRandom - If true, return random handicaps for testing (default: false)
  * @param config - Optional configuration overrides
  * @returns Map of playerId to handicap value
  */
 export async function calculatePlayerHandicaps(
   playerIds: string[],
   variant: HandicapVariant,
-  useRandom: boolean = false,
   config: Partial<HandicapConfig> = {}
 ): Promise<Map<string, number>> {
   const handicaps = new Map<string, number>();
@@ -166,7 +109,7 @@ export async function calculatePlayerHandicaps(
   // Calculate handicaps for all players
   await Promise.all(
     playerIds.map(async (playerId) => {
-      const handicap = await calculatePlayerHandicap(playerId, variant, useRandom, config);
+      const handicap = await calculatePlayerHandicap(playerId, variant, config);
       handicaps.set(playerId, handicap);
     })
   );
@@ -195,7 +138,6 @@ export function getSubstituteHandicapOptions(variant: HandicapVariant): number[]
  * @param awayTeamId - The away team's ID
  * @param seasonId - The season ID to calculate standings from
  * @param variant - The league's team handicap variant ('standard', 'reduced', or 'none')
- * @param useRandom - If true, return random team handicap for testing (default: false)
  * @returns The team handicap bonus (can be positive, negative, or zero)
  *
  * Formula:
@@ -213,69 +155,51 @@ export function getSubstituteHandicapOptions(variant: HandicapVariant): number[]
  * - Home 8 wins vs Away 6 wins: (8 - 6) = 2 → 2/2 = +1 bonus
  * - Home 8 wins vs Away 3 wins: (8 - 3) = 5 → 5/2 = +2 bonus
  * - Home 6 wins vs Away 10 wins: (6 - 10) = -4 → -4/2 = -2 penalty
- *
- * TODO: Implement the full calculation logic:
- * 1. Query matches table for all completed matches in this season for home team
- * 2. Count wins for home team (where winner_team_id = home_team_id)
- * 3. Query matches table for all completed matches in this season for away team
- * 4. Count wins for away team (where winner_team_id = away_team_id)
- * 5. Calculate win difference and apply formula
- * 6. Return the final team handicap
  */
 export async function calculateTeamHandicap(
   homeTeamId: string,
   awayTeamId: string,
   seasonId: string,
-  variant: HandicapVariant,
-  useRandom: boolean = false
+  variant: HandicapVariant
 ): Promise<number> {
-  // Suppress unused variable warnings - these will be used when implementing real calculations
-  void homeTeamId;
-  void awayTeamId;
-  void seasonId;
-
   // For 'none' variant, always return 0
   if (variant === 'none') {
     return 0;
   }
 
-  // For testing: return random team handicap
-  if (useRandom) {
-    // Return a random value between -2 and +2 for testing
-    return Math.floor(Math.random() * 5) - 2;
-  }
+  // Suppress unused variable warnings - these will be used when implementing real calculations
+  void homeTeamId;
+  void awayTeamId;
+  void seasonId;
+  void variant;
 
-  // TODO: Implement real calculation
-  // const { data: homeMatches } = await supabase
-  //   .from('matches')
-  //   .select('winner_team_id')
-  //   .eq('season_id', seasonId)
-  //   .or(`home_team_id.eq.${homeTeamId},away_team_id.eq.${homeTeamId}`)
-  //   .eq('status', 'completed');
+  // TODO: Implement real calculation based on season standings
+  // This requires the standings page to be built first.
+  //
+  // Implementation steps:
+  // 1. Query matches for home team in this season:
+  //    SELECT * FROM matches
+  //    WHERE season_id = seasonId
+  //      AND (home_team_id = homeTeamId OR away_team_id = homeTeamId)
+  //      AND status = 'finalized'
+  //
+  // 2. Count home team wins (where winner_team_id = homeTeamId)
+  //
+  // 3. Query matches for away team in this season:
+  //    SELECT * FROM matches
+  //    WHERE season_id = seasonId
+  //      AND (home_team_id = awayTeamId OR away_team_id = awayTeamId)
+  //      AND status = 'finalized'
+  //
+  // 4. Count away team wins (where winner_team_id = awayTeamId)
+  //
+  // 5. Calculate:
+  //    winDifference = homeWins - awayWins
+  //    threshold = variant === 'standard' ? 2 : 3
+  //    return Math.floor(winDifference / threshold)
 
-  // let homeWins = 0;
-  // for (const match of homeMatches.data || []) {
-  //   if (match.winner_team_id === homeTeamId) homeWins++;
-  // }
-
-  // const { data: awayMatches } = await supabase
-  //   .from('matches')
-  //   .select('winner_team_id')
-  //   .eq('season_id', seasonId)
-  //   .or(`home_team_id.eq.${awayTeamId},away_team_id.eq.${awayTeamId}`)
-  //   .eq('status', 'completed');
-
-  // let awayWins = 0;
-  // for (const match of awayMatches.data || []) {
-  //   if (match.winner_team_id === awayTeamId) awayWins++;
-  // }
-
-  // const winDifference = homeWins - awayWins;
-  // const threshold = variant === 'standard' ? 2 : 3;
-  // return Math.floor(winDifference / threshold);
-
-  // Placeholder: Return random team handicap for testing
-  return Math.floor(Math.random() * 5) - 2;
+  // Placeholder: Return 0 until standings page is built
+  return 0;
 }
 
 /**

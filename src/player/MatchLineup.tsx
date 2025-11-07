@@ -21,14 +21,14 @@ import {
 } from '@/components/ui/select';
 import { ArrowLeft, Users } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
-import {
-  calculatePlayerHandicap,
-  type HandicapVariant,
-} from '@/utils/handicapCalculations';
+import { calculatePlayerHandicap } from '@/utils/calculatePlayerHandicap';
+import { getTeamHandicapBonus } from '@/utils/getTeamHandicapBonus';
+import type { HandicapVariant } from '@/utils/handicapCalculations';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
+import { InfoButton } from '@/components/InfoButton';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -130,7 +130,12 @@ export function MatchLineup() {
             scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
             season_week:season_weeks(scheduled_date),
             season:seasons!matches_season_id_fkey(
-              league:leagues(handicap_variant, team_handicap_variant)
+              league:leagues(
+                handicap_variant,
+                team_handicap_variant,
+                game_type,
+                team_format
+              )
             )
           `)
           .eq('id', matchId)
@@ -149,7 +154,9 @@ export function MatchLineup() {
           : (seasonData as any)?.league;
         const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
         const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
-        console.log('League handicap variants:', { playerVariant, teamVariant });
+        const gameType = (leagueData?.game_type || 'eight_ball') as 'eight_ball' | 'nine_ball' | 'ten_ball';
+        const teamFormat = (leagueData?.team_format || '5_man') as '5_man' | '8_man';
+        console.log('League settings:', { playerVariant, teamVariant, gameType, teamFormat });
 
         // Transform to include scheduled_date - handle both array and object formats
         const homeTeam = Array.isArray(matchData.home_team)
@@ -222,13 +229,17 @@ export function MatchLineup() {
 
         if (playersError) throw playersError;
 
-        // Calculate handicaps for all players (use random for testing until scoring is built)
+        // Calculate handicaps for all players
+        // Handicaps are game-type specific (8-ball games don't count for 9-ball, etc.)
+        // Use Test Mode to manually override handicaps for testing
         const transformedPlayers = await Promise.all(
           (playersData || []).map(async (p: any) => {
             const handicap = await calculatePlayerHandicap(
               p.members.id,
+              teamFormat,
               playerVariant,
-              true // useRandom = true for testing until we have game history
+              gameType,
+              matchData.season_id // Prioritize current season games
             );
 
             return {
@@ -261,6 +272,18 @@ export function MatchLineup() {
 
         console.log('Players with calculated handicaps (including substitute):', transformedPlayers);
         setPlayers(transformedPlayers);
+
+        // Calculate team handicap bonus (only applies to home team)
+        if (isHome && matchData.away_team_id) {
+          const bonus = await getTeamHandicapBonus(
+            matchData.home_team_id,
+            matchData.away_team_id,
+            matchData.season_id,
+            teamFormat
+          );
+          setTeamHandicap(bonus);
+          console.log('Team handicap bonus calculated:', bonus);
+        }
 
         // Check if lineup already exists for this team
         const { data: existingLineup, error: lineupError } = await supabase
@@ -902,15 +925,42 @@ export function MatchLineup() {
                 <span className="font-semibold">{formatHandicap(calculatePlayerHandicapTotal())}</span>
               </div>
 
-              {/* Always show team bonus, but indicate it only applies to home team */}
-              <div className="flex justify-between items-center text-sm">
-                <span className={isHomeTeam ? "text-gray-600" : "text-gray-400"}>
-                  Team Bonus {isHomeTeam ? "(Applied)" : "(Home Only)"}:
-                </span>
-                <span className={`font-semibold ${isHomeTeam ? "text-gray-600" : "text-gray-400"}`}>
-                  {teamHandicap >= 0 ? '+' : ''}{formatHandicap(teamHandicap)}
-                </span>
-              </div>
+              {/* Only show team modifier if there is one (home team with non-zero modifier) */}
+              {isHomeTeam && teamHandicap !== 0 && (
+                <div className="flex justify-between items-center text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span>Team Modifier:</span>
+                    <InfoButton title="Team Handicap Modifier">
+                      <div className="space-y-2">
+                        <p>
+                          This modifier is based on how your team's record compares to your opponent's in the standings.
+                        </p>
+                        <div className="bg-gray-50 p-2 rounded">
+                          <p className="font-semibold mb-1">How it works:</p>
+                          <p className="text-xs">For every 2 match wins ahead = -1 modifier (advantage)</p>
+                          <p className="text-xs">For every 2 match wins behind = +1 modifier (disadvantage)</p>
+                          <p className="text-xs mt-1 italic">Lower handicap = fewer games needed to win</p>
+                        </div>
+                        <div className="bg-blue-50 p-2 rounded">
+                          <p className="font-semibold mb-1">Examples:</p>
+                          <p className="text-xs">
+                            5 matches ahead → <strong>-2 modifier</strong> (advantage)<br />
+                            2 matches ahead → <strong>-1 modifier</strong> (advantage)<br />
+                            2 matches behind → <strong>+1 modifier</strong> (disadvantage)<br />
+                            4-5 matches behind → <strong>+2 modifier</strong> (disadvantage)
+                          </p>
+                        </div>
+                        <p className="text-xs">
+                          This modifier is only applied to the home team to ensure only one adjustment per match. It's added to the home team's player handicaps to help balance competition.
+                        </p>
+                      </div>
+                    </InfoButton>
+                  </div>
+                  <span className="font-semibold">
+                    {teamHandicap >= 0 ? '+' : ''}{formatHandicap(teamHandicap)}
+                  </span>
+                </div>
+              )}
 
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="font-semibold text-gray-900">Team Total Handicap:</span>

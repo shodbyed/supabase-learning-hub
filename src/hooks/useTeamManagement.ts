@@ -16,7 +16,6 @@ import {
   useMostRecentSeason,
   usePreviousCompletedSeason,
 } from '@/api/hooks';
-import { supabase } from '@/supabaseClient';
 import type { LeagueVenue } from '@/types/venue';
 import type { UseTeamManagementReturn } from '@/types';
 import type { TeamWithQueryDetails } from '@/types/team';

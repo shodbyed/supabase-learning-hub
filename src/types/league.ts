@@ -23,6 +23,8 @@ export interface LeagueFormData {
   apaNationalsEnd: string;
   teamFormat: '5_man' | '8_man' | '';
   handicapSystem: 'custom_5man' | 'bca_standard' | '';
+  handicapVariant: 'standard' | 'reduced' | 'none' | '';
+  teamHandicapVariant: 'standard' | 'reduced' | 'none' | '';
   organizationName: string;
   organizationAddress: string;
   organizationCity: string;
@@ -64,6 +66,11 @@ export type LeagueStatus = 'active' | 'completed' | 'abandoned';
 export type Season = 'Winter' | 'Spring' | 'Summer' | 'Fall';
 
 /**
+ * Handicap variant types (for both player and team handicaps)
+ */
+export type HandicapVariant = 'standard' | 'reduced' | 'none';
+
+/**
  * League database record interface
  * Matches the leagues table schema exactly
  */
@@ -74,6 +81,9 @@ export interface League {
   day_of_week: DayOfWeek;
   division: string | null;
   team_format: TeamFormat;
+  handicap_variant: HandicapVariant;
+  team_handicap_variant: HandicapVariant;
+  golden_break_counts_as_win: boolean;
   league_start_date: string; // ISO date string
   created_at: string;
   updated_at: string;
@@ -90,6 +100,9 @@ export interface LeagueInsertData {
   day_of_week: DayOfWeek;
   division?: string | null;
   team_format: TeamFormat;
+  handicap_variant: HandicapVariant;
+  team_handicap_variant: HandicapVariant;
+  golden_break_counts_as_win?: boolean;
   league_start_date: string; // ISO date string YYYY-MM-DD
 }
 

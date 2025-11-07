@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS venues (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
   -- Ownership tracking (for future permission system)
-  -- First operator to create venue "owns" it, future: need permission to use
-  created_by_operator_id UUID NOT NULL REFERENCES league_operators(id) ON DELETE CASCADE,
+  -- First operator to create venue - nullable to allow venue persistence
+  -- Venues persist even if original operator/organization is deleted
+  created_by_operator_id UUID REFERENCES league_operators(id) ON DELETE SET NULL,
 
   -- Future: Actual venue owner account (bar/poolhall owner login)
   venue_owner_id UUID REFERENCES venue_owners(id) ON DELETE SET NULL,
@@ -128,8 +129,8 @@ CREATE POLICY "Public can view active venues"
   USING (is_active = true);
 
 -- Comments for documentation
-COMMENT ON TABLE venues IS 'Physical locations (pool halls, bars) where league matches are played';
-COMMENT ON COLUMN venues.created_by_operator_id IS 'Operator who first created this venue - future: owns permission rights';
+COMMENT ON TABLE venues IS 'Physical locations (pool halls, bars) where league matches are played. Venues persist independently of operators/organizations.';
+COMMENT ON COLUMN venues.created_by_operator_id IS 'Operator who first created this venue - can be NULL if original operator deleted. Venue persists independently.';
 COMMENT ON COLUMN venues.venue_owner_id IS 'Future: Actual bar/poolhall owner account who can approve operators';
 COMMENT ON COLUMN venues.bar_box_tables IS '7ft bar-box tables available at venue';
 COMMENT ON COLUMN venues.regulation_tables IS '9ft regulation tables available at venue';

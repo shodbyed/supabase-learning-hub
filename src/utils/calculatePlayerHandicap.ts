@@ -1,0 +1,154 @@
+/**
+ * @fileoverview Player Handicap Calculator
+ *
+ * Self-contained helper to calculate a player's handicap based on their game history.
+ * Works independently without parent dependencies.
+ *
+ * Supports both 3v3 and 5v5 formats with different handicap systems:
+ * - 3v3: Returns integer handicap (-2 to +2 standard, -1 to +1 reduced, or 0)
+ * - 5v5: Returns percentage handicap (0-100% standard, 0-50% reduced, or 50%)
+ *
+ * Formula: (wins - losses) / weeks_played
+ * where weeks_played = games_played / 6
+ *
+ * Minimum games requirement: 18 games
+ * - If < 18 games: Returns 0 for 3v3, 50% for 5v5
+ */
+
+import { fetchPlayerGameHistory } from '@/api/queries/matchGames';
+
+/**
+ * Team format types
+ */
+type TeamFormat = '5_man' | '8_man';
+
+/**
+ * Handicap variant/strength levels
+ */
+type HandicapVariant = 'standard' | 'reduced' | 'none';
+
+/**
+ * Calculate a player's handicap based on their last 200 games
+ *
+ * IMPORTANT: Handicaps are game-type specific. 8-ball games don't count for 9-ball handicaps.
+ * Games from the current season are prioritized first, then other games of the same type.
+ *
+ * @param playerId - The player's member ID
+ * @param teamFormat - '5_man' (3v3) or '8_man' (5v5)
+ * @param handicapVariant - 'standard', 'reduced', or 'none'
+ * @param gameType - Game type to filter ('eight_ball', 'nine_ball', 'ten_ball')
+ * @param currentSeasonId - Optional current season ID to prioritize those games first
+ * @returns Handicap value (integer for 3v3, percentage for 5v5)
+ *
+ * @example
+ * // 3v3 format, 9-ball, prioritizing current season
+ * const handicap = await calculatePlayerHandicap(
+ *   'player-123',
+ *   '5_man',
+ *   'standard',
+ *   'nine_ball',
+ *   'season-456'
+ * );
+ * // Returns: -2, -1, 0, 1, or 2
+ *
+ * @example
+ * // 5v5 format, 8-ball
+ * const handicap = await calculatePlayerHandicap(
+ *   'player-456',
+ *   '8_man',
+ *   'standard',
+ *   'eight_ball'
+ * );
+ * // Returns: 0-100 (percentage)
+ */
+export async function calculatePlayerHandicap(
+  playerId: string,
+  teamFormat: TeamFormat,
+  handicapVariant: HandicapVariant,
+  gameType: 'eight_ball' | 'nine_ball' | 'ten_ball',
+  currentSeasonId?: string
+): Promise<number> {
+  // Handle 'none' variant - return defaults
+  if (handicapVariant === 'none') {
+    return teamFormat === '5_man' ? 0 : 50;
+  }
+
+  // Query last 200 games for this player (filtered by game type, prioritizing current season)
+  try {
+    const games = await fetchPlayerGameHistory(playerId, gameType, currentSeasonId, 200);
+
+    // If fewer than 18 games, return defaults
+    if (!games || games.length < 18) {
+      return teamFormat === '5_man' ? 0 : 50;
+    }
+
+    // Count wins and losses
+    const wins = games.filter((game) => game.winner_player_id === playerId).length;
+    const losses = games.length - wins;
+    const gamesPlayed = games.length;
+
+    // Return based on format
+    if (teamFormat === '5_man') {
+      // 3v3: Use (wins - losses) / weeks_played formula
+      const weeksPlayed = gamesPlayed / 6;
+      const rawHandicap = (wins - losses) / weeksPlayed;
+      return roundTo3v3Handicap(rawHandicap, handicapVariant);
+    } else {
+      // 5v5: Use straight win percentage
+      const winPercentage = (wins / gamesPlayed) * 100;
+      return convertTo5v5Percentage(winPercentage, handicapVariant);
+    }
+  } catch (error) {
+    console.error('Error calculating player handicap:', error);
+    return teamFormat === '5_man' ? 0 : 50;
+  }
+}
+
+/**
+ * Round raw handicap to valid 3v3 integer handicap
+ *
+ * IMPORTANT: Must be whole numbers only, capped at range limits
+ * - Standard: -2, -1, 0, 1, 2 (cap at ±2)
+ * - Reduced: -1, 0, 1 (cap at ±1)
+ *
+ * Examples:
+ * - raw = 4.2, standard → 2 (capped)
+ * - raw = -3.5, standard → -2 (capped)
+ * - raw = 1.8, reduced → 1 (capped)
+ * - raw = -1.3, reduced → -1 (capped)
+ */
+function roundTo3v3Handicap(raw: number, variant: HandicapVariant): number {
+  // Round to whole number first
+  const rounded = Math.round(raw);
+
+  // Cap to valid range
+  if (variant === 'standard') {
+    // Cap between -2 and +2
+    return Math.max(-2, Math.min(2, rounded));
+  } else {
+    // reduced: Cap between -1 and +1
+    return Math.max(-1, Math.min(1, rounded));
+  }
+}
+
+/**
+ * Convert win percentage to 5v5 handicap percentage
+ *
+ * 5v5 uses straight win percentage, not the weeks-played formula.
+ * - Standard: 0-100% (full range)
+ * - Reduced: 0-50% (half range - divide win% by 2)
+ *
+ * @param winPercentage - Raw win percentage (0-100)
+ * @param variant - Handicap variant
+ * @returns Handicap percentage for 5v5
+ */
+function convertTo5v5Percentage(winPercentage: number, variant: HandicapVariant): number {
+  if (variant === 'standard') {
+    // Standard: Use full win percentage (0-100%)
+    return Math.max(0, Math.min(100, Math.round(winPercentage)));
+  } else {
+    // Reduced: Half the win percentage (0-50%)
+    const reducedPercentage = winPercentage / 2;
+    return Math.max(0, Math.min(50, Math.round(reducedPercentage)));
+  }
+}

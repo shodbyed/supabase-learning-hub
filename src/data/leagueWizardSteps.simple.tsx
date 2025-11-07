@@ -24,7 +24,7 @@ export interface WizardStep {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'input' | 'choice';
+  type: 'input' | 'choice' | 'radio';
   placeholder?: string;
   choices?: Array<{
     value: string;
@@ -34,6 +34,12 @@ export interface WizardStep {
     warning?: string;
     infoTitle?: string;
     infoContent?: string | React.ReactElement;
+  }>;
+  options?: Array<{
+    value: string;
+    label: string;
+    description?: string;
+    benefit?: string;
   }>;
   validator?: (value: string) => { isValid: boolean; error?: string };
   getValue: () => string;
@@ -55,6 +61,8 @@ export interface LeagueFormData {
   qualifier: string;
   teamFormat: '5_man' | '8_man' | '';
   handicapSystem: 'custom_5man' | 'bca_standard' | '';
+  handicapVariant: 'standard' | 'reduced' | 'none' | '';
+  teamHandicapVariant: 'standard' | 'reduced' | 'none' | '';
 }
 
 /**
@@ -218,6 +226,57 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       infoTitle: teamFormatComparisonInfo.title,
       infoContent: teamFormatComparisonInfo.content,
       infoLabel: 'How to choose'
+    },
+
+    // Handicap Variant Selection
+    {
+      id: 'handicapVariant',
+      title: 'Handicap strength',
+      subtitle: '',
+      type: 'choice',
+      choices: [
+        {
+          value: 'standard',
+          label: 'Standard',
+          description: '3v3: -2 to +2 | 5v5: 0-100%',
+          subtitle: 'Maximum skill balancing'
+        },
+        {
+          value: 'reduced',
+          label: 'Reduced',
+          description: '3v3: -1 to +1 | 5v5: 0-50%',
+          subtitle: 'Moderate skill balancing'
+        },
+        {
+          value: 'none',
+          label: 'No Handicap',
+          description: 'All players at 0',
+          subtitle: 'Pure skill-based competition'
+        }
+      ],
+      getValue: () => formData.handicapVariant,
+      setValue: (value: string) => {
+        updateFormData('handicapVariant', value);
+        // Default team handicap to match player handicap
+        updateFormData('teamHandicapVariant', value);
+      },
+      infoTitle: 'Choose the handicap range to apply',
+      infoContent: (
+        <div className="space-y-3">
+          <p>
+            <strong>Standard:</strong> Uses the entire handicap range for maximum skill balancing.
+            Provides the largest differential between teams to help level the playing field.
+          </p>
+          <p>
+            <strong>Reduced:</strong> Uses half the handicap range, creating a smaller differential.
+            More skill-based while still providing some effort to level the playing field.
+          </p>
+          <p>
+            <strong>No Handicap:</strong> Removes all handicapping. Pure skill-based competition with no adjustments.
+          </p>
+        </div>
+      ),
+      infoLabel: 'Choose the handicap range to apply'
     },
   ];
 };

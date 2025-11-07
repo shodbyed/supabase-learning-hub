@@ -100,3 +100,94 @@ export function isValidGameNumber(gameNumber: number): boolean {
 export function isTiebreakerGame(gameNumber: number): boolean {
   return gameNumber >= 19 && gameNumber <= 21;
 }
+
+/**
+ * Generate game order algorithmically for any team size
+ *
+ * Pattern:
+ * - Home team goes in order: 1,2,3... repeated
+ * - Away team rotates: first round 1,2,3... then 2,3,1... then 3,1,2... etc
+ * - Break action swaps every round (home breaks round 1, away breaks round 2, etc)
+ *
+ * @param playersPerTeam - Number of players per team (3 for 3v3, 5 for 5v5)
+ * @param doubleRoundRobin - If true, each player plays each opponent twice. If false, only once.
+ * @returns Array of game matchups
+ *
+ * @example
+ * // 3v3 creates 18 games (3 players × 3 opponents × 2 rounds)
+ * generateGameOrder(3, true)
+ *
+ * // 5v5 creates 25 games (5 players × 5 opponents × 1 round)
+ * generateGameOrder(5, false)
+ */
+export function generateGameOrder(playersPerTeam: number, doubleRoundRobin: boolean = true): GameMatchup[] {
+  const games: GameMatchup[] = [];
+  let gameNumber = 1;
+
+  // Total rounds = playersPerTeam * (doubleRoundRobin ? 2 : 1)
+  const totalRounds = doubleRoundRobin ? playersPerTeam * 2 : playersPerTeam;
+
+  for (let round = 0; round < totalRounds; round++) {
+    // Determine who breaks this round (alternates)
+    const homeBreaks = round % 2 === 0;
+
+    // Calculate away team rotation offset
+    // Rotates every round: 0, 1, 2, 0, 1, 2...
+    const awayOffset = round % playersPerTeam;
+
+    // Each round has playersPerTeam games
+    for (let i = 0; i < playersPerTeam; i++) {
+      const homePosition = i + 1; // 1-indexed
+      // Away position rotates based on offset
+      const awayPosition = ((i + awayOffset) % playersPerTeam) + 1;
+
+      games.push({
+        gameNumber: gameNumber++,
+        homePlayerPosition: homePosition as any,
+        awayPlayerPosition: awayPosition as any,
+        homeAction: homeBreaks ? 'breaks' : 'racks',
+        awayAction: homeBreaks ? 'racks' : 'breaks',
+      });
+    }
+  }
+
+  return games;
+}
+
+/**
+ * Get game order for 5v5 matches (25 games total - single round-robin)
+ */
+export function getAllGames5v5(): GameMatchup[] {
+  return generateGameOrder(5, false); // false = single round-robin
+}
+
+/**
+ * Verify the generated game order matches the hardcoded order
+ * Useful for testing the algorithm
+ */
+export function verifyGameOrder(): boolean {
+  const generated = generateGameOrder(3);
+
+  if (generated.length !== GAME_ORDER_3V3.length) {
+    console.error('Length mismatch:', generated.length, 'vs', GAME_ORDER_3V3.length);
+    return false;
+  }
+
+  for (let i = 0; i < generated.length; i++) {
+    const gen = generated[i];
+    const ref = GAME_ORDER_3V3[i];
+
+    if (
+      gen.gameNumber !== ref.gameNumber ||
+      gen.homePlayerPosition !== ref.homePlayerPosition ||
+      gen.awayPlayerPosition !== ref.awayPlayerPosition ||
+      gen.homeAction !== ref.homeAction ||
+      gen.awayAction !== ref.awayAction
+    ) {
+      console.error('Mismatch at game', i + 1, ':', gen, 'vs', ref);
+      return false;
+    }
+  }
+
+  return true;
+}

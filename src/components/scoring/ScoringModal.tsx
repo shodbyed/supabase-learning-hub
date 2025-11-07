@@ -128,7 +128,7 @@ export function ScoringModal({
             Cancel
           </Button>
           <Button onClick={handleConfirm}>
-            Confirm
+            Select Winner
           </Button>
         </DialogFooter>
       </DialogContent>

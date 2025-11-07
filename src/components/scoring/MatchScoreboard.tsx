@@ -13,6 +13,8 @@
  */
 
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { Lineup } from '@/types/match';
 import { getPlayerStats, getTeamStats, calculatePoints, type HandicapThresholds } from '@/types/match';
 
@@ -80,42 +82,61 @@ export function MatchScoreboard({
   onAutoConfirmChange,
   getPlayerDisplayName,
 }: MatchScoreboardProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white border-b shadow-sm flex-shrink-0">
       <div className="px-4 py-2">
-        {/* Team selector buttons - Only visible on mobile */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4 md:hidden">
+        {/* Header row: Exit button + Auto-confirm */}
+        <div className="flex items-center justify-between mb-3">
           <Button
-            variant={showingHomeTeam ? 'default' : 'outline'}
-            onClick={() => onToggleTeam(true)}
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/player-dashboard')}
+            className="flex items-center gap-1"
           >
-            {match.home_team?.team_name}
+            <ArrowLeft className="h-4 w-4" />
+            Exit
           </Button>
-          <div className="text-sm text-gray-500 font-semibold px-2">vs</div>
-          <Button
-            variant={!showingHomeTeam ? 'default' : 'outline'}
-            onClick={() => onToggleTeam(false)}
-          >
-            {match.away_team?.team_name}
-          </Button>
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoConfirm}
+              onChange={(e) => onAutoConfirmChange(e.target.checked)}
+              className="w-3 h-3"
+            />
+            Auto-confirm opponent scores
+          </label>
+        </div>
+
+        {/* Mobile: Title above team selector buttons */}
+        <div className="md:hidden">
+          <div className="text-center font-bold text-lg mb-2">
+            {showingHomeTeam ? 'HOME' : 'AWAY'}
+          </div>
+          {/* Team selector buttons */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-4">
+            <Button
+              variant={showingHomeTeam ? 'default' : 'outline'}
+              onClick={() => onToggleTeam(true)}
+            >
+              {match.home_team?.team_name}
+            </Button>
+            <div className="text-sm text-gray-500 font-semibold px-2">vs</div>
+            <Button
+              variant={!showingHomeTeam ? 'default' : 'outline'}
+              onClick={() => onToggleTeam(false)}
+            >
+              {match.away_team?.team_name}
+            </Button>
+          </div>
         </div>
 
         {/* Desktop: Both teams side by side */}
         <div className="hidden md:grid md:grid-cols-2 md:gap-4">
           {/* Home Team */}
           <div className="space-y-2">
-            <div className="flex flex-col items-center mb-2">
-              <div className="text-center font-bold text-lg">{match.home_team?.team_name} (HOME)</div>
-              <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoConfirm}
-                  onChange={(e) => onAutoConfirmChange(e.target.checked)}
-                  className="w-3 h-3"
-                />
-                Auto-confirm opponent scores
-              </label>
-            </div>
+            <div className="text-center font-bold text-lg mb-2">{match.home_team?.team_name} (HOME)</div>
             {/* Two-column layout: Player stats and match stats */}
             <div className="grid grid-cols-[55%_45%] gap-2">
               {/* Player stats table */}
@@ -129,7 +150,7 @@ export function MatchScoreboard({
                 {/* Team row */}
                 <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                   <div className="text-center">{homeTeamHandicap}</div>
-                  <div className="truncate">Team</div>
+                  <div className="truncate">{match.home_team?.team_name}</div>
                   <div className="text-center">
                     {getTeamStats(match.home_team_id, gameResults as any).wins}
                   </div>
@@ -202,10 +223,7 @@ export function MatchScoreboard({
 
           {/* Away Team */}
           <div className="space-y-2">
-            <div className="flex flex-col items-center mb-2">
-              <div className="text-center font-bold text-lg">{match.away_team?.team_name} (AWAY)</div>
-              <div className="h-5"></div> {/* Spacer to align with home team's checkbox */}
-            </div>
+            <div className="text-center font-bold text-lg mb-2">{match.away_team?.team_name} (AWAY)</div>
             {/* Two-column layout: Player stats and match stats */}
             <div className="grid grid-cols-[55%_45%] gap-2">
               {/* Player stats table */}
@@ -219,7 +237,7 @@ export function MatchScoreboard({
                 {/* Team row */}
                 <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                   <div className="text-center">0</div>
-                  <div className="truncate">Team</div>
+                  <div className="truncate">{match.away_team?.team_name}</div>
                   <div className="text-center">
                     {getTeamStats(match.away_team_id, gameResults as any).wins}
                   </div>
@@ -295,18 +313,6 @@ export function MatchScoreboard({
         <div className="md:hidden">
         {showingHomeTeam ? (
           <div className="space-y-2">
-            <div className="flex flex-col items-center mb-2">
-              <div className="text-center font-bold text-lg">HOME</div>
-              <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoConfirm}
-                  onChange={(e) => onAutoConfirmChange(e.target.checked)}
-                  className="w-3 h-3"
-                />
-                Auto-confirm opponent scores
-              </label>
-            </div>
             {/* Two-column layout: Player stats and match stats */}
             <div className="grid grid-cols-[55%_45%] gap-2">
               {/* Player stats table */}
@@ -320,7 +326,7 @@ export function MatchScoreboard({
                 {/* Team row */}
                 <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                   <div className="text-center">{homeTeamHandicap}</div>
-                  <div className="truncate">Team</div>
+                  <div className="truncate">{match.home_team?.team_name}</div>
                   <div className="text-center">
                     {getTeamStats(match.home_team_id, gameResults as any).wins}
                   </div>
@@ -416,18 +422,6 @@ export function MatchScoreboard({
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="flex flex-col items-center mb-2">
-              <div className="text-center font-bold text-lg">AWAY</div>
-              <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoConfirm}
-                  onChange={(e) => onAutoConfirmChange(e.target.checked)}
-                  className="w-3 h-3"
-                />
-                Auto-confirm opponent scores
-              </label>
-            </div>
             {/* Two-column layout: Player stats and match stats */}
             <div className="grid grid-cols-[55%_45%] gap-2">
               {/* Player stats table */}
@@ -441,7 +435,7 @@ export function MatchScoreboard({
                 {/* Team row */}
                 <div className="grid grid-cols-[2.5rem_6rem_2rem_2rem] gap-1 text-sm py-1 px-1 font-semibold border-b border-gray-300">
                   <div className="text-center">0</div>
-                  <div className="truncate">Team</div>
+                  <div className="truncate">{match.away_team?.team_name}</div>
                   <div className="text-center">
                     {getTeamStats(match.away_team_id, gameResults as any).wins}
                   </div>

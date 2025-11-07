@@ -720,7 +720,7 @@ CREATE POLICY "Venue owners can update own profile"
 
 CREATE TABLE venues (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  created_by_operator_id UUID NOT NULL REFERENCES league_operators(id) ON DELETE CASCADE,
+  created_by_operator_id UUID REFERENCES league_operators(id) ON DELETE SET NULL, -- Nullable: venues persist independently
   venue_owner_id UUID REFERENCES venue_owners(id) ON DELETE SET NULL,
 
   -- Required
