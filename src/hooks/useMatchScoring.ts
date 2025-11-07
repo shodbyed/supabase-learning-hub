@@ -131,7 +131,7 @@ export function useMatchScoring({
   const homeLineup = lineupsData?.homeLineup || null;
   const awayLineup = lineupsData?.awayLineup || null;
   const userTeamId = userTeamData?.team_id || null;
-  const isHomeTeam = userTeamData?.isHomeTeam || null;
+  const isHomeTeam = userTeamData?.isHomeTeam ?? null; // Use ?? instead of || to preserve false
   const goldenBreakCountsAsWin = matchData?.league.golden_break_counts_as_win || false;
   const gameType = matchData?.league.game_type || '8-ball';
 

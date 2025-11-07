@@ -18,50 +18,58 @@
 - Trigger when `confirmed_games_count === total_games`
 
 **Implementation**:
-- Add to `ScoreMatch.tsx` (or `useMatchScoring` hook if refactored)
-- Listen for game confirmations via real-time subscription
-- When count reaches total, trigger match completion flow
+- Add detection logic to `ScoreMatch.tsx` component
+- Use existing real-time subscription (already watches all game changes)
+- Calculate from `gameResults` Map: count entries where both `confirmed_by_home` and `confirmed_by_away` are true
+- Compare against hardcoded total (18 for 3v3, will be 25 for 5v5, 3 for tiebreaker)
+- When count reaches 18, show verification component
 
-**Questions**:
-- Where to store `total_games`? (matches table? calculate from format?)
-- Should we check every game confirmation or poll periodically?
+**Implementation Steps** (one at a time):
+1. Create SQL migration file for verification columns
+2. Create `MatchEndVerification.tsx` component (header replacement)
+3. Add detection logic to `ScoreMatch.tsx`
+4. Integrate component into `MatchScoreboard.tsx` (conditional rendering)
+5. Test manually with real match data
 
 ---
 
-### 1.2 Score Verification Modal
+### 1.2 Score Verification Component
 **Goal**: Both teams verify final scores before match is officially complete
 
-**UI Flow**:
-1. When all games played → Show "Match Complete - Verify Scores" modal
-2. Display final score summary:
-   - Home Team: X wins
-   - Away Team: Y wins
-   - Match result: Win/Tie + threshold info
-3. Show player stats for both teams (games won per player)
-4. Two buttons:
-   - **"Scores Look Good"** - Confirm verification
-   - **"Need to Edit"** - Dismiss modal, return to scoring page
+**UI Approach**: Component replaces header area (NOT a modal)
+- **Replaces**: Exit button, Auto-confirm checkbox, HOME/AWAY title
+- **Pushes down**: Team toggle buttons and everything below
+- Allows scrolling between team scoreboards during verification
+- Vacate buttons remain active (teams can fix errors during verification)
+
+**UI Content**:
+1. Match result summary:
+   - "Match Complete: Home X - Y Away"
+   - Result indicator: "HOME WINS" / "AWAY WINS" / "TIE - TIEBREAKER REQUIRED"
+2. Verification status:
+   - "Waiting for [Team Name] to verify..."
+   - "✓ [Team Name] has verified"
+3. "Verify Scores" button (enabled only for user's team, disabled if already verified)
 
 **Verification Requirements**:
 - **BOTH teams must verify** before proceeding
-- Track verification status per team in database
-- Real-time sync: when one team verifies, other team sees it
-- Can't proceed until both verified
+- Track WHO verified (member_id) not just boolean
+- Use existing real-time subscription (already watches all game changes)
+- Can't exit page until both teams verify
+- Auto-navigate to dashboard when both verified
 
 **Database Changes Needed**:
 ```sql
--- Add to matches table (or create match_verification table)
-ALTER TABLE matches ADD COLUMN home_team_verified BOOLEAN DEFAULT FALSE;
-ALTER TABLE matches ADD COLUMN away_team_verified BOOLEAN DEFAULT FALSE;
-ALTER TABLE matches ADD COLUMN match_status TEXT; -- 'in_progress', 'awaiting_verification', 'verified', 'completed'
+-- Add to matches table
+ALTER TABLE matches ADD COLUMN home_team_verified_by UUID REFERENCES members(id); -- NULL = not verified
+ALTER TABLE matches ADD COLUMN away_team_verified_by UUID REFERENCES members(id); -- NULL = not verified
+ALTER TABLE matches ADD COLUMN match_status TEXT CHECK (match_status IN ('scheduled', 'in_progress', 'awaiting_verification', 'completed', 'forfeited', 'postponed'));
 ```
 
 **Edit Flow**:
-- If either team clicks "Need to Edit":
-  - Dismiss modal
-  - Return to scoring page
-  - Teams can use existing "Vacate" button to fix incorrect games
-  - Modal reappears when all games still confirmed
+- Vacate buttons remain functional during verification
+- If game vacated after verification → resets relevant team's verification
+- Verification component stays visible until both teams re-verify
 
 ---
 
@@ -129,10 +137,10 @@ SET
 WHERE id = :matchId;
 ```
 
-**Questions**:
-- Do we need a separate "Match Results" page or just navigate back to schedule?
-- Should we show confetti/celebration animation for winner?
-- Do we update player handicaps immediately or in a background job?
+**Answers**:
+- Navigate to dashboard (no separate results page for now)
+- No celebration animation (keep it simple)
+- Handicap updates are future work
 
 ---
 
@@ -307,17 +315,18 @@ CREATE TABLE player_tiebreaker_results (
 ## 📋 Implementation Checklist
 
 ### Phase 1: Match End Detection
-- [ ] Add `match_status`, `home_team_verified`, `away_team_verified` to `matches` table
-- [ ] Create generic "count confirmed games" function
-- [ ] Add real-time listener for game confirmations
-- [ ] Detect when all games are played
-- [ ] Create Score Verification Modal component
-- [ ] Implement verification tracking (both teams must verify)
-- [ ] Create generic `determineMatchOutcome()` function (handles 18/25/3 games, with/without ties)
-- [ ] Implement post-verification navigation logic (tie → tiebreaker, win → results)
-- [ ] Create Match Results page (or reuse existing page)
-- [ ] Test with 18-game match (win scenario)
-- [ ] Test with 18-game match (tie scenario)
+- [ ] **Step 1**: Create SQL migration adding `home_team_verified_by`, `away_team_verified_by`, update `match_status` constraint to `matches` table
+- [ ] **Step 2**: Run SQL migration on local Supabase instance
+- [ ] **Step 3**: Create `MatchEndVerification.tsx` component (replaces header, shows verification UI)
+- [ ] **Step 4**: Add match end detection logic to `ScoreMatch.tsx` (count confirmed games === 18)
+- [ ] **Step 5**: Integrate `MatchEndVerification` into `MatchScoreboard.tsx` (conditional render)
+- [ ] **Step 6**: Add verification button handler (update `matches.home_team_verified_by` or `away_team_verified_by`)
+- [ ] **Step 7**: Add auto-navigation when both teams verify (navigate to dashboard)
+- [ ] **Step 8**: Handle vacate-after-verify (reset verification for affected team)
+- [ ] **Step 9**: Test with real 18-game match (complete all games, verify both teams)
+- [ ] Create generic `determineMatchOutcome()` function (handles 18/25/3 games, with/without ties) - FUTURE
+- [ ] Implement post-verification navigation logic (tie → tiebreaker, win → dashboard) - FUTURE
+- [ ] Test with tie scenario - FUTURE (after tiebreaker built)
 
 ### Phase 2: Tiebreaker
 - [ ] Decide: Reuse `match_lineups` table or create `tiebreaker_lineups`?

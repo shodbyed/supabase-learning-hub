@@ -17,6 +17,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,15 +32,20 @@ import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
 import { GameButtonRow } from '@/components/scoring/GameButtonRow';
+import { queryKeys } from '@/api/queryKeys';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: member } = useCurrentMember();
   const memberId = member?.id;
 
   // Auto-confirm setting (bypass confirmation modal)
   const [autoConfirm, setAutoConfirm] = useState(false);
+
+  // Verification state
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Ref to store mutations for use in real-time subscription
   const mutationsRef = useRef<any>(null);
@@ -132,6 +138,128 @@ export function ScoreMatch() {
     }
   }, [isHomeTeam]);
 
+  // Detect when all games are complete (works for any format: 3, 18, 25, etc.)
+  const allGamesArray = getAllGames();
+  const totalGames = allGamesArray.length;
+  const completedGames = getCompletedGamesCount(gameResults);
+  const allGamesComplete = completedGames === totalGames;
+
+  // Debug: Log team identification and verification status
+  useEffect(() => {
+    console.log('Match data updated with verification columns:', {
+      matchId: match?.id,
+      homeVerifiedBy: (match as any)?.home_team_verified_by,
+      awayVerifiedBy: (match as any)?.away_team_verified_by
+    });
+  }, [match]);
+
+  // Track previous allGamesComplete state to detect changes
+  const prevAllGamesCompleteRef = useRef(allGamesComplete);
+
+  // Reset verification when allGamesComplete changes from true to false (game vacated after verification)
+  useEffect(() => {
+    const wasComplete = prevAllGamesCompleteRef.current;
+    const isComplete = allGamesComplete;
+
+    // If changed from complete to incomplete, clear verification
+    if (wasComplete && !isComplete && matchId) {
+      console.log('Game vacated after completion - clearing verification status');
+      supabase
+        .from('matches')
+        .update({
+          home_team_verified_by: null,
+          away_team_verified_by: null,
+        })
+        .eq('id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error clearing verification status:', error);
+          }
+        });
+    }
+
+    // Update ref for next comparison
+    prevAllGamesCompleteRef.current = isComplete;
+  }, [allGamesComplete, matchId]);
+
+  /**
+   * Handle verify button click
+   * Updates the appropriate verification column based on user's team
+   * Uses optimistic update and refetch to update UI immediately
+   */
+  const handleVerify = async () => {
+    console.log('handleVerify called:', { matchId, memberId, isHomeTeam, userTeamId });
+
+    if (!matchId) {
+      console.log('Verify blocked - matchId missing:', matchId);
+      return;
+    }
+    if (!memberId) {
+      console.log('Verify blocked - memberId missing:', memberId);
+      return;
+    }
+    if (isHomeTeam === null) {
+      console.log('Verify blocked - isHomeTeam is null:', isHomeTeam);
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const updateField = isHomeTeam ? 'home_team_verified_by' : 'away_team_verified_by';
+
+      console.log(`Updating ${updateField} with member ${memberId}`);
+
+      // Optimistically update the UI immediately
+      const queryKey = [...queryKeys.matches.detail(matchId), 'leagueSettings'];
+
+      console.log('Current match data before update:', {
+        ...match,
+        home_team_verified_by: (match as any).home_team_verified_by,
+        away_team_verified_by: (match as any).away_team_verified_by
+      });
+
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) {
+          console.log('No oldData in query cache');
+          return oldData;
+        }
+        console.log('Old data structure with verification:', {
+          id: oldData.id,
+          home_team_verified_by: oldData.home_team_verified_by,
+          away_team_verified_by: oldData.away_team_verified_by
+        });
+        const newData = {
+          ...oldData,
+          [updateField]: memberId
+        };
+        console.log('New data after optimistic update:', newData);
+        return newData;
+      });
+
+      // Update database
+      const { error } = await supabase
+        .from('matches')
+        .update({ [updateField]: memberId })
+        .eq('id', matchId);
+
+      if (error) throw error;
+
+      console.log(`${isHomeTeam ? 'Home' : 'Away'} team verified by member ${memberId}`);
+
+      // Don't refetch - realtime subscription will handle it for all users
+      // This prevents race condition where refetch gets stale data
+    } catch (err: any) {
+      console.error('Error verifying scores:', err);
+      alert(`Failed to verify scores: ${err.message}`);
+      // Rollback optimistic update on error
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.matches.detail(matchId), 'leagueSettings']
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   /**
    * Get display name for a player (nickname or first name)
@@ -228,7 +356,11 @@ export function ScoreMatch() {
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Scoreboard - Fixed at top */}
       <MatchScoreboard
-        match={match}
+        match={{
+          ...match,
+          home_team_verified_by: (match as any).home_team_verified_by ?? null,
+          away_team_verified_by: (match as any).away_team_verified_by ?? null,
+        }}
         homeLineup={homeLineup}
         awayLineup={awayLineup}
         gameResults={gameResults}
@@ -240,6 +372,10 @@ export function ScoreMatch() {
         autoConfirm={autoConfirm}
         onAutoConfirmChange={setAutoConfirm}
         getPlayerDisplayName={getPlayerDisplayName}
+        allGamesComplete={allGamesComplete}
+        isHomeTeam={isHomeTeam ?? false}
+        onVerify={handleVerify}
+        isVerifying={isVerifying}
       />
 
       {/* Game list section */}
