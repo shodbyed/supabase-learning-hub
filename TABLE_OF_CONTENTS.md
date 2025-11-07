@@ -591,6 +591,7 @@ Reusable wizard/form step components
 - `teamQueries.ts` - Team database queries
 - `playerQueries.ts` - Player database queries
 - `calculatePlayerHandicap.ts` - **Self-contained player handicap calculator** (3v3 & 5v5 support)
+- `getTeamHandicapBonus.ts` - **Team handicap bonus calculator** (placeholder until standings built)
 - `handicapCalculations.ts` - Handicap calculations and team handicap utilities
 - `nicknameGenerator.ts` - Player nickname generation
 
