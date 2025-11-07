@@ -2,15 +2,52 @@
 
 ## Current Work Focus
 
-### **🎯 NEXT: Messaging System**
+### **🎯 CURRENT: MVP Development**
 **Priority**: High
-**Status**: 🚀 **STARTING NEXT**
+**Status**: 🚀 **ACTIVE**
 
-**Planned Features**:
-- Internal messaging system for league communications
-- Operator to player messaging
-- Team captain communications
-- Announcement broadcasts
+**Focus Areas**:
+- Complete 3v3 match scoring system (Pages 1 & 2 built, Page 3 tiebreaker pending)
+- League management core features
+- Schedule generation and display
+- Team management and roster handling
+
+**On Hold (Post-MVP)**:
+- Messaging system TanStack Query optimization (see `/archive/PRIORITY-3-ROADMAP.md`)
+- Performance optimizations and refactoring
+
+---
+
+## Outstanding TODOs (Extracted from Archived Plans)
+
+### **UI Improvements** (Low Priority)
+**Status**: Can be done incrementally
+
+1. **Replace Native Alerts** (partially complete)
+   - Most critical alerts replaced with custom dialogs
+   - Remaining instances can be found with: `grep -r "alert\(" src/`
+   - Use `AlertDialog` and `ConfirmDialog` components from `/src/components/`
+
+2. **Capitalize Input Migration** (mostly complete)
+   - League wizard and key forms migrated to `CapitalizeInput` component
+   - Remaining candidates: team name inputs, player registration forms
+   - Component location: `@/components/ui/capitalize-input.tsx`
+
+### **Lineup & Scoring Refactors** (Future Features)
+**Status**: Planning phase - deferred until 3v3 is fully tested
+
+1. **Lineup Page Refactor**
+   - Extract reusable components for 3v3, 5v5, and tiebreaker modes
+   - Create `LineupSelector` component that adapts based on roster size
+   - Reference: `/archive/REFACTOR-LINEUP.md` for detailed architecture
+
+2. **Scoring Page Refactor**
+   - Extract reusable components for different match formats
+   - Create `useMatchScoring` hook to centralize logic
+   - Support 3v3 (18 games), tiebreaker (3 games), 5v5 (25 games)
+   - Reference: `/archive/REFACTOR-SCORING.md` for detailed architecture
+
+**Decision**: Focus on getting 3v3 match scoring fully working before refactoring for reusability
 
 ---
 

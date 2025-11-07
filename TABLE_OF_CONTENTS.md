@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-06 (game_type denormalization for performance)
+> **Last Updated**: 2025-11-07 (archived completed planning files)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -31,33 +31,61 @@
 | `CLAUDE-PERSONAL.md` | Personal Claude preferences | Active |
 | `TABLE_OF_CONTENTS.md` | This file - complete project index | **UPDATE ON EVERY FILE CHANGE** |
 | `RESTRUCTURE_PLAN.md` | Current app reorganization plan | Active (app-restructure branch) |
-| `CENTRAL-DATABASE-IMPLEMENTATION.md` | TanStack Query migration plan and patterns | **Active - Phase 1 Complete** |
-| `DATABASE-USAGE-MAP.md` | Complete inventory of all 55 DB access points for migration | **Active - Ready to migrate** |
-| `API-HOOKS-USAGE.md` | Quick reference guide for using new auth/member hooks | **✅ Phase 2 Complete - Member hooks ready** |
 
-### Feature Plans & Specifications
+### Feature Plans & Specifications (Active)
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `MVP_FEATURE_LIST.md` | Minimum viable product feature list | Active |
-| `3x3SCORING-PLAN.md` | 3x3 scoring system plan | Active |
-| `LEAGUE_MANAGEMENT_PLAN.md` | League management feature plan | Active |
-| `MESSAGING_REFACTOR_PLAN.md` | Messaging system refactor plan | Active |
-| `EDIT-MODE-PLAN.md` | Edit mode implementation plan | Active |
-| `TESTING-SETUP-PLAN.md` | Testing setup and strategy | Active |
-| `USEREDUCER-MIGRATION-PLAN.md` | useReducer migration plan | Active |
-| `REFACTOR-LINEUP.md` | Lineup feature refactor plan | Active |
-| `REFACTOR-SCORING.md` | Scoring feature refactor plan | Active |
+| `MVP_FEATURE_LIST.md` | Minimum viable product feature list | **Active - MVP tracker** |
+| `3x3SCORING-PLAN.md` | 3v3 scoring system specification | **Active - Pages 1 & 2 built, Page 3 pending** |
 
-### Technical Documentation
+### Reference Documentation Folder
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `BCA_HANDICAP_SYSTEM.md` | BCA handicap system documentation | Reference |
-| `CUSTOM_5MAN_HANDICAP_SYSTEM.md` | Custom 5-man handicap system | Reference |
-| `OPTIMIZATION_SUMMARY.md` | Performance optimization notes | Active |
-| `TODO-CAPITALIZE-INPUT.md` | Capitalize input component todo | Active |
-| `TODO-REPLACE-ALERTS.md` | TODO: Replace window.alert/confirm with custom dialogs | Active |
+| Location | Purpose | Notes |
+|----------|---------|-------|
+| `/docs/` | **Domain knowledge & business rules** | Reference material about pool league systems |
+| `docs/BCA_HANDICAP_SYSTEM.md` | BCA handicap system documentation | Official BCA handicap rules and calculations |
+| `docs/CUSTOM_5MAN_HANDICAP_SYSTEM.md` | Custom 5-man handicap system | Proprietary handicap system for 5-man format |
+| `docs/LEAGUE_MANAGEMENT_PLAN.md` | League management system architecture | System hierarchy and database schema |
+
+### Future Work Folder
+
+| Location | Purpose | Notes |
+|----------|---------|-------|
+| `/future/` | **Post-MVP features and optimizations** | Work to resume after MVP complete |
+| `future/DATABASE-USAGE-MAP.md` | Phase 3 messaging TanStack migration inventory | Post-MVP optimization |
+| `future/LEAGUE-SEASON-WIZARD-REFACTOR-TODO.md` | League/season wizard improvements | Future UX enhancements |
+| `future/phase3-migration-approach.md` | Phase 3 TanStack Query migration planning | Post-MVP optimization |
+
+### Archive Folder
+
+| Location | Purpose | Notes |
+|----------|---------|-------|
+| `/archive/` | **Completed/obsolete planning files** | Reference only - not active work |
+| `archive/PRIORITY-1-COMPLETE.md` | Auth & Members TanStack migration (complete) | ✅ Complete |
+| `archive/PRIORITY-2-COMPLETE.md` | Team & Player data TanStack migration (complete) | ✅ Complete |
+| `archive/TESTING-SETUP-PLAN.md` | Testing setup plan (tests now built) | ✅ Complete |
+| `archive/USEREDUCER-MIGRATION-PLAN.md` | useReducer migration plan (complete) | ✅ Complete |
+| `archive/OPTIMIZATION_SUMMARY.md` | Historical optimization record | Reference |
+| `archive/MESSAGING_REFACTOR_PLAN.md` | Old messaging refactor plan (duplicate) | Obsolete |
+| `archive/MESSAGING-REFACTOR-PLAN.md` | Old messaging refactor plan (duplicate) | Obsolete |
+| `archive/EDIT-MODE-PLAN.md` | Edit mode plan (approach may have changed) | Reference |
+| `archive/REFACTOR-LINEUP.md` | Lineup refactor architecture (future work) | Reference |
+| `archive/REFACTOR-SCORING.md` | Scoring refactor architecture (future work) | Reference |
+| `archive/TODO-CAPITALIZE-INPUT.md` | Capitalize input migration (mostly complete) | Reference |
+| `archive/TODO-REPLACE-ALERTS.md` | Alert replacement TODO (mostly complete) | Reference |
+| `archive/UI_IMPROVEMENTS_TODO.md` | UI improvements (mostly complete) | Reference |
+| `archive/PRIORITY-3-ROADMAP.md` | Messaging TanStack Query migration (post-MVP optimization) | Future work |
+| `archive/MIGRATION-TRACKER.md` | Hook migration tracker (complete) | ✅ Complete |
+| `archive/NON-TANSTACK-DATABASE-CALLS.md` | Migration completion tracker (100% complete) | ✅ Complete |
+| `archive/MUTATIONS-IMPLEMENTATION.md` | Mutations infrastructure summary (Phase 1 complete) | ✅ Complete |
+| `archive/CENTRAL-DATABASE.md` | Early migration notes/questions | Reference |
+| `archive/FEATURES_TO_SALVAGE.md` | Feature salvage notes | Reference |
+| `archive/realtime-strategy.md` | Real-time strategy (implemented) | ✅ Complete |
+| `archive/PLAYER_HANDICAP_IMPLEMENTATION.md` | Player handicap implementation plan (done) | ✅ Complete |
+| `archive/tanstack-migration-todo.md` | TanStack migration tracking | ✅ Complete |
+| `archive/messaging-system-audit.md` | Messaging TanStack audit (100% complete) | ✅ Complete |
+| `archive/TESTING-ISSUES.md` | Testing issues from migration | Reference |
 
 ### Build & Package Files
 
@@ -142,6 +170,8 @@
 | `perpetualBCADates.md` | BCA date handling patterns | Oct 26 |
 | `edsPlan.md` | Ed's planning notes | Oct 26 |
 | `futureFeatures.md` | Future feature ideas | Oct 15 |
+| `API-HOOKS-USAGE.md` | TanStack Query API hooks usage guide | Nov 7 ✨ |
+| `CENTRAL-DATABASE-IMPLEMENTATION.md` | TanStack Query patterns and migration approach | Nov 7 ✨ |
 
 ---
 
