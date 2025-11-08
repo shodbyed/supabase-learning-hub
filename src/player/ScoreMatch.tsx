@@ -14,7 +14,7 @@
  * - Break & Run (B&R) and Golden Break (8BB) tracking
  * - Match end detection with winner announcement
  */
-import { watchMatchAndGames } from '@/realtime/useMatchAndGamesRealtime';
+//import { watchMatchAndGames } from '@/realtime/useMatchAndGamesRealtime';
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -114,11 +114,6 @@ export function ScoreMatch() {
 
   // Scoreboard view toggle (true = home team, false = away team)
   const [showingHomeTeam, setShowingHomeTeam] = useState(true);
-
-  // watchMatch and games Realtime testing purposes TODO: remove me
-  useEffect(() => {
-    watchMatchAndGames(matchId);
-  }, [matchId]);
 
   // Process confirmation queue when modal closes or queue changes
   useEffect(() => {

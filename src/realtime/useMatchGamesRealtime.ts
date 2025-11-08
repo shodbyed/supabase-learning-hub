@@ -176,6 +176,21 @@ export function useMatchGamesRealtime(
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `id=eq.${matchId}`,
+        },
+        (payload) => {
+          // Do nothing yet - just passively listen
+          console.log('🏆 MATCHES TABLE UPDATE*: ', payload);
+          console.log('🏆 OLD:', payload.old);
+          console.log('🏆 NEW:', payload.new);
+        }
+      )
       .subscribe();
 
     return () => {
