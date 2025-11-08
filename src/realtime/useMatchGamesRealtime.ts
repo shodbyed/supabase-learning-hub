@@ -29,6 +29,8 @@ import type { MatchBasic, Player, MatchGame } from '@/types';
 interface UseMatchGamesRealtimeOptions {
   /** Callback to refetch games data (typically TanStack Query refetch) */
   onUpdate: () => void;
+  /** Callback to refetch match data when match row changes */
+  onMatchUpdate?: () => void;
   /** Match data with team IDs */
   match: MatchBasic | null;
   /** Current user's team ID */
@@ -71,6 +73,7 @@ export function useMatchGamesRealtime(
 ) {
   const {
     onUpdate,
+    onMatchUpdate,
     match,
     userTeamId,
     players,
@@ -185,10 +188,15 @@ export function useMatchGamesRealtime(
           filter: `id=eq.${matchId}`,
         },
         (payload) => {
-          // Do nothing yet - just passively listen
-          console.log('🏆 MATCHES TABLE UPDATE*: ', payload);
+          console.log('🏆 MATCHES TABLE UPDATE:', payload);
           console.log('🏆 OLD:', payload.old);
           console.log('🏆 NEW:', payload.new);
+
+          // Refetch match data to update UI
+          if (onMatchUpdate) {
+            console.log('🏆 Calling onMatchUpdate to refetch match data');
+            onMatchUpdate();
+          }
         }
       )
       .subscribe();

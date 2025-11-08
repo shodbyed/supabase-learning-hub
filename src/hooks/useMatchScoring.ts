@@ -53,7 +53,8 @@ export function useMatchScoring({
   const {
     data: matchData,
     isLoading: matchLoading,
-    error: matchError
+    error: matchError,
+    refetch: refetchMatch
   } = useMatchWithLeagueSettings(matchId);
 
   // Fetch lineups (needs team IDs from match data)
@@ -332,6 +333,7 @@ export function useMatchScoring({
    */
   useMatchGamesRealtime(matchId, {
     onUpdate: refetchGames,
+    onMatchUpdate: refetchMatch,
     match,
     userTeamId,
     players,
