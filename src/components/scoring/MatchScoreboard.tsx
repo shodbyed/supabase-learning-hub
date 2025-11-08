@@ -17,6 +17,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Lineup } from '@/types/match';
 import { getPlayerStats, getTeamStats, calculatePoints, type HandicapThresholds } from '@/types/match';
+import { MatchEndVerification } from './MatchEndVerification';
 
 interface MatchScoreboardProps {
   /** Current match data */
@@ -26,6 +27,8 @@ interface MatchScoreboardProps {
     away_team_id: string;
     home_team?: { team_name: string };
     away_team?: { team_name: string };
+    home_team_verified_by?: string | null;
+    away_team_verified_by?: string | null;
   };
   /** Home team lineup */
   homeLineup: Lineup;
@@ -60,6 +63,14 @@ interface MatchScoreboardProps {
   onAutoConfirmChange: (checked: boolean) => void;
   /** Get player display name by ID */
   getPlayerDisplayName: (playerId: string) => string;
+  /** Whether all games are complete */
+  allGamesComplete: boolean;
+  /** Is current user on home team? */
+  isHomeTeam: boolean;
+  /** Handler when user clicks verify */
+  onVerify: () => void;
+  /** Is verification in progress? */
+  isVerifying?: boolean;
 }
 
 /**
@@ -81,33 +92,62 @@ export function MatchScoreboard({
   autoConfirm,
   onAutoConfirmChange,
   getPlayerDisplayName,
+  allGamesComplete,
+  isHomeTeam,
+  onVerify,
+  isVerifying = false,
 }: MatchScoreboardProps) {
   const navigate = useNavigate();
+
+  // Calculate team wins for verification component
+  const homeWins = getTeamStats(match.home_team_id, gameResults as any).wins;
+  const awayWins = getTeamStats(match.away_team_id, gameResults as any).wins;
 
   return (
     <div className="bg-white border-b shadow-sm flex-shrink-0">
       <div className="px-4 py-2">
-        {/* Header row: Exit button + Auto-confirm */}
-        <div className="flex items-center justify-between mb-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/player-dashboard')}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Exit
-          </Button>
-          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={autoConfirm}
-              onChange={(e) => onAutoConfirmChange(e.target.checked)}
-              className="w-3 h-3"
-            />
-            Auto-confirm opponent scores
-          </label>
-        </div>
+        {/* Show verification component when all games complete, otherwise show normal header */}
+        {allGamesComplete ? (
+          <MatchEndVerification
+            homeTeamName={match.home_team?.team_name || 'Home'}
+            awayTeamName={match.away_team?.team_name || 'Away'}
+            homeWins={homeWins}
+            awayWins={awayWins}
+            homeWinThreshold={homeThresholds.games_to_win}
+            awayWinThreshold={awayThresholds.games_to_win}
+            homeTieThreshold={homeThresholds.games_to_tie}
+            awayTieThreshold={awayThresholds.games_to_tie}
+            homeVerifiedBy={match.home_team_verified_by || null}
+            awayVerifiedBy={match.away_team_verified_by || null}
+            isHomeTeam={isHomeTeam}
+            onVerify={onVerify}
+            isVerifying={isVerifying}
+          />
+        ) : (
+          <>
+            {/* Header row: Exit button + Auto-confirm */}
+            <div className="flex items-center justify-between mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/player-dashboard')}
+                className="flex items-center gap-1"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Exit
+              </Button>
+              <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoConfirm}
+                  onChange={(e) => onAutoConfirmChange(e.target.checked)}
+                  className="w-3 h-3"
+                />
+                Auto-confirm opponent scores
+              </label>
+            </div>
+          </>
+        )}
 
         {/* Mobile: Title above team selector buttons */}
         <div className="md:hidden">

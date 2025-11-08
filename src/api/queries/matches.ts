@@ -272,6 +272,8 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
       season_id,
       home_team_id,
       away_team_id,
+      home_team_verified_by,
+      away_team_verified_by,
       home_team:teams!matches_home_team_id_fkey(id, team_name),
       away_team:teams!matches_away_team_id_fkey(id, team_name),
       season:seasons!matches_season_id_fkey(
@@ -304,6 +306,8 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
     season_id: data.season_id,
     home_team_id: data.home_team_id,
     away_team_id: data.away_team_id,
+    home_team_verified_by: data.home_team_verified_by ?? null,
+    away_team_verified_by: data.away_team_verified_by ?? null,
     home_team: homeTeam as any,
     away_team: awayTeam as any,
     league: {

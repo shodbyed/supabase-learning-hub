@@ -6,6 +6,8 @@
  *
  * This hook extracts all business logic from the scoring pages, making them pure UI components.
  */
+import { watchMatchAndGames } from '@/realtime/useMatchAndGamesRealtime';
+
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { calculateTeamHandicap, calculate3v3HandicapDiffs } from '@/utils/handicapCalculations';
@@ -51,7 +53,8 @@ export function useMatchScoring({
   const {
     data: matchData,
     isLoading: matchLoading,
-    error: matchError
+    error: matchError,
+    refetch: refetchMatch
   } = useMatchWithLeagueSettings(matchId);
 
   // Fetch lineups (needs team IDs from match data)
@@ -131,7 +134,7 @@ export function useMatchScoring({
   const homeLineup = lineupsData?.homeLineup || null;
   const awayLineup = lineupsData?.awayLineup || null;
   const userTeamId = userTeamData?.team_id || null;
-  const isHomeTeam = userTeamData?.isHomeTeam || null;
+  const isHomeTeam = userTeamData?.isHomeTeam ?? null; // Use ?? instead of || to preserve false
   const goldenBreakCountsAsWin = matchData?.league.golden_break_counts_as_win || false;
   const gameType = matchData?.league.game_type || '8-ball';
 
@@ -330,6 +333,7 @@ export function useMatchScoring({
    */
   useMatchGamesRealtime(matchId, {
     onUpdate: refetchGames,
+    onMatchUpdate: refetchMatch,
     match,
     userTeamId,
     players,

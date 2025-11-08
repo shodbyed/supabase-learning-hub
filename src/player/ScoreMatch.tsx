@@ -14,9 +14,11 @@
  * - Break & Run (B&R) and Golden Break (8BB) tracking
  * - Match end detection with winner announcement
  */
+//import { watchMatchAndGames } from '@/realtime/useMatchAndGamesRealtime';
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,15 +33,20 @@ import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
 import { GameButtonRow } from '@/components/scoring/GameButtonRow';
+import { queryKeys } from '@/api/queryKeys';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: member } = useCurrentMember();
   const memberId = member?.id;
 
   // Auto-confirm setting (bypass confirmation modal)
   const [autoConfirm, setAutoConfirm] = useState(false);
+
+  // Verification state
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Ref to store mutations for use in real-time subscription
   const mutationsRef = useRef<any>(null);
@@ -72,7 +79,10 @@ export function ScoreMatch() {
     confirmOpponentScore: async (gameNumber, isVacateRequest) => {
       // This will be called by real-time subscription when autoConfirm is enabled
       if (mutationsRef.current) {
-        await mutationsRef.current.confirmOpponentScore(gameNumber, isVacateRequest);
+        await mutationsRef.current.confirmOpponentScore(
+          gameNumber,
+          isVacateRequest
+        );
       }
     },
   });
@@ -109,12 +119,12 @@ export function ScoreMatch() {
   useEffect(() => {
     // Only process queue when modal is closed
     if (!confirmationGame && confirmationQueue.length > 0) {
-      console.log(
-        'Modal closed, processing queue. Queue length:',
-        confirmationQueue.length
-      );
+      // console.log(
+      //   'Modal closed, processing queue. Queue length:',
+      //   confirmationQueue.length
+      // );
       const nextConfirmation = confirmationQueue[0];
-      console.log('Showing game', nextConfirmation.gameNumber, 'from queue');
+      //console.log('Showing game', nextConfirmation.gameNumber, 'from queue');
 
       // Add delay to allow Dialog component to clean up properly
       // This prevents the grey screen overlay issue
@@ -132,6 +142,101 @@ export function ScoreMatch() {
     }
   }, [isHomeTeam]);
 
+  // Detect when all games are complete (works for any format: 3, 18, 25, etc.)
+  const allGamesArray = getAllGames();
+  const totalGames = allGamesArray.length;
+  const completedGames = getCompletedGamesCount(gameResults);
+  const allGamesComplete = completedGames === totalGames;
+
+  // Debug: Log team identification and verification status
+  // useEffect(() => {
+  //   console.log('Match data updated with verification columns:', {
+  //     matchId: match?.id,
+  //     homeVerifiedBy: (match as any)?.home_team_verified_by,
+  //     awayVerifiedBy: (match as any)?.away_team_verified_by,
+  //   });
+  // }, [match]);
+
+  // Track previous allGamesComplete state to detect changes
+  const prevAllGamesCompleteRef = useRef(allGamesComplete);
+
+  // Reset verification when allGamesComplete changes from true to false (game vacated after verification)
+  useEffect(() => {
+    const wasComplete = prevAllGamesCompleteRef.current;
+    const isComplete = allGamesComplete;
+
+    // If changed from complete to incomplete, clear verification
+    if (wasComplete && !isComplete && matchId) {
+      console.log(
+        'Game vacated after completion - clearing verification status'
+      );
+      supabase
+        .from('matches')
+        .update({
+          home_team_verified_by: null,
+          away_team_verified_by: null,
+        })
+        .eq('id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error clearing verification status:', error);
+          }
+        });
+    }
+
+    // Update ref for next comparison
+    prevAllGamesCompleteRef.current = isComplete;
+  }, [allGamesComplete, matchId]);
+
+  /**
+   * Handle verify button click
+   * Updates the appropriate verification column based on user's team
+   * Uses optimistic update and refetch to update UI immediately
+   */
+  const handleVerify = async () => {
+    if (!matchId || !memberId || isHomeTeam === null) {
+      return;
+    }
+
+    setIsVerifying(true);
+
+    try {
+      const updateField = isHomeTeam
+        ? 'home_team_verified_by'
+        : 'away_team_verified_by';
+
+      // Optimistically update the UI immediately
+      const queryKey = [...queryKeys.matches.detail(matchId), 'leagueSettings'];
+
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          [updateField]: memberId,
+        };
+      });
+
+      // Update database
+      const { error } = await supabase
+        .from('matches')
+        .update({ [updateField]: memberId })
+        .eq('id', matchId);
+
+      if (error) throw error;
+
+      // Don't refetch - realtime subscription will handle it for all users
+      // This prevents race condition where refetch gets stale data
+    } catch (err: any) {
+      console.error('Error verifying scores:', err);
+      alert(`Failed to verify scores: ${err.message}`);
+      // Rollback optimistic update on error
+      queryClient.invalidateQueries({
+        queryKey: [...queryKeys.matches.detail(matchId), 'leagueSettings'],
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   /**
    * Get display name for a player (nickname or first name)
@@ -183,7 +288,6 @@ export function ScoreMatch() {
     );
   };
 
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -228,7 +332,11 @@ export function ScoreMatch() {
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Scoreboard - Fixed at top */}
       <MatchScoreboard
-        match={match}
+        match={{
+          ...match,
+          home_team_verified_by: (match as any).home_team_verified_by ?? null,
+          away_team_verified_by: (match as any).away_team_verified_by ?? null,
+        }}
         homeLineup={homeLineup}
         awayLineup={awayLineup}
         gameResults={gameResults}
@@ -240,6 +348,10 @@ export function ScoreMatch() {
         autoConfirm={autoConfirm}
         onAutoConfirmChange={setAutoConfirm}
         getPlayerDisplayName={getPlayerDisplayName}
+        allGamesComplete={allGamesComplete}
+        isHomeTeam={isHomeTeam ?? false}
+        onVerify={handleVerify}
+        isVerifying={isVerifying}
       />
 
       {/* Game list section */}
@@ -248,7 +360,9 @@ export function ScoreMatch() {
         <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
           <div className="text-sm font-semibold mb-4">
             Games Complete -{' '}
-            <span className="text-lg">{getCompletedGamesCount(gameResults)} / 18</span>
+            <span className="text-lg">
+              {getCompletedGamesCount(gameResults)} / 18
+            </span>
           </div>
           {/* Column headers */}
           <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
@@ -393,11 +507,15 @@ export function ScoreMatch() {
       {/* Vacate Winner Modal */}
       <EditGameDialog
         open={editingGame !== null}
-        game={editingGame ? {
-          gameNumber: editingGame.gameNumber,
-          winnerPlayerName: editingGame.currentWinnerName,
-          gameId: gameResults.get(editingGame.gameNumber)?.id || '',
-        } : null}
+        game={
+          editingGame
+            ? {
+                gameNumber: editingGame.gameNumber,
+                winnerPlayerName: editingGame.currentWinnerName,
+                gameId: gameResults.get(editingGame.gameNumber)?.id || '',
+              }
+            : null
+        }
         myVacateRequests={myVacateRequests.current}
         onVacate={async (gameNumber, gameId) => {
           try {

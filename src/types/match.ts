@@ -39,6 +39,8 @@ export interface MatchWithLeagueSettings {
   season_id: string;
   home_team_id: string;
   away_team_id: string;
+  home_team_verified_by?: string | null;
+  away_team_verified_by?: string | null;
   home_team: {
     id: string;
     team_name: string;

@@ -29,6 +29,8 @@ import type { MatchBasic, Player, MatchGame } from '@/types';
 interface UseMatchGamesRealtimeOptions {
   /** Callback to refetch games data (typically TanStack Query refetch) */
   onUpdate: () => void;
+  /** Callback to refetch match data when match row changes */
+  onMatchUpdate?: () => void;
   /** Match data with team IDs */
   match: MatchBasic | null;
   /** Current user's team ID */
@@ -71,6 +73,7 @@ export function useMatchGamesRealtime(
 ) {
   const {
     onUpdate,
+    onMatchUpdate,
     match,
     userTeamId,
     players,
@@ -84,7 +87,7 @@ export function useMatchGamesRealtime(
   useEffect(() => {
     if (!matchId || !match || !userTeamId) return;
 
-    console.log('Setting up real-time subscription for match games:', matchId);
+    //console.log('Setting up real-time subscription for match games:', matchId);
 
     const channel = supabase
       .channel(`match_games_${matchId}`)
@@ -97,7 +100,7 @@ export function useMatchGamesRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
-          console.log('Real-time game update received:', payload);
+          //console.log('Real-time game update received:', payload);
 
           // Trigger TanStack Query refetch
           onUpdate();
@@ -114,26 +117,26 @@ export function useMatchGamesRealtime(
 
             // If game has a winner and is waiting for confirmation
             if (updatedGame.winner_player_id && (!updatedGame.confirmed_by_home || !updatedGame.confirmed_by_away)) {
-              console.log('isVacateRequest:', isVacateRequest);
+              //console.log('isVacateRequest:', isVacateRequest);
 
               // For vacate requests, check if this was initiated by me
               if (isVacateRequest) {
                 // Check if the editingGame modal is currently open for this game
                 // If so, this is MY action, not the opponent's
                 if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
-                  console.log('I am currently editing this game, suppressing my own confirmation modal');
+                  //console.log('I am currently editing this game, suppressing my own confirmation modal');
                   return;
                 }
 
                 // Check if I initiated this vacate request
                 if (myVacateRequests.current.has(updatedGame.game_number)) {
-                  console.log('I initiated this vacate request, suppressing my own confirmation modal');
+                  //console.log('I initiated this vacate request, suppressing my own confirmation modal');
                   myVacateRequests.current.delete(updatedGame.game_number);
                   return;
                 }
 
                 // This is from opponent - show the confirmation modal
-                console.log('Opponent vacate request detected. Showing confirmation modal.');
+                //console.log('Opponent vacate request detected. Showing confirmation modal.');
                 if (updatedGame.winner_player_id) {
                   const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                   addToConfirmationQueue({
@@ -176,10 +179,25 @@ export function useMatchGamesRealtime(
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: `id=eq.${matchId}`,
+        },
+        (payload) => {
+          // Refetch match data to update UI when match row changes
+          if (onMatchUpdate) {
+            onMatchUpdate();
+          }
+        }
+      )
       .subscribe();
 
     return () => {
-      console.log('Cleaning up real-time subscription for match games:', matchId);
+      //console.log('Cleaning up real-time subscription for match games:', matchId);
       supabase.removeChannel(channel);
     };
   }, [matchId, match, userTeamId, players, myVacateRequests, addToConfirmationQueue, onUpdate, editingGame, autoConfirm, confirmOpponentScore]);
