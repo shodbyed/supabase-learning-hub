@@ -119,7 +119,7 @@ export function MatchEndVerification({
     homeVerified,
     awayVerified,
     userTeamVerified,
-    bothVerified
+    bothVerified,
   });
 
   // Calculate points (wins - threshold)
@@ -147,22 +147,36 @@ export function MatchEndVerification({
           </div>
 
           {/* Home Team Row */}
-          <div className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-3 py-2 border-b ${
-            result === 'home_win' ? 'bg-blue-50' : ''
-          }`}>
-            <div className={`truncate ${
-              result === 'home_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+          <div
+            className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-3 py-2 border-b ${
+              result === 'home_win' ? 'bg-blue-50' : ''
+            }`}
+          >
+            <div
+              className={`truncate ${
+                result === 'home_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {homeTeamName}
             </div>
-            <div className={`text-center w-16 ${
-              result === 'home_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+            <div
+              className={`text-center w-16 ${
+                result === 'home_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {homeWins}
             </div>
-            <div className={`text-center w-16 ${
-              result === 'home_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+            <div
+              className={`text-center w-16 ${
+                result === 'home_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {homePoints}
             </div>
             <div className="w-12 text-center">
@@ -171,22 +185,36 @@ export function MatchEndVerification({
           </div>
 
           {/* Away Team Row */}
-          <div className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-3 py-2 ${
-            result === 'away_win' ? 'bg-orange-50' : ''
-          }`}>
-            <div className={`truncate ${
-              result === 'away_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+          <div
+            className={`grid grid-cols-[1fr_auto_auto_auto] gap-2 px-3 py-2 ${
+              result === 'away_win' ? 'bg-orange-50' : ''
+            }`}
+          >
+            <div
+              className={`truncate ${
+                result === 'away_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {awayTeamName}
             </div>
-            <div className={`text-center w-16 ${
-              result === 'away_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+            <div
+              className={`text-center w-16 ${
+                result === 'away_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {awayWins}
             </div>
-            <div className={`text-center w-16 ${
-              result === 'away_win' ? 'text-lg font-bold text-blue-600' : 'font-medium'
-            }`}>
+            <div
+              className={`text-center w-16 ${
+                result === 'away_win'
+                  ? 'text-lg font-bold text-blue-600'
+                  : 'font-medium'
+              }`}
+            >
               {awayPoints}
             </div>
             <div className="w-12 text-center">
@@ -204,22 +232,42 @@ export function MatchEndVerification({
           )}
         </div>
 
-
-        {/* Verify Button */}
+        {/* Verification Status */}
         {!bothVerified && (
-          <div className="text-center">
-            <Button
-              onClick={onVerify}
-              disabled={userTeamVerified || isVerifying}
-              className="w-full max-w-xs"
-              size="lg"
-            >
-              {isVerifying
-                ? 'Verifying...'
-                : userTeamVerified
-                ? '✓ You Have Verified'
-                : 'Verify Scores'}
-            </Button>
+          <div className="space-y-3 w-full">
+            {/* Status Flags Row */}
+            <div className="flex items-center justify-around text-sm w-full">
+              <div
+                className={`font-medium ${
+                  homeVerified ? 'text-green-600' : 'text-gray-500'
+                }`}
+              >
+                Home: {homeVerified ? '✅ Verified' : '⏳ Waiting'}
+              </div>
+              <div
+                className={`font-medium ${
+                  awayVerified ? 'text-green-600' : 'text-gray-500'
+                }`}
+              >
+                Away: {awayVerified ? '✅ Verified' : '⏳ Waiting'}
+              </div>
+            </div>
+
+            {/* Verify Button Row */}
+            <div className="text-center">
+              <Button
+                onClick={onVerify}
+                disabled={userTeamVerified || isVerifying}
+                size="default"
+                className="w-full max-w-xs"
+              >
+                {isVerifying
+                  ? 'Verifying...'
+                  : userTeamVerified
+                  ? '✓ You Have Verified'
+                  : 'Verify Scores'}
+              </Button>
+            </div>
           </div>
         )}
 
