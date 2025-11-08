@@ -188,13 +188,8 @@ export function useMatchGamesRealtime(
           filter: `id=eq.${matchId}`,
         },
         (payload) => {
-          console.log('🏆 MATCHES TABLE UPDATE:', payload);
-          console.log('🏆 OLD:', payload.old);
-          console.log('🏆 NEW:', payload.new);
-
-          // Refetch match data to update UI
+          // Refetch match data to update UI when match row changes
           if (onMatchUpdate) {
-            console.log('🏆 Calling onMatchUpdate to refetch match data');
             onMatchUpdate();
           }
         }

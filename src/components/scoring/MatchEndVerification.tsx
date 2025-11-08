@@ -112,16 +112,6 @@ export function MatchEndVerification({
   // Current user's team verification status
   const userTeamVerified = isHomeTeam ? homeVerified : awayVerified;
 
-  console.log('MatchEndVerification render:', {
-    isHomeTeam,
-    homeVerifiedBy,
-    awayVerifiedBy,
-    homeVerified,
-    awayVerified,
-    userTeamVerified,
-    bothVerified,
-  });
-
   // Calculate points (wins - threshold)
   const homePoints = homeWins - homeWinThreshold;
   const awayPoints = awayWins - awayWinThreshold;

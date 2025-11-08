@@ -194,23 +194,7 @@ export function ScoreMatch() {
    * Uses optimistic update and refetch to update UI immediately
    */
   const handleVerify = async () => {
-    console.log('handleVerify called:', {
-      matchId,
-      memberId,
-      isHomeTeam,
-      userTeamId,
-    });
-
-    if (!matchId) {
-      console.log('Verify blocked - matchId missing:', matchId);
-      return;
-    }
-    if (!memberId) {
-      console.log('Verify blocked - memberId missing:', memberId);
-      return;
-    }
-    if (isHomeTeam === null) {
-      console.log('Verify blocked - isHomeTeam is null:', isHomeTeam);
+    if (!matchId || !memberId || isHomeTeam === null) {
       return;
     }
 
@@ -221,33 +205,15 @@ export function ScoreMatch() {
         ? 'home_team_verified_by'
         : 'away_team_verified_by';
 
-      console.log(`Updating ${updateField} with member ${memberId}`);
-
       // Optimistically update the UI immediately
       const queryKey = [...queryKeys.matches.detail(matchId), 'leagueSettings'];
 
-      console.log('Current match data before update:', {
-        ...match,
-        home_team_verified_by: (match as any).home_team_verified_by,
-        away_team_verified_by: (match as any).away_team_verified_by,
-      });
-
       queryClient.setQueryData(queryKey, (oldData: any) => {
-        if (!oldData) {
-          console.log('No oldData in query cache');
-          return oldData;
-        }
-        console.log('Old data structure with verification:', {
-          id: oldData.id,
-          home_team_verified_by: oldData.home_team_verified_by,
-          away_team_verified_by: oldData.away_team_verified_by,
-        });
-        const newData = {
+        if (!oldData) return oldData;
+        return {
           ...oldData,
           [updateField]: memberId,
         };
-        console.log('New data after optimistic update:', newData);
-        return newData;
       });
 
       // Update database
@@ -257,10 +223,6 @@ export function ScoreMatch() {
         .eq('id', matchId);
 
       if (error) throw error;
-
-      console.log(
-        `${isHomeTeam ? 'Home' : 'Away'} team verified by member ${memberId}`
-      );
 
       // Don't refetch - realtime subscription will handle it for all users
       // This prevents race condition where refetch gets stale data
