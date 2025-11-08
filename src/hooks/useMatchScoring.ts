@@ -6,6 +6,8 @@
  *
  * This hook extracts all business logic from the scoring pages, making them pure UI components.
  */
+import { watchMatchAndGames } from '@/realtime/useMatchAndGamesRealtime';
+
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { calculateTeamHandicap, calculate3v3HandicapDiffs } from '@/utils/handicapCalculations';
