@@ -187,7 +187,7 @@ export function useMatchGamesRealtime(
           table: 'matches',
           filter: `id=eq.${matchId}`,
         },
-        (payload) => {
+        (_payload) => {
           // Refetch match data to update UI when match row changes
           if (onMatchUpdate) {
             onMatchUpdate();

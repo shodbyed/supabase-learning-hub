@@ -31,6 +31,10 @@ import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
 import { Messages } from '../pages/Messages';
 import { PlayerProfile } from '../pages/PlayerProfile';
 import { AdminReports } from '../pages/AdminReports';
+import { MatchDataViewer } from '../pages/MatchDataViewer';
+import { Standings } from '../pages/Standings';
+import { TopShooters } from '../pages/TopShooters';
+import { TeamStats } from '../pages/TeamStats';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -67,6 +71,11 @@ const memberRoutes = [
   { path: '/team/:teamId/schedule', element: <TeamSchedule /> },
   { path: '/match/:matchId/lineup', element: <MatchLineup /> },
   { path: '/match/:matchId/score', element: <ScoreMatch /> },
+  // Stats & Standings pages (accessible to all members)
+  { path: '/league/:leagueId/season/:seasonId/standings', element: <Standings /> },
+  { path: '/league/:leagueId/season/:seasonId/top-shooters', element: <TopShooters /> },
+  { path: '/league/:leagueId/season/:seasonId/team-stats', element: <TeamStats /> },
+  { path: '/league/:leagueId/season/:seasonId/match-data', element: <MatchDataViewer /> },
 ];
 
 // Protected routes - require league_operator role

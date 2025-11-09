@@ -15,6 +15,7 @@ import { LeagueProgressBar } from '@/components/operator/LeagueProgressBar';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
+import { StatsCard } from '@/components/operator/StatsCard';
 
 /**
  * League Detail Component
@@ -331,6 +332,9 @@ export const LeagueDetail: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Stats & Standings (only shown if active season exists) */}
+        <StatsCard leagueId={league.id} seasonId={activeSeason?.id || null} />
 
         {/* League Overview */}
         <LeagueOverviewCard league={league} />
