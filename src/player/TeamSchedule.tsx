@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, ArrowLeft, Trophy } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TeamNameLink } from '@/components/TeamNameLink';
+import { MatchDetailCard } from '@/components/MatchDetailCard';
 
 export function TeamSchedule() {
   const { teamId } = useParams<{ teamId: string }>();
@@ -140,57 +141,58 @@ export function TeamSchedule() {
                   </AccordionTrigger>
 
                   <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4 pt-2">
-                      {/* Home/Away Indicator */}
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">
-                          {teamRole === 'home' ? 'Home Game' : 'Away Game'}
-                        </span>
+                    {/* Show detailed match card for completed matches */}
+                    {match.status === 'completed' ? (
+                      <div className="pt-2">
+                        <MatchDetailCard matchId={match.id} />
                       </div>
-
-                      {/* Venue */}
-                      {match.scheduled_venue && (
-                        <div>
-                          <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>Venue</span>
-                          </div>
-                          <div className="ml-6">
-                            <p className="text-base text-gray-900">
-                              {match.scheduled_venue.name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                            </p>
-                          </div>
+                    ) : (
+                      /* Show simple info for scheduled/in-progress matches */
+                      <div className="space-y-4 pt-2">
+                        {/* Home/Away Indicator */}
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">
+                            {teamRole === 'home' ? 'Home Game' : 'Away Game'}
+                          </span>
                         </div>
-                      )}
 
-                      {/* Action Button */}
-                      {match.status === 'scheduled' && (
-                        <Link to={`/match/${match.id}/lineup`} className="block pt-2">
-                          <Button className="w-full">
-                            <Trophy className="h-4 w-4 mr-2" />
-                            Score Match
-                          </Button>
-                        </Link>
-                      )}
-                      {match.status === 'in_progress' && (
-                        <Link to={`/match/${match.id}/score`} className="block pt-2">
-                          <Button className="w-full">
-                            <Trophy className="h-4 w-4 mr-2" />
-                            Continue Scoring
-                          </Button>
-                        </Link>
-                      )}
-                      {match.status === 'completed' && (
-                        <Link to={`/match/${match.id}/results`} className="block pt-2">
-                          <Button variant="outline" className="w-full">
-                            View Results
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
+                        {/* Venue */}
+                        {match.scheduled_venue && (
+                          <div>
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>Venue</span>
+                            </div>
+                            <div className="ml-6">
+                              <p className="text-base text-gray-900">
+                                {match.scheduled_venue.name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {match.scheduled_venue.city}, {match.scheduled_venue.state}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action Button */}
+                        {match.status === 'scheduled' && (
+                          <Link to={`/match/${match.id}/lineup`} className="block pt-2">
+                            <Button className="w-full">
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Score Match
+                            </Button>
+                          </Link>
+                        )}
+                        {match.status === 'in_progress' && (
+                          <Link to={`/match/${match.id}/score`} className="block pt-2">
+                            <Button className="w-full">
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Continue Scoring
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               );
