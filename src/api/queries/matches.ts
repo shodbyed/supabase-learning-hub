@@ -26,6 +26,14 @@ export interface MatchWithDetails {
   status: string;
   home_team_score: number | null;
   away_team_score: number | null;
+  home_games_won: number | null;
+  away_games_won: number | null;
+  home_points_earned: number | null;
+  away_points_earned: number | null;
+  home_games_to_win: number | null;
+  home_games_to_tie: number | null;
+  away_games_to_win: number | null;
+  away_games_to_tie: number | null;
   created_at: string;
   updated_at: string;
   scheduled_date?: string;

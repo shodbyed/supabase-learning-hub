@@ -8,6 +8,7 @@
  */
 
 import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useMatchesByTeam, useTeamDetails } from '@/api/hooks';
 import type { MatchWithDetails } from '@/api/queries/matches';
 import {
@@ -18,13 +19,14 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, ArrowLeft, Trophy, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Trophy, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { MatchDetailCard } from '@/components/MatchDetailCard';
 
 export function TeamSchedule() {
   const { teamId } = useParams<{ teamId: string }>();
+  const [hideCompleted, setHideCompleted] = useState(false);
 
   // Fetch team details and matches using TanStack Query hooks
   const { data: team, isLoading: teamLoading, error: teamError } = useTeamDetails(teamId);
@@ -113,6 +115,11 @@ export function TeamSchedule() {
 
   const upcomingMatchId = getUpcomingMatchId();
 
+  // Filter matches based on hideCompleted state
+  const displayedMatches = hideCompleted
+    ? matches.filter(m => m.status !== 'completed')
+    : matches;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - Mobile First */}
@@ -126,21 +133,45 @@ export function TeamSchedule() {
           {dayOfWeek && (
             <p className="text-xl text-gray-600">{dayOfWeek}s</p>
           )}
+
+          {/* Hide Completed Toggle */}
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setHideCompleted(!hideCompleted)}
+              className="w-full sm:w-auto"
+            >
+              {hideCompleted ? (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Show Completed
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  Hide Completed
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">
-        {matches.length === 0 ? (
+        {displayedMatches.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No matches scheduled yet</p>
+              <p className="text-gray-600">
+                {hideCompleted ? 'No upcoming matches' : 'No matches scheduled yet'}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <Accordion type="single" collapsible className="space-y-4">
-            {matches.map((match) => {
+            {displayedMatches.map((match) => {
               const teamRole = getTeamRole(match);
               const opponent =
                 teamRole === 'home' ? match.away_team : match.home_team;
