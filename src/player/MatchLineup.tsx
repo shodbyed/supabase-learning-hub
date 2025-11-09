@@ -40,6 +40,7 @@ interface Match {
   season_id: string;
   home_team_id: string;
   away_team_id: string;
+  match_result: 'home_win' | 'away_win' | 'tie' | null;
   home_team: {
     id: string;
     team_name: string;
@@ -125,6 +126,7 @@ export function MatchLineup() {
             home_team_id,
             away_team_id,
             season_id,
+            match_result,
             home_team:teams!matches_home_team_id_fkey(id, team_name),
             away_team:teams!matches_away_team_id_fkey(id, team_name),
             scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
@@ -178,6 +180,7 @@ export function MatchLineup() {
           season_id: matchData.season_id,
           home_team_id: matchData.home_team_id,
           away_team_id: matchData.away_team_id,
+          match_result: matchData.match_result,
           home_team: homeTeam as any || null,
           away_team: awayTeam as any || null,
           scheduled_venue: venue as any || null,
@@ -407,12 +410,20 @@ export function MatchLineup() {
   }, [matchId, match, isHomeTeam, userTeamId]);
 
   // Auto-navigate to scoring page when both lineups are locked
+  // UNLESS this is a tiebreaker scenario (match_result = 'tie')
   useEffect(() => {
     if (lineupLocked && opponentLineup?.locked) {
+      // If this is a tiebreaker (match ended in tie), don't auto-navigate
+      // User will manually proceed when ready
+      if (match?.match_result === 'tie') {
+        console.log('Both lineups locked (tiebreaker) - waiting for manual proceed');
+        return;
+      }
+
       console.log('Both lineups locked - navigating to scoring page');
       navigate(`/match/${matchId}/score`);
     }
-  }, [lineupLocked, opponentLineup, matchId, navigate]);
+  }, [lineupLocked, opponentLineup, matchId, navigate, match?.match_result]);
 
   /**
    * Helper: Check if any player is a substitute

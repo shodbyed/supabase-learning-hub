@@ -37,7 +37,8 @@
       "Bash(else echo \"✓ $hook only in api/hooks\")",
       "Bash(git log:*)",
       "Bash(mkdir:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

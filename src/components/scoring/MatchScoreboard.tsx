@@ -109,6 +109,9 @@ export function MatchScoreboard({
         {/* Show verification component when all games complete, otherwise show normal header */}
         {allGamesComplete ? (
           <MatchEndVerification
+            matchId={match.id}
+            homeTeamId={match.home_team_id}
+            awayTeamId={match.away_team_id}
             homeTeamName={match.home_team?.team_name || 'Home'}
             awayTeamName={match.away_team?.team_name || 'Away'}
             homeWins={homeWins}

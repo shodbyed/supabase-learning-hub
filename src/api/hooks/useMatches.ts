@@ -13,7 +13,7 @@
  * @see api/queries/matches.ts - Pure query functions
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
 import {
   getMatchById,
@@ -24,6 +24,7 @@ import {
   getMatchWithLeagueSettings,
   getMatchLineups,
   getMatchGames,
+  completeMatch,
 } from '../queries/matches';
 import { STALE_TIME } from '../client';
 
@@ -236,5 +237,62 @@ export function useMatchGames(matchId: string | null | undefined) {
     enabled: !!matchId,
     staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh for scoring
     retry: 1,
+  });
+}
+
+/**
+ * Hook to complete a match after both teams verify
+ *
+ * Automatically invalidates match queries on success.
+ *
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * const completeMatchMutation = useCompleteMatch();
+ *
+ * const handleCompletion = async () => {
+ *   try {
+ *     await completeMatchMutation.mutateAsync({
+ *       matchId: 'match-123',
+ *       completionData: {
+ *         homeGamesWon: 10,
+ *         awayGamesWon: 8,
+ *         homePointsEarned: 1,
+ *         awayPointsEarned: -1,
+ *         winnerTeamId: 'home-team-id',
+ *         matchResult: 'home_win'
+ *       }
+ *     });
+ *   } catch (error) {
+ *     console.error('Failed to complete match:', error);
+ *   }
+ * };
+ */
+export function useCompleteMatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ matchId, completionData }: {
+      matchId: string;
+      completionData: {
+        homeGamesWon: number;
+        awayGamesWon: number;
+        homePointsEarned: number;
+        awayPointsEarned: number;
+        winnerTeamId: string | null;
+        matchResult: 'home_win' | 'away_win' | 'tie';
+      };
+    }) => completeMatch(matchId, completionData),
+    onSuccess: (_, variables) => {
+      // Invalidate match details
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.detail(variables.matchId),
+      });
+
+      // Invalidate season schedule (match status changed)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.all,
+      });
+    },
   });
 }

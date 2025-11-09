@@ -392,3 +392,78 @@ export async function getMatchGames(matchId: string) {
 
   return gamesData || [];
 }
+
+/**
+ * Complete a match after both teams have verified
+ *
+ * Updates match status, calculates final scores, points, and determines winner.
+ * All calculations are based on confirmed games only.
+ *
+ * For ties (winnerTeamId = null): saves scores/points but keeps status as 'in_progress'
+ * so tiebreaker can determine final winner later.
+ *
+ * For wins: saves all data and marks match as 'completed'.
+ *
+ * @param matchId - Match ID to complete
+ * @param completionData - Final match data including scores, winner, and points
+ * @throws Error if update fails
+ *
+ * @example
+ * // Saving tie scores (match stays in progress)
+ * await completeMatch(matchId, {
+ *   homeGamesWon: 9,
+ *   awayGamesWon: 9,
+ *   homePointsEarned: 0,
+ *   awayPointsEarned: 0,
+ *   winnerTeamId: null,
+ *   matchResult: 'tie'
+ * });
+ *
+ * @example
+ * // Completing a match with winner
+ * await completeMatch(matchId, {
+ *   homeGamesWon: 10,
+ *   awayGamesWon: 8,
+ *   homePointsEarned: 1,
+ *   awayPointsEarned: -1,
+ *   winnerTeamId: 'home-team-id',
+ *   matchResult: 'home_win'
+ * });
+ */
+export async function completeMatch(
+  matchId: string,
+  completionData: {
+    homeGamesWon: number;
+    awayGamesWon: number;
+    homePointsEarned: number;
+    awayPointsEarned: number;
+    winnerTeamId: string | null;
+    matchResult: 'home_win' | 'away_win' | 'tie';
+  }
+) {
+  // Build update object - conditionally include status and completed_at based on winner
+  const updateData: Record<string, unknown> = {
+    home_games_won: completionData.homeGamesWon,
+    away_games_won: completionData.awayGamesWon,
+    home_points_earned: completionData.homePointsEarned,
+    away_points_earned: completionData.awayPointsEarned,
+    winner_team_id: completionData.winnerTeamId,
+    match_result: completionData.matchResult,
+  };
+
+  // Only mark as completed if there's a winner (not a tie)
+  if (completionData.winnerTeamId !== null) {
+    updateData.status = 'completed';
+    updateData.completed_at = new Date().toISOString();
+  }
+  // If tie (winnerTeamId = null), status stays 'in_progress' for tiebreaker
+
+  const { error } = await supabase
+    .from('matches')
+    .update(updateData)
+    .eq('id', matchId);
+
+  if (error) {
+    throw new Error(`Failed to complete match: ${error.message}`);
+  }
+}
