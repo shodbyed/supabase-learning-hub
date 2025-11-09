@@ -24,6 +24,7 @@ import {
   getMatchWithLeagueSettings,
   getMatchLineups,
   getMatchGames,
+  getNextMatchForTeam,
 } from '../queries/matches';
 import { STALE_TIME } from '../client';
 
@@ -235,6 +236,33 @@ export function useMatchGames(matchId: string | null | undefined) {
     queryFn: () => getMatchGames(matchId!),
     enabled: !!matchId,
     staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh for scoring
+    retry: 1,
+  });
+}
+
+/**
+ * Hook to fetch next upcoming or in-progress match for a team
+ *
+ * Returns the first match that is either in_progress or scheduled for today/future.
+ * Used for "Quick Score" functionality on My Teams page.
+ * Cached for 5 minutes.
+ *
+ * @param teamId - Team's primary key ID
+ * @returns TanStack Query result with next match or null
+ *
+ * @example
+ * const { data: nextMatch } = useNextMatchForTeam(teamId);
+ * if (nextMatch) {
+ *   // Always go to lineup page - it handles redirect to scoring if lineups are locked
+ *   navigate(`/match/${nextMatch.id}/lineup`);
+ * }
+ */
+export function useNextMatchForTeam(teamId: string | null | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.matches.all, 'team', teamId, 'next'],
+    queryFn: () => getNextMatchForTeam(teamId!),
+    enabled: !!teamId,
+    staleTime: STALE_TIME.SHORT, // 5 minutes
     retry: 1,
   });
 }

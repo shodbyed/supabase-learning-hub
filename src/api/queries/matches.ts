@@ -9,50 +9,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
-import type { MatchWithLeagueSettings } from '@/types';
-
-/**
- * Match with team and venue details
- */
-export interface MatchWithDetails {
-  id: string;
-  season_id: string;
-  season_week_id: string;
-  home_team_id: string | null;
-  away_team_id: string | null;
-  scheduled_venue_id: string | null;
-  actual_venue_id: string | null;
-  match_number: number;
-  status: string;
-  home_team_score: number | null;
-  away_team_score: number | null;
-  created_at: string;
-  updated_at: string;
-  scheduled_date?: string;
-  home_team?: {
-    id: string;
-    team_name: string;
-    captain_id: string;
-  } | null;
-  away_team?: {
-    id: string;
-    team_name: string;
-    captain_id: string;
-  } | null;
-  scheduled_venue?: {
-    id: string;
-    name: string;
-    street_address: string;
-    city: string;
-    state: string;
-  } | null;
-  season_week?: {
-    id: string;
-    scheduled_date: string;
-    week_name: string;
-    week_type: string;
-  } | null;
-}
+import type { MatchWithLeagueSettings, MatchWithDetails } from '@/types';
 
 /**
  * Season week with schedule info
@@ -248,6 +205,54 @@ export async function getSeasonWeeks(seasonId: string): Promise<SeasonWeek[]> {
   }
 
   return (data || []) as SeasonWeek[];
+}
+
+/**
+ * Fetch next upcoming or in-progress match for a team
+ *
+ * Returns the first match that is either in_progress or scheduled for today/future.
+ * Used for "Quick Score" functionality on My Teams page.
+ *
+ * @param teamId - Team's primary key ID
+ * @returns Next match or null if no upcoming matches
+ * @throws Error if database query fails
+ *
+ * @example
+ * const nextMatch = await getNextMatchForTeam('team-uuid');
+ * if (nextMatch?.status === 'in_progress') {
+ *   navigate(`/match/${nextMatch.id}/score`);
+ * }
+ */
+export async function getNextMatchForTeam(teamId: string): Promise<MatchWithDetails | null> {
+  const matches = await getMatchesByTeam(teamId);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // First, check for in_progress matches
+  const inProgressMatch = matches.find(m => m.status === 'in_progress');
+  if (inProgressMatch) return inProgressMatch;
+
+  // Then, find the first scheduled match today or in the future
+  const upcomingMatches = matches
+    .filter(m => {
+      if (m.status !== 'scheduled') return false;
+      if (!m.scheduled_date) return false;
+
+      // Parse the date string as local date (YYYY-MM-DD)
+      const [year, month, day] = m.scheduled_date.split('-').map(Number);
+      const matchDate = new Date(year, month - 1, day);
+      matchDate.setHours(0, 0, 0, 0);
+
+      return matchDate >= today;
+    })
+    .sort((a, b) => {
+      const dateA = a.scheduled_date!;
+      const dateB = b.scheduled_date!;
+      return dateA.localeCompare(dateB);
+    });
+
+  return upcomingMatches.length > 0 ? upcomingMatches[0] : null;
 }
 
 /**

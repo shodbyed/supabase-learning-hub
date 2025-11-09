@@ -13,7 +13,6 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Clock } from 'lucide-react';
 
 interface MatchEndVerificationProps {
   /** Home team name */

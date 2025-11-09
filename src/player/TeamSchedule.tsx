@@ -8,8 +8,9 @@
  */
 
 import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useMatchesByTeam, useTeamDetails } from '@/api/hooks';
-import type { MatchWithDetails } from '@/api/queries/matches';
+import type { MatchWithDetails } from '@/types';
 import {
   Accordion,
   AccordionContent,
@@ -18,12 +19,14 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, ArrowLeft, Trophy } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Trophy, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TeamNameLink } from '@/components/TeamNameLink';
+import { MatchDetailCard } from '@/components/MatchDetailCard';
 
 export function TeamSchedule() {
   const { teamId } = useParams<{ teamId: string }>();
+  const [hideCompleted, setHideCompleted] = useState(false);
 
   // Fetch team details and matches using TanStack Query hooks
   const { data: team, isLoading: teamLoading, error: teamError } = useTeamDetails(teamId);
@@ -66,6 +69,57 @@ export function TeamSchedule() {
     );
   }
 
+  // Get day of week from first match (all matches should be same day)
+  const dayOfWeek = matches.length > 0 && matches[0].scheduled_date
+    ? parseLocalDate(matches[0].scheduled_date).toLocaleDateString('en-US', { weekday: 'long' })
+    : null;
+
+  // Helper: Check if match needs makeup (scheduled date passed but not completed)
+  // TODO: VERIFY MAKEUP MATCH COLOR SCHEME
+  // Once you have an incomplete match in the past, check that the orange background
+  // (bg-orange-50), orange border (border-orange-600), and orange text (text-orange-700)
+  // look good and are easy to distinguish from completed (green) and scheduled (white) matches.
+  // May need to adjust colors for better visual hierarchy.
+  const needsMakeup = (match: MatchWithDetails): boolean => {
+    if (match.status === 'completed') return false;
+    if (!match.scheduled_date) return false;
+
+    const scheduledDate = parseLocalDate(match.scheduled_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
+
+    return scheduledDate < today;
+  };
+
+  // Helper: Find the next upcoming match (first match today or in future that's not completed)
+  const getUpcomingMatchId = (): string | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Filter to non-completed matches with dates today or in the future
+    const futureMatches = matches
+      .filter(m => {
+        if (m.status === 'completed') return false;
+        if (!m.scheduled_date) return false;
+        const matchDate = parseLocalDate(m.scheduled_date);
+        return matchDate >= today;
+      })
+      .sort((a, b) => {
+        const dateA = parseLocalDate(a.scheduled_date!);
+        const dateB = parseLocalDate(b.scheduled_date!);
+        return dateA.getTime() - dateB.getTime();
+      });
+
+    return futureMatches.length > 0 ? futureMatches[0].id : null;
+  };
+
+  const upcomingMatchId = getUpcomingMatchId();
+
+  // Filter matches based on hideCompleted state
+  const displayedMatches = hideCompleted
+    ? matches.filter(m => m.status !== 'completed')
+    : matches;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - Mobile First */}
@@ -76,121 +130,194 @@ export function TeamSchedule() {
             Back to My Teams
           </Link>
           <div className="text-4xl font-semibold text-gray-900">{team.team_name}</div>
-          <p className="text-xs text-gray-600">
-            {matches.length} {matches.length === 1 ? 'match' : 'matches'}
-          </p>
+          {dayOfWeek && (
+            <p className="text-xl text-gray-600">{dayOfWeek}s</p>
+          )}
+
+          {/* Hide Completed Toggle */}
+          <div className="mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setHideCompleted(!hideCompleted)}
+              className="w-full sm:w-auto"
+            >
+              {hideCompleted ? (
+                <>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Show Completed
+                </>
+              ) : (
+                <>
+                  <EyeOff className="h-4 w-4 mr-2" />
+                  Hide Completed
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">
-        {matches.length === 0 ? (
+        {displayedMatches.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No matches scheduled yet</p>
+              <p className="text-gray-600">
+                {hideCompleted ? 'No upcoming matches' : 'No matches scheduled yet'}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <Accordion type="single" collapsible className="space-y-4">
-            {matches.map((match) => {
+            {displayedMatches.map((match) => {
               const teamRole = getTeamRole(match);
               const opponent =
                 teamRole === 'home' ? match.away_team : match.home_team;
+              const isMakeup = needsMakeup(match);
+              const isUpcoming = match.id === upcomingMatchId || match.status === 'in_progress';
 
               return (
                 <AccordionItem
                   key={match.id}
                   value={match.id}
-                  className="bg-white border rounded-lg shadow-sm"
+                  className={`border rounded-lg shadow-sm ${
+                    match.status === 'completed'
+                      ? 'bg-green-50 border-green-800'
+                      : isMakeup
+                      ? 'bg-orange-50 border-orange-600'
+                      : isUpcoming
+                      ? 'bg-blue-50 border-blue-600'
+                      : 'bg-white'
+                  }`}
                 >
                   <AccordionTrigger className="px-4 py-4 hover:no-underline">
-                    <div className="flex items-center gap-3 w-full pr-4 text-left">
-                      {/* Date */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-3 w-3" />
-                        {match.scheduled_date ? (
-                          <span>
-                            {parseLocalDate(match.scheduled_date).toLocaleDateString(
-                              'en-US',
-                              {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                              }
-                            )}
+                    <div className="flex items-center justify-between w-full pr-4 text-left">
+                      <div className="flex items-center gap-3">
+                        {/* Week Number & Date */}
+                        <div className={`flex items-center gap-2 text-sm ${
+                          match.status === 'completed'
+                            ? 'text-gray-800'
+                            : isMakeup
+                            ? 'text-gray-800'
+                            : isUpcoming
+                            ? 'text-gray-800'
+                            : 'text-gray-600'
+                        }`}>
+                          <span className="font-medium">
+                            {match.season_week?.week_name || 'Week ?'}
                           </span>
-                        ) : (
-                          <span className="text-gray-400 italic">Date TBD</span>
-                        )}
+                          {match.scheduled_date ? (
+                            <span>
+                              {parseLocalDate(match.scheduled_date).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                }
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">Date TBD</span>
+                          )}
+                        </div>
+                        {/* Matchup */}
+                        <div className={`font-semibold text-base ${
+                          match.status === 'completed' ? 'text-gray-900' : 'text-gray-900'
+                        }`}>
+                          vs{' '}
+                          {opponent ? (
+                            <TeamNameLink
+                              teamId={opponent.id}
+                              teamName={opponent.team_name}
+                            />
+                          ) : (
+                            'BYE'
+                          )}
+                        </div>
                       </div>
-                      {/* Matchup */}
-                      <div className="font-semibold text-base text-gray-900">
-                        vs{' '}
-                        {opponent ? (
-                          <TeamNameLink
-                            teamId={opponent.id}
-                            teamName={opponent.team_name}
-                          />
-                        ) : (
-                          'BYE'
-                        )}
-                      </div>
+                      {/* Status Indicator */}
+                      {match.status === 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-green-800">
+                          <Trophy className="h-3 w-3" />
+                          <span>Complete</span>
+                        </div>
+                      )}
+                      {isMakeup && match.status !== 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-orange-700">
+                          <AlertCircle className="h-3 w-3" />
+                          <span>Makeup</span>
+                        </div>
+                      )}
+                      {match.status === 'in_progress' && !isMakeup && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-blue-700">
+                          <Trophy className="h-3 w-3" />
+                          <span>In Progress</span>
+                        </div>
+                      )}
+                      {match.id === upcomingMatchId && match.status !== 'in_progress' && !isMakeup && match.status !== 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-blue-700">
+                          <Calendar className="h-3 w-3" />
+                          <span>Upcoming</span>
+                        </div>
+                      )}
                     </div>
                   </AccordionTrigger>
 
                   <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4 pt-2">
-                      {/* Home/Away Indicator */}
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">
-                          {teamRole === 'home' ? 'Home Game' : 'Away Game'}
-                        </span>
+                    {/* Show detailed match card for completed matches */}
+                    {match.status === 'completed' ? (
+                      <div className="pt-2">
+                        <MatchDetailCard matchId={match.id} />
                       </div>
-
-                      {/* Venue */}
-                      {match.scheduled_venue && (
-                        <div>
-                          <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>Venue</span>
-                          </div>
-                          <div className="ml-6">
-                            <p className="text-base text-gray-900">
-                              {match.scheduled_venue.name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                            </p>
-                          </div>
+                    ) : (
+                      /* Show simple info for scheduled/in-progress matches */
+                      <div className="space-y-4 pt-2">
+                        {/* Home/Away Indicator */}
+                        <div className="text-sm text-gray-600">
+                          <span className="font-medium">
+                            {teamRole === 'home' ? 'Home Game' : 'Away Game'}
+                          </span>
                         </div>
-                      )}
 
-                      {/* Action Button */}
-                      {match.status === 'scheduled' && (
-                        <Link to={`/match/${match.id}/lineup`} className="block pt-2">
-                          <Button className="w-full">
-                            <Trophy className="h-4 w-4 mr-2" />
-                            Score Match
-                          </Button>
-                        </Link>
-                      )}
-                      {match.status === 'in_progress' && (
-                        <Link to={`/match/${match.id}/score`} className="block pt-2">
-                          <Button className="w-full">
-                            <Trophy className="h-4 w-4 mr-2" />
-                            Continue Scoring
-                          </Button>
-                        </Link>
-                      )}
-                      {match.status === 'completed' && (
-                        <Link to={`/match/${match.id}/results`} className="block pt-2">
-                          <Button variant="outline" className="w-full">
-                            View Results
-                          </Button>
-                        </Link>
-                      )}
-                    </div>
+                        {/* Venue */}
+                        {match.scheduled_venue && (
+                          <div>
+                            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>Venue</span>
+                            </div>
+                            <div className="ml-6">
+                              <p className="text-base text-gray-900">
+                                {match.scheduled_venue.name}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {match.scheduled_venue.city}, {match.scheduled_venue.state}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action Button */}
+                        {match.status === 'scheduled' && (
+                          <Link to={`/match/${match.id}/lineup`} className="block pt-2">
+                            <Button className="w-full">
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Score Match
+                            </Button>
+                          </Link>
+                        )}
+                        {match.status === 'in_progress' && (
+                          <Link to={`/match/${match.id}/score`} className="block pt-2">
+                            <Button className="w-full">
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Continue Scoring
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               );

@@ -22,6 +22,12 @@ import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
  * - Links to create new leagues and manage existing ones
  *
  * This dashboard is only accessible to users with 'league_operator' role
+ *
+ * TODO: TanStack Query Caching Issue
+ * When creating a new league, the ActiveLeagues component doesn't show the new league
+ * until page refresh due to TanStack Query cache. Need to add refetchOnMount or
+ * invalidate queries after league creation to show newly created leagues immediately.
+ * This affects the league list display - stale cache shows old data.
  */
 export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
