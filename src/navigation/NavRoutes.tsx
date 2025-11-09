@@ -39,6 +39,7 @@ import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import HandicapLookupTest from '../pages/HandicapLookupTest';
 
 // Public routes - no authentication required
 const publicRoutes = [
@@ -52,6 +53,7 @@ const publicRoutes = [
   { path: '/5-man-format-details', element: <FiveManFormatDetails /> },
   { path: '/8-man-format-details', element: <EightManFormatDetails /> },
   { path: '/format-comparison', element: <FormatComparison /> },
+  { path: '/test/handicap-lookup', element: <HandicapLookupTest /> },
 ];
 
 // Protected routes - require authentication only
