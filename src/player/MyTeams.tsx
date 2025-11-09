@@ -11,7 +11,7 @@ import { useContext, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserContext } from '@/context/UserContext';
 import { useMemberId } from '@/api/hooks';
-import { usePlayerTeams, useCaptainTeamEditData, useNextMatchForTeam } from '@/api/hooks';
+import { usePlayerTeams, useCaptainTeamEditData, useMatchesByTeam } from '@/api/hooks';
 import { queryKeys } from '@/api/queryKeys';
 import { TeamEditorModal } from '@/operator/TeamEditorModal';
 import {
@@ -26,8 +26,12 @@ import { Link } from 'react-router-dom';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
-import { Calendar, MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
+import { MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
+import { TenBallIcon } from '@/components/icons/TenBallIcon';
+import { NineBallIcon } from '@/components/icons/NineBallIcon';
+import { EightBallIcon } from '@/components/icons/EightBallIcon';
+import { BilliardRackIcon } from '@/components/icons/BilliardRackIcon';
 
 interface TeamData {
   team_id: string;
@@ -87,8 +91,49 @@ function TeamAccordionItem({
   const team = teamData.teams;
   const isCaptain = team.captain_id === memberId;
 
-  // Fetch next match for this team
-  const { data: nextMatch } = useNextMatchForTeam(team.id);
+  // Fetch all matches to find makeups and upcoming
+  const { data: allMatches = [] } = useMatchesByTeam(team.id);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Find makeup matches (past date, not completed)
+  const makeupMatches = allMatches
+    .filter(match => {
+      if (match.status === 'completed') return false;
+      if (!match.scheduled_date) return false;
+
+      const [year, month, day] = match.scheduled_date.split('-').map(Number);
+      const scheduledDate = new Date(year, month - 1, day);
+      scheduledDate.setHours(0, 0, 0, 0);
+
+      return scheduledDate < today;
+    })
+    .sort((a, b) => a.scheduled_date!.localeCompare(b.scheduled_date!)); // Oldest first
+
+  // Find upcoming matches (in_progress or future scheduled)
+  const upcomingMatches = allMatches
+    .filter(match => {
+      if (match.status === 'completed') return false;
+      if (match.status === 'in_progress') return true;
+      if (!match.scheduled_date) return false;
+
+      const [year, month, day] = match.scheduled_date.split('-').map(Number);
+      const scheduledDate = new Date(year, month - 1, day);
+      scheduledDate.setHours(0, 0, 0, 0);
+
+      return scheduledDate >= today;
+    })
+    .sort((a, b) => {
+      // in_progress first, then by date
+      if (a.status === 'in_progress' && b.status !== 'in_progress') return -1;
+      if (a.status !== 'in_progress' && b.status === 'in_progress') return 1;
+      return a.scheduled_date!.localeCompare(b.scheduled_date!);
+    })
+    .slice(0, 1); // Only show next upcoming
+
+  // Combine makeup + upcoming for display in header
+  const actionableMatches = [...makeupMatches, ...upcomingMatches];
 
   // Calculate team readiness
   const minRoster = team.roster_size === 5 ? 3 : 5;
@@ -99,12 +144,21 @@ function TeamAccordionItem({
   // Filter out captain from roster
   const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
 
-  // Format next match date
-  const nextMatchDisplay = nextMatch
-    ? `${nextMatch.season_week?.week_name || 'Week ?'} - ${parseLocalDate(
-        nextMatch.scheduled_date!
-      ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-    : null;
+  // Get the appropriate ball icon based on game type
+  const getBallIcon = () => {
+    const gameType = team.season.league.game_type.toLowerCase();
+    const iconSize = 24;
+
+    if (gameType.includes('8')) {
+      return <EightBallIcon size={iconSize} />;
+    } else if (gameType.includes('9')) {
+      return <NineBallIcon size={iconSize} />;
+    } else if (gameType.includes('10')) {
+      return <TenBallIcon size={iconSize} />;
+    }
+    // Default to 8-ball if unknown
+    return <EightBallIcon size={iconSize} />;
+  };
 
   return (
     <AccordionItem
@@ -116,10 +170,11 @@ function TeamAccordionItem({
         <div className="flex flex-col gap-2 w-full pr-4 text-left">
           {/* Row 1: Team name and game info */}
           <div className="flex items-center justify-between w-full">
-            <h2 className="font-semibold text-lg text-gray-900">
+            <h2 className="font-semibold text-xl text-gray-900">
               {team.team_name}
             </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 font-semibold text-xl text-gray-600">
+              {getBallIcon()}
               <span>
                 {formatGameType(team.season.league.game_type as any)} •{' '}
                 {formatDayOfWeek(team.season.league.day_of_week as any)}
@@ -127,29 +182,56 @@ function TeamAccordionItem({
             </div>
           </div>
 
-          {/* Row 2: Next match and Quick Score button */}
-          {nextMatchDisplay && nextMatch && (
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar className="h-3 w-3" />
-                <span>{nextMatchDisplay}</span>
-              </div>
-              <Link
-                to={`/match/${nextMatch.id}/lineup`}
-                onClick={(e) => e.stopPropagation()}
-                className="ml-auto"
-              >
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-xs px-2 h-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                >
-                  Quick Score <ArrowRight className="h-3 w-3 ml-1" />
-                </Button>
-              </Link>
-            </div>
-          )}
-          {!nextMatchDisplay && (
+          {/* Rows 2+: Actionable matches (makeups + upcoming) */}
+          {/* TODO: VERIFY ACTIONABLE MATCHES DISPLAY */}
+          {/* Once you have makeup matches and upcoming matches, verify: */}
+          {/* 1. Makeup matches show with orange "MAKEUP" tag */}
+          {/* 2. Upcoming matches show with blue "UPCOMING" or "IN PROGRESS" tag */}
+          {/* 3. Quick Score buttons work for all matches */}
+          {/* 4. Accordion height expands nicely for multiple matches */}
+          {actionableMatches.length > 0 ? (
+            actionableMatches.map((match) => {
+              const isMakeup = makeupMatches.some(m => m.id === match.id);
+              const isInProgress = match.status === 'in_progress';
+              const tagText = isMakeup ? 'MAKEUP' : isInProgress ? 'IN PROGRESS' : 'UPCOMING';
+              const tagColor = isMakeup ? 'text-orange-700 bg-orange-100' : 'text-blue-700 bg-blue-100';
+
+              return (
+                <div key={match.id} className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2 text-base text-gray-800">
+                    <span>
+                      {match.season_week?.week_name || 'Week ?'} -{' '}
+                      {parseLocalDate(match.scheduled_date!).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${tagColor}`}>
+                      {tagText}
+                    </span>
+                    <Link
+                      to={`/match/${match.id}/lineup`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={`text-xs px-2 h-7 ${
+                          isMakeup
+                            ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
+                            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                        }`}
+                      >
+                        Quick Score <ArrowRight className="h-3 w-3 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
             <div className="text-xs text-gray-400 italic">No upcoming matches</div>
           )}
         </div>
@@ -344,10 +426,10 @@ export function MyTeams() {
       {/* Header - Mobile First */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="px-4 py-3">
-          <div className="text-4xl font-semibold text-gray-900">My Teams</div>
-          <p className="text-xs text-gray-600">
-            {teams.length} {teams.length === 1 ? 'team' : 'teams'}
-          </p>
+          <div className="flex items-center gap-3">
+            <BilliardRackIcon size={50} />
+            <div className="text-4xl font-semibold text-gray-900">My Teams</div>
+          </div>
         </div>
       </header>
 
