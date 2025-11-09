@@ -9,11 +9,12 @@
  * Match status types
  */
 export type MatchStatus =
-  | 'scheduled'      // Not yet played
-  | 'in_progress'    // Currently being played
-  | 'completed'      // Finished with scores
-  | 'forfeited'      // One team forfeited
-  | 'postponed';     // Rescheduled to different date
+  | 'scheduled'             // Not yet played
+  | 'in_progress'           // Currently being played
+  | 'awaiting_verification' // Scored but needs both teams to verify
+  | 'completed'             // Finished and verified
+  | 'forfeited'             // One team forfeited
+  | 'postponed';            // Rescheduled to different date
 
 /**
  * Team schedule position assignment
@@ -55,6 +56,16 @@ export interface Match {
   home_team_score: number | null;
   away_team_score: number | null;
 
+  // Detailed results tracking (added for end-of-match verification)
+  home_games_won: number | null;
+  away_games_won: number | null;
+  home_points_earned: number | null;
+  away_points_earned: number | null;
+  home_games_to_win: number | null;
+  home_games_to_tie: number | null;
+  away_games_to_win: number | null;
+  away_games_to_tie: number | null;
+
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +88,7 @@ export interface MatchInsertData {
  * Used for displaying match information
  */
 export interface MatchWithDetails extends Match {
+  scheduled_date?: string;  // Denormalized from season_week for easier access
   home_team?: {
     id: string;
     team_name: string;
@@ -90,17 +102,23 @@ export interface MatchWithDetails extends Match {
   scheduled_venue?: {
     id: string;
     name: string;
+    street_address?: string;
+    city: string;
+    state: string;
   } | null;
   actual_venue?: {
     id: string;
     name: string;
+    street_address?: string;
+    city: string;
+    state: string;
   } | null;
   season_week?: {
     id: string;
     scheduled_date: string;
     week_name: string;
     week_type: string;
-  };
+  } | null;
 }
 
 /**

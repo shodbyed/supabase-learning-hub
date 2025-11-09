@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
-import type { Match } from '@/types/schedule';
+import type { MatchWithDetails } from '@/types';
 
 interface SeasonWeek {
   id: string;
@@ -23,26 +23,6 @@ interface SeasonWeek {
   week_name: string;
   week_type: string;
   week_completed: boolean;
-}
-
-interface Team {
-  id: string;
-  team_name: string;
-  captain_id: string;
-}
-
-interface Venue {
-  id: string;
-  name: string;
-  street_address: string;
-  city: string;
-  state: string;
-}
-
-interface MatchWithDetails extends Match {
-  home_team?: Team | null;
-  away_team?: Team | null;
-  scheduled_venue?: Venue | null;
 }
 
 interface WeekSchedule {

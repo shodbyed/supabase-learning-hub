@@ -5,7 +5,7 @@
  * Keeps components clean and logic testable.
  */
 
-import type { MatchWithDetails } from '@/types/schedule';
+import type { MatchWithDetails } from '@/types';
 
 /**
  * Week type styling configuration

@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-07 (archived completed planning files)
+> **Last Updated**: 2025-11-09 (consolidated Match types to /src/types/schedule.ts)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -721,9 +721,9 @@ Help/info content for features
 
 ### 📐 Types (`/types/`)
 
-TypeScript type definitions
+TypeScript type definitions - **Single source of truth for all types**
 
-- `index.ts` - Exported types
+- `index.ts` - **Central export point** for all types (import from `@/types`)
 - `league.ts` - League types
 - `season.ts` - Season types
 - `team.ts` - Team types
@@ -731,8 +731,11 @@ TypeScript type definitions
 - `operator.ts` - Operator types
 - `tournament.ts` - Tournament types
 - `venue.ts` - Venue types
-- `schedule.ts` - Schedule types
+- `schedule.ts` - **Match and schedule types** (Match, MatchWithDetails, MatchStatus, TeamSchedulePosition)
 - `scheduleReview.ts` - Schedule review types
+- `match.ts` - Match scoring and game types
+
+**Type Organization Best Practice**: All duplicate type definitions have been consolidated into this folder. Always import from `@/types` for consistency.
 
 ---
 

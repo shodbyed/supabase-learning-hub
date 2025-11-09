@@ -10,7 +10,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useMatchesByTeam, useTeamDetails } from '@/api/hooks';
-import type { MatchWithDetails } from '@/api/queries/matches';
+import type { MatchWithDetails } from '@/types';
 import {
   Accordion,
   AccordionContent,

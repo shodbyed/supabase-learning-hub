@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { MapPin, Calendar } from 'lucide-react';
-import type { MatchWithDetails } from '@/types/schedule';
+import type { MatchWithDetails } from '@/types';
 
 interface MatchCardProps {
   /** Match data with team and venue details */
@@ -52,6 +52,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   const statusColors = {
     scheduled: 'bg-gray-100 text-gray-700',
     in_progress: 'bg-blue-100 text-blue-700',
+    awaiting_verification: 'bg-purple-100 text-purple-700',
     completed: 'bg-green-100 text-green-700',
     forfeited: 'bg-red-100 text-red-700',
     postponed: 'bg-yellow-100 text-yellow-700',

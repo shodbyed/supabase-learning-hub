@@ -81,6 +81,9 @@ export const STALE_TIME = {
   // Reports - keep fresh for operator notifications
   REPORTS: 30 * 1000, // 30 seconds
 
+  // Short cache for frequently changing data
+  SHORT: 5 * 60 * 1000, // 5 minutes
+
   // Static reference data - cache for session
   STATIC: Infinity, // Never stale
 } as const;

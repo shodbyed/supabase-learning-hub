@@ -11,7 +11,7 @@ import { useContext, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserContext } from '@/context/UserContext';
 import { useMemberId } from '@/api/hooks';
-import { usePlayerTeams, useCaptainTeamEditData } from '@/api/hooks';
+import { usePlayerTeams, useCaptainTeamEditData, useNextMatchForTeam } from '@/api/hooks';
 import { queryKeys } from '@/api/queryKeys';
 import { TeamEditorModal } from '@/operator/TeamEditorModal';
 import {
@@ -26,7 +26,8 @@ import { Link } from 'react-router-dom';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
-import { Calendar, MapPin, Users, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
+import { parseLocalDate } from '@/utils/formatters';
 
 interface TeamData {
   team_id: string;
@@ -68,6 +69,210 @@ interface TeamData {
       };
     };
   };
+}
+
+/**
+ * Team accordion item component
+ * Renders a single team with next match info and quick actions
+ */
+function TeamAccordionItem({
+  teamData,
+  memberId,
+  onEditTeam,
+}: {
+  teamData: TeamData;
+  memberId: string | null;
+  onEditTeam: (teamId: string) => void;
+}) {
+  const team = teamData.teams;
+  const isCaptain = team.captain_id === memberId;
+
+  // Fetch next match for this team
+  const { data: nextMatch } = useNextMatchForTeam(team.id);
+
+  // Calculate team readiness
+  const minRoster = team.roster_size === 5 ? 3 : 5;
+  const hasVenue = team.venue !== null;
+  const hasMinRoster = team.team_players.length >= minRoster;
+  const isReady = hasVenue && hasMinRoster;
+
+  // Filter out captain from roster
+  const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
+
+  // Format next match date
+  const nextMatchDisplay = nextMatch
+    ? `${nextMatch.season_week?.week_name || 'Week ?'} - ${parseLocalDate(
+        nextMatch.scheduled_date!
+      ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+    : null;
+
+  return (
+    <AccordionItem
+      key={team.id}
+      value={team.id}
+      className="bg-white border rounded-lg shadow-sm"
+    >
+      <AccordionTrigger className="px-4 py-4 hover:no-underline">
+        <div className="flex flex-col gap-2 w-full pr-4 text-left">
+          {/* Row 1: Team name and game info */}
+          <div className="flex items-center justify-between w-full">
+            <h2 className="font-semibold text-lg text-gray-900">
+              {team.team_name}
+            </h2>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>
+                {formatGameType(team.season.league.game_type as any)} •{' '}
+                {formatDayOfWeek(team.season.league.day_of_week as any)}
+              </span>
+            </div>
+          </div>
+
+          {/* Row 2: Next match and Quick Score button */}
+          {nextMatchDisplay && nextMatch && (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="h-3 w-3" />
+                <span>{nextMatchDisplay}</span>
+              </div>
+              <Link
+                to={`/match/${nextMatch.id}/lineup`}
+                onClick={(e) => e.stopPropagation()}
+                className="ml-auto"
+              >
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs px-2 h-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  Quick Score <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          )}
+          {!nextMatchDisplay && (
+            <div className="text-xs text-gray-400 italic">No upcoming matches</div>
+          )}
+        </div>
+      </AccordionTrigger>
+
+      <AccordionContent className="px-4 pb-4">
+        <div className="space-y-4 pt-2">
+          {/* Team Readiness Warning (Captains Only) */}
+          {isCaptain && !isReady && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-900">
+                    Team Setup Incomplete
+                  </p>
+                  <ul className="text-sm text-yellow-800 mt-1 space-y-1">
+                    {!hasVenue && <li>• Home venue required</li>}
+                    {!hasMinRoster && (
+                      <li>
+                        • Minimum {minRoster} players required (
+                        {team.team_players.length}/{team.roster_size} currently)
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Home Venue */}
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+              <MapPin className="h-4 w-4" />
+              <span>Home Venue</span>
+            </div>
+            <p className="text-base text-gray-900 ml-6">
+              {team.venue?.name || 'No venue assigned'}
+            </p>
+          </div>
+
+          {/* Captain */}
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+              <Users className="h-4 w-4" />
+              <span>Captain</span>
+            </div>
+            <div
+              className={`text-base ml-6 ${
+                team.captain.id === memberId
+                  ? 'font-semibold text-blue-600'
+                  : 'text-gray-900'
+              }`}
+            >
+              <PlayerNameLink
+                playerId={team.captain.id}
+                playerName={`${team.captain.first_name} ${team.captain.last_name}`}
+                className={team.captain.id === memberId ? 'font-semibold' : ''}
+              />{' '}
+              {formatPartialMemberNumber(team.captain)}
+            </div>
+          </div>
+
+          {/* Roster */}
+          <div>
+            <p className="text-sm font-medium text-gray-600 mb-2">
+              Roster ({team.team_players.length}/{team.roster_size})
+            </p>
+            <ul className="space-y-1 ml-6">
+              {nonCaptainPlayers.map((player) => (
+                <li
+                  key={player.member_id}
+                  className={`text-sm ${
+                    player.member_id === memberId
+                      ? 'font-semibold text-blue-600'
+                      : 'text-gray-900'
+                  }`}
+                >
+                  <PlayerNameLink
+                    playerId={player.members.id}
+                    playerName={`${player.members.first_name} ${player.members.last_name}`}
+                    className={player.member_id === memberId ? 'font-semibold' : ''}
+                  />{' '}
+                  {formatPartialMemberNumber(player.members)}
+                </li>
+              ))}
+              {/* Empty roster slots */}
+              {Array.from({
+                length: team.roster_size - team.team_players.length,
+              }).map((_, index) => (
+                <li
+                  key={`empty-${index}`}
+                  className="text-sm text-gray-400 italic ml-6"
+                >
+                  Player {nonCaptainPlayers.length + index + 2}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-2">
+            <Link to={`/team/${team.id}/schedule`} className="block">
+              <Button variant="outline" className="w-full">
+                View Schedule
+              </Button>
+            </Link>
+          </div>
+
+          {/* Edit Team Button (Captains Only) */}
+          {isCaptain && (
+            <Button
+              variant="ghost"
+              className="w-full text-sm"
+              onClick={() => onEditTeam(team.id)}
+            >
+              Edit Team
+            </Button>
+          )}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
 }
 
 export function MyTeams() {
@@ -157,166 +362,14 @@ export function MyTeams() {
           </Card>
         ) : (
           <Accordion type="single" collapsible className="space-y-4">
-            {teams.map((teamData) => {
-              const team = teamData.teams;
-              const isCaptain = team.captain_id === memberId;
-
-              // Calculate team readiness
-              const minRoster = team.roster_size === 5 ? 3 : 5;
-              const hasVenue = team.venue !== null;
-              const hasMinRoster = team.team_players.length >= minRoster;
-              const isReady = hasVenue && hasMinRoster;
-
-              // Filter out captain from roster
-              const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
-
-              return (
-                <AccordionItem
-                  key={team.id}
-                  value={team.id}
-                  className="bg-white border rounded-lg shadow-sm"
-                >
-                  <AccordionTrigger className="px-4 py-4 hover:no-underline">
-                    <div className="flex items-start justify-between w-full pr-4">
-                      <div className="text-left flex-1">
-                        <h2 className="font-semibold text-lg text-gray-900">
-                          {team.team_name}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {formatGameType(team.season.league.game_type as any)} •{' '}
-                            {formatDayOfWeek(team.season.league.day_of_week as any)}
-                          </span>
-                        </div>
-                        {/* TODO: Add next match date here when query is available */}
-                        {/* <p className="text-xs text-gray-500 mt-1">Next: Jan 15, 2025</p> */}
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-
-                  <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4 pt-2">
-                      {/* Team Readiness Warning (Captains Only) */}
-                      {isCaptain && !isReady && (
-                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <div className="flex items-start gap-2">
-                            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-yellow-900">
-                                Team Setup Incomplete
-                              </p>
-                              <ul className="text-sm text-yellow-800 mt-1 space-y-1">
-                                {!hasVenue && <li>• Home venue required</li>}
-                                {!hasMinRoster && (
-                                  <li>
-                                    • Minimum {minRoster} players required (
-                                    {team.team_players.length}/{team.roster_size} currently)
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Home Venue */}
-                      <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>Home Venue</span>
-                        </div>
-                        <p className="text-base text-gray-900 ml-6">
-                          {team.venue?.name || 'No venue assigned'}
-                        </p>
-                      </div>
-
-                      {/* Captain */}
-                      <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-                          <Users className="h-4 w-4" />
-                          <span>Captain</span>
-                        </div>
-                        <div
-                          className={`text-base ml-6 ${
-                            team.captain.id === memberId
-                              ? 'font-semibold text-blue-600'
-                              : 'text-gray-900'
-                          }`}
-                        >
-                          <PlayerNameLink
-                            playerId={team.captain.id}
-                            playerName={`${team.captain.first_name} ${team.captain.last_name}`}
-                            className={team.captain.id === memberId ? 'font-semibold' : ''}
-                          />{' '}
-                          {formatPartialMemberNumber(team.captain)}
-                        </div>
-                      </div>
-
-                      {/* Roster */}
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 mb-2">
-                          Roster ({team.team_players.length}/{team.roster_size})
-                        </p>
-                        <ul className="space-y-1 ml-6">
-                          {nonCaptainPlayers.map((player) => (
-                            <li
-                              key={player.member_id}
-                              className={`text-sm ${
-                                player.member_id === memberId
-                                  ? 'font-semibold text-blue-600'
-                                  : 'text-gray-900'
-                              }`}
-                            >
-                              <PlayerNameLink
-                                playerId={player.members.id}
-                                playerName={`${player.members.first_name} ${player.members.last_name}`}
-                                className={player.member_id === memberId ? 'font-semibold' : ''}
-                              />{' '}
-                              {formatPartialMemberNumber(player.members)}
-                            </li>
-                          ))}
-                          {/* Empty roster slots */}
-                          {Array.from({
-                            length: team.roster_size - team.team_players.length,
-                          }).map((_, index) => (
-                            <li
-                              key={`empty-${index}`}
-                              className="text-sm text-gray-400 italic ml-6"
-                            >
-                              Player {nonCaptainPlayers.length + index + 2}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3 pt-2">
-                        <Link to={`/team/${team.id}/schedule`} className="flex-1">
-                          <Button variant="outline" className="w-full">
-                            View Schedule
-                          </Button>
-                        </Link>
-                        <Link to={`/team/${team.id}/schedule`} className="flex-1">
-                          <Button className="w-full">Score Match</Button>
-                        </Link>
-                      </div>
-
-                      {/* Edit Team Button (Captains Only) */}
-                      {isCaptain && (
-                        <Button
-                          variant="ghost"
-                          className="w-full text-sm"
-                          onClick={() => handleEditTeam(team.id)}
-                        >
-                          Edit Team
-                        </Button>
-                      )}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              );
-            })}
+            {teams.map((teamData) => (
+              <TeamAccordionItem
+                key={teamData.teams.id}
+                teamData={teamData}
+                memberId={memberId}
+                onEditTeam={handleEditTeam}
+              />
+            ))}
           </Accordion>
         )}
       </main>
