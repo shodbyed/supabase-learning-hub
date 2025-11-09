@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, ArrowLeft, Trophy } from 'lucide-react';
+import { Calendar, MapPin, ArrowLeft, Trophy, AlertCircle } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { MatchDetailCard } from '@/components/MatchDetailCard';
@@ -67,6 +67,52 @@ export function TeamSchedule() {
     );
   }
 
+  // Get day of week from first match (all matches should be same day)
+  const dayOfWeek = matches.length > 0 && matches[0].scheduled_date
+    ? parseLocalDate(matches[0].scheduled_date).toLocaleDateString('en-US', { weekday: 'long' })
+    : null;
+
+  // Helper: Check if match needs makeup (scheduled date passed but not completed)
+  // TODO: VERIFY MAKEUP MATCH COLOR SCHEME
+  // Once you have an incomplete match in the past, check that the orange background
+  // (bg-orange-50), orange border (border-orange-600), and orange text (text-orange-700)
+  // look good and are easy to distinguish from completed (green) and scheduled (white) matches.
+  // May need to adjust colors for better visual hierarchy.
+  const needsMakeup = (match: MatchWithDetails): boolean => {
+    if (match.status === 'completed') return false;
+    if (!match.scheduled_date) return false;
+
+    const scheduledDate = parseLocalDate(match.scheduled_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
+
+    return scheduledDate < today;
+  };
+
+  // Helper: Find the next upcoming match (first match today or in future that's not completed)
+  const getUpcomingMatchId = (): string | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Filter to non-completed matches with dates today or in the future
+    const futureMatches = matches
+      .filter(m => {
+        if (m.status === 'completed') return false;
+        if (!m.scheduled_date) return false;
+        const matchDate = parseLocalDate(m.scheduled_date);
+        return matchDate >= today;
+      })
+      .sort((a, b) => {
+        const dateA = parseLocalDate(a.scheduled_date!);
+        const dateB = parseLocalDate(b.scheduled_date!);
+        return dateA.getTime() - dateB.getTime();
+      });
+
+    return futureMatches.length > 0 ? futureMatches[0].id : null;
+  };
+
+  const upcomingMatchId = getUpcomingMatchId();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - Mobile First */}
@@ -77,9 +123,9 @@ export function TeamSchedule() {
             Back to My Teams
           </Link>
           <div className="text-4xl font-semibold text-gray-900">{team.team_name}</div>
-          <p className="text-xs text-gray-600">
-            {matches.length} {matches.length === 1 ? 'match' : 'matches'}
-          </p>
+          {dayOfWeek && (
+            <p className="text-xl text-gray-600">{dayOfWeek}s</p>
+          )}
         </div>
       </header>
 
@@ -98,45 +144,93 @@ export function TeamSchedule() {
               const teamRole = getTeamRole(match);
               const opponent =
                 teamRole === 'home' ? match.away_team : match.home_team;
+              const isMakeup = needsMakeup(match);
+              const isUpcoming = match.id === upcomingMatchId || match.status === 'in_progress';
 
               return (
                 <AccordionItem
                   key={match.id}
                   value={match.id}
-                  className="bg-white border rounded-lg shadow-sm"
+                  className={`border rounded-lg shadow-sm ${
+                    match.status === 'completed'
+                      ? 'bg-green-50 border-green-800'
+                      : isMakeup
+                      ? 'bg-orange-50 border-orange-600'
+                      : isUpcoming
+                      ? 'bg-blue-50 border-blue-600'
+                      : 'bg-white'
+                  }`}
                 >
                   <AccordionTrigger className="px-4 py-4 hover:no-underline">
-                    <div className="flex items-center gap-3 w-full pr-4 text-left">
-                      {/* Date */}
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-3 w-3" />
-                        {match.scheduled_date ? (
-                          <span>
-                            {parseLocalDate(match.scheduled_date).toLocaleDateString(
-                              'en-US',
-                              {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric',
-                              }
-                            )}
+                    <div className="flex items-center justify-between w-full pr-4 text-left">
+                      <div className="flex items-center gap-3">
+                        {/* Week Number & Date */}
+                        <div className={`flex items-center gap-2 text-sm ${
+                          match.status === 'completed'
+                            ? 'text-gray-800'
+                            : isMakeup
+                            ? 'text-gray-800'
+                            : isUpcoming
+                            ? 'text-gray-800'
+                            : 'text-gray-600'
+                        }`}>
+                          <span className="font-medium">
+                            {match.season_week?.week_name || 'Week ?'}
                           </span>
-                        ) : (
-                          <span className="text-gray-400 italic">Date TBD</span>
-                        )}
+                          {match.scheduled_date ? (
+                            <span>
+                              {parseLocalDate(match.scheduled_date).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                }
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 italic">Date TBD</span>
+                          )}
+                        </div>
+                        {/* Matchup */}
+                        <div className={`font-semibold text-base ${
+                          match.status === 'completed' ? 'text-gray-900' : 'text-gray-900'
+                        }`}>
+                          vs{' '}
+                          {opponent ? (
+                            <TeamNameLink
+                              teamId={opponent.id}
+                              teamName={opponent.team_name}
+                            />
+                          ) : (
+                            'BYE'
+                          )}
+                        </div>
                       </div>
-                      {/* Matchup */}
-                      <div className="font-semibold text-base text-gray-900">
-                        vs{' '}
-                        {opponent ? (
-                          <TeamNameLink
-                            teamId={opponent.id}
-                            teamName={opponent.team_name}
-                          />
-                        ) : (
-                          'BYE'
-                        )}
-                      </div>
+                      {/* Status Indicator */}
+                      {match.status === 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-green-800">
+                          <Trophy className="h-3 w-3" />
+                          <span>Complete</span>
+                        </div>
+                      )}
+                      {isMakeup && match.status !== 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-orange-700">
+                          <AlertCircle className="h-3 w-3" />
+                          <span>Makeup</span>
+                        </div>
+                      )}
+                      {match.status === 'in_progress' && !isMakeup && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-blue-700">
+                          <Trophy className="h-3 w-3" />
+                          <span>In Progress</span>
+                        </div>
+                      )}
+                      {match.id === upcomingMatchId && match.status !== 'in_progress' && !isMakeup && match.status !== 'completed' && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-blue-700">
+                          <Calendar className="h-3 w-3" />
+                          <span>Upcoming</span>
+                        </div>
+                      )}
                     </div>
                   </AccordionTrigger>
 
