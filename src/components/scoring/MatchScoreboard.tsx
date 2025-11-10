@@ -133,7 +133,7 @@ export function MatchScoreboard({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/player-dashboard')}
+                onClick={() => navigate('/dashboard')}
                 className="flex items-center gap-1"
               >
                 <ArrowLeft className="h-4 w-4" />

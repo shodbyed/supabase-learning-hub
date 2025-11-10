@@ -256,6 +256,7 @@ export function ScoreMatch() {
     homeLineup,
     awayLineup,
     userTeamId,
+    gameType,
     autoConfirm,
     addToConfirmationQueue,
     getPlayerDisplayName,

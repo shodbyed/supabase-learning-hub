@@ -42,6 +42,8 @@ interface UseMatchScoringMutationsParams {
   awayLineup: Lineup | null;
   /** Current user's team ID */
   userTeamId: string | null;
+  /** Game type from league (8-ball, 9-ball, 10-ball) */
+  gameType: string;
   /** Auto-confirm setting (skip confirmation modal) */
   autoConfirm: boolean;
   /** Add confirmation to queue */
@@ -68,6 +70,7 @@ export function useMatchScoringMutations({
   homeLineup,
   awayLineup,
   userTeamId,
+  gameType,
   autoConfirm,
   addToConfirmationQueue,
   getPlayerDisplayName,
@@ -319,6 +322,7 @@ export function useMatchScoringMutations({
         const gameData = {
           match_id: match.id,
           game_number: scoringGame.gameNumber,
+          game_type: gameType,
           home_player_id: homePlayerId,
           away_player_id: awayPlayerId,
           home_action: gameDefinition.homeAction,
@@ -382,12 +386,7 @@ export function useMatchScoringMutations({
 
           console.log('Game updated successfully');
         } else {
-          // Insert new game
-          // TODO: BUG - Missing game_type field in insert
-          // Error: null value in column "game_type" of relation "match_games" violates not-null constraint
-          // The match_games table requires a game_type field (e.g., '9-ball', '8-ball', '10-ball')
-          // but we're not including it in gameData. Need to get game_type from the league/match
-          // and include it in the insert. This happens when new league operators try to score.
+          // Insert new game (includes game_type from league)
           const { error } = await supabase.from('match_games').insert(gameData);
 
           if (error) throw error;
