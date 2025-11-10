@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { PageHeader } from '@/components/PageHeader';
 import { MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { TenBallIcon } from '@/components/icons/TenBallIcon';
@@ -423,15 +424,11 @@ export function MyTeams() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Mobile First */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <BilliardRackIcon size={50} />
-            <div className="text-4xl font-semibold text-gray-900">My Teams</div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Back to Dashboard"
+        title="My Teams"
+      />
 
       {/* Main Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">
