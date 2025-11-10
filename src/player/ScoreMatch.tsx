@@ -160,10 +160,34 @@ export function ScoreMatch() {
   // Track previous allGamesComplete state to detect changes
   const prevAllGamesCompleteRef = useRef(allGamesComplete);
 
-  // Reset verification when allGamesComplete changes from true to false (game vacated after verification)
+  // Save thresholds and handle verification when match completes/uncompletes
   useEffect(() => {
     const wasComplete = prevAllGamesCompleteRef.current;
     const isComplete = allGamesComplete;
+
+    // If changed from incomplete to complete, save thresholds to database
+    if (!wasComplete && isComplete && matchId && homeThresholds && awayThresholds) {
+      console.log('Match just completed - saving thresholds to database', {
+        homeThresholds,
+        awayThresholds
+      });
+      supabase
+        .from('matches')
+        .update({
+          home_games_to_win: homeThresholds.games_to_win,
+          home_games_to_tie: homeThresholds.games_to_tie,
+          away_games_to_win: awayThresholds.games_to_win,
+          away_games_to_tie: awayThresholds.games_to_tie,
+        })
+        .eq('id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error saving thresholds:', error);
+          } else {
+            console.log('Thresholds saved successfully');
+          }
+        });
+    }
 
     // If changed from complete to incomplete, clear verification
     if (wasComplete && !isComplete && matchId) {
@@ -186,7 +210,7 @@ export function ScoreMatch() {
 
     // Update ref for next comparison
     prevAllGamesCompleteRef.current = isComplete;
-  }, [allGamesComplete, matchId]);
+  }, [allGamesComplete, matchId, homeThresholds, awayThresholds]);
 
   /**
    * Handle verify button click
@@ -377,7 +401,9 @@ export function ScoreMatch() {
         {/* Scrollable game list */}
         <div className="flex-1 overflow-y-auto px-4 pb-4">
           <div className="space-y-2">
-            {getAllGames().map((game) => {
+            {getAllGames()
+              .filter((game) => gameResults.has(game.gameNumber))
+              .map((game) => {
               const homePlayerId = homeLineup[
                 `player${game.homePlayerPosition}_id` as keyof Lineup
               ] as string;

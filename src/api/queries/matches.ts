@@ -444,6 +444,8 @@ export async function completeMatch(
     awayPointsEarned: number;
     winnerTeamId: string | null;
     matchResult: 'home_win' | 'away_win' | 'tie';
+    homeVerifiedBy: string | null;
+    awayVerifiedBy: string | null;
   }
 ) {
   // Build update object - conditionally include status and completed_at based on winner
@@ -454,6 +456,8 @@ export async function completeMatch(
     away_points_earned: completionData.awayPointsEarned,
     winner_team_id: completionData.winnerTeamId,
     match_result: completionData.matchResult,
+    home_team_verified_by: completionData.homeVerifiedBy,
+    away_team_verified_by: completionData.awayVerifiedBy,
   };
 
   // Only mark as completed if there's a winner (not a tie)

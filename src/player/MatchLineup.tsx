@@ -7,7 +7,7 @@
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,11 +23,14 @@ import { ArrowLeft, Users } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
 import { calculatePlayerHandicap } from '@/utils/calculatePlayerHandicap';
 import { getTeamHandicapBonus } from '@/utils/getTeamHandicapBonus';
+import { calculateTeamHandicap, calculate3v3HandicapDiffs } from '@/utils/handicapCalculations';
 import type { HandicapVariant } from '@/utils/handicapCalculations';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
+import { getAllGames } from '@/utils/gameOrder';
+import { useHandicapThresholds3v3 } from '@/api/hooks/useHandicaps';
 import { InfoButton } from '@/components/InfoButton';
 import { generateNickname } from '@/utils/nicknameGenerator';
 import { updateMemberNickname } from '@/api/mutations/members';
@@ -424,10 +427,13 @@ export function MatchLineup() {
     };
   }, [matchId, match, isHomeTeam, userTeamId]);
 
+  // Track if we've already prepared the match (to avoid duplicate preparation)
+  const matchPreparedRef = useRef(false);
+
   // Auto-navigate to scoring page when both lineups are locked
   // UNLESS this is a tiebreaker scenario (match_result = 'tie')
   useEffect(() => {
-    if (lineupLocked && opponentLineup?.locked) {
+    if (lineupLocked && opponentLineup?.locked && !matchPreparedRef.current) {
       // If this is a tiebreaker (match ended in tie), don't auto-navigate
       // User will manually proceed when ready
       if (match?.match_result === 'tie') {
@@ -435,13 +441,104 @@ export function MatchLineup() {
         return;
       }
 
-      // TODO: Before navigating to score page, insert all 18 game rows into match_games table
-      // This ensures real-time subscription can watch for all game updates
-      // Currently games are only inserted when scored, which breaks real-time confirmation modals
-      console.log('Both lineups locked - navigating to scoring page');
-      navigate(`/match/${matchId}/score`);
+      const prepareMatchAndNavigate = async () => {
+        if (!matchId || !match || !myLineup || !opponentLineup) return;
+
+        try {
+          matchPreparedRef.current = true;
+          console.log('Both lineups locked - preparing match data before navigation');
+
+          // Step 1: Calculate handicap thresholds
+          const teamHandicap = await calculateTeamHandicap(
+            match.home_team_id,
+            match.away_team_id,
+            match.season_id,
+            match.league.team_handicap_variant
+          );
+
+          const { homeDiff, awayDiff } = calculate3v3HandicapDiffs(
+            myLineup,
+            opponentLineup,
+            teamHandicap
+          );
+
+          // Fetch threshold data from handicap chart
+          const { data: homeThresholds } = await supabase
+            .from('handicap_chart_3vs3')
+            .select('*')
+            .eq('handicap_differential', homeDiff)
+            .single();
+
+          const { data: awayThresholds } = await supabase
+            .from('handicap_chart_3vs3')
+            .select('*')
+            .eq('handicap_differential', awayDiff)
+            .single();
+
+          if (!homeThresholds || !awayThresholds) {
+            throw new Error('Failed to fetch handicap thresholds');
+          }
+
+          // Step 2: Save thresholds to match table
+          console.log('Saving handicap thresholds to match:', {
+            home_games_to_win: homeThresholds.games_to_win,
+            home_games_to_tie: homeThresholds.games_to_tie,
+            home_games_to_lose: homeThresholds.games_to_lose,
+            away_games_to_win: awayThresholds.games_to_win,
+            away_games_to_tie: awayThresholds.games_to_tie,
+            away_games_to_lose: awayThresholds.games_to_lose,
+          });
+
+          const { error: thresholdError } = await supabase
+            .from('matches')
+            .update({
+              home_games_to_win: homeThresholds.games_to_win,
+              home_games_to_tie: homeThresholds.games_to_tie,
+              home_games_to_lose: homeThresholds.games_to_lose,
+              away_games_to_win: awayThresholds.games_to_win,
+              away_games_to_tie: awayThresholds.games_to_tie,
+              away_games_to_lose: awayThresholds.games_to_lose,
+            })
+            .eq('id', matchId);
+
+          if (thresholdError) {
+            throw new Error(`Failed to save thresholds: ${thresholdError.message}`);
+          }
+
+          // Step 3: Create all 18 game rows in match_games table
+          const allGames = getAllGames();
+          const gameRows = allGames.map(game => ({
+            match_id: matchId,
+            game_number: game.gameNumber,
+            game_type: match.league.game_type || '8-ball',
+            // All other fields default to null (no winner, no confirmations yet)
+          }));
+
+          console.log('Creating 18 game rows in match_games table');
+          const { error: gamesError } = await supabase
+            .from('match_games')
+            .insert(gameRows);
+
+          if (gamesError) {
+            // If games already exist (e.g., tiebreaker), that's OK - ignore duplicate key errors
+            if (!gamesError.message.includes('duplicate key')) {
+              throw new Error(`Failed to create games: ${gamesError.message}`);
+            }
+            console.log('Games already exist (likely a tiebreaker) - continuing');
+          }
+
+          console.log('Match preparation complete - navigating to scoring page');
+          navigate(`/match/${matchId}/score`);
+        } catch (error: any) {
+          console.error('Error preparing match:', error);
+          alert(`Failed to prepare match: ${error.message}`);
+          matchPreparedRef.current = false; // Reset so they can try again
+        }
+      };
+
+      prepareMatchAndNavigate();
     }
-  }, [lineupLocked, opponentLineup, matchId, navigate, match?.match_result]);
+  }, [lineupLocked, opponentLineup, matchId, navigate, match, myLineup]);
 
   /**
    * Helper: Check if any player is a substitute
@@ -610,7 +707,9 @@ export function MatchLineup() {
         player2_handicap: getPlayerHandicap(player2Id),
         player3_id: player3Id,
         player3_handicap: getPlayerHandicap(player3Id),
+        team_handicap: teamHandicap, // Team modifier from standings (currently 0)
         locked: true,
+        locked_at: new Date().toISOString(), // Timestamp when lineup was locked
       };
 
       console.log('Attempting to save lineup:', lineupData);
@@ -650,6 +749,22 @@ export function MatchLineup() {
       setLineupLocked(true);
 
       console.log('Lineup locked successfully:', result.data);
+
+      // Save lineup ID to matches table
+      const isHomeTeam = userTeamId === match?.home_team_id;
+      const lineupField = isHomeTeam ? 'home_lineup_id' : 'away_lineup_id';
+
+      const { error: matchUpdateError } = await supabase
+        .from('matches')
+        .update({ [lineupField]: result.data.id })
+        .eq('id', matchId);
+
+      if (matchUpdateError) {
+        console.error('Error updating match with lineup ID:', matchUpdateError);
+        // Don't throw - lineup is still locked, just log the error
+      } else {
+        console.log(`Match updated with ${lineupField}:`, result.data.id);
+      }
     } catch (err: any) {
       console.error('Error saving lineup:', err);
       alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);

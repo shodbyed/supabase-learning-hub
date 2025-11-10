@@ -154,6 +154,8 @@ export function MatchEndVerification({
             awayPointsEarned: awayPoints,
             winnerTeamId,
             matchResult: result,
+            homeVerifiedBy,
+            awayVerifiedBy,
           },
         });
 

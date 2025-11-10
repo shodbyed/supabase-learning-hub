@@ -105,8 +105,6 @@ export function useMatchScoring({
 
   // Handicap data (needs state because calculated async)
   const [homeTeamHandicap, setHomeTeamHandicap] = useState(0);
-  const [cappedHomeDiff, setCappedHomeDiff] = useState<number | null>(null);
-  const [cappedAwayDiff, setCappedAwayDiff] = useState<number | null>(null);
 
   // Confirmation queue
   const [confirmationQueue, setConfirmationQueue] = useState<ConfirmationQueueItem[]>([]);
@@ -117,10 +115,6 @@ export function useMatchScoring({
   // Loading/error state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Fetch handicap thresholds (only after calculating handicap diffs)
-  const { data: homeThresholdsData } = useHandicapThresholds3v3(cappedHomeDiff);
-  const { data: awayThresholdsData } = useHandicapThresholds3v3(cappedAwayDiff);
 
   // ============================================================================
   // DERIVED DATA (useMemo)
@@ -149,16 +143,42 @@ export function useMatchScoring({
     return gamesMap;
   }, [gamesData]);
 
-  // Get handicap thresholds (needs useMemo - conditional logic)
+  // Get handicap thresholds from match data (saved during lineup)
   const homeThresholds = useMemo(() => {
     if (matchType === 'tiebreaker') return TIEBREAKER_THRESHOLDS;
-    return homeThresholdsData || null;
-  }, [matchType, homeThresholdsData]);
+
+    // Get thresholds from match table (saved during lineup lock)
+    if (matchData &&
+        matchData.home_games_to_win !== null &&
+        matchData.home_games_to_tie !== null &&
+        matchData.home_games_to_lose !== null) {
+      return {
+        games_to_win: matchData.home_games_to_win,
+        games_to_tie: matchData.home_games_to_tie,
+        games_to_lose: matchData.home_games_to_lose,
+      };
+    }
+
+    return null;
+  }, [matchType, matchData]);
 
   const awayThresholds = useMemo(() => {
     if (matchType === 'tiebreaker') return TIEBREAKER_THRESHOLDS;
-    return awayThresholdsData || null;
-  }, [matchType, awayThresholdsData]);
+
+    // Get thresholds from match table (saved during lineup lock)
+    if (matchData &&
+        matchData.away_games_to_win !== null &&
+        matchData.away_games_to_tie !== null &&
+        matchData.away_games_to_lose !== null) {
+      return {
+        games_to_win: matchData.away_games_to_win,
+        games_to_tie: matchData.away_games_to_tie,
+        games_to_lose: matchData.away_games_to_lose,
+      };
+    }
+
+    return null;
+  }, [matchType, matchData]);
 
   // ============================================================================
   // HELPER FUNCTIONS
@@ -237,7 +257,8 @@ export function useMatchScoring({
   // ============================================================================
 
   /**
-   * Calculate handicap data (only thing that needs async processing)
+   * Calculate team handicap for display purposes
+   * Note: Thresholds are now loaded from match table (saved during lineup)
    */
   useEffect(() => {
     async function calculateHandicaps() {
@@ -251,7 +272,7 @@ export function useMatchScoring({
       }
 
       try {
-        // Calculate team handicap (only for home team in 3v3)
+        // Calculate team handicap (only for home team in 3v3) - used for display
         const calculatedTeamHandicap = await calculateTeamHandicap(
           matchData.home_team_id,
           matchData.away_team_id,
@@ -260,24 +281,9 @@ export function useMatchScoring({
         );
         setHomeTeamHandicap(calculatedTeamHandicap);
 
-        // Calculate handicap differences using helper function
-        const { homeDiff, awayDiff } = calculate3v3HandicapDiffs(
-          lineupsData.homeLineup,
-          lineupsData.awayLineup,
-          calculatedTeamHandicap
-        );
-
-        console.log('Handicap calculations:', {
-          teamHandicap: calculatedTeamHandicap,
-          cappedHomeDiff: homeDiff,
-          cappedAwayDiff: awayDiff,
-        });
-
-        // Store capped diffs to trigger TanStack Query handicap threshold fetches
-        setCappedHomeDiff(homeDiff);
-        setCappedAwayDiff(awayDiff);
+        console.log('Team handicap:', calculatedTeamHandicap);
       } catch (err: any) {
-        console.error('Error calculating handicaps:', err);
+        console.error('Error calculating team handicap:', err);
       }
     }
 

@@ -282,6 +282,8 @@ export function useCompleteMatch() {
         awayPointsEarned: number;
         winnerTeamId: string | null;
         matchResult: 'home_win' | 'away_win' | 'tie';
+        homeVerifiedBy: string | null;
+        awayVerifiedBy: string | null;
       };
     }) => completeMatch(matchId, completionData),
     onSuccess: (_, variables) => {
