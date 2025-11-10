@@ -100,13 +100,13 @@ export function useMatchGamesRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
-          //console.log('Real-time game update received:', payload);
+          console.log('Real-time game update received:', payload);
 
           // Trigger TanStack Query refetch
           onUpdate();
 
-          // Handle confirmation queue logic
-          if (payload.eventType === 'UPDATE' && payload.new) {
+          // Handle confirmation queue logic for both INSERT and UPDATE
+          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && payload.new) {
             const updatedGame = payload.new as MatchGame;
 
             // Detect if this is a vacate request:

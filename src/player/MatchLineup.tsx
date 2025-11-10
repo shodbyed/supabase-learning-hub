@@ -435,6 +435,9 @@ export function MatchLineup() {
         return;
       }
 
+      // TODO: Before navigating to score page, insert all 18 game rows into match_games table
+      // This ensures real-time subscription can watch for all game updates
+      // Currently games are only inserted when scored, which breaks real-time confirmation modals
       console.log('Both lineups locked - navigating to scoring page');
       navigate(`/match/${matchId}/score`);
     }
@@ -1048,6 +1051,7 @@ export function MatchLineup() {
               onLock={handleLockLineup}
               onUnlock={handleUnlockLineup}
               onProceed={() => {
+                // TODO: Before navigating to score page, insert all 18 game rows into match_games table
                 navigate(`/match/${matchId}/score`);
               }}
             />

@@ -82,6 +82,8 @@ export function GamesList({
       </div>
 
       {/* Scrollable game list - DYNAMIC (works for any number of games) */}
+      {/* TODO: Remove games.map() - only map actual database rows from gameResults */}
+      {/* Currently mapping fake game structure - should only display games that exist in DB */}
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         <div className="space-y-2">
           {games.map(game => {
