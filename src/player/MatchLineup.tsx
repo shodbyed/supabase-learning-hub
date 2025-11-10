@@ -29,6 +29,8 @@ import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
 import { InfoButton } from '@/components/InfoButton';
+import { generateNickname } from '@/utils/nicknameGenerator';
+import { updateMemberNickname } from '@/api/mutations/members';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -221,6 +223,7 @@ export function MatchLineup() {
         const { data: playersData, error: playersError } = await supabase
           .from('team_players')
           .select(`
+            is_captain,
             members:members!team_players_member_id_fkey(
               id,
               first_name,
@@ -228,7 +231,8 @@ export function MatchLineup() {
               nickname
             )
           `)
-          .eq('team_id', userTeam);
+          .eq('team_id', userTeam)
+          .order('is_captain', { ascending: false }); // Captain first
 
         if (playersError) throw playersError;
 
@@ -245,11 +249,22 @@ export function MatchLineup() {
               matchData.season_id // Prioritize current season games
             );
 
+            // Generate nickname if missing
+            let nickname = p.members.nickname;
+            if (!nickname) {
+              nickname = generateNickname(p.members.first_name, p.members.last_name);
+              // Update the member record with the generated nickname using TanStack mutation
+              await updateMemberNickname({
+                memberId: p.members.id,
+                nickname
+              });
+            }
+
             return {
               id: p.members.id,
               first_name: p.members.first_name,
               last_name: p.members.last_name,
-              nickname: p.members.nickname,
+              nickname,
               handicap,
             };
           })

@@ -11,6 +11,44 @@ import { supabase } from '@/supabaseClient';
 import { isEighteenOrOlder } from '@/utils/formatters';
 
 /**
+ * Parameters for updating member nickname
+ */
+export interface UpdateMemberNicknameParams {
+  memberId: string;
+  nickname: string;
+}
+
+/**
+ * Update member's nickname
+ *
+ * Used when auto-generating nicknames for players who don't have one.
+ * Updates the members table with the new nickname.
+ *
+ * @param params - Update parameters (memberId, nickname)
+ * @throws Error if database update fails
+ *
+ * @example
+ * await updateMemberNickname({
+ *   memberId: 'member-123',
+ *   nickname: 'John D'
+ * });
+ */
+export async function updateMemberNickname(
+  params: UpdateMemberNicknameParams
+): Promise<void> {
+  const { memberId, nickname } = params;
+
+  const { error } = await supabase
+    .from('members')
+    .update({ nickname })
+    .eq('id', memberId);
+
+  if (error) {
+    throw new Error(`Failed to update nickname: ${error.message}`);
+  }
+}
+
+/**
  * Parameters for updating profanity filter
  */
 export interface UpdateProfanityFilterParams {
