@@ -23,6 +23,7 @@ import {
   type HandicapThresholds,
 } from '@/types/match';
 import { MatchEndVerification } from './MatchEndVerification';
+import { InfoButton } from '@/components/InfoButton';
 
 interface MatchScoreboardProps {
   /** Current match data */
@@ -133,7 +134,7 @@ export function MatchScoreboard({
           />
         ) : (
           <>
-            {/* Header row: Exit button + Auto-confirm */}
+            {/* Header row: Exit button + My Team Name + Auto-confirm */}
             <div className="flex items-center justify-between mb-3">
               <Button
                 variant="ghost"
@@ -144,15 +145,25 @@ export function MatchScoreboard({
                 <ArrowLeft className="h-4 w-4" />
                 Exit
               </Button>
-              <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoConfirm}
-                  onChange={(e) => onAutoConfirmChange(e.target.checked)}
-                  className="w-3 h-3"
-                />
-                Auto-confirm opponent scores
-              </label>
+              <div className="text-sm font-semibold text-gray-700">
+                {isHomeTeam ? match.home_team?.team_name : match.away_team?.team_name}
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoConfirm}
+                    onChange={(e) => onAutoConfirmChange(e.target.checked)}
+                    className="w-3 h-3"
+                  />
+                  Auto-Confirm
+                </label>
+                <InfoButton title="Auto-Confirm Opponent Selections" className="relative">
+                  <p className="text-sm">
+                    By enabling this your opponents game result selections will automatically be confirmed for your team. Your team is still responsible for ensuring the scoring is accurate. This option simply removes the need to confirm each game individually.
+                  </p>
+                </InfoButton>
+              </div>
             </div>
           </>
         )}

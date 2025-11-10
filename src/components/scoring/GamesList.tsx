@@ -70,7 +70,7 @@ export function GamesList({
       {/* Fixed header */}
       <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
         <div className="text-sm font-semibold mb-4">
-          Games Complete - <span className="text-lg">{getCompletedGamesCount()} / {totalGames}</span>
+          Games Complete: <span className="text-lg">{getCompletedGamesCount()} / {totalGames}</span>
         </div>
         {/* Column headers */}
         <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">

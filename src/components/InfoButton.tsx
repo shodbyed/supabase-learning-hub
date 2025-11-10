@@ -74,7 +74,7 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
       {showInfo && (
         <div
           ref={popupRef}
-          className="absolute top-8 left-0 z-50 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg"
+          className="absolute top-8 right-0 z-50 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg"
         >
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900">{title}</h3>
