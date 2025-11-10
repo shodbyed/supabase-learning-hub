@@ -134,21 +134,23 @@ export function MatchScoreboard({
           />
         ) : (
           <>
-            {/* Header row: Exit button + My Team Name + Auto-confirm */}
+            {/* Header row: Dashboard button + My Team Name + Auto-confirm */}
             <div className="flex items-center justify-between mb-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center gap-1"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Exit
-              </Button>
+              <div className="flex items-center gap-1 w-[160px]">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-1"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Dashboard
+                </Button>
+              </div>
               <div className="text-sm font-semibold text-gray-700">
                 {isHomeTeam ? match.home_team?.team_name : match.away_team?.team_name}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-[160px] justify-end">
                 <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
                   <input
                     type="checkbox"
