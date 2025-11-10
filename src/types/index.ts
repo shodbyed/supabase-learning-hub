@@ -50,3 +50,13 @@ export { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, 
 
 // Team types
 export type { Team, TeamWithQueryDetails, UseTeamManagementReturn } from './team';
+
+// Schedule types
+export type {
+  MatchStatus,
+  Match,
+  MatchWithDetails,
+  MatchInsertData,
+  TeamSchedulePosition,
+  TeamSchedulePositionInsertData
+} from './schedule';

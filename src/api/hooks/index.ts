@@ -131,6 +131,7 @@ export {
   useMatchesByTeam,
   useSeasonSchedule,
   useSeasonWeeks,
+  useNextMatchForTeam,
 } from './useMatches';
 
 // Venue queries

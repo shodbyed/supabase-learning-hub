@@ -383,6 +383,11 @@ export function useMatchScoringMutations({
           console.log('Game updated successfully');
         } else {
           // Insert new game
+          // TODO: BUG - Missing game_type field in insert
+          // Error: null value in column "game_type" of relation "match_games" violates not-null constraint
+          // The match_games table requires a game_type field (e.g., '9-ball', '8-ball', '10-ball')
+          // but we're not including it in gameData. Need to get game_type from the league/match
+          // and include it in the insert. This happens when new league operators try to score.
           const { error } = await supabase.from('match_games').insert(gameData);
 
           if (error) throw error;

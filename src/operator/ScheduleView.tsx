@@ -10,7 +10,7 @@ import { supabase } from '@/supabaseClient';
 import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import type { MatchWithDetails } from '@/types/schedule';
+import type { MatchWithDetails } from '@/types';
 
 interface ScheduleViewProps {
   /** Season ID to display schedule for */
