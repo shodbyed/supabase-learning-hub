@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
+import { useUpdateMemberProfile } from '@/api/hooks/useMemberMutations';
 import { personalInfoSchema, contactInfoSchema, addressSchema } from './validationSchemas';
 import { capitalizeWords, formatPhoneNumber } from '../utils/formatters';
 import type {
@@ -27,6 +28,7 @@ import type {
 export const useProfileForm = () => {
   const { user } = useUser();
   const { member } = useUserProfile();
+  const updateProfileMutation = useUpdateMemberProfile();
 
   // Success message state
   const [successMessage, setSuccessMessage] = useState<SuccessMessage>({
@@ -153,7 +155,7 @@ export const useProfileForm = () => {
       }));
     },
 
-    save: () => {
+    save: async () => {
       if (!member) return;
 
       const result = processFormSubmission(
@@ -182,9 +184,23 @@ export const useProfileForm = () => {
         return;
       }
 
-      // Success - exit edit mode and show message
-      setAddressForm(prev => ({ ...prev, isEditing: false, errors: {} }));
-      showSuccessMessage('Address Information', result.changes || []);
+      // Save to database
+      try {
+        await updateProfileMutation.mutateAsync({
+          memberId: member.id,
+          updates: result.formattedData
+        });
+
+        // Success - exit edit mode and show message
+        setAddressForm(prev => ({ ...prev, isEditing: false, errors: {} }));
+        showSuccessMessage('Address Information', result.changes || []);
+      } catch (error: any) {
+        console.error('Failed to update address:', error);
+        setAddressForm(prev => ({
+          ...prev,
+          errors: { _general: error.message || 'Failed to update address' }
+        }));
+      }
     },
 
     cancel: () => {
@@ -220,7 +236,7 @@ export const useProfileForm = () => {
       }));
     },
 
-    save: () => {
+    save: async () => {
       if (!member) return;
 
       const result = processFormSubmission(
@@ -249,8 +265,22 @@ export const useProfileForm = () => {
         return;
       }
 
-      setPersonalForm(prev => ({ ...prev, isEditing: false, errors: {} }));
-      showSuccessMessage('Personal Information', result.changes || []);
+      // Save to database
+      try {
+        await updateProfileMutation.mutateAsync({
+          memberId: member.id,
+          updates: result.formattedData
+        });
+
+        setPersonalForm(prev => ({ ...prev, isEditing: false, errors: {} }));
+        showSuccessMessage('Personal Information', result.changes || []);
+      } catch (error: any) {
+        console.error('Failed to update personal info:', error);
+        setPersonalForm(prev => ({
+          ...prev,
+          errors: { _general: error.message || 'Failed to update personal information' }
+        }));
+      }
     },
 
     cancel: () => {
@@ -284,7 +314,7 @@ export const useProfileForm = () => {
       }));
     },
 
-    save: () => {
+    save: async () => {
       if (!member) return;
 
       const result = processFormSubmission(
@@ -309,8 +339,22 @@ export const useProfileForm = () => {
         return;
       }
 
-      setContactForm(prev => ({ ...prev, isEditing: false, errors: {} }));
-      showSuccessMessage('Contact Information', result.changes || []);
+      // Save to database
+      try {
+        await updateProfileMutation.mutateAsync({
+          memberId: member.id,
+          updates: result.formattedData
+        });
+
+        setContactForm(prev => ({ ...prev, isEditing: false, errors: {} }));
+        showSuccessMessage('Contact Information', result.changes || []);
+      } catch (error: any) {
+        console.error('Failed to update contact info:', error);
+        setContactForm(prev => ({
+          ...prev,
+          errors: { _general: error.message || 'Failed to update contact information' }
+        }));
+      }
     },
 
     cancel: () => {

@@ -529,6 +529,26 @@ export function MatchLineup() {
   /**
    * Check if lineup is complete
    */
+  /**
+   * Helper: Check if lineup has duplicate nicknames
+   */
+  const hasDuplicateNicknames = (): boolean => {
+    if (!player1Id || !player2Id || !player3Id) return false;
+
+    const player1 = players.find(p => p.id === player1Id);
+    const player2 = players.find(p => p.id === player2Id);
+    const player3 = players.find(p => p.id === player3Id);
+
+    if (!player1 || !player2 || !player3) return false;
+
+    const nickname1 = player1.nickname || '';
+    const nickname2 = player2.nickname || '';
+    const nickname3 = player3.nickname || '';
+
+    // Check if any two nicknames match
+    return nickname1 === nickname2 || nickname1 === nickname3 || nickname2 === nickname3;
+  };
+
   const isLineupComplete = (): boolean => {
     const playersSelected = !!(player1Id && player2Id && player3Id);
     // If there's a sub, handicap must be selected
@@ -544,6 +564,11 @@ export function MatchLineup() {
   const handleLockLineup = async () => {
     if (!isLineupComplete()) {
       alert('Please select all 3 players before locking your lineup');
+      return;
+    }
+
+    if (hasDuplicateNicknames()) {
+      alert('Two or more players in your lineup have the same nickname. Please have at least one of them go to their profile page to change their nickname so they will be identifiable during scoring.');
       return;
     }
 
@@ -1002,11 +1027,23 @@ export function MatchLineup() {
               )}
             </div>
 
+            {/* Duplicate Nickname Error */}
+            {isLineupComplete() && hasDuplicateNicknames() && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-md">
+                <p className="text-sm text-red-800 font-medium">
+                  ⚠️ Two or more players in your lineup have the same nickname.
+                </p>
+                <p className="text-xs text-red-700 mt-1">
+                  Have at least one of them go to their profile page to change their nickname so they will be identifiable during scoring.
+                </p>
+              </div>
+            )}
+
             {/* Lock/Unlock and Status */}
             <LineupActions
               locked={lineupLocked}
               opponentLocked={opponentLineup?.locked || false}
-              canLock={isLineupComplete()}
+              canLock={isLineupComplete() && !hasDuplicateNicknames()}
               canUnlock={!opponentLineup?.locked}
               onLock={handleLockLineup}
               onUnlock={handleUnlockLineup}

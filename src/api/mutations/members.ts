@@ -11,11 +11,64 @@ import { supabase } from '@/supabaseClient';
 import { isEighteenOrOlder } from '@/utils/formatters';
 
 /**
+ * Parameters for updating member profile
+ */
+export interface UpdateMemberProfileParams {
+  memberId: string;
+  updates: Partial<{
+    first_name: string;
+    last_name: string;
+    nickname: string | null;
+    date_of_birth: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip_code: string;
+  }>;
+}
+
+/**
  * Parameters for updating member nickname
  */
 export interface UpdateMemberNicknameParams {
   memberId: string;
   nickname: string;
+}
+
+/**
+ * Update member's profile information
+ *
+ * General-purpose function for updating any member profile fields.
+ * Used by the profile page for editing personal info, contact info, and address.
+ *
+ * @param params - Update parameters (memberId, updates object)
+ * @throws Error if database update fails
+ *
+ * @example
+ * await updateMemberProfile({
+ *   memberId: 'member-123',
+ *   updates: {
+ *     first_name: 'John',
+ *     last_name: 'Doe',
+ *     nickname: 'JD'
+ *   }
+ * });
+ */
+export async function updateMemberProfile(
+  params: UpdateMemberProfileParams
+): Promise<void> {
+  const { memberId, updates } = params;
+
+  const { error } = await supabase
+    .from('members')
+    .update(updates)
+    .eq('id', memberId);
+
+  if (error) {
+    throw new Error(`Failed to update member profile: ${error.message}`);
+  }
 }
 
 /**
