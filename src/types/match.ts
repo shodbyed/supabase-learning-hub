@@ -70,7 +70,13 @@ export interface Lineup {
   player2_handicap: number;
   player3_id: string | null;
   player3_handicap: number;
+  player4_id?: string | null; // 5v5 only
+  player4_handicap?: number | null; // 5v5 only
+  player5_id?: string | null; // 5v5 only
+  player5_handicap?: number | null; // 5v5 only
+  home_team_modifier: number; // Team standings modifier (bonus/penalty)
   locked: boolean;
+  locked_at: string | null; // ISO timestamp when lineup was locked
 }
 
 /**

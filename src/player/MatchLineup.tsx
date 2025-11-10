@@ -707,7 +707,7 @@ export function MatchLineup() {
         player2_handicap: getPlayerHandicap(player2Id),
         player3_id: player3Id,
         player3_handicap: getPlayerHandicap(player3Id),
-        team_handicap: teamHandicap, // Team modifier from standings (currently 0)
+        home_team_modifier: teamHandicap, // Team modifier from standings (currently 0)
         locked: true,
         locked_at: new Date().toISOString(), // Timestamp when lineup was locked
       };
