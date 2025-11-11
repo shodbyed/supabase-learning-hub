@@ -442,11 +442,21 @@ export function MatchLineup() {
       }
 
       const prepareMatchAndNavigate = async () => {
-        if (!matchId || !match || !myLineup || !opponentLineup) return;
+        if (!matchId || !match || !opponentLineup) return;
 
         try {
           matchPreparedRef.current = true;
           console.log('Both lineups locked - preparing match data before navigation');
+
+          // Build current user's lineup object from state
+          const myLineup = {
+            player1_id: player1Id,
+            player1_handicap: getPlayerHandicap(player1Id),
+            player2_id: player2Id,
+            player2_handicap: getPlayerHandicap(player2Id),
+            player3_id: player3Id,
+            player3_handicap: getPlayerHandicap(player3Id),
+          };
 
           // Step 1: Calculate handicap thresholds
           const teamHandicap = await calculateTeamHandicap(
@@ -505,13 +515,17 @@ export function MatchLineup() {
             throw new Error(`Failed to save thresholds: ${thresholdError.message}`);
           }
 
-          // Step 3: Create all 18 game rows in match_games table
+          // Step 3: Create all 18 game rows in match_games table with complete game structure
           const allGames = getAllGames();
           const gameRows = allGames.map(game => ({
             match_id: matchId,
             game_number: game.gameNumber,
             game_type: match.league.game_type || '8-ball',
-            // All other fields default to null (no winner, no confirmations yet)
+            home_player_position: game.homePlayerPosition,
+            away_player_position: game.awayPlayerPosition,
+            home_action: game.homeAction,
+            away_action: game.awayAction,
+            // Winner and confirmation fields remain null until game is scored
           }));
 
           console.log('Creating 18 game rows in match_games table');
@@ -538,7 +552,8 @@ export function MatchLineup() {
 
       prepareMatchAndNavigate();
     }
-  }, [lineupLocked, opponentLineup, matchId, navigate, match, myLineup]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lineupLocked, opponentLineup, matchId, navigate, match, player1Id, player2Id, player3Id]);
 
   /**
    * Helper: Check if any player is a substitute
