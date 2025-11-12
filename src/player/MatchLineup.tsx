@@ -29,8 +29,7 @@ import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
-import { getAllGames } from '@/utils/gameOrder';
-import { useHandicapThresholds3v3 } from '@/api/hooks/useHandicaps';
+import { generateGameOrder } from '@/utils/gameOrder';
 import { InfoButton } from '@/components/InfoButton';
 import { generateNickname } from '@/utils/nicknameGenerator';
 import { updateMemberNickname } from '@/api/mutations/members';
@@ -63,6 +62,12 @@ interface Match {
   season_week: {
     scheduled_date: string;
   } | null;
+  league: {
+    handicap_variant: HandicapVariant;
+    team_handicap_variant: HandicapVariant;
+    game_type: 'eight_ball' | 'nine_ball' | 'ten_ball';
+    team_format: '5_man' | '8_man';
+  };
 }
 
 interface Player {
@@ -190,6 +195,12 @@ export function MatchLineup() {
           away_team: awayTeam as any || null,
           scheduled_venue: venue as any || null,
           season_week: seasonWeek as any || null,
+          league: {
+            handicap_variant: playerVariant,
+            team_handicap_variant: teamVariant,
+            game_type: gameType,
+            team_format: teamFormat,
+          },
         };
 
         console.log('Transformed match:', transformedMatch);
@@ -307,6 +318,7 @@ export function MatchLineup() {
         }
 
         // Check if lineup already exists for this team
+        // If not, create an empty one so real-time subscriptions work immediately
         const { data: existingLineup, error: lineupError } = await supabase
           .from('match_lineups')
           .select('*')
@@ -314,45 +326,92 @@ export function MatchLineup() {
           .eq('team_id', userTeam)
           .maybeSingle();
 
+        let lineupRecord;
         if (!lineupError && existingLineup) {
           // Load existing lineup and use stored handicaps for consistency
           console.log('Loading existing lineup from database:', existingLineup);
+          lineupRecord = existingLineup;
+        } else {
+          // Create empty lineup record for real-time to watch
+          // Use INSERT ... ON CONFLICT DO NOTHING to handle race conditions
+          console.log('Creating empty lineup record for team:', userTeam);
+          const { data: newLineup, error: createError } = await supabase
+            .from('match_lineups')
+            .insert({
+              match_id: matchId,
+              team_id: userTeam,
+              player1_id: null,
+              player1_handicap: 0,
+              player2_id: null,
+              player2_handicap: 0,
+              player3_id: null,
+              player3_handicap: 0,
+              home_team_modifier: 0,
+              locked: false,
+              locked_at: null,
+            })
+            .select()
+            .single();
 
-          setLineupId(existingLineup.id);
+          if (createError) {
+            // Check if it's a unique constraint violation (another team member just created it)
+            if (createError.code === '23505') {
+              console.log('Lineup already created by another team member, fetching...');
+              // Fetch the record that was just created
+              const { data: refetchedLineup } = await supabase
+                .from('match_lineups')
+                .select('*')
+                .eq('match_id', matchId)
+                .eq('team_id', userTeam)
+                .single();
+              lineupRecord = refetchedLineup;
+            } else {
+              throw createError;
+            }
+          } else {
+            lineupRecord = newLineup;
+          }
+        }
+
+        // Load lineup data into state
+        if (lineupRecord) {
+          setLineupId(lineupRecord.id);
           // Use substitute ID if player_id is null or already a substitute ID
           const getPlayerOrSub = (playerId: string | null) => {
             if (!playerId) return isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID;
             if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) return playerId;
             return playerId;
           };
-          setPlayer1Id(getPlayerOrSub(existingLineup.player1_id));
-          setPlayer2Id(getPlayerOrSub(existingLineup.player2_id));
-          setPlayer3Id(getPlayerOrSub(existingLineup.player3_id));
-          setLineupLocked(existingLineup.locked);
+          setPlayer1Id(getPlayerOrSub(lineupRecord.player1_id));
+          setPlayer2Id(getPlayerOrSub(lineupRecord.player2_id));
+          setPlayer3Id(getPlayerOrSub(lineupRecord.player3_id));
+          setLineupLocked(lineupRecord.locked);
 
           // Update players array with stored handicaps to ensure consistency
           // across all team members viewing this lineup
-          const updatedPlayers = transformedPlayers.map((player) => {
-            if (player.id === existingLineup.player1_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player1_handicap) };
-            }
-            if (player.id === existingLineup.player2_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player2_handicap) };
-            }
-            if (player.id === existingLineup.player3_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player3_handicap) };
-            }
-            return player;
-          });
-          setPlayers(updatedPlayers);
+          if (lineupRecord.player1_id || lineupRecord.player2_id || lineupRecord.player3_id) {
+            const updatedPlayers = transformedPlayers.map((player) => {
+              if (player.id === lineupRecord.player1_id) {
+                return { ...player, handicap: parseFloat(lineupRecord.player1_handicap) };
+              }
+              if (player.id === lineupRecord.player2_id) {
+                return { ...player, handicap: parseFloat(lineupRecord.player2_handicap) };
+              }
+              if (player.id === lineupRecord.player3_id) {
+                return { ...player, handicap: parseFloat(lineupRecord.player3_handicap) };
+              }
+              return player;
+            });
+            setPlayers(updatedPlayers);
+          }
 
           // If any player is a substitute, get the handicap
-          if (!existingLineup.player1_id) {
-            setSubHandicap(existingLineup.player1_handicap.toString());
-          } else if (!existingLineup.player2_id) {
-            setSubHandicap(existingLineup.player2_handicap.toString());
-          } else if (!existingLineup.player3_id) {
-            setSubHandicap(existingLineup.player3_handicap.toString());
+          if (!lineupRecord.player1_id && lineupRecord.player1_handicap) {
+            setSubHandicap(lineupRecord.player1_handicap.toString());
+          } else if (!lineupRecord.player2_id && lineupRecord.player2_handicap) {
+            setSubHandicap(lineupRecord.player2_handicap.toString());
+          } else if (!lineupRecord.player3_id && lineupRecord.player3_handicap) {
+            setSubHandicap(lineupRecord.player3_handicap.toString());
           }
         }
 
@@ -432,6 +491,7 @@ export function MatchLineup() {
 
   // Auto-navigate to scoring page when both lineups are locked
   // UNLESS this is a tiebreaker scenario (match_result = 'tie')
+  // IMPORTANT: Only HOME team prepares the match to avoid race conditions
   useEffect(() => {
     if (lineupLocked && opponentLineup?.locked && !matchPreparedRef.current) {
       // If this is a tiebreaker (match ended in tie), don't auto-navigate
@@ -441,8 +501,18 @@ export function MatchLineup() {
         return;
       }
 
+      // Only home team prepares the match data to avoid both teams doing it simultaneously
+      if (!isHomeTeam) {
+        console.log('Away team detected both lineups locked - navigating directly to scoring');
+        matchPreparedRef.current = true;
+        navigate(`/match/${matchId}/score`);
+        return;
+      }
+
       const prepareMatchAndNavigate = async () => {
         if (!matchId || !match || !opponentLineup) return;
+
+        console.log('Home team preparing match data...');
 
         try {
           matchPreparedRef.current = true;
@@ -467,26 +537,38 @@ export function MatchLineup() {
           );
 
           const { homeDiff, awayDiff } = calculate3v3HandicapDiffs(
-            myLineup,
+            myLineup as any,
             opponentLineup,
             teamHandicap
           );
 
-          // Fetch threshold data from handicap chart
-          const { data: homeThresholds } = await supabase
+          console.log('Handicap differentials calculated:', { homeDiff, awayDiff });
+
+          // Fetch threshold data from handicap chart (column name is hcp_diff, not handicap_differential)
+          const { data: homeThresholds, error: homeThresholdsError } = await supabase
             .from('handicap_chart_3vs3')
             .select('*')
-            .eq('handicap_differential', homeDiff)
+            .eq('hcp_diff', homeDiff)
             .single();
 
-          const { data: awayThresholds } = await supabase
+          if (homeThresholdsError) {
+            console.error('Home thresholds lookup error:', homeThresholdsError);
+            throw new Error(`Failed to fetch home handicap thresholds for diff ${homeDiff}: ${homeThresholdsError.message}`);
+          }
+
+          const { data: awayThresholds, error: awayThresholdsError } = await supabase
             .from('handicap_chart_3vs3')
             .select('*')
-            .eq('handicap_differential', awayDiff)
+            .eq('hcp_diff', awayDiff)
             .single();
+
+          if (awayThresholdsError) {
+            console.error('Away thresholds lookup error:', awayThresholdsError);
+            throw new Error(`Failed to fetch away handicap thresholds for diff ${awayDiff}: ${awayThresholdsError.message}`);
+          }
 
           if (!homeThresholds || !awayThresholds) {
-            throw new Error('Failed to fetch handicap thresholds');
+            throw new Error('Failed to fetch handicap thresholds - data is null');
           }
 
           // Step 2: Save thresholds to match table
@@ -515,20 +597,33 @@ export function MatchLineup() {
             throw new Error(`Failed to save thresholds: ${thresholdError.message}`);
           }
 
-          // Step 3: Create all 18 game rows in match_games table with complete game structure
-          const allGames = getAllGames();
+          // Step 3: Create all game rows in match_games table with complete game structure
+          // Determine game format and count based on league.team_format
+          const teamFormat = match.league.team_format;
+          const playersPerTeam = teamFormat === '8_man' ? 5 : 3;
+          const useDoubleRoundRobin = playersPerTeam === 3; // 3v3 uses double round-robin (18 games), 5v5 uses single (25 games)
+
+          // Generate game order using the algorithm
+          const allGames = generateGameOrder(playersPerTeam, useDoubleRoundRobin);
+
+          // Determine which lineup is home vs away
+          const homeLineup = isHomeTeam ? myLineup : opponentLineup;
+          const awayLineup = isHomeTeam ? opponentLineup : myLineup;
+
+          // Create games with actual player IDs looked up from lineups
           const gameRows = allGames.map(game => ({
             match_id: matchId,
             game_number: game.gameNumber,
-            game_type: match.league.game_type || '8-ball',
-            home_player_position: game.homePlayerPosition,
-            away_player_position: game.awayPlayerPosition,
+            game_type: match.league.game_type || 'eight_ball',
+            // Look up actual player IDs from lineups using positions
+            home_player_id: (homeLineup as any)[`player${game.homePlayerPosition}_id`],
+            away_player_id: (awayLineup as any)[`player${game.awayPlayerPosition}_id`],
             home_action: game.homeAction,
             away_action: game.awayAction,
             // Winner and confirmation fields remain null until game is scored
           }));
 
-          console.log('Creating 18 game rows in match_games table');
+          console.log(`Creating ${gameRows.length} game rows in match_games table`);
           const { error: gamesError } = await supabase
             .from('match_games')
             .insert(gameRows);

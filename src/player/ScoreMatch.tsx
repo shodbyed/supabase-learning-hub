@@ -23,8 +23,7 @@ import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCurrentMember } from '@/api/hooks';
-import { getAllGames } from '@/utils/gameOrder';
-import type { Lineup } from '@/types/match';
+// getAllGames no longer needed - all game data comes from database
 import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { useMatchScoringMutations } from '@/hooks/useMatchScoringMutations';
@@ -32,7 +31,7 @@ import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
-import { GameButtonRow } from '@/components/scoring/GameButtonRow';
+import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
 
 export function ScoreMatch() {
@@ -143,8 +142,8 @@ export function ScoreMatch() {
   }, [isHomeTeam]);
 
   // Detect when all games are complete (works for any format: 3, 18, 25, etc.)
-  const allGamesArray = getAllGames();
-  const totalGames = allGamesArray.length;
+  // Total games = count of games in database
+  const totalGames = gameResults.size;
   const completedGames = getCompletedGamesCount(gameResults);
   const allGamesComplete = completedGames === totalGames;
 
@@ -379,106 +378,21 @@ export function ScoreMatch() {
         isVerifying={isVerifying}
       />
 
-      {/* Game list section */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Fixed header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
-          <div className="text-sm font-semibold mb-4">
-            Games Complete -{' '}
-            <span className="text-lg">
-              {getCompletedGamesCount(gameResults)} / 18
-            </span>
-          </div>
-          {/* Column headers */}
-          <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
-            <div></div>
-            <div className="text-center">Break</div>
-            <div className="text-center font-semibold">vs</div>
-            <div className="text-center">Rack</div>
-          </div>
-        </div>
-
-        {/* Scrollable game list */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
-          <div className="space-y-2">
-            {getAllGames()
-              .filter((game) => gameResults.has(game.gameNumber))
-              .map((game) => {
-              const homePlayerId = homeLineup[
-                `player${game.homePlayerPosition}_id` as keyof Lineup
-              ] as string;
-              const awayPlayerId = awayLineup[
-                `player${game.awayPlayerPosition}_id` as keyof Lineup
-              ] as string;
-              const homePlayerName = getPlayerDisplayName(homePlayerId);
-              const awayPlayerName = getPlayerDisplayName(awayPlayerId);
-
-              // Determine who breaks and who racks, and which team they're from
-              const breakerName =
-                game.homeAction === 'breaks' ? homePlayerName : awayPlayerName;
-              const breakerPlayerId =
-                game.homeAction === 'breaks' ? homePlayerId : awayPlayerId;
-              const breakerTeamId =
-                game.homeAction === 'breaks'
-                  ? match.home_team_id
-                  : match.away_team_id;
-
-              const rackerName =
-                game.homeAction === 'racks' ? homePlayerName : awayPlayerName;
-              const rackerPlayerId =
-                game.homeAction === 'racks' ? homePlayerId : awayPlayerId;
-              const rackerTeamId =
-                game.homeAction === 'racks'
-                  ? match.home_team_id
-                  : match.away_team_id;
-
-              const breakerIsHome = game.homeAction === 'breaks';
-              const rackerIsHome = game.homeAction === 'racks';
-
-              // Check game status
-              const gameResult = gameResults.get(game.gameNumber);
-              const hasWinner = gameResult && gameResult.winner_player_id;
-              const isConfirmed =
-                gameResult &&
-                gameResult.confirmed_by_home &&
-                gameResult.confirmed_by_away;
-              const isPending = hasWinner && !isConfirmed;
-
-              // Determine game state
-              let state: 'unscored' | 'pending' | 'confirmed' = 'unscored';
-              if (isConfirmed) {
-                state = 'confirmed';
-              } else if (isPending) {
-                state = 'pending';
-              }
-
-              return (
-                <GameButtonRow
-                  key={game.gameNumber}
-                  gameNumber={game.gameNumber}
-                  breakerName={breakerName}
-                  breakerPlayerId={breakerPlayerId}
-                  breakerTeamId={breakerTeamId}
-                  breakerIsHome={breakerIsHome}
-                  rackerName={rackerName}
-                  rackerPlayerId={rackerPlayerId}
-                  rackerTeamId={rackerTeamId}
-                  rackerIsHome={rackerIsHome}
-                  state={state}
-                  winnerPlayerId={gameResult?.winner_player_id}
-                  onPlayerClick={handlePlayerClick}
-                  onVacateClick={(gameNumber, winnerName) => {
-                    setEditingGame({
-                      gameNumber,
-                      currentWinnerName: winnerName,
-                    });
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      {/* Game list section - ALL data from database */}
+      <GamesList
+        gameResults={gameResults}
+        getPlayerDisplayName={getPlayerDisplayName}
+        onGameClick={handlePlayerClick}
+        onVacateClick={(gameNumber, winnerName) => {
+          setEditingGame({
+            gameNumber,
+            currentWinnerName: winnerName,
+          });
+        }}
+        homeTeamId={match.home_team_id}
+        awayTeamId={match.away_team_id}
+        totalGames={18}
+      />
 
       {/* Win Confirmation Modal */}
       <ScoringDialog

@@ -41,6 +41,12 @@ export interface MatchWithLeagueSettings {
   away_team_id: string;
   home_team_verified_by?: string | null;
   away_team_verified_by?: string | null;
+  home_games_to_win: number | null;
+  home_games_to_tie: number | null;
+  home_games_to_lose: number | null;
+  away_games_to_win: number | null;
+  away_games_to_tie: number | null;
+  away_games_to_lose: number | null;
   home_team: {
     id: string;
     team_name: string;

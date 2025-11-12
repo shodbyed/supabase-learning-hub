@@ -32,7 +32,6 @@ import { parseLocalDate } from '@/utils/formatters';
 import { TenBallIcon } from '@/components/icons/TenBallIcon';
 import { NineBallIcon } from '@/components/icons/NineBallIcon';
 import { EightBallIcon } from '@/components/icons/EightBallIcon';
-import { BilliardRackIcon } from '@/components/icons/BilliardRackIcon';
 
 interface TeamData {
   team_id: string;

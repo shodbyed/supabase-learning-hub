@@ -7,11 +7,10 @@
  * This hook extracts all business logic from the scoring pages, making them pure UI components.
  */
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { calculateTeamHandicap, calculate3v3HandicapDiffs } from '@/utils/handicapCalculations';
+import { calculateTeamHandicap } from '@/utils/handicapCalculations';
 import { getPlayerNicknameById } from '@/types/member';
 import { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from '@/types';
 import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
-import { useHandicapThresholds3v3 } from '@/api/hooks/useHandicaps';
 import { useMembersByIds } from '@/api/hooks/useCurrentMember';
 import { useUserTeamInMatch } from '@/api/hooks/useTeams';
 import { useMatchGamesRealtime } from '@/realtime/useMatchGamesRealtime';

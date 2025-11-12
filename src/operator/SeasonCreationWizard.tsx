@@ -24,6 +24,7 @@ import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions } from '@/utils/tournamentUtils';
+import { getMostRecentSeason } from '@/utils/seasonUtils';
 import type { WeekEntry } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 
@@ -103,19 +104,29 @@ export const SeasonCreationWizard: React.FC = () => {
         const prefs = operatorId ? await getChampionshipPreferences(operatorId) : [];
         dispatch({ type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES', payload: prefs });
 
+        // Fetch all existing seasons for this league
+        const { data: existingSeasons, error: seasonsError } = await supabase
+          .from('seasons')
+          .select('*')
+          .eq('league_id', leagueId)
+          .order('created_at', { ascending: false });
+
+        if (seasonsError) throw seasonsError;
+
+        // Set existing seasons array
+        dispatch({ type: 'SET_EXISTING_SEASONS', payload: existingSeasons || [] });
+
         // If editing existing season, load season data and jump to schedule review
         if (seasonId) {
           console.log('📝 Edit mode - loading season:', seasonId);
           dispatch({ type: 'SET_IS_EDITING_EXISTING_SEASON', payload: true });
 
-          // Fetch season data
-          const { data: seasonData, error: seasonError } = await supabase
-            .from('seasons')
-            .select('*')
-            .eq('id', seasonId)
-            .single();
+          // Find the season we're editing from the existing seasons list
+          const seasonData = existingSeasons?.find(s => s.id === seasonId);
 
-          if (seasonError) throw seasonError;
+          if (!seasonData) {
+            throw new Error('Season not found');
+          }
 
           // Fetch season weeks
           const { data: weeksData, error: weeksError } = await supabase
@@ -132,12 +143,6 @@ export const SeasonCreationWizard: React.FC = () => {
           // TODO: Transform weeksData into the format expected by the wizard
           // For now, just jump to the schedule-review step
           // This will be improved later to properly load and display the existing season data
-
-          // Set existingSeasons array (to indicate we're editing)
-          dispatch({ type: 'SET_EXISTING_SEASONS', payload: [seasonData] });
-        } else {
-          // Creating new season
-          dispatch({ type: 'SET_EXISTING_SEASONS', payload: [] });
         }
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -164,6 +169,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   // Calculate step data for hooks - safe to do before guards since we handle null cases
   const hasExistingSeasons = state.existingSeasons.length > 0;
+  const mostRecentSeason = getMostRecentSeason(state.existingSeasons);
   const defaultStartDate = hasExistingSeasons ? undefined : state.league?.league_start_date;
 
   /**

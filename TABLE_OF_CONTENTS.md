@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-09 (consolidated Match types to /src/types/schedule.ts)
+> **Last Updated**: 2025-11-12 (added seasonUtils.ts helper functions)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -625,8 +625,9 @@ Reusable wizard/form step components
 - `handicapCalculations.ts` - Handicap calculations and team handicap utilities
 - `nicknameGenerator.ts` - Player nickname generation
 
-#### League & Tournament
+#### League, Season & Tournament
 - `leagueUtils.ts` - League utilities
+- `seasonUtils.ts` - Season utilities (getMostRecentSeason, hasExistingSeasons)
 - `tournamentUtils.ts` - Tournament utilities
 
 #### Messaging

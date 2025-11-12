@@ -30,10 +30,44 @@ export const LeaguePreview: React.FC<LeaguePreviewProps> = ({ formData }) => {
     return null;
   }
 
+  // Build league title from form data
+  const buildLeagueTitle = () => {
+    const parts = [];
+    if (formData.gameType) {
+      // Format game type: eight_ball -> 8 Ball, nine_ball -> 9 Ball, ten_ball -> 10 Ball
+      const gameTypeMap: Record<string, string> = {
+        'eight_ball': '8 Ball',
+        'nine_ball': '9 Ball',
+        'ten_ball': '10 Ball'
+      };
+      parts.push(gameTypeMap[formData.gameType] || formData.gameType);
+    }
+    if (formData.dayOfWeek) {
+      parts.push(formData.dayOfWeek + 's');
+    }
+    if (formData.qualifier) {
+      parts.push(formData.qualifier);
+    }
+    if (formData.season) {
+      parts.push(formData.season);
+    }
+    if (formData.year > 0) {
+      parts.push(formData.year.toString());
+    }
+    return parts.join(' ');
+  };
+
   return (
     <div className="mt-8 max-w-2xl mx-auto">
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-sm font-medium text-blue-900 mb-4">League Preview:</h3>
+        <h3 className="text-sm font-medium text-blue-900 mb-2">League Preview:</h3>
+
+        {/* League Title */}
+        {buildLeagueTitle() && (
+          <h2 className="text-2xl font-bold text-blue-900 mb-4 capitalize">
+            {buildLeagueTitle()}
+          </h2>
+        )}
 
         <div className="space-y-3">
           {/* Game Type */}
@@ -82,18 +116,34 @@ export const LeaguePreview: React.FC<LeaguePreviewProps> = ({ formData }) => {
             </p>
           )}
 
-          {/* Team Format & Handicap */}
+          {/* Format Section */}
           {formData.teamFormat && (
             <div className="pt-3 mt-3 border-t border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-900 mb-2">Format</h4>
+
               <p className="text-sm text-gray-700">
-                <span className="font-medium text-blue-800">Team Format:</span>{' '}
-                {formData.teamFormat === '5_man' ? '5-Man Teams' : '8-Man Teams'}
+                <span className="font-medium text-blue-800">Team:</span>{' '}
+                {formData.teamFormat === '5_man' ? '5 Man Teams' : '8 Man Teams'}
               </p>
+
               <p className="text-sm text-gray-700 mt-1">
                 <span className="font-medium text-blue-800">Handicap System:</span>{' '}
-                {formData.handicapSystem === 'custom_5man'
-                  ? 'Custom 5-Man Handicap'
-                  : 'BCA Standard Handicap'}
+                {formData.handicapVariant === 'none'
+                  ? 'None'
+                  : formData.handicapSystem === 'custom_5man'
+                    ? 'Custom 3v3 Double Round Robin'
+                    : 'BCA Standard'}
+              </p>
+
+              <p className="text-sm text-gray-700 mt-1">
+                <span className="font-medium text-blue-800">Variation:</span>{' '}
+                {formData.handicapVariant === 'none'
+                  ? 'None'
+                  : formData.handicapVariant === 'standard'
+                    ? 'Standard'
+                    : formData.handicapVariant === 'reduced'
+                      ? 'Reduced'
+                      : 'Not set'}
               </p>
             </div>
           )}

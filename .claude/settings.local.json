@@ -38,7 +38,10 @@
       "Bash(git log:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(supabase migration new:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(docker volume inspect:*)"
     ],
     "deny": [],
     "ask": []
