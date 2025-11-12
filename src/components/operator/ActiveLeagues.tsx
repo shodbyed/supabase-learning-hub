@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { useLeaguesWithProgress } from '@/api/hooks';
 import type { League } from '@/types/league';
 import type { LeagueWithProgress } from '@/api/queries/leagues';
-import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate } from '@/utils/formatters';
-import { LeagueProgressBar } from './LeagueProgressBar';
+import { LeagueStatusCard } from './LeagueStatusCard';
 import { DeleteLeagueModal } from '@/components/modals/DeleteLeagueModal';
 
 interface ActiveLeaguesProps {
@@ -45,11 +45,17 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
    * Generate display name for league
    */
   const getLeagueName = (league: League): string => {
-    const gameType = formatGameType(league.game_type);
-    const day = formatDayOfWeek(league.day_of_week);
-    const division = league.division ? ` ${league.division}` : '';
+    const startDate = parseLocalDate(league.league_start_date);
+    const season = getTimeOfYear(startDate);
+    const year = startDate.getFullYear();
 
-    return `${day} ${gameType}${division}`;
+    return buildLeagueTitle({
+      gameType: league.game_type,
+      dayOfWeek: league.day_of_week,
+      division: league.division,
+      season,
+      year
+    });
   };
 
   /**
@@ -71,94 +77,6 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
 
     // Refetch leagues data after deletion
     refetch();
-  };
-
-  /**
-   * Calculate progress percentage for a league
-   * Same logic as LeagueDetail.tsx
-   */
-  const calculateProgress = (league: LeagueWithProgress): number => {
-    const progress = league._progress;
-    if (!progress) return 0;
-
-    // Only show season progress if the season is ACTIVE (not just created)
-    // AND has weeks defined (setup complete and season running)
-    if (progress.activeSeason && progress.activeSeason.status === 'active' && progress.totalWeeks > 0) {
-      return Math.round((progress.completedWeeks / progress.totalWeeks) * 100);
-    }
-
-    // Otherwise show setup progress (even if season exists but not started)
-    let setupProgress = 0;
-    if (progress.seasonCount > 0) setupProgress += 20; // Season created
-    if (progress.teamCount > 0) setupProgress += 20; // Teams added
-    if (progress.playerCount > 0) setupProgress += 20; // Players enrolled
-    if (progress.scheduleExists) setupProgress += 20; // Schedule generated
-    // Final step is "ready to start"
-    if (progress.seasonCount > 0 && progress.teamCount > 0 && progress.playerCount > 0 && progress.scheduleExists) {
-      setupProgress += 20; // All done!
-    }
-    return setupProgress;
-  };
-
-  /**
-   * Get progress status for styling
-   * Same logic as LeagueDetail.tsx
-   */
-  const getProgressStatus = (league: LeagueWithProgress): 'setup' | 'active' | 'ending_soon' | 'playoffs' | 'completed' => {
-    const progress = league._progress;
-    if (!progress) return 'setup';
-
-    // Only show "active" status if season is actually active (started)
-    if (progress.activeSeason && progress.activeSeason.status === 'active') return 'active';
-
-    // Check if setup is complete
-    const isSetupComplete = progress.seasonCount > 0 && progress.teamCount > 0 && progress.playerCount > 0 && progress.scheduleExists;
-    if (isSetupComplete) return 'active'; // Ready to play (green bar)
-
-    return 'setup'; // Still in setup (orange bar)
-  };
-
-  /**
-   * Get next action text
-   * Same logic as LeagueDetail.tsx
-   */
-  const getNextAction = (league: LeagueWithProgress): string => {
-    const progress = league._progress;
-    if (!progress) return 'Loading...';
-
-    // Only show week progress if season is actually active (started)
-    if (progress.activeSeason && progress.activeSeason.status === 'active' && progress.totalWeeks > 0) {
-      return `Week ${progress.completedWeeks} of ${progress.totalWeeks} completed`;
-    }
-
-    // Setup phase
-    if (progress.seasonCount === 0) return 'Next: Create your first season';
-    if (progress.teamCount === 0) return 'Next: Add teams to your season';
-    if (progress.playerCount === 0) return 'Next: Enroll players on each team';
-    if (!progress.scheduleExists) return 'Next: Generate the schedule';
-    return "All set! You're ready to start!";
-  };
-
-  /**
-   * Get status badge text and color
-   * Matches logic from LeagueDetail.tsx
-   */
-  const getStatusBadge = (league: LeagueWithProgress): { text: string; className: string } => {
-    const progress = league._progress;
-    if (!progress) return { text: 'Loading', className: 'bg-gray-100 text-gray-800' };
-
-    // Check if season is actually active (status = 'active')
-    if (progress.activeSeason && progress.activeSeason.status === 'active') {
-      return { text: 'In Session', className: 'bg-blue-100 text-blue-800' };
-    }
-
-    // Check if setup is complete (has season, teams, players, and schedule)
-    const isSetupComplete = progress.seasonCount > 0 && progress.teamCount > 0 && progress.playerCount > 0 && progress.scheduleExists;
-    if (isSetupComplete) {
-      return { text: 'Ready to Play', className: 'bg-green-100 text-green-800' };
-    }
-
-    return { text: 'Setup Needed', className: 'bg-orange-100 text-orange-800' };
   };
 
   // Loading state
@@ -221,45 +139,36 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
 
       <div className="space-y-4">
         {leagues.map((league) => {
-          const statusBadge = getStatusBadge(league);
           return (
             <div
               key={league.id}
-              className="border-2 border-orange-300 rounded-lg p-4 hover:border-orange-400 hover:shadow-md transition-all bg-orange-50/30"
+              className="border-2 border-orange-300 rounded-lg hover:border-orange-400 hover:shadow-md transition-all bg-orange-50/30 overflow-hidden"
             >
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start p-4 pb-0">
                 <Link to={`/league/${league.id}`} className="flex-1">
                   <h4 className="font-semibold text-gray-900 text-lg hover:text-orange-600 transition-colors">
                     {getLeagueName(league)}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {league.team_format === '5_man' ? '5-Man Format' : '8-Man Format'} •
+                    {league.team_format === '5_man' ? '5-Man Roster' : '8-Man Roster'} •
                     Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
                   </p>
                 </Link>
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${statusBadge.className}`}>
-                    {statusBadge.text}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => handleDeleteClick(e, league)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
-                  >
-                    Delete
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => handleDeleteClick(e, league)}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300"
+                >
+                  Delete
+                </Button>
               </div>
 
-              {/* Progress indicator */}
-              <Link to={`/league/${league.id}`}>
-                <LeagueProgressBar
-                  status={getProgressStatus(league)}
-                  progress={calculateProgress(league)}
-                  label={league._progress?.activeSeason ? "Season Progress" : "League Setup Progress"}
-                  nextAction={getNextAction(league)}
-                />
+              {/* Unified status card */}
+              <Link to={`/league/${league.id}`} className="block">
+                <div className="p-4 pt-2">
+                  <LeagueStatusCard league={league} variant="card" />
+                </div>
               </Link>
             </div>
           );

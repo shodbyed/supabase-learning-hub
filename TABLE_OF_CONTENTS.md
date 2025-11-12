@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-12 (added seasonUtils.ts helper functions)
+> **Last Updated**: 2025-11-12 (added LeagueStatusCard unified component)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -509,10 +509,11 @@ Reusable wizard/form step components
 - `UserListItem.tsx` - User list item
 
 #### Operator Components (`/components/operator/`)
-- `ActiveLeagues.tsx` - Active leagues overview
+- `ActiveLeagues.tsx` - Active leagues overview (uses LeagueStatusCard)
 - `DashboardCard.tsx` - Dashboard card wrapper
 - `LeagueOverviewCard.tsx` - League overview
-- `LeagueProgressBar.tsx` - League progress
+- `LeagueProgressBar.tsx` - League progress bar component (used by LeagueStatusCard)
+- `LeagueStatusCard.tsx` - **UNIFIED league status component** - Single source of truth for league/season status, progress, and next actions (used on both Dashboard and League Detail pages)
 - `QuickStats.tsx` - Quick statistics
 - `ScheduleCard.tsx` - Schedule card
 - `SeasonStatusCard.tsx` - Season status

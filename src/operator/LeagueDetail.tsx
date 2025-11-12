@@ -13,7 +13,7 @@ import { parseLocalDate } from '@/utils/formatters';
 import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
-import { LeagueProgressBar } from '@/components/operator/LeagueProgressBar';
+import { LeagueStatusCard } from '@/components/operator/LeagueStatusCard';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
@@ -260,77 +260,13 @@ export const LeagueDetail: React.FC = () => {
             • Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
           </span>
         </div>
-        <div className="mt-2">
-          {isInSession() ? (
-            <span className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-              In Session
-              </span>
-            ) : isSetupComplete() ? (
-              <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                Ready to Play
-              </span>
-            ) : (
-              <span className="px-4 py-2 bg-orange-100 text-orange-800 text-sm font-medium rounded-full">
-                Setup Needed
-              </span>
-            )}
-        </div>
       </PageHeader>
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Status and Progress */}
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Progress and Next Steps - 2 columns */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              {isInSession() ? 'Season Status' : 'League Status'}
-            </h2>
-            <LeagueProgressBar
-              status={isInSession() ? "active" : isSetupComplete() ? "active" : "setup"}
-              progress={calculateProgress()}
-              label={isInSession() ? "Season Progress" : "League Setup Progress"}
-              nextAction={
-                isInSession()
-                  ? `Week ${completedWeeksCount} of ${totalWeeksCount} completed`
-                  : seasonCount === 0 ? "Next: Create your first season" :
-                    teamCount === 0 ? "Next: Add teams to your season" :
-                    playerCount === 0 ? "Next: Enroll players on each team" :
-                    !scheduleExists ? "Next: Generate the schedule" :
-                    "All set! You're ready to start!"
-              }
-            />
-            <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">
-                {isInSession() ? 'Season Management' : 'Next Steps'}
-              </h3>
-              {isInSession() ? (
-                <ul className="list-disc list-inside text-blue-800 space-y-1">
-                  <li>Enter scores after each week's matches</li>
-                  <li>View standings and player statistics</li>
-                  <li>Manage schedule changes and makeup matches</li>
-                  <li>Prepare for playoffs when season ends</li>
-                </ul>
-              ) : (
-                <ol className="list-decimal list-inside text-blue-800 space-y-1">
-                  <li className={seasonCount > 0 ? 'line-through opacity-50' : ''}>
-                    Create your first season (set dates and weeks)
-                  </li>
-                  <li className={teamCount > 0 ? 'line-through opacity-50' : ''}>
-                    Add teams to the season
-                  </li>
-                  <li className={playerCount > 0 ? 'line-through opacity-50' : ''}>
-                    Enroll players on each team
-                  </li>
-                  <li className={scheduleExists ? 'line-through opacity-50' : ''}>
-                    Generate the schedule
-                  </li>
-                  <li className={seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists ? 'line-through opacity-50' : ''}>
-                    You're ready to start!
-                  </li>
-                </ol>
-              )}
-            </div>
-          </div>
+          {/* Use unified LeagueStatusCard component */}
+          <LeagueStatusCard league={league} variant="section" />
 
           {/* Action Button - 1 column */}
           <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">

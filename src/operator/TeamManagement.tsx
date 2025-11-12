@@ -10,8 +10,9 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 import { useOperatorId } from '@/api/hooks';
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { queryKeys } from '@/api/queryKeys';
@@ -435,61 +436,49 @@ export const TeamManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/league/${leagueId}`)}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to League
-          </Button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manage Teams</h1>
-              <p className="text-gray-600 mt-1">
-                Assign venues and create teams for your league
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo={`/league/${leagueId}`}
+        backLabel="Back to League"
+        title="Manage Teams"
+        subtitle="Assign venues and create teams for your league"
+      >
+        <div className="mt-2 flex items-center justify-between">
+          <InfoButton title="Quick Tip" label="Team Management Tips">
+            <div className="space-y-3">
+              <p className="text-sm text-gray-700">
+                All you have to do is pick a captain for each team.
+                After that, the captain can fill in the rest—team name, venue, and players.
               </p>
-              <div className="mt-2">
-                <InfoButton title="Quick Tip" label="Team Management Tips">
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-700">
-                      All you have to do is pick a captain for each team.
-                      After that, the captain can fill in the rest—team name, venue, and players.
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Feel free to add more info if you have it, but it's optional.
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      If a team ever wants to change captains, that's something only you can do.
-                    </p>
-                  </div>
-                </InfoButton>
-              </div>
+              <p className="text-sm text-gray-700">
+                Feel free to add more info if you have it, but it's optional.
+              </p>
+              <p className="text-sm text-gray-700">
+                If a team ever wants to change captains, that's something only you can do.
+              </p>
             </div>
-            {teams.length > 0 && seasonId && (
-              <div className="flex gap-3">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate(`/league/${leagueId}`)}
-                >
-                  Save & Exit
-                </Button>
-                <Button
-                  size="lg"
-                  onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
-                >
-                  Save & Continue →
+          </InfoButton>
+          {teams.length > 0 && seasonId && (
+            <div className="flex gap-3">
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate(`/league/${leagueId}`)}
+              >
+                Save & Exit
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
+              >
+                Save & Continue →
                 </Button>
               </div>
             )}
           </div>
-        </div>
+      </PageHeader>
 
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Layout: Venues (left) and Teams (right) */}
         <div className="grid grid-cols-12 gap-6">
           {/* Left Column */}
