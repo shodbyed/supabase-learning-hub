@@ -7,10 +7,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft } from 'lucide-react';
 import type { League } from '@/types/league';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
+import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
+import { PageHeader } from '@/components/PageHeader';
+import { InfoButton } from '@/components/InfoButton';
 import { LeagueProgressBar } from '@/components/operator/LeagueProgressBar';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
@@ -183,14 +185,20 @@ export const LeagueDetail: React.FC = () => {
   };
 
   /**
-   * Generate display name for league
+   * Generate display name for league using helper function
    */
   const getLeagueName = (league: League): string => {
-    const gameType = formatGameType(league.game_type);
-    const day = formatDayOfWeek(league.day_of_week);
-    const division = league.division ? ` ${league.division}` : '';
+    const startDate = parseLocalDate(league.league_start_date);
+    const season = getTimeOfYear(startDate);
+    const year = startDate.getFullYear();
 
-    return `${day} ${gameType}${division}`;
+    return buildLeagueTitle({
+      gameType: league.game_type,
+      dayOfWeek: league.day_of_week,
+      division: league.division,
+      season,
+      year
+    });
   };
 
   // Loading state
@@ -225,28 +233,37 @@ export const LeagueDetail: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/operator-dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{getLeagueName(league)}</h1>
-              <p className="text-gray-600 mt-1">
-                {league.team_format === '5_man' ? '5-Man Format' : '8-Man Format'} •
-                Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
-              </p>
-            </div>
-            {isInSession() ? (
-              <span className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                In Session
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/operator-dashboard"
+        backLabel="Back to Dashboard"
+        title={getLeagueName(league)}
+      >
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-xl text-gray-600">
+            {league.team_format === '5_man' ? '5-Man Roster' : '8-Man Roster'}
+          </span>
+          {league.team_format === '5_man' && (
+            <InfoButton
+              title="Double Round Robin Format"
+              label="RRx2"
+            >
+              <div className="space-y-2">
+                <p>• Teams have 5 players on their roster</p>
+                <p>• Match lineup: 3 players vs 3 players</p>
+                <p>• Each player plays each opposing player twice (once breaking, once racking)</p>
+                <p>• Total: 6 games per match (3 breaking, 3 racking)</p>
+              </div>
+            </InfoButton>
+          )}
+          <span className="text-xl text-gray-600">
+            • Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
+          </span>
+        </div>
+        <div className="mt-2">
+          {isInSession() ? (
+            <span className="px-4 py-2 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+              In Session
               </span>
             ) : isSetupComplete() ? (
               <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-full">
@@ -257,9 +274,10 @@ export const LeagueDetail: React.FC = () => {
                 Setup Needed
               </span>
             )}
-          </div>
         </div>
+      </PageHeader>
 
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Status and Progress */}
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Progress and Next Steps - 2 columns */}

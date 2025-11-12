@@ -25,6 +25,9 @@ import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions } from '@/utils/tournamentUtils';
 import { getMostRecentSeason } from '@/utils/seasonUtils';
+import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
+import { PageHeader } from '@/components/PageHeader';
+import { InfoButton } from '@/components/InfoButton';
 import type { WeekEntry } from '@/types/season';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 
@@ -506,46 +509,75 @@ export const SeasonCreationWizard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className={`container mx-auto px-4 ${steps[state.currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b">
+        <div className="px-4 pt-3 flex justify-end">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(`/league/${leagueId}`)}
-            className="mb-4 -ml-2"
+            onClick={() => {
+              if (confirm('Clear all form data and start over?')) {
+                clearSeasonCreationData(leagueId);
+                localStorage.removeItem('season-schedule-review');
+                localStorage.removeItem('season-blackout-weeks');
+                window.location.reload();
+              }
+            }}
+            className="text-red-600 hover:text-red-800"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to League
+            Clear Form
           </Button>
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Create {hasExistingSeasons ? 'New' : 'First'} Season
-              </h1>
-              <p className="text-gray-600 mt-2">
-                {formatDayOfWeek(state.league.day_of_week)} {formatGameType(state.league.game_type)}
-                {state.league.division && ` ${state.league.division}`}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (confirm('Clear all form data and start over?')) {
-                  clearSeasonCreationData(leagueId);
-                  localStorage.removeItem('season-schedule-review');
-                  localStorage.removeItem('season-blackout-weeks');
-                  window.location.reload();
-                }
-              }}
-              className="text-red-600 hover:text-red-800"
-            >
-              Clear Form
-            </Button>
-          </div>
         </div>
+      </div>
+      <PageHeader
+        backTo={`/league/${leagueId}`}
+        backLabel="Back to League"
+        title={`Create ${hasExistingSeasons ? 'New' : 'First'} Season`}
+      >
+        {(() => {
+          // Extract season and year from league start date
+          let season: string | null = null;
+          let year: number | null = null;
+
+          if (state.league.league_start_date) {
+            const startDate = new Date(state.league.league_start_date + 'T00:00:00');
+            season = getTimeOfYear(startDate);
+            year = startDate.getFullYear();
+          }
+
+          // Build league title using helper function
+          const leagueTitle = buildLeagueTitle({
+            gameType: state.league.game_type,
+            dayOfWeek: state.league.day_of_week,
+            division: state.league.division,
+            season,
+            year
+          });
+
+          return (
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xl text-gray-600 capitalize">
+                {leagueTitle}
+              </span>
+              {state.league.team_format === '5_man' && (
+                <InfoButton
+                  title="Double Round Robin Format"
+                  label="RRx2"
+                >
+                  <div className="space-y-2">
+                    <p>• Teams have 5 players on their roster</p>
+                    <p>• Match lineup: 3 players vs 3 players</p>
+                    <p>• Each player plays each opposing player twice (once breaking, once racking)</p>
+                    <p>• Total: 6 games per match (3 breaking, 3 racking)</p>
+                  </div>
+                </InfoButton>
+              )}
+            </div>
+          );
+        })()}
+      </PageHeader>
+
+      <div className={`container mx-auto px-4 py-8 ${steps[state.currentStep]?.type === 'schedule-review' ? 'max-w-6xl' : 'max-w-2xl'}`}>
 
         {/* Progress Bar */}
         <WizardProgress currentStep={state.currentStep} totalSteps={steps.length} />
