@@ -27,7 +27,7 @@ import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { PageHeader } from '@/components/PageHeader';
-import { MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
+import { MapPin, Users, AlertCircle, ArrowRight, Pencil } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
 import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { TenBallIcon } from '@/components/icons/TenBallIcon';
@@ -235,10 +235,10 @@ function TeamAccordionItem({
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${tagColor}`}>
                       {tagText}
                     </span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className={`text-xs px-2 h-7 ${
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={`inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer px-2 h-7 ${
                         isMakeup
                           ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
                           : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
@@ -247,9 +247,15 @@ function TeamAccordionItem({
                         e.stopPropagation();
                         window.location.href = `/match/${match.id}/lineup`;
                       }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation();
+                          window.location.href = `/match/${match.id}/lineup`;
+                        }
+                      }}
                     >
                       Quick Score <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
+                    </div>
                   </div>
                 </div>
               );
@@ -285,11 +291,24 @@ function TeamAccordionItem({
             </div>
           )}
 
-          {/* Home Venue */}
+          {/* Home Venue with Edit Team Button (Captains Only) */}
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-              <MapPin className="h-4 w-4" />
-              <span>Home Venue</span>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span>Home Venue</span>
+              </div>
+              {isCaptain && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-sm h-8 gap-1.5"
+                  onClick={() => onEditTeam(team.id)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit Team
+                </Button>
+              )}
             </div>
             <p className="text-base text-gray-900 ml-6">
               {team.venue?.name || 'No venue assigned'}
@@ -358,7 +377,7 @@ function TeamAccordionItem({
           {/* Action Buttons */}
           <div className="pt-2">
             <Button
-              variant="outline"
+              variant="default"
               className="w-full"
               disabled={!isReady}
               onClick={() => {
@@ -370,17 +389,6 @@ function TeamAccordionItem({
               View Schedule
             </Button>
           </div>
-
-          {/* Edit Team Button (Captains Only) */}
-          {isCaptain && (
-            <Button
-              variant="ghost"
-              className="w-full text-sm"
-              onClick={() => onEditTeam(team.id)}
-            >
-              Edit Team
-            </Button>
-          )}
         </div>
       </AccordionContent>
     </AccordionItem>
