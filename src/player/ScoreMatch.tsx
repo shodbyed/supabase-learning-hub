@@ -284,6 +284,7 @@ export function ScoreMatch() {
     homeLineup,
     awayLineup,
     userTeamId,
+    memberId,
     gameType,
     autoConfirm,
     addToConfirmationQueue,
@@ -477,9 +478,23 @@ export function ScoreMatch() {
             currentWinnerName: winnerName,
           });
         }}
+        onVacateRequestClick={(gameNumber, winnerName) => {
+          // When opponent clicks "Vacate Request" button, open confirmation dialog
+          const game = gameResults.get(gameNumber);
+          if (game) {
+            setConfirmationGame({
+              gameNumber,
+              winnerPlayerName: winnerName,
+              breakAndRun: game.break_and_run,
+              goldenBreak: game.golden_break,
+              isResetRequest: true,
+            });
+          }
+        }}
         homeTeamId={match.home_team_id}
         awayTeamId={match.away_team_id}
         totalGames={18}
+        isHomeTeam={isHomeTeam}
       />
 
       {/* Win Confirmation Modal */}
@@ -557,18 +572,19 @@ export function ScoreMatch() {
               Array.from(myVacateRequests.current)
             );
 
-            // Vacate request: Keep winner but clear BOTH confirmations
-            // This creates a unique state: winner exists but both confirmations are false
-            // Opponent will see this as a vacate request, not a normal score
+            // Vacate request: Set vacate_requested_by flag
+            // This preserves original confirmations while indicating vacate request
             const { error } = await supabase
               .from('match_games')
               .update({
-                confirmed_by_home: false,
-                confirmed_by_away: false,
+                vacate_requested_by: isHomeTeam ? 'home' : 'away',
               })
               .eq('id', gameId);
 
             if (error) throw error;
+
+            // Force refetch to update UI immediately (real-time subscription suppresses own updates)
+            queryClient.invalidateQueries({ queryKey: queryKeys.matches.games(matchId || '') });
           } catch (err: any) {
             console.error('Error requesting reset:', err);
             alert(`Failed to request reset: ${err.message}`);

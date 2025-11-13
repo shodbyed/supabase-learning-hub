@@ -17,9 +17,11 @@ interface GamesListProps {
   getPlayerDisplayName: (playerId: string | null) => string;
   onGameClick: (gameNumber: number, playerId: string, playerName: string, teamId: string) => void;
   onVacateClick: (gameNumber: number, currentWinnerName: string) => void;
+  onVacateRequestClick?: (gameNumber: number, currentWinnerName: string) => void;
   homeTeamId: string;
   awayTeamId: string;
   totalGames: number; // 18 for 3v3, 3 for tiebreaker, 25 for 5v5
+  isHomeTeam: boolean | null; // Needed to determine if user requested vacate
 }
 
 /**
@@ -28,6 +30,7 @@ interface GamesListProps {
  * Game states:
  * - Unscored: Clickable buttons (blue for home, orange for away)
  * - Pending: Yellow background on winner, white on loser, no trophy, no edit button
+ * - Vacate Requested: Red background on winner, white on loser, "Vacate Request" button in middle
  * - Confirmed: Green background on winner, white on loser, trophy icon, "Vacate" button
  *
  * Key feature: Reads ALL data from database (gameResults Map)
@@ -37,9 +40,11 @@ export function GamesList({
   getPlayerDisplayName,
   onGameClick,
   onVacateClick,
+  onVacateRequestClick,
   homeTeamId,
   awayTeamId,
   totalGames,
+  isHomeTeam,
 }: GamesListProps) {
   /**
    * Get completed games count
@@ -98,7 +103,8 @@ export function GamesList({
             // Check game status
             const hasWinner = gameResult.winner_player_id;
             const isConfirmed = gameResult.confirmed_by_home && gameResult.confirmed_by_away;
-            const isPending = hasWinner && !isConfirmed;
+            const isVacateRequested = !!(gameResult as any).vacate_requested_by;
+            const isPending = hasWinner && !isConfirmed && !isVacateRequested;
 
             // If game has a winner (pending or confirmed)
             if (hasWinner) {
@@ -108,6 +114,50 @@ export function GamesList({
               // Determine styling based on confirmation status
               const winnerClass = isConfirmed ? 'bg-green-200 font-semibold' : 'bg-yellow-100 font-semibold';
               const loserClass = 'bg-white text-gray-500';
+
+              // If vacate requested, show distinctive styling
+              if (isVacateRequested) {
+                const vacateRequestedBy = (gameResult as any).vacate_requested_by;
+                const requestedByHome = vacateRequestedBy === 'home';
+                const iRequestedVacate = (isHomeTeam && requestedByHome) || (!isHomeTeam && !requestedByHome);
+
+                return (
+                  <div key={gameResult.game_number} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
+                    <div className="font-semibold">{gameResult.game_number}.</div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`w-full ${breakerWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
+                      disabled={iRequestedVacate}
+                      onClick={() => !iRequestedVacate && breakerPlayerId && onGameClick(gameResult.game_number, breakerPlayerId, breakerName, breakerTeamId)}
+                    >
+                      {breakerName}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`text-xs px-1 ${iRequestedVacate ? 'bg-orange-50 border-orange-300 text-orange-700' : 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100'}`}
+                      disabled={iRequestedVacate}
+                      onClick={() => {
+                        if (!iRequestedVacate && onVacateRequestClick) {
+                          onVacateRequestClick(gameResult.game_number, breakerWon ? breakerName : rackerName);
+                        }
+                      }}
+                    >
+                      {iRequestedVacate ? 'Request Sent' : 'Vacate Request'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`w-full ${rackerWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
+                      disabled={iRequestedVacate}
+                      onClick={() => !iRequestedVacate && rackerPlayerId && onGameClick(gameResult.game_number, rackerPlayerId, rackerName, rackerTeamId)}
+                    >
+                      {rackerName}
+                    </Button>
+                  </div>
+                );
+              }
 
               // If pending, show buttons with NO trophy, NO Edit button - just colored backgrounds
               if (isPending) {
