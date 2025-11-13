@@ -147,13 +147,13 @@ export function useMatchScoring({
     if (matchType === 'tiebreaker') return TIEBREAKER_THRESHOLDS;
 
     // Get thresholds from match table (saved during lineup lock)
+    // Note: games_to_tie can be null if tie is not possible (e.g., 10+9=19 > 18 games)
     if (matchData &&
         matchData.home_games_to_win !== null &&
-        matchData.home_games_to_tie !== null &&
         matchData.home_games_to_lose !== null) {
       return {
         games_to_win: matchData.home_games_to_win,
-        games_to_tie: matchData.home_games_to_tie,
+        games_to_tie: matchData.home_games_to_tie ?? null, // Allow null when tie is impossible
         games_to_lose: matchData.home_games_to_lose,
       };
     }
@@ -165,13 +165,13 @@ export function useMatchScoring({
     if (matchType === 'tiebreaker') return TIEBREAKER_THRESHOLDS;
 
     // Get thresholds from match table (saved during lineup lock)
+    // Note: games_to_tie can be null if tie is not possible (e.g., 10+9=19 > 18 games)
     if (matchData &&
         matchData.away_games_to_win !== null &&
-        matchData.away_games_to_tie !== null &&
         matchData.away_games_to_lose !== null) {
       return {
         games_to_win: matchData.away_games_to_win,
-        games_to_tie: matchData.away_games_to_tie,
+        games_to_tie: matchData.away_games_to_tie ?? null, // Allow null when tie is impossible
         games_to_lose: matchData.away_games_to_lose,
       };
     }

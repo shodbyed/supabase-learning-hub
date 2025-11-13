@@ -26,6 +26,7 @@ interface TeamNameLinkProps {
   teamId: string;
   teamName: string;
   className?: string;
+  disablePopover?: boolean; // Use this when inside a button/interactive element
 }
 
 interface TeamPlayer {
@@ -44,6 +45,7 @@ export function TeamNameLink({
   teamId,
   teamName,
   className,
+  disablePopover = false,
 }: TeamNameLinkProps) {
   const [open, setOpen] = useState(false);
   const [players, setPlayers] = useState<TeamPlayer[]>([]);
@@ -52,7 +54,7 @@ export function TeamNameLink({
   // Fetch team roster when popover opens
   useEffect(() => {
     async function fetchTeamRoster() {
-      if (!open) return;
+      if (!open || disablePopover) return;
 
       setLoading(true);
       const { data, error } = await supabase
@@ -82,7 +84,21 @@ export function TeamNameLink({
     }
 
     fetchTeamRoster();
-  }, [teamId, open]);
+  }, [teamId, open, disablePopover]);
+
+  // If used inside a button, just render as plain text
+  if (disablePopover) {
+    return (
+      <span
+        className={cn(
+          'text-blue-600 font-medium',
+          className
+        )}
+      >
+        {teamName}
+      </span>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

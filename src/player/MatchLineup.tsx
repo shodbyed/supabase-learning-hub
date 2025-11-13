@@ -376,15 +376,11 @@ export function MatchLineup() {
         // Load lineup data into state
         if (lineupRecord) {
           setLineupId(lineupRecord.id);
-          // Use substitute ID if player_id is null or already a substitute ID
-          const getPlayerOrSub = (playerId: string | null) => {
-            if (!playerId) return isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID;
-            if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) return playerId;
-            return playerId;
-          };
-          setPlayer1Id(getPlayerOrSub(lineupRecord.player1_id));
-          setPlayer2Id(getPlayerOrSub(lineupRecord.player2_id));
-          setPlayer3Id(getPlayerOrSub(lineupRecord.player3_id));
+          // Only use player IDs if they exist and aren't already substitutes
+          // Empty strings mean "not selected yet"
+          setPlayer1Id(lineupRecord.player1_id || '');
+          setPlayer2Id(lineupRecord.player2_id || '');
+          setPlayer3Id(lineupRecord.player3_id || '');
           setLineupLocked(lineupRecord.locked);
 
           // Update players array with stored handicaps to ensure consistency
@@ -463,25 +459,15 @@ export function MatchLineup() {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
-          console.log('Real-time event received:', payload);
-          console.log('Opponent team ID:', opponentTeamId);
-          console.log('Event team ID:', (payload.new as any)?.team_id);
-
           // Only update if it's the opponent's lineup
           if (payload.new && (payload.new as any).team_id === opponentTeamId) {
-            console.log('Updating opponent lineup state');
             setOpponentLineup(payload.new);
-          } else {
-            console.log('Ignoring event - not opponent team');
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
   }, [matchId, match, isHomeTeam, userTeamId]);
@@ -796,13 +782,6 @@ export function MatchLineup() {
         .eq('member_id', memberId)
         .single();
 
-      console.log('Team membership check:', {
-        userTeamId,
-        memberId,
-        teamCheck,
-        error: teamCheckError,
-      });
-
       if (teamCheckError || !teamCheck) {
         throw new Error('You are not a member of this team');
       }
@@ -821,8 +800,6 @@ export function MatchLineup() {
         locked: true,
         locked_at: new Date().toISOString(), // Timestamp when lineup was locked
       };
-
-      console.log('Attempting to save lineup:', lineupData);
 
       let result;
 
@@ -858,8 +835,6 @@ export function MatchLineup() {
       setLineupId(result.data.id);
       setLineupLocked(true);
 
-      console.log('Lineup locked successfully:', result.data);
-
       // Save lineup ID to matches table
       const isHomeTeam = userTeamId === match?.home_team_id;
       const lineupField = isHomeTeam ? 'home_lineup_id' : 'away_lineup_id';
@@ -872,8 +847,6 @@ export function MatchLineup() {
       if (matchUpdateError) {
         console.error('Error updating match with lineup ID:', matchUpdateError);
         // Don't throw - lineup is still locked, just log the error
-      } else {
-        console.log(`Match updated with ${lineupField}:`, result.data.id);
       }
     } catch (err: any) {
       console.error('Error saving lineup:', err);
@@ -913,9 +886,7 @@ export function MatchLineup() {
    */
   const getOpponentTeam = () => {
     if (!match) return null;
-    const opponent = isHomeTeam ? match.away_team : match.home_team;
-    console.log('Getting opponent:', { isHomeTeam, opponent, match });
-    return opponent;
+    return isHomeTeam ? match.away_team : match.home_team;
   };
 
   if (loading || memberLoading) {
@@ -968,7 +939,7 @@ export function MatchLineup() {
           scheduledDate={match.scheduled_date}
           opponent={opponent ? { id: opponent.id, name: opponent.team_name } : null}
           isHomeTeam={isHomeTeam || false}
-          venue={match.scheduled_venue || undefined}
+          venueId={match.scheduled_venue?.id || null}
         />
 
         {/* Lineup Selection Card */}
@@ -1065,7 +1036,9 @@ export function MatchLineup() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID) && (
+                </div>
+                {(player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
                         value={subHandicap}
@@ -1084,8 +1057,8 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Player 2 */}
                 <div className="flex gap-3 items-center">
@@ -1119,7 +1092,9 @@ export function MatchLineup() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID) && (
+                </div>
+                {(player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
                         value={subHandicap}
@@ -1138,8 +1113,8 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Player 3 */}
                 <div className="flex gap-3 items-center">
@@ -1173,7 +1148,9 @@ export function MatchLineup() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID) && (
+                </div>
+                {(player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
                         value={subHandicap}
@@ -1192,8 +1169,8 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 

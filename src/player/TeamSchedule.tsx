@@ -21,7 +21,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar, MapPin, ArrowLeft, Trophy, AlertCircle, EyeOff, Eye } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
-import { TeamNameLink } from '@/components/TeamNameLink';
 import { MatchDetailCard } from '@/components/MatchDetailCard';
 
 export function TeamSchedule() {
@@ -228,10 +227,7 @@ export function TeamSchedule() {
                         }`}>
                           vs{' '}
                           {opponent ? (
-                            <TeamNameLink
-                              teamId={opponent.id}
-                              teamName={opponent.team_name}
-                            />
+                            <span className="text-gray-900">{opponent.team_name}</span>
                           ) : (
                             'BYE'
                           )}
