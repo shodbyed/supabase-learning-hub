@@ -167,10 +167,10 @@ function TeamAccordionItem({
       value={team.id}
       className="bg-white border rounded-lg shadow-sm"
     >
-      <AccordionTrigger className="px-4 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+      <AccordionTrigger className="pl-4 pr-1 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180">
         <div className="flex flex-col gap-2 w-full">
-          {/* Row 1: League name with ball icon - using grid for perfect centering */}
-          <div className="grid grid-cols-[36px_1fr_28px] gap-1 w-full items-center">
+          {/* Row 1: League name with ball icon - grid only for this row */}
+          <div className="grid grid-cols-[36px_1fr_36px] gap-1 w-full items-center -mr-8">
             {/* Ball icon on left */}
             <div className="flex justify-center">
               {getBallIcon()}
@@ -193,7 +193,7 @@ function TeamAccordionItem({
               </h3>
             </div>
 
-            {/* Empty space for chevron */}
+            {/* Placeholder for chevron space (chevron is rendered outside grid by AccordionTrigger) */}
             <div></div>
           </div>
 
