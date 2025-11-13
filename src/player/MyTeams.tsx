@@ -204,14 +204,16 @@ function TeamAccordionItem({
             </h2>
           </div>
 
-          {/* Rows 3+: Actionable matches (makeups + upcoming) */}
-          {/* TODO: VERIFY ACTIONABLE MATCHES DISPLAY */}
-          {/* Once you have makeup matches and upcoming matches, verify: */}
-          {/* 1. Makeup matches show with orange "MAKEUP" tag */}
-          {/* 2. Upcoming matches show with blue "UPCOMING" or "IN PROGRESS" tag */}
-          {/* 3. Quick Score buttons work for all matches */}
-          {/* 4. Accordion height expands nicely for multiple matches */}
-          {actionableMatches.length > 0 ? (
+          {/* Rows 3+: Actionable matches or setup incomplete warning */}
+          {!isReady && actionableMatches.length > 0 ? (
+            // Show single setup incomplete flag if team not ready
+            <div className="flex items-center justify-end w-full">
+              <span className="text-xs font-bold px-2 py-0.5 rounded text-yellow-700 bg-yellow-100">
+                SETUP INCOMPLETE
+              </span>
+            </div>
+          ) : actionableMatches.length > 0 ? (
+            // Show matches with Quick Score buttons if team is ready
             actionableMatches.map((match) => {
               const isMakeup = makeupMatches.some(m => m.id === match.id);
               const isInProgress = match.status === 'in_progress';
@@ -233,22 +235,21 @@ function TeamAccordionItem({
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${tagColor}`}>
                       {tagText}
                     </span>
-                    <Link
-                      to={`/match/${match.id}/lineup`}
-                      onClick={(e) => e.stopPropagation()}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className={`text-xs px-2 h-7 ${
+                        isMakeup
+                          ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
+                          : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/match/${match.id}/lineup`;
+                      }}
                     >
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={`text-xs px-2 h-7 ${
-                          isMakeup
-                            ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
-                            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-                        }`}
-                      >
-                        Quick Score <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
+                      Quick Score <ArrowRight className="h-3 w-3 ml-1" />
+                    </Button>
                   </div>
                 </div>
               );
@@ -356,11 +357,18 @@ function TeamAccordionItem({
 
           {/* Action Buttons */}
           <div className="pt-2">
-            <Link to={`/team/${team.id}/schedule`} className="block">
-              <Button variant="outline" className="w-full">
-                View Schedule
-              </Button>
-            </Link>
+            <Button
+              variant="outline"
+              className="w-full"
+              disabled={!isReady}
+              onClick={() => {
+                if (isReady) {
+                  window.location.href = `/team/${team.id}/schedule`;
+                }
+              }}
+            >
+              View Schedule
+            </Button>
           </div>
 
           {/* Edit Team Button (Captains Only) */}
