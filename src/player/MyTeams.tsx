@@ -29,6 +29,7 @@ import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { PageHeader } from '@/components/PageHeader';
 import { MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
+import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { TenBallIcon } from '@/components/icons/TenBallIcon';
 import { NineBallIcon } from '@/components/icons/NineBallIcon';
 import { EightBallIcon } from '@/components/icons/EightBallIcon';
@@ -70,6 +71,7 @@ interface TeamData {
         game_type: string;
         day_of_week: string;
         division: string | null;
+        league_start_date: string;
       };
     };
   };
@@ -146,18 +148,17 @@ function TeamAccordionItem({
 
   // Get the appropriate ball icon based on game type
   const getBallIcon = () => {
-    const gameType = team.season.league.game_type.toLowerCase();
-    const iconSize = 24;
+    const gameType = team.season.league.game_type;
+    const iconSize = 32;
 
-    if (gameType.includes('8')) {
-      return <EightBallIcon size={iconSize} />;
-    } else if (gameType.includes('9')) {
+    if (gameType === 'nine_ball') {
       return <NineBallIcon size={iconSize} />;
-    } else if (gameType.includes('10')) {
+    } else if (gameType === 'ten_ball') {
       return <TenBallIcon size={iconSize} />;
+    } else {
+      // eight_ball or default
+      return <EightBallIcon size={iconSize} />;
     }
-    // Default to 8-ball if unknown
-    return <EightBallIcon size={iconSize} />;
   };
 
   return (
@@ -166,23 +167,44 @@ function TeamAccordionItem({
       value={team.id}
       className="bg-white border rounded-lg shadow-sm"
     >
-      <AccordionTrigger className="px-4 py-4 hover:no-underline">
-        <div className="flex flex-col gap-2 w-full pr-4 text-left">
-          {/* Row 1: Team name and game info */}
-          <div className="flex items-center justify-between w-full">
+      <AccordionTrigger className="px-4 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+        <div className="flex flex-col gap-2 w-full">
+          {/* Row 1: League name with ball icon - using grid for perfect centering */}
+          <div className="grid grid-cols-[36px_1fr_28px] gap-1 w-full items-center">
+            {/* Ball icon on left */}
+            <div className="flex justify-center">
+              {getBallIcon()}
+            </div>
+
+            {/* League name (centered) */}
+            <div className="text-center">
+              <h3 className="font-semibold text-lg text-gray-700">
+                {team.season.league.league_start_date ? (
+                  buildLeagueTitle({
+                    gameType: team.season.league.game_type,
+                    dayOfWeek: team.season.league.day_of_week,
+                    division: team.season.league.division,
+                    season: getTimeOfYear(parseLocalDate(team.season.league.league_start_date)),
+                    year: parseLocalDate(team.season.league.league_start_date).getFullYear(),
+                  })
+                ) : (
+                  `${formatGameType(team.season.league.game_type as any)} ${formatDayOfWeek(team.season.league.day_of_week as any)}`
+                )}
+              </h3>
+            </div>
+
+            {/* Empty space for chevron */}
+            <div></div>
+          </div>
+
+          {/* Row 2: Team name - full width left aligned */}
+          <div className="flex items-center gap-2 w-full text-left">
             <h2 className="font-semibold text-xl text-gray-900">
               {team.team_name}
             </h2>
-            <div className="flex items-center gap-2 font-semibold text-xl text-gray-600">
-              {getBallIcon()}
-              <span>
-                {formatGameType(team.season.league.game_type as any)} •{' '}
-                {formatDayOfWeek(team.season.league.day_of_week as any)}
-              </span>
-            </div>
           </div>
 
-          {/* Rows 2+: Actionable matches (makeups + upcoming) */}
+          {/* Rows 3+: Actionable matches (makeups + upcoming) */}
           {/* TODO: VERIFY ACTIONABLE MATCHES DISPLAY */}
           {/* Once you have makeup matches and upcoming matches, verify: */}
           {/* 1. Makeup matches show with orange "MAKEUP" tag */}

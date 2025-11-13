@@ -123,9 +123,10 @@ export function useLeaguesWithProgress(operatorId: string | null | undefined) {
     queryKey: [...queryKeys.leagues.byOperator(operatorId || ''), 'withProgress'],
     queryFn: () => getLeaguesWithProgress(operatorId!),
     enabled: !!operatorId,
-    staleTime: STALE_TIME.SCHEDULES, // 10 minutes (progress changes more frequently)
-    retry: 1,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: 'always', // Always refetch when component mounts
     refetchOnWindowFocus: true, // Refetch when returning to dashboard
+    retry: 1,
   });
 }
 

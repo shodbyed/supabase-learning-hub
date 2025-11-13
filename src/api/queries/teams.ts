@@ -89,7 +89,8 @@ export async function getPlayerTeams(memberId: string) {
             id,
             game_type,
             day_of_week,
-            division
+            division,
+            league_start_date
           )
         ),
         captain:members!captain_id(

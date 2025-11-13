@@ -84,13 +84,8 @@ export const LeagueCreationWizard: React.FC = () => {
       const dayOfWeekName = getDayOfWeekName(formData.startDate);
       const dayOfWeek = dayOfWeekName.toLowerCase() as DayOfWeek;
 
-      // Map display game type to database format
-      const gameTypeMap: Record<string, GameType> = {
-        '8-ball': 'eight_ball',
-        '9-ball': 'nine_ball',
-        '10-ball': 'ten_ball'
-      };
-      const gameType = gameTypeMap[formData.gameType] || 'eight_ball';
+      // formData.gameType is already in database format (eight_ball, nine_ball, ten_ball)
+      const gameType = formData.gameType as GameType;
 
       console.log('📋 Creating league with TanStack Query mutation');
 
