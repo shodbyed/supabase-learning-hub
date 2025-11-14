@@ -148,6 +148,8 @@ export function MatchEndVerification({
         await completeMatchMutation.mutateAsync({
           matchId,
           completionData: {
+            homeTeamScore: homeWins, // Team score = games won
+            awayTeamScore: awayWins, // Team score = games won
             homeGamesWon: homeWins,
             awayGamesWon: awayWins,
             homePointsEarned: homePoints,
@@ -156,6 +158,8 @@ export function MatchEndVerification({
             matchResult: result,
             homeVerifiedBy,
             awayVerifiedBy,
+            resultsConfirmedByHome: true, // Both teams verified
+            resultsConfirmedByAway: true, // Both teams verified
           },
         });
 

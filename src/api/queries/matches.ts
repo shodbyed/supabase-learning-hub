@@ -450,6 +450,8 @@ export async function getMatchGames(matchId: string) {
 export async function completeMatch(
   matchId: string,
   completionData: {
+    homeTeamScore: number;
+    awayTeamScore: number;
     homeGamesWon: number;
     awayGamesWon: number;
     homePointsEarned: number;
@@ -458,24 +460,37 @@ export async function completeMatch(
     matchResult: 'home_win' | 'away_win' | 'tie';
     homeVerifiedBy: string | null;
     awayVerifiedBy: string | null;
+    resultsConfirmedByHome: boolean;
+    resultsConfirmedByAway: boolean;
   }
 ) {
-  // Build update object - conditionally include status and completed_at based on winner
+  // Build update object with all required match completion fields
   const updateData: Record<string, unknown> = {
+    // Scores
+    home_team_score: completionData.homeTeamScore,
+    away_team_score: completionData.awayTeamScore,
     home_games_won: completionData.homeGamesWon,
     away_games_won: completionData.awayGamesWon,
     home_points_earned: completionData.homePointsEarned,
     away_points_earned: completionData.awayPointsEarned,
+
+    // Result
     winner_team_id: completionData.winnerTeamId,
     match_result: completionData.matchResult,
+
+    // Verification
     home_team_verified_by: completionData.homeVerifiedBy,
     away_team_verified_by: completionData.awayVerifiedBy,
+    results_confirmed_by_home: completionData.resultsConfirmedByHome,
+    results_confirmed_by_away: completionData.resultsConfirmedByAway,
+
+    // Timestamp
+    completed_at: new Date().toISOString(),
   };
 
   // Only mark as completed if there's a winner (not a tie)
   if (completionData.winnerTeamId !== null) {
     updateData.status = 'completed';
-    updateData.completed_at = new Date().toISOString();
   }
   // If tie (winnerTeamId = null), status stays 'in_progress' for tiebreaker
 

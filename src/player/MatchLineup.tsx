@@ -839,9 +839,19 @@ export function MatchLineup() {
       const isHomeTeam = userTeamId === match?.home_team_id;
       const lineupField = isHomeTeam ? 'home_lineup_id' : 'away_lineup_id';
 
+      // Check if opponent lineup is already locked
+      const opponentLineupField = isHomeTeam ? 'away_lineup_id' : 'home_lineup_id';
+      const opponentLineupLocked = match?.[opponentLineupField] != null;
+
+      // If both lineups are now locked, set started_at timestamp
+      const matchUpdateData: any = { [lineupField]: result.data.id };
+      if (opponentLineupLocked && !match?.started_at) {
+        matchUpdateData.started_at = new Date().toISOString();
+      }
+
       const { error: matchUpdateError } = await supabase
         .from('matches')
-        .update({ [lineupField]: result.data.id })
+        .update(matchUpdateData)
         .eq('id', matchId);
 
       if (matchUpdateError) {
