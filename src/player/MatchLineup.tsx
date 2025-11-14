@@ -9,7 +9,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
+import { queryKeys } from '@/api/queryKeys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -81,6 +83,7 @@ interface Player {
 export function MatchLineup() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: member, isLoading: memberLoading } = useCurrentMember();
   const memberId = member?.id;
 
@@ -436,7 +439,14 @@ export function MatchLineup() {
 
   // Real-time subscription for opponent lineup changes
   useEffect(() => {
-    if (!matchId || !match || isHomeTeam === null) return;
+    if (!matchId || !match || isHomeTeam === null) {
+      console.log('Real-time subscription NOT starting - missing data:', {
+        matchId,
+        hasMatch: !!match,
+        isHomeTeam,
+      });
+      return;
+    }
 
     const opponentTeamId = isHomeTeam ? match.away_team_id : match.home_team_id;
 
@@ -445,6 +455,8 @@ export function MatchLineup() {
       userTeamId,
       opponentTeamId,
       isHomeTeam,
+      homeTeamId: match.home_team_id,
+      awayTeamId: match.away_team_id,
     });
 
     // Subscribe to opponent's lineup changes
@@ -459,13 +471,27 @@ export function MatchLineup() {
           filter: `match_id=eq.${matchId}`,
         },
         (payload) => {
+          console.log('Real-time lineup update received:', payload);
+          console.log('Payload team_id:', (payload.new as any)?.team_id);
+          console.log('Opponent team_id:', opponentTeamId);
+
+          // Invalidate lineup queries to trigger refetch (for TanStack Query consistency)
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.matches.lineup(matchId)
+          });
+
           // Only update if it's the opponent's lineup
           if (payload.new && (payload.new as any).team_id === opponentTeamId) {
+            console.log('✅ Opponent lineup updated - updating state:', payload.new);
             setOpponentLineup(payload.new);
+          } else {
+            console.log('❌ Ignoring update for own team');
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
