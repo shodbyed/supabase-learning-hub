@@ -179,72 +179,141 @@ When tiebreaker completes and is verified:
 
 **Note**: Original match data (18 games, original scores) remains in database, just gets overwritten with final tiebreaker winner.
 
-## Questions Still To Answer
+## Design Decisions - ANSWERED ✅
 
 ### Scoring & Points
-1. **Point calculation for tiebreaker wins**
-   - Does tiebreaker winner get points?
-   - Same point calculation as normal match?
-   - Fixed point value for tiebreaker win?
-   - Update `home_points_earned` / `away_points_earned`?
+**No points for tiebreaker!** Tiebreaker only determines winner/loser. The match score stays as it was from the original tie result. No updates to `home_points_earned` or `away_points_earned`.
 
-2. **What if tiebreaker also ties (1-1-1)?**
+### Tiebreaker Lineup Storage - USE GAME RECORDS!
+**No new tables or columns needed.** Use the 3 tiebreaker game records as the source of truth.
+
+**Flow:**
+1. **When match ends in tie** (MatchEndVerification component):
+   - Create 3 empty tiebreaker games immediately:
+     - `is_tiebreaker = true`
+     - `home_player_id = NULL` (will be filled in on lineup page)
+     - `away_player_id = NULL` (will be filled in on lineup page)
+     - `home_action` / `away_action` set for break/rack pattern
+   - Navigate to lineup page
+
+2. **On lineup page** (tiebreaker mode):
+   - Show the 3 original lineup players
+   - Dropdowns for position selection (same UX as normal lineup)
+   - **onChange handlers UPDATE the game records** (not lineup records):
+     - User selects player for position 1 → Updates `match_games.home_player_id` on game 1
+     - User selects player for position 2 → Updates `match_games.home_player_id` on game 2
+     - User selects player for position 3 → Updates `match_games.home_player_id` on game 3
+   - **Real-time watches the 3 tiebreaker games** (not lineup records)
+   - When all 6 player slots filled (both teams, all 3 games) → Auto-navigate to scoring
+
+3. **On scoring page**:
+   - Filter `WHERE is_tiebreaker = true` to show only tiebreaker games
+   - Everything else works the same
+
+**Why this works:**
+- ✅ No new database schema needed
+- ✅ Games are single source of truth
+- ✅ Real-time works the same way (watching records change)
+- ✅ Both teams work independently
+- ✅ Mirrors existing lineup page pattern (dropdowns → onChange → DB update → real-time)
+
+### UI Implementation
+**Conditional UI within existing MatchLineup.tsx**
+- Detect tiebreaker mode: `matchData.match_result === 'tie'`
+- Show different UI for tiebreaker (banner, 3 players only, update games instead of lineup)
+- Everything else reuses existing components/patterns
+- Same route, same page, just different data flow
+
+### Questions Still To Answer
+
+1. **What if tiebreaker also ties (1-1-1)?**
    - This shouldn't be possible in race-to-2 format
    - BUT what if all 3 games have no winner (scratches/golden breaks/issues)?
    - Play another tiebreaker? Match remains tied?
 
-### Tiebreaker Lineup Storage
-3. **How do we store tiebreaker player positions?**
-   - Need to know which player is in position 1, 2, 3 for tiebreaker
-   - Options listed above in match_lineups section
+---
 
-### UI/UX Decisions
-4. **Lineup page implementation approach**
-   - Separate `/match/:matchId/tiebreaker` route?
-   - Conditional UI within existing MatchLineup.tsx?
-   - Completely separate TiebreakerLineup.tsx component?
+## Implementation Strategy
 
-5. **Player position selection UX**
-   - Dropdown to select which position each player takes?
-   - Drag-and-drop reordering?
-   - Number buttons next to each player?
-   - Simple display of "Player 1: [Name], Player 2: [Name], Player 3: [Name]" with swap buttons?
+### Phase 1: Create Empty Tiebreaker Games on Tie ✅ READY
+**File:** `/src/components/scoring/MatchEndVerification.tsx`
+
+When both teams verify a tie result:
+1. Create 3 empty tiebreaker game records in `match_games` table
+2. Set `is_tiebreaker = true`, player IDs = NULL, break/rack pattern
+3. Navigate to lineup page (already does this)
+
+**Mutation needed:** `createTiebreakerGames(matchId, homeTeamId, awayTeamId)`
 
 ---
 
-## Implementation Strategy (TBD after questions answered)
+### Phase 2: Lineup Page - Tiebreaker Detection & UI
+**File:** `/src/player/MatchLineup.tsx`
 
-### Phase 1: Database Changes
-- [ ] Add necessary columns/tables for tiebreaker tracking
-- [ ] Create migration files
-- [ ] Update TypeScript types
+**Step 2a: Detect Tiebreaker Mode**
+- [ ] Check `matchData.match_result === 'tie'` at top of component
+- [ ] Fetch the 3 tiebreaker games (not lineup records)
+- [ ] Early return with tiebreaker-specific JSX (preserve existing lineup flow)
 
-### Phase 2: Lineup Page Tiebreaker UI
-- [ ] Detect tiebreaker mode
-- [ ] Show tiebreaker banner/instructions
-- [ ] Display only lineup players (not full roster)
-- [ ] Build position selection UI
-- [ ] Lock tiebreaker positions
+**Step 2b: Tiebreaker Banner & UI**
+- [ ] Show banner: "TIEBREAKER - Reorder your 3 players for sudden death"
+- [ ] Display only the 3 original lineup players (from locked lineup)
+- [ ] 3 dropdowns for position selection (reuse existing Select components)
 
-### Phase 3: Game Creation
-- [ ] Detect when both tiebreaker lineups locked
-- [ ] Create 3 tiebreaker games with correct matchups
-- [ ] Set break/rack assignments
-- [ ] Navigate to scoring page
+**Step 2c: onChange Handlers for Tiebreaker**
+- [ ] Create handlers that UPDATE game records (not lineup records)
+- [ ] `handleTiebreakerPosition1Change` → Updates game 1's `home_player_id`
+- [ ] `handleTiebreakerPosition2Change` → Updates game 2's `home_player_id`
+- [ ] `handleTiebreakerPosition3Change` → Updates game 3's `home_player_id`
 
-### Phase 4: Scoring Page Tiebreaker Mode
-- [ ] Detect tiebreaker mode
-- [ ] Filter/show only tiebreaker games
-- [ ] Same scoring mechanics
-- [ ] Determine winner (2/3 games)
-- [ ] Update match result
+**Step 2d: Real-time Subscription**
+- [ ] Subscribe to the 3 tiebreaker games (not lineup records)
+- [ ] Detect when all 6 player slots filled → auto-navigate to scoring
+
+**Mutation needed:** `updateTiebreakerGamePlayer(gameId, homePlayerId?, awayPlayerId?)`
+
+---
+
+### Phase 3: Scoring Page - Show Only Tiebreaker Games
+**File:** `/src/player/ScoreMatch.tsx` and `/src/hooks/useMatchScoring.ts`
+
+**Step 3a: Filter Tiebreaker Games**
+- [ ] Detect if match has tiebreaker games (check for `is_tiebreaker = true`)
+- [ ] If tiebreaker exists, filter to show ONLY those 3 games
+- [ ] Hide original 18 games from UI
+
+**Step 3b: Race to 2 Logic**
+- [ ] Calculate team wins from tiebreaker games only
+- [ ] When one team reaches 2 wins → show MatchEndVerification
+- [ ] Normal scoring mechanics (same UI, just different game set)
+
+---
+
+### Phase 4: Match Completion After Tiebreaker
+**File:** `/src/components/scoring/MatchEndVerification.tsx`
+
+When both teams verify tiebreaker result:
+- [ ] Determine which team won (first to 2)
+- [ ] Update match record:
+  - `status = 'completed'`
+  - `winner_team_id = tiebreaker_winner`
+  - `match_result = 'home_win'` or `'away_win'` (overwrite 'tie')
+  - `completed_at = now()`
+- [ ] **Apply anti-sandbagging rule:** Update all 3 game winner/loser IDs to winning team
+- [ ] Navigate to dashboard
+
+**Mutation needed:** `completeTiebreakerMatch(matchId, winnerTeamId, homeVerifiedBy, awayVerifiedBy)`
+
+---
 
 ### Phase 5: Testing
-- [ ] Test normal lineup flow still works
-- [ ] Test tiebreaker lineup flow
-- [ ] Test scoring flow for tiebreaker
-- [ ] Test verification and completion
-- [ ] Test edge cases (ties, golden breaks, etc.)
+- [ ] Test normal 3v3 lineup flow (MUST still work perfectly)
+- [ ] Test normal 3v3 scoring flow (MUST still work perfectly)
+- [ ] Test tie detection and navigation to lineup
+- [ ] Test tiebreaker lineup selection and real-time
+- [ ] Test tiebreaker scoring (race to 2)
+- [ ] Test tiebreaker verification and anti-sandbagging rule
+- [ ] Test that tiebreaker losses don't affect handicap (already done)
 
 ---
 
