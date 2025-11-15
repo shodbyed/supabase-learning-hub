@@ -191,13 +191,7 @@ export async function getTeamDetails(teamId: string) {
       team_players(
         member_id,
         is_captain,
-        members(
-          id,
-          first_name,
-          last_name,
-          system_player_number,
-          bca_member_number
-        )
+        members(*)
       ),
       venue:venues(
         id,
@@ -244,13 +238,7 @@ export async function getTeamsByLeague(leagueId: string) {
       team_players(
         member_id,
         is_captain,
-        members(
-          id,
-          first_name,
-          last_name,
-          system_player_number,
-          bca_member_number
-        )
+        members(*)
       ),
       venue:venues(
         id,
@@ -290,13 +278,7 @@ export async function getTeamsBySeason(seasonId: string) {
       team_players(
         member_id,
         is_captain,
-        members(
-          id,
-          first_name,
-          last_name,
-          system_player_number,
-          bca_member_number
-        )
+        members(*)
       ),
       venue:venues(
         id,

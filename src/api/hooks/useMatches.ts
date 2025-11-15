@@ -187,31 +187,36 @@ export function useMatchWithLeagueSettings(matchId: string | null | undefined) {
  * Hook to fetch match lineups for both teams
  *
  * Gets lineup records for home and away teams.
- * Both lineups must be locked before scoring can begin.
- * Used by scoring pages. Throws error if lineups not locked.
- * Cached for 0ms (live data - always refetch for scoring).
+ * Can optionally require both lineups to exist and be locked.
+ * Used by both scoring pages (requireLocked=true) and lineup pages (requireLocked=false).
+ * Cached for 0ms (live data - always refetch).
  *
  * @param matchId - Match's primary key ID
  * @param homeTeamId - Home team's primary key ID
  * @param awayTeamId - Away team's primary key ID
- * @returns TanStack Query result with { homeLineup, awayLineup }
+ * @param requireLocked - If true, throws error if lineups don't exist or aren't locked (default: true)
+ * @returns TanStack Query result with { homeLineup, awayLineup } (may be null if requireLocked=false)
  *
  * @example
- * const { data, isLoading, error } = useMatchLineups(matchId, homeTeamId, awayTeamId);
- * if (data) {
- *   const { homeLineup, awayLineup } = data;
- * }
+ * // For scoring page (requires locked lineups)
+ * const { data } = useMatchLineups(matchId, homeTeamId, awayTeamId);
+ *
+ * @example
+ * // For lineup page (allows missing lineups)
+ * const { data } = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
+ * if (data && !data.homeLineup) console.log('Home lineup not created yet');
  */
 export function useMatchLineups(
   matchId: string | null | undefined,
   homeTeamId: string | null | undefined,
-  awayTeamId: string | null | undefined
+  awayTeamId: string | null | undefined,
+  requireLocked: boolean = true
 ) {
   return useQuery({
-    queryKey: [...queryKeys.matches.lineup(matchId || ''), homeTeamId, awayTeamId],
-    queryFn: () => getMatchLineups(matchId!, homeTeamId!, awayTeamId!),
+    queryKey: [...queryKeys.matches.lineup(matchId || ''), homeTeamId, awayTeamId, requireLocked],
+    queryFn: () => getMatchLineups(matchId!, homeTeamId!, awayTeamId!, requireLocked),
     enabled: !!matchId && !!homeTeamId && !!awayTeamId,
-    staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh for scoring
+    staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh
     retry: 1,
   });
 }

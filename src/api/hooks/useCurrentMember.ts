@@ -22,7 +22,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useUser } from '@/context/useUser';
 import { queryKeys } from '../queryKeys';
-import { getCurrentMember, getIsCaptain, getAllMembers, getMembersByIds, getMemberProfanitySettings } from '../queries/members';
+import { getCurrentMember, getIsCaptain, getAllMembers, getMembersByIds, getMemberProfanitySettings, getMemberById } from '../queries/members';
 import { STALE_TIME } from '../client';
 
 /**
@@ -146,6 +146,31 @@ export function useAllMembers(excludeMemberId?: string) {
     queryFn: () => getAllMembers(excludeMemberId),
     staleTime: 5 * 60 * 1000, // 5 minutes - member list doesn't change often
     retry: 1,
+  });
+}
+
+/**
+ * Hook to fetch a single member by ID
+ *
+ * Gets full member record for a specific member ID.
+ * Used when you need to fetch a specific member (e.g., substitute player).
+ *
+ * Caches for 15 minutes. Member data doesn't change frequently.
+ *
+ * @param memberId - Member's primary key ID
+ * @returns Query result with member object
+ *
+ * @example
+ * const { data: member } = useMemberById('member-uuid');
+ */
+export function useMemberById(memberId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.members.detail(memberId || ''),
+    queryFn: () => getMemberById(memberId!),
+    enabled: !!memberId,
+    staleTime: STALE_TIME.MEMBER, // 15 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 }
 

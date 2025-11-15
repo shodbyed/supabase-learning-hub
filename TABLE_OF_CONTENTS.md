@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-12 (added LeagueStatusCard unified component)
+> **Last Updated**: 2025-11-15 (added useQueryStates hook for consolidated error handling)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -570,6 +570,7 @@ Reusable wizard/form step components
 - `useUserProfile.ts` - User profile data
 - `usePendingReportsCount.ts` - Pending reports count
 - `useTournamentSearch.ts` - Tournament search
+- `useQueryStates.tsx` - **Unified query error/loading handler** - Consolidates multiple TanStack Query states into single check
 
 #### Real-time & Messaging
 - `useRealtime.ts` - Supabase realtime subscriptions
@@ -671,7 +672,8 @@ High-level business logic services
 #### Mutations (`/mutations/`) - Write Operations
 *Create/Update/Delete operations with automatic cache invalidation*
 
-- *(To be created as migration progresses)*
+- `matches.ts` - **✅ Match mutations** (generic updateMatch for any match field updates)
+- `matchLineups.ts` - **✅ Match lineup mutations** (generic updateMatchLineup + specific save/lock/unlock)
 
 #### Hooks (`/hooks/`) - React Query Hooks
 *React-specific wrappers combining queries with useQuery/useMutation*
@@ -747,6 +749,15 @@ Zod validation schemas
 
 - `leagueOperatorSchema.ts` - League operator validation
 - `playerSchema.ts` - Player validation
+
+---
+
+### 📡 Real-time (`/realtime/`)
+
+Supabase real-time subscription hooks for live data updates
+
+- `useMatchGamesRealtime.ts` - Real-time subscription for match games (scoring updates, confirmation requests)
+- `useMatchLineupsRealtime.ts` - Real-time subscription for match lineups (lineup status changes, lock/unlock events)
 
 ---
 

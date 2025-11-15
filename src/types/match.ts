@@ -32,13 +32,18 @@ export interface MatchBasic {
 
 /**
  * Match with league settings for scoring
- * Includes handicap variants and game rules needed for scoring
+ * Includes handicap variants, game rules, venue, and schedule info
  */
 export interface MatchWithLeagueSettings {
   id: string;
   season_id: string;
   home_team_id: string;
   away_team_id: string;
+  home_lineup_id: string | null;
+  away_lineup_id: string | null;
+  started_at: string | null;
+  match_result: 'home_win' | 'away_win' | 'tie' | null;
+  scheduled_date: string;
   home_team_verified_by?: string | null;
   away_team_verified_by?: string | null;
   home_games_to_win: number | null;
@@ -55,11 +60,60 @@ export interface MatchWithLeagueSettings {
     id: string;
     team_name: string;
   };
+  scheduled_venue: {
+    id: string;
+    name: string;
+    city: string;
+    state: string;
+  } | null;
+  season_week: {
+    scheduled_date: string;
+  } | null;
   league: {
     handicap_variant: HandicapVariant;
     team_handicap_variant: HandicapVariant;
     golden_break_counts_as_win: boolean;
     game_type: string;
+    team_format: '5_man' | '8_man';
+  };
+}
+
+/**
+ * Match for lineup page
+ * Includes team details, venue, league settings, and lineup IDs
+ */
+export interface MatchForLineup {
+  id: string;
+  scheduled_date: string;
+  season_id: string;
+  home_team_id: string;
+  away_team_id: string;
+  home_lineup_id: string | null;
+  away_lineup_id: string | null;
+  started_at: string | null;
+  match_result: 'home_win' | 'away_win' | 'tie' | null;
+  home_team: {
+    id: string;
+    team_name: string;
+  } | null;
+  away_team: {
+    id: string;
+    team_name: string;
+  } | null;
+  scheduled_venue: {
+    id: string;
+    name: string;
+    city: string;
+    state: string;
+  } | null;
+  season_week: {
+    scheduled_date: string;
+  } | null;
+  league: {
+    handicap_variant: HandicapVariant;
+    team_handicap_variant: HandicapVariant;
+    game_type: 'eight_ball' | 'nine_ball' | 'ten_ball';
+    team_format: '5_man' | '8_man';
   };
 }
 
@@ -93,6 +147,7 @@ export interface Player {
   first_name: string;
   last_name: string;
   nickname: string | null;
+  handicap?: number; // Optional - calculated from game history
 }
 
 /**

@@ -13,7 +13,53 @@ import {
   saveMatchLineup,
   lockMatchLineup,
   unlockMatchLineup,
+  updateMatchLineup,
+  createEmptyLineup,
+  type UpdateMatchLineupParams,
 } from '../mutations/matchLineups';
+
+/**
+ * Hook to create an empty match lineup
+ *
+ * Creates a placeholder lineup when user first enters lineup page.
+ * Handles race conditions - returns existing lineup if already created.
+ * Automatically invalidates lineup queries on success.
+ *
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * const createLineupMutation = useCreateEmptyLineup();
+ *
+ * const handleCreateLineup = async () => {
+ *   try {
+ *     const lineup = await createLineupMutation.mutateAsync({
+ *       matchId: 'match-123',
+ *       teamId: 'team-456',
+ *     });
+ *     console.log('Lineup created:', lineup);
+ *   } catch (error) {
+ *     console.error('Failed to create lineup:', error);
+ *   }
+ * };
+ */
+export function useCreateEmptyLineup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createEmptyLineup,
+    onSuccess: (lineup) => {
+      // Invalidate lineup for this match
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.lineup(lineup.match_id),
+      });
+
+      // Invalidate match details (lineup ID needs to be added to match)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.detail(lineup.match_id),
+      });
+    },
+  });
+}
 
 /**
  * Hook to save/update a match lineup
@@ -143,6 +189,68 @@ export function useUnlockMatchLineup() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.matches.detail(unlockedLineup.match_id),
       });
+    },
+  });
+}
+
+/**
+ * Options for controlling cache invalidation
+ */
+export interface MutationOptions {
+  /** Whether to invalidate and refetch queries after mutation (default: true) */
+  invalidate?: boolean;
+  /** Optional match ID for invalidating match-specific queries */
+  matchId?: string;
+}
+
+/**
+ * Hook to update any field(s) on a match lineup
+ *
+ * Generic mutation that can update any lineup field(s).
+ * Optionally invalidates queries after success.
+ *
+ * @param options - Options to control refetching behavior
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * // Update with automatic refetch
+ * const updateLineup = useUpdateMatchLineup();
+ * await updateLineup.mutateAsync({
+ *   lineupId: 'lineup-123',
+ *   updates: { locked: true },
+ *   matchId: 'match-456' // Will auto-invalidate match queries
+ * });
+ *
+ * @example
+ * // Update without refetch (for bulk operations)
+ * const updateLineup = useUpdateMatchLineup({ invalidate: false });
+ * await updateLineup.mutateAsync({
+ *   lineupId: 'lineup-123',
+ *   updates: { player1_id: 'player-456' }
+ * });
+ */
+export function useUpdateMatchLineup(options: MutationOptions = {}) {
+  const { invalidate = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (params: UpdateMatchLineupParams & { matchId?: string }) => updateMatchLineup(params),
+    onSuccess: (updatedLineup, variables) => {
+      if (!invalidate) return;
+
+      const matchId = variables.matchId || updatedLineup.match_id;
+
+      if (matchId) {
+        // Invalidate lineup for this match
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.matches.lineup(matchId),
+        });
+
+        // Invalidate match details
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.matches.detail(matchId),
+        });
+      }
     },
   });
 }
