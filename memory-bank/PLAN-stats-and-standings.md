@@ -17,13 +17,17 @@ This plan covers the implementation of stats and standings pages to view data fr
 ## Page 1: Standings (Team Rankings)
 
 ### Purpose
+
 Show team win/loss records and rankings for a season.
 
 ### Route
+
 `/league/:leagueId/season/:seasonId/standings`
 
 ### Display Format
+
 Simple table with columns:
+
 - **Rank** - Calculated client-side based on ranking logic
 - **Team Name** - Team display name
 - **Wins** - Number of matches won (not individual games)
@@ -32,33 +36,42 @@ Simple table with columns:
 - **Games** - Total individual games won (across all matches)
 
 ### Ranking Logic (Tiebreaker Rules)
+
 Teams are ranked in this order of precedence:
+
 1. **Match Win/Loss Record** - Most match wins = higher rank
 2. **Total Points Earned** - If match records are tied, more points = higher rank
 3. **Total Games Won** - If points also tied, more games won = higher rank
 4. **Equal Rank** - If all 3 metrics are tied, teams share the same rank number
 
 ### Data Sources
+
 - `matches` table - For match wins/losses and verification status
 - `match_games` table - For calculating total games won and points per match
 
 ### Filtering Rules
+
 - **Only Completed Matches**: `status = 'completed'`
 - **Only Verified Matches**: Both `home_team_verified_by` AND `away_team_verified_by` are NOT NULL
 - **Season-Specific**: Filter by `season_id`
 
 ### Access Control
+
 - Accessible to both **operators** AND **players** (all authenticated members)
 - No editing capabilities (read-only)
 
 ### Points Calculation
+
 Use existing `calculatePoints()` function from `/src/types/match.ts`:
+
 - Formula: `games_won - (games_to_tie ?? games_to_win)`
 - Handicap thresholds vary per match based on team skill differential
 - Must calculate per-match points, then sum across all matches for season total
 
 ### Implementation Steps
+
 1. **Create Query Function** (`/src/api/queries/standings.ts`)
+
    - Fetch all completed/verified matches for season
    - Fetch all match_games for those matches
    - Calculate match wins/losses per team
@@ -67,16 +80,19 @@ Use existing `calculatePoints()` function from `/src/types/match.ts`:
    - Return aggregated standings data
 
 2. **Create TanStack Query Hook** (`/src/api/hooks/useStandings.ts`)
+
    - Wrap query function for caching and state management
    - Accept `seasonId` parameter
 
 3. **Build Standings Component** (`/src/pages/Standings.tsx`)
+
    - Use shadcn `Table` component
    - Client-side ranking calculation with tie-breaking logic
    - Sort by rank (highest to lowest)
    - Display loading and error states
 
 4. **Add Route** (`/src/navigation/NavRoutes.tsx`)
+
    - Add to `memberRoutes` array
    - Path: `/league/:leagueId/season/:seasonId/standings`
 
@@ -85,6 +101,7 @@ Use existing `calculatePoints()` function from `/src/types/match.ts`:
    - Team Schedule page (players): "View Standings" link
 
 ### Technical Notes
+
 - No new database tables or columns needed
 - Pure read operations only
 - Match wins ≠ game wins (important distinction)
@@ -95,13 +112,17 @@ Use existing `calculatePoints()` function from `/src/types/match.ts`:
 ## Page 2: Top Shooter (Individual Player Rankings)
 
 ### Purpose
+
 Show individual player performance rankings across a season.
 
 ### Route
+
 `/league/:leagueId/season/:seasonId/top-shooters`
 
 ### Display Format
+
 Simple table with columns:
+
 - **Rank** - Calculated client-side (most wins = rank 1)
 - **Player Name** - Player's display name (first + last, or nickname)
 - **Wins** - Total individual games won
@@ -110,27 +131,34 @@ Simple table with columns:
 - **Win/Loss %** - Calculated as `(wins / (wins + losses)) * 100`
 
 ### Ranking Logic
+
 Players ranked by:
+
 1. **Most Wins** - Primary ranking metric
 2. **Tiebreaker (if needed)**: Win/Loss % (higher % = higher rank)
 3. **Equal Rank**: If both are tied, players share the same rank number
 
 ### Data Sources
+
 - `match_games` table - Individual game results
 - `members` table - Player names
 - `matches` table - To filter only completed/verified matches
 
 ### Filtering Rules
+
 - **Only Completed/Verified Matches**: Same as Standings page
 - **Only Confirmed Games**: Both `confirmed_by_home` AND `confirmed_by_away` = true
 - **Season-Specific**: Filter games by matches in the season
 
 ### Access Control
+
 - Accessible to both **operators** AND **players** (all authenticated members)
 - No editing capabilities (read-only)
 
 ### Implementation Steps
+
 1. **Create Query Function** (`/src/api/queries/playerStats.ts`)
+
    - Fetch all match_games for completed/verified matches in season
    - Group by player (both home_player_id and away_player_id)
    - Count wins (where winner_player_id = player)
@@ -139,16 +167,19 @@ Players ranked by:
    - Return player stats array
 
 2. **Create TanStack Query Hook** (`/src/api/hooks/usePlayerStats.ts`)
+
    - Wrap query function
    - Accept `seasonId` parameter
 
 3. **Build Top Shooters Component** (`/src/pages/TopShooters.tsx`)
+
    - Use shadcn `Table` component
    - Client-side ranking calculation
    - Sort by wins (descending)
    - Format win/loss % as percentage with 1 decimal place
 
 4. **Add Route** (`/src/navigation/NavRoutes.tsx`)
+
    - Add to `memberRoutes` array
    - Path: `/league/:leagueId/season/:seasonId/top-shooters`
 
@@ -157,6 +188,7 @@ Players ranked by:
    - From League Detail page
 
 ### Technical Notes
+
 - Player can appear in games as either home_player_id OR away_player_id
 - Must handle both columns when counting player participation
 - Win/Loss % should handle division by zero (no games played = 0% or "N/A")
@@ -167,24 +199,30 @@ Players ranked by:
 ## Page 3: Team Stats (Detailed Team Performance)
 
 ### Purpose
+
 Combined view showing team-level standings with player-level performance breakdown, grouped by team. This is essentially a combination of Standings + Top Shooters data, organized hierarchically.
 
 ### Route
+
 `/league/:leagueId/season/:seasonId/team-stats`
 
 ### Display Format
+
 Grouped table with two row types:
 
 #### Team Header Row (per team)
+
 - **Rank** - Team standing rank (same as Standings page)
 - **Team Name** - Team display name
 - **Wins** - Match wins
 - **Losses** - Match losses
 - **Points** - Total points earned
-- *(Optional)* Weeks Completed - Number of matches played by this team
+- _(Optional)_ Weeks Completed - Number of matches played by this team
 
 #### Player Detail Rows (under each team)
+
 Indented/styled differently to show hierarchy:
+
 - **Player Name** - Player's display name
 - **Games Won** - Individual games won
 - **Games Lost** - Individual games lost
@@ -196,6 +234,7 @@ Indented/styled differently to show hierarchy:
   - **Lifetime Weeks** - Career matches played (all-time)
 
 ### Layout Example
+
 ```
 RANK  TEAM NAME           WIN  LOSS  POINTS
 1     BANK N SPANK        7    9     -9
@@ -216,36 +255,43 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
 ### Data Sources
 
 #### For Team Header Rows
+
 - `matches` table - Match wins/losses and points (same as Standings page)
 - Count of completed matches per team
 
 #### For Player Detail Rows (Season Stats)
+
 - `match_games` table - Individual game results for this season
 - `match_lineups` table - Player participation in matches (for "Weeks Played")
 - Latest `match_lineups` record per player - Current handicap value
 
 #### For Cumulative (Lifetime Stats)
+
 - `match_games` table - ALL games across ALL seasons (no season filter)
 - `match_lineups` table - ALL match participation across ALL seasons
 - Filter by player_id only, not by season_id
 
 ### Filtering Rules
+
 - **Season Stats**: Only completed/verified matches in current season
 - **Cumulative Stats**: ALL completed/verified matches ever (lifetime)
 - **Only Confirmed Games**: Both teams confirmed
 - **SUB Rows**: Handle substitute players (may not have member_id)
 
 ### Access Control
+
 - Accessible to **all authenticated members** (players and operators)
 - Everyone can view all teams and all players
 - No editing capabilities (read-only)
 
 ### Handicap Display
+
 - Show current handicap from most recent match lineup
 - Format: positive numbers (no +), negative numbers with minus sign
 - If player hasn't played recently, show last known handicap or "-"
 
 ### Grouping & Styling
+
 - Teams ordered by rank (same as Standings)
 - Players within team ordered by total games played (descending) or alphabetically
 - Visual hierarchy:
@@ -256,6 +302,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
 ### Implementation Steps
 
 1. **Extend Query Functions** (`/src/api/queries/teamStats.ts`)
+
    - **Team-level query**: Reuse standings query logic
    - **Player season stats query**:
      - Join match_games to matches (filter by season)
@@ -268,6 +315,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
    - Combine all three into single hierarchical data structure
 
 2. **Create TanStack Query Hook** (`/src/api/hooks/useTeamStats.ts`)
+
    - Fetch team standings data
    - Fetch player season stats per team
    - Fetch player lifetime stats
@@ -275,6 +323,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
    - Accept `seasonId` parameter
 
 3. **Build Team Stats Component** (`/src/pages/TeamStats.tsx`)
+
    - Use shadcn `Table` component with custom row rendering
    - Map over teams, render team header row
    - For each team, map over players, render player detail rows
@@ -283,6 +332,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
    - Add visual hierarchy styling (bold teams, indented players)
 
 4. **Add Route** (`/src/navigation/NavRoutes.tsx`)
+
    - Add to `memberRoutes` array
    - Path: `/league/:leagueId/season/:seasonId/team-stats`
 
@@ -292,6 +342,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
    - From League Detail page
 
 ### Technical Notes
+
 - **Cumulative Stats Scope**: Lifetime (all seasons), not just current season
 - **Weeks Played**: Count distinct match_id from match_lineups where player participated
 - **Current Handicap**: Latest match_lineups.player1_handicap (or player2/player3) for this player
@@ -301,6 +352,7 @@ RANK  TEAM NAME           WIN  LOSS  POINTS
   - Or lazy-load cumulative stats on player row expand
 
 ### Data Structure (TypeScript Interface)
+
 ```typescript
 interface TeamStatsRow {
   rank: number;
@@ -316,13 +368,13 @@ interface TeamStatsRow {
 interface PlayerStatsRow {
   playerId: string | null; // null for SUB
   playerName: string;
-  gamesWon: number;        // Season
-  gamesLost: number;       // Season
-  weeksPlayed: number;     // Season
+  gamesWon: number; // Season
+  gamesLost: number; // Season
+  weeksPlayed: number; // Season
   currentHandicap: number | null;
-  lifetimeWins: number;    // Cumulative
-  lifetimeLosses: number;  // Cumulative
-  lifetimeWeeks: number;   // Cumulative
+  lifetimeWins: number; // Cumulative
+  lifetimeLosses: number; // Cumulative
+  lifetimeWeeks: number; // Cumulative
 }
 ```
 
@@ -331,15 +383,18 @@ interface PlayerStatsRow {
 ## Shared Components & Utilities
 
 ### Components to Create
+
 - `StatsTable` - Reusable table component for stats display (if tables look similar)
 - `RankBadge` - Visual rank indicator (1st, 2nd, 3rd with styling)
 - `StatsNavigation` - Tab/link navigation between Standings, Top Shooters, Team Stats
 
 ### Utilities to Create
+
 - `rankingUtils.ts` - Shared ranking calculation logic with tie-breaking
 - `statsCalculations.ts` - Shared stats aggregation functions
 
 ### Types to Define
+
 - `TeamStanding` - Type for team standings data
 - `PlayerStanding` - Type for player standings data
 - `TeamStatDetail` - Type for team stats detail (once defined)
@@ -349,12 +404,14 @@ interface PlayerStatsRow {
 ## Database Schema Notes
 
 **No new tables or columns needed** - all data exists in:
+
 - `matches` - Match-level results and verification status
 - `match_games` - Individual game results
 - `teams` - Team information
 - `members` - Player information
 
 **Key Fields Used:**
+
 - `matches.status` - Filter for 'completed'
 - `matches.home_team_verified_by` - Home team verification
 - `matches.away_team_verified_by` - Away team verification
@@ -393,15 +450,18 @@ interface PlayerStatsRow {
 All three pages should be accessible from multiple entry points:
 
 ### From Operator Dashboard / League Detail
+
 - Add "Stats & Standings" card or section with links to all three pages
 - Or use tabbed interface to switch between Standings / Top Shooters / Team Stats
 
 ### From Player "My Teams" / Team Schedule
+
 - "View Standings" link
 - "View Stats" link (goes to Team Stats page)
 - "Top Shooters" link
 
 ### Between Stats Pages
+
 - Add navigation tabs or breadcrumb links at top of each page:
   ```
   [ Standings ] [ Top Shooters ] [ Team Stats ]
@@ -413,17 +473,20 @@ All three pages should be accessible from multiple entry points:
 ## Decisions Made
 
 1. **Team Stats Page - Player Ordering Within Team** ✅
+
    - Captain always displayed first
    - Remaining players ordered by team_players table order
    - Use existing team roster structure from database
 
 2. **SUB Player Handling** ✅
+
    - **No SUB tracking for MVP**
    - Games won by substitutes count toward team's match totals
    - Substitute stats not displayed on these pages
    - Future enhancement: Could add "Substitutes Used: X times" counter per team
 
 3. **Handicap Source** ✅
+
    - Use existing handicap calculation helper function
    - Calculate current handicap from recent game performance
    - This ensures handicaps are always current and accurate

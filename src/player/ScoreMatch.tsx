@@ -23,8 +23,7 @@ import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCurrentMember } from '@/api/hooks';
-import { getAllGames } from '@/utils/gameOrder';
-import type { Lineup } from '@/types/match';
+// getAllGames no longer needed - all game data comes from database
 import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { useMatchScoringMutations } from '@/hooks/useMatchScoringMutations';
@@ -32,7 +31,7 @@ import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
-import { GameButtonRow } from '@/components/scoring/GameButtonRow';
+import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
 
 export function ScoreMatch() {
@@ -50,6 +49,11 @@ export function ScoreMatch() {
 
   // Ref to store mutations for use in real-time subscription
   const mutationsRef = useRef<any>(null);
+
+  // Wait time for match preparation (give home team time to prepare)
+  const [waitingForPreparation, setWaitingForPreparation] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 10; // Wait up to 10 seconds
 
   // Use central scoring hook (replaces all manual data fetching)
   const {
@@ -143,8 +147,8 @@ export function ScoreMatch() {
   }, [isHomeTeam]);
 
   // Detect when all games are complete (works for any format: 3, 18, 25, etc.)
-  const allGamesArray = getAllGames();
-  const totalGames = allGamesArray.length;
+  // Total games = count of games in database
+  const totalGames = gameResults.size;
   const completedGames = getCompletedGamesCount(gameResults);
   const allGamesComplete = completedGames === totalGames;
 
@@ -160,10 +164,34 @@ export function ScoreMatch() {
   // Track previous allGamesComplete state to detect changes
   const prevAllGamesCompleteRef = useRef(allGamesComplete);
 
-  // Reset verification when allGamesComplete changes from true to false (game vacated after verification)
+  // Save thresholds and handle verification when match completes/uncompletes
   useEffect(() => {
     const wasComplete = prevAllGamesCompleteRef.current;
     const isComplete = allGamesComplete;
+
+    // If changed from incomplete to complete, save thresholds to database
+    if (!wasComplete && isComplete && matchId && homeThresholds && awayThresholds) {
+      console.log('Match just completed - saving thresholds to database', {
+        homeThresholds,
+        awayThresholds
+      });
+      supabase
+        .from('matches')
+        .update({
+          home_games_to_win: homeThresholds.games_to_win,
+          home_games_to_tie: homeThresholds.games_to_tie,
+          away_games_to_win: awayThresholds.games_to_win,
+          away_games_to_tie: awayThresholds.games_to_tie,
+        })
+        .eq('id', matchId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error saving thresholds:', error);
+          } else {
+            console.log('Thresholds saved successfully');
+          }
+        });
+    }
 
     // If changed from complete to incomplete, clear verification
     if (wasComplete && !isComplete && matchId) {
@@ -186,7 +214,7 @@ export function ScoreMatch() {
 
     // Update ref for next comparison
     prevAllGamesCompleteRef.current = isComplete;
-  }, [allGamesComplete, matchId]);
+  }, [allGamesComplete, matchId, homeThresholds, awayThresholds]);
 
   /**
    * Handle verify button click
@@ -256,6 +284,8 @@ export function ScoreMatch() {
     homeLineup,
     awayLineup,
     userTeamId,
+    memberId,
+    gameType,
     autoConfirm,
     addToConfirmationQueue,
     getPlayerDisplayName,
@@ -288,6 +318,32 @@ export function ScoreMatch() {
     );
   };
 
+  // Auto-retry mechanism: Wait for match preparation to complete
+  // MUST be before any early returns to comply with Rules of Hooks
+  useEffect(() => {
+    const dataReady = match && homeLineup && awayLineup && homeThresholds && awayThresholds;
+
+    if (!dataReady && waitingForPreparation && retryCount < MAX_RETRIES) {
+      const timer = setTimeout(() => {
+        console.log(`Retrying data fetch (${retryCount + 1}/${MAX_RETRIES})...`);
+        setRetryCount(prev => prev + 1);
+        // Invalidate queries to force refetch
+        queryClient.invalidateQueries({ queryKey: ['match', matchId] });
+      }, 1000); // Wait 1 second between retries
+
+      return () => clearTimeout(timer);
+    }
+
+    if (dataReady && waitingForPreparation) {
+      setWaitingForPreparation(false);
+    }
+
+    if (retryCount >= MAX_RETRIES) {
+      setWaitingForPreparation(false);
+    }
+  }, [match, homeLineup, awayLineup, homeThresholds, awayThresholds, retryCount, waitingForPreparation, matchId, queryClient, MAX_RETRIES]);
+
+  // Early returns for loading/error states
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -318,6 +374,29 @@ export function ScoreMatch() {
     );
   }
 
+  // Show loading screen while waiting for preparation
+  if (waitingForPreparation && retryCount < MAX_RETRIES) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg font-semibold text-gray-700 mb-4">
+            Preparing Match...
+          </div>
+          <div className="text-sm text-gray-600 mb-4">
+            Setting up handicap thresholds and game order
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+          <div className="text-xs text-gray-500 mt-4">
+            Attempt {retryCount + 1} of {MAX_RETRIES}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // After retries exhausted, show error if data still missing
   if (
     !match ||
     !homeLineup ||
@@ -325,7 +404,41 @@ export function ScoreMatch() {
     !homeThresholds ||
     !awayThresholds
   ) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="text-lg font-semibold text-red-600 mb-2">
+                Match Preparation Failed
+              </div>
+              <div className="text-gray-600 mb-4">
+                The match could not be prepared after {MAX_RETRIES} attempts.
+              </div>
+              <div className="text-sm text-gray-500 mb-4">
+                {!match && <div>• Match data not loaded</div>}
+                {!homeLineup && <div>• Home lineup not available</div>}
+                {!awayLineup && <div>• Away lineup not available</div>}
+                {!homeThresholds && <div>• Home thresholds not set</div>}
+                {!awayThresholds && <div>• Away thresholds not set</div>}
+              </div>
+              <div className="text-xs text-gray-500 mb-4">
+                This usually means the home team's lineup lock failed to prepare the match.
+                Both teams should go back to lineup and try again.
+              </div>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/match/${matchId}/lineup`)}
+                className="ml-2"
+              >
+                Back to Lineup
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -354,104 +467,35 @@ export function ScoreMatch() {
         isVerifying={isVerifying}
       />
 
-      {/* Game list section */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Fixed header */}
-        <div className="flex-shrink-0 px-4 pt-4 pb-2 bg-gray-50">
-          <div className="text-sm font-semibold mb-4">
-            Games Complete -{' '}
-            <span className="text-lg">
-              {getCompletedGamesCount(gameResults)} / 18
-            </span>
-          </div>
-          {/* Column headers */}
-          <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
-            <div></div>
-            <div className="text-center">Break</div>
-            <div className="text-center font-semibold">vs</div>
-            <div className="text-center">Rack</div>
-          </div>
-        </div>
-
-        {/* Scrollable game list */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
-          <div className="space-y-2">
-            {getAllGames().map((game) => {
-              const homePlayerId = homeLineup[
-                `player${game.homePlayerPosition}_id` as keyof Lineup
-              ] as string;
-              const awayPlayerId = awayLineup[
-                `player${game.awayPlayerPosition}_id` as keyof Lineup
-              ] as string;
-              const homePlayerName = getPlayerDisplayName(homePlayerId);
-              const awayPlayerName = getPlayerDisplayName(awayPlayerId);
-
-              // Determine who breaks and who racks, and which team they're from
-              const breakerName =
-                game.homeAction === 'breaks' ? homePlayerName : awayPlayerName;
-              const breakerPlayerId =
-                game.homeAction === 'breaks' ? homePlayerId : awayPlayerId;
-              const breakerTeamId =
-                game.homeAction === 'breaks'
-                  ? match.home_team_id
-                  : match.away_team_id;
-
-              const rackerName =
-                game.homeAction === 'racks' ? homePlayerName : awayPlayerName;
-              const rackerPlayerId =
-                game.homeAction === 'racks' ? homePlayerId : awayPlayerId;
-              const rackerTeamId =
-                game.homeAction === 'racks'
-                  ? match.home_team_id
-                  : match.away_team_id;
-
-              const breakerIsHome = game.homeAction === 'breaks';
-              const rackerIsHome = game.homeAction === 'racks';
-
-              // Check game status
-              const gameResult = gameResults.get(game.gameNumber);
-              const hasWinner = gameResult && gameResult.winner_player_id;
-              const isConfirmed =
-                gameResult &&
-                gameResult.confirmed_by_home &&
-                gameResult.confirmed_by_away;
-              const isPending = hasWinner && !isConfirmed;
-
-              // Determine game state
-              let state: 'unscored' | 'pending' | 'confirmed' = 'unscored';
-              if (isConfirmed) {
-                state = 'confirmed';
-              } else if (isPending) {
-                state = 'pending';
-              }
-
-              return (
-                <GameButtonRow
-                  key={game.gameNumber}
-                  gameNumber={game.gameNumber}
-                  breakerName={breakerName}
-                  breakerPlayerId={breakerPlayerId}
-                  breakerTeamId={breakerTeamId}
-                  breakerIsHome={breakerIsHome}
-                  rackerName={rackerName}
-                  rackerPlayerId={rackerPlayerId}
-                  rackerTeamId={rackerTeamId}
-                  rackerIsHome={rackerIsHome}
-                  state={state}
-                  winnerPlayerId={gameResult?.winner_player_id}
-                  onPlayerClick={handlePlayerClick}
-                  onVacateClick={(gameNumber, winnerName) => {
-                    setEditingGame({
-                      gameNumber,
-                      currentWinnerName: winnerName,
-                    });
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      {/* Game list section - ALL data from database */}
+      <GamesList
+        gameResults={gameResults}
+        getPlayerDisplayName={getPlayerDisplayName}
+        onGameClick={handlePlayerClick}
+        onVacateClick={(gameNumber, winnerName) => {
+          setEditingGame({
+            gameNumber,
+            currentWinnerName: winnerName,
+          });
+        }}
+        onVacateRequestClick={(gameNumber, winnerName) => {
+          // When opponent clicks "Vacate Request" button, open confirmation dialog
+          const game = gameResults.get(gameNumber);
+          if (game) {
+            setConfirmationGame({
+              gameNumber,
+              winnerPlayerName: winnerName,
+              breakAndRun: game.break_and_run,
+              goldenBreak: game.golden_break,
+              isResetRequest: true,
+            });
+          }
+        }}
+        homeTeamId={match.home_team_id}
+        awayTeamId={match.away_team_id}
+        totalGames={18}
+        isHomeTeam={isHomeTeam}
+      />
 
       {/* Win Confirmation Modal */}
       <ScoringDialog
@@ -528,18 +572,19 @@ export function ScoreMatch() {
               Array.from(myVacateRequests.current)
             );
 
-            // Vacate request: Keep winner but clear BOTH confirmations
-            // This creates a unique state: winner exists but both confirmations are false
-            // Opponent will see this as a vacate request, not a normal score
+            // Vacate request: Set vacate_requested_by flag
+            // This preserves original confirmations while indicating vacate request
             const { error } = await supabase
               .from('match_games')
               .update({
-                confirmed_by_home: false,
-                confirmed_by_away: false,
+                vacate_requested_by: isHomeTeam ? 'home' : 'away',
               })
               .eq('id', gameId);
 
             if (error) throw error;
+
+            // Force refetch to update UI immediately (real-time subscription suppresses own updates)
+            queryClient.invalidateQueries({ queryKey: queryKeys.matches.games(matchId || '') });
           } catch (err: any) {
             console.error('Error requesting reset:', err);
             alert(`Failed to request reset: ${err.message}`);

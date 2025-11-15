@@ -112,6 +112,67 @@ export const buildLeagueName = (
 };
 
 /**
+ * Builds a display-friendly league title from league components
+ * Format: "9 Ball Tuesdays West Side Fall 2025"
+ * Handles null/undefined values gracefully by skipping them
+ *
+ * @param options - League title components
+ * @returns Formatted league title string
+ *
+ * @example
+ * buildLeagueTitle({
+ *   gameType: 'nine_ball',
+ *   dayOfWeek: 'tuesday',
+ *   division: 'West Side',
+ *   season: 'Fall',
+ *   year: 2025
+ * })
+ * // Returns: "9 Ball Tuesdays West Side Fall 2025"
+ */
+export const buildLeagueTitle = (options: {
+  gameType?: string | null;
+  dayOfWeek?: string | null;
+  division?: string | null;
+  season?: string | null;
+  year?: number | null;
+}): string => {
+  const parts: string[] = [];
+
+  // Game type: nine_ball -> 9 Ball
+  if (options.gameType) {
+    const gameTypeMap: Record<string, string> = {
+      'eight_ball': '8 Ball',
+      'nine_ball': '9 Ball',
+      'ten_ball': '10 Ball'
+    };
+    parts.push(gameTypeMap[options.gameType] || options.gameType);
+  }
+
+  // Day of week: tuesday -> Tuesdays (capitalize and pluralize)
+  if (options.dayOfWeek) {
+    const dayName = options.dayOfWeek.charAt(0).toUpperCase() + options.dayOfWeek.slice(1);
+    parts.push(dayName + 's');
+  }
+
+  // Division/qualifier if exists
+  if (options.division) {
+    parts.push(options.division);
+  }
+
+  // Season
+  if (options.season) {
+    parts.push(options.season);
+  }
+
+  // Year
+  if (options.year) {
+    parts.push(options.year.toString());
+  }
+
+  return parts.join(' ');
+};
+
+/**
  * Generates all formatted league names for database storage
  *
  * @param components - The league components

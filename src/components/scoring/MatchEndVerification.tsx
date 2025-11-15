@@ -12,9 +12,18 @@
  * - Auto-navigate to dashboard when both teams verify
  */
 
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useCompleteMatch } from '@/api/hooks/useMatches';
 
 interface MatchEndVerificationProps {
+  /** Match ID */
+  matchId: string;
+  /** Home team ID */
+  homeTeamId: string;
+  /** Away team ID */
+  awayTeamId: string;
   /** Home team name */
   homeTeamName: string;
   /** Away team name */
@@ -81,6 +90,9 @@ function determineMatchResult(
  * Replaces header area when all games are complete
  */
 export function MatchEndVerification({
+  matchId,
+  homeTeamId,
+  awayTeamId,
   homeTeamName,
   awayTeamName,
   homeWins,
@@ -95,6 +107,10 @@ export function MatchEndVerification({
   onVerify,
   isVerifying = false,
 }: MatchEndVerificationProps) {
+  const navigate = useNavigate();
+  const completeMatchMutation = useCompleteMatch();
+  const [isCompleting, setIsCompleting] = useState(false);
+
   const result = determineMatchResult(
     homeWins,
     awayWins,
@@ -114,6 +130,56 @@ export function MatchEndVerification({
   // Calculate points (wins - threshold)
   const homePoints = homeWins - homeWinThreshold;
   const awayPoints = awayWins - awayWinThreshold;
+
+  // Auto-complete match when both teams verify
+  useEffect(() => {
+    if (!bothVerified || isCompleting) return;
+
+    const completeTheMatch = async () => {
+      setIsCompleting(true);
+
+      try {
+        // Calculate completion data
+        const winnerTeamId =
+          result === 'home_win' ? homeTeamId :
+          result === 'away_win' ? awayTeamId :
+          null; // tie
+
+        await completeMatchMutation.mutateAsync({
+          matchId,
+          completionData: {
+            homeTeamScore: homeWins, // Team score = games won
+            awayTeamScore: awayWins, // Team score = games won
+            homeGamesWon: homeWins,
+            awayGamesWon: awayWins,
+            homePointsEarned: homePoints,
+            awayPointsEarned: awayPoints,
+            winnerTeamId,
+            matchResult: result,
+            homeVerifiedBy,
+            awayVerifiedBy,
+            resultsConfirmedByHome: true, // Both teams verified
+            resultsConfirmedByAway: true, // Both teams verified
+          },
+        });
+
+        // Navigate based on result
+        if (result === 'tie') {
+          // Navigate to lineup page for tiebreaker lineup selection
+          navigate(`/match/${matchId}/lineup`);
+        } else {
+          // Navigate to dashboard
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Failed to complete match:', error);
+        setIsCompleting(false);
+        // Stay on page to allow retry
+      }
+    };
+
+    completeTheMatch();
+  }, [bothVerified, isCompleting, matchId, homeTeamId, awayTeamId, homeWins, awayWins, homePoints, awayPoints, result, completeMatchMutation, navigate]);
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-orange-50 border-b-2 border-gray-300">
@@ -263,7 +329,7 @@ export function MatchEndVerification({
         {/* Both Verified Message */}
         {bothVerified && (
           <div className="text-center text-sm font-medium text-green-600">
-            ✓ Both teams verified - Returning to dashboard...
+            {isCompleting ? '✓ Both teams verified - Completing match...' : '✓ Both teams verified - Returning to dashboard...'}
           </div>
         )}
       </div>

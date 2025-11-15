@@ -15,6 +15,7 @@ export {
   useMemberFirstName,
   useIsCaptain,
   useAllMembers,
+  useMemberById,
   useMemberProfanitySettings,
 } from './useCurrentMember';
 
@@ -38,6 +39,8 @@ export {
   useTeamsByLeague,
   useTeamsBySeason,
   useCaptainTeamEditData,
+  useUserTeamInMatch,
+  useTeamRoster,
 } from './useTeams';
 
 // Team query functions (for backward compatibility with non-hook usage)
@@ -132,6 +135,10 @@ export {
   useSeasonSchedule,
   useSeasonWeeks,
   useNextMatchForTeam,
+  useMatchWithLeagueSettings,
+  useMatchLineups,
+  useMatchGames,
+  useCompleteMatch,
 } from './useMatches';
 
 // Venue queries
@@ -187,10 +194,17 @@ export {
 
 // Match Lineup mutations
 export {
+  useCreateEmptyLineup,
   useSaveMatchLineup,
   useLockMatchLineup,
   useUnlockMatchLineup,
+  useUpdateMatchLineup,
 } from './useMatchLineupMutations';
+
+// Match mutations
+export {
+  useUpdateMatch,
+} from './useMatchMutations';
 
 // Member mutations
 export {

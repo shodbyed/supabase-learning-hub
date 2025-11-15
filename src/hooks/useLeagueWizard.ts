@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps.simple';
+import { parseLocalDate } from '@/utils/formatters';
 
 interface UseLeagueWizardParams {
   /** Callback when wizard is completed */
@@ -60,13 +61,15 @@ export const useLeagueWizard = ({ onSubmit }: UseLeagueWizardParams) => {
       return { isValid: false, error: 'Start date is required' };
     }
 
-    const date = new Date(value);
+    // Use parseLocalDate to handle timezone correctly
+    const date = parseLocalDate(value);
     if (isNaN(date.getTime())) {
       return { isValid: false, error: 'Please enter a valid date' };
     }
 
+    // Get today's date in local timezone at midnight
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to compare dates only
+    today.setHours(0, 0, 0, 0);
 
     if (date < today) {
       return { isValid: false, error: 'Start date must be today or in the future' };

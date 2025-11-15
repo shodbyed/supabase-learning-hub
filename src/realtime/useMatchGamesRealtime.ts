@@ -100,56 +100,52 @@ export function useMatchGamesRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
-          //console.log('Real-time game update received:', payload);
+          console.log('Real-time game update received:', payload);
 
           // Trigger TanStack Query refetch
           onUpdate();
 
-          // Handle confirmation queue logic
-          if (payload.eventType === 'UPDATE' && payload.new) {
+          // Handle confirmation queue logic for both INSERT and UPDATE
+          if ((payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') && payload.new) {
             const updatedGame = payload.new as MatchGame;
 
             // Detect if this is a vacate request:
-            // Unique state: winner exists BUT both confirmations are false
-            const isVacateRequest = updatedGame.winner_player_id &&
-                                   !updatedGame.confirmed_by_home &&
-                                   !updatedGame.confirmed_by_away;
+            // Check for vacate_requested_by flag (preserves confirmations)
+            const isVacateRequest = !!(updatedGame as any).vacate_requested_by;
 
-            // If game has a winner and is waiting for confirmation
-            if (updatedGame.winner_player_id && (!updatedGame.confirmed_by_home || !updatedGame.confirmed_by_away)) {
-              //console.log('isVacateRequest:', isVacateRequest);
-
-              // For vacate requests, check if this was initiated by me
-              if (isVacateRequest) {
-                // Check if the editingGame modal is currently open for this game
-                // If so, this is MY action, not the opponent's
-                if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
-                  //console.log('I am currently editing this game, suppressing my own confirmation modal');
-                  return;
-                }
-
-                // Check if I initiated this vacate request
-                if (myVacateRequests.current.has(updatedGame.game_number)) {
-                  //console.log('I initiated this vacate request, suppressing my own confirmation modal');
-                  myVacateRequests.current.delete(updatedGame.game_number);
-                  return;
-                }
-
-                // This is from opponent - show the confirmation modal
-                //console.log('Opponent vacate request detected. Showing confirmation modal.');
-                if (updatedGame.winner_player_id) {
-                  const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
-                  addToConfirmationQueue({
-                    gameNumber: updatedGame.game_number,
-                    winnerPlayerName: winnerName,
-                    breakAndRun: updatedGame.break_and_run,
-                    goldenBreak: updatedGame.golden_break,
-                    isResetRequest: true
-                  });
-                }
+            // Handle vacate requests (check this FIRST, before normal confirmation logic)
+            if (isVacateRequest) {
+              // Check if the editingGame modal is currently open for this game
+              // If so, this is MY action, not the opponent's
+              if (editingGame && editingGame.gameNumber === updatedGame.game_number) {
+                //console.log('I am currently editing this game, suppressing my own confirmation modal');
                 return;
               }
 
+              // Check if I initiated this vacate request
+              if (myVacateRequests.current.has(updatedGame.game_number)) {
+                //console.log('I initiated this vacate request, suppressing my own confirmation modal');
+                myVacateRequests.current.delete(updatedGame.game_number);
+                return;
+              }
+
+              // This is from opponent - show the confirmation modal
+              console.log('Opponent vacate request detected. Showing confirmation modal.');
+              if (updatedGame.winner_player_id) {
+                const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
+                addToConfirmationQueue({
+                  gameNumber: updatedGame.game_number,
+                  winnerPlayerName: winnerName,
+                  breakAndRun: updatedGame.break_and_run,
+                  goldenBreak: updatedGame.golden_break,
+                  isResetRequest: true
+                });
+              }
+              return;
+            }
+
+            // Normal score updates - check if game has winner and needs confirmation
+            if (updatedGame.winner_player_id && (!updatedGame.confirmed_by_home || !updatedGame.confirmed_by_away)) {
               // Normal score update - check if opponent needs to confirm
               const isHomeTeamScorer = updatedGame.confirmed_by_home && !updatedGame.confirmed_by_away;
               const isAwayTeamScorer = updatedGame.confirmed_by_away && !updatedGame.confirmed_by_home;
@@ -187,7 +183,7 @@ export function useMatchGamesRealtime(
           table: 'matches',
           filter: `id=eq.${matchId}`,
         },
-        (_payload) => {
+        () => {
           // Refetch match data to update UI when match row changes
           if (onMatchUpdate) {
             onMatchUpdate();

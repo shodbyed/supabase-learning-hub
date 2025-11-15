@@ -15,6 +15,8 @@ export interface MatchGame {
   id: string;
   match_id: string;
   game_number: number;
+  home_player_position: number; // Which position (1-5) from home lineup plays
+  away_player_position: number; // Which position (1-5) from away lineup plays
   home_player_id: string | null;
   away_player_id: string | null;
   winner_team_id: string | null;

@@ -240,12 +240,9 @@ export function calculate3v3HandicapDiffs(
   const homeTotalHandicap = homeTotal + teamHandicap;
   const awayTotalHandicap = awayTotal;
 
-  // Calculate raw difference
-  const handicapDiff = homeTotalHandicap - awayTotalHandicap;
-
-  // Cap at ±12
-  const homeDiff = Math.max(-12, Math.min(12, handicapDiff));
-  const awayDiff = Math.max(-12, Math.min(12, -handicapDiff));
+  // Calculate differential for each team (their handicap - opponent's handicap)
+  const homeDiff = Math.max(-12, Math.min(12, homeTotalHandicap - awayTotalHandicap));
+  const awayDiff = Math.max(-12, Math.min(12, awayTotalHandicap - homeTotalHandicap));
 
   return { homeDiff, awayDiff };
 }

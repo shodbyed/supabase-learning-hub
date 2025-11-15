@@ -30,8 +30,8 @@ interface UseMatchScoringMutationsParams {
       id: string;
       winner_player_id: string | null;
       winner_team_id: string | null;
-      confirmed_by_home: boolean;
-      confirmed_by_away: boolean;
+      confirmed_by_home: string | null; // UUID of confirming member
+      confirmed_by_away: string | null; // UUID of confirming member
       break_and_run: boolean;
       golden_break: boolean;
     }
@@ -42,6 +42,10 @@ interface UseMatchScoringMutationsParams {
   awayLineup: Lineup | null;
   /** Current user's team ID */
   userTeamId: string | null;
+  /** Current user's member ID */
+  memberId: string | null;
+  /** Game type from league (8-ball, 9-ball, 10-ball) */
+  gameType: string;
   /** Auto-confirm setting (skip confirmation modal) */
   autoConfirm: boolean;
   /** Add confirmation to queue */
@@ -68,6 +72,8 @@ export function useMatchScoringMutations({
   homeLineup,
   awayLineup,
   userTeamId,
+  memberId,
+  gameType,
   autoConfirm,
   addToConfirmationQueue,
   getPlayerDisplayName,
@@ -179,6 +185,7 @@ export function useMatchScoringMutations({
 
         if (isVacateRequest) {
           // For vacate requests, clear the game entirely (accept the vacate)
+          // Also clear the vacate_requested_by flag
           const { error } = await supabase
             .from('match_games')
             .update({
@@ -186,8 +193,9 @@ export function useMatchScoringMutations({
               winner_player_id: null,
               break_and_run: false,
               golden_break: false,
-              confirmed_by_home: false,
-              confirmed_by_away: false,
+              confirmed_by_home: null,
+              confirmed_by_away: null,
+              vacate_requested_by: null,
             })
             .eq('id', existingGame.id);
 
@@ -195,8 +203,8 @@ export function useMatchScoringMutations({
         } else {
           // Normal score confirmation - only update OUR confirmation, don't touch opponent's
           const updateData = isHomeTeam
-            ? { confirmed_by_home: true }
-            : { confirmed_by_away: true };
+            ? { confirmed_by_home: memberId }
+            : { confirmed_by_away: memberId };
 
           const { error } = await supabase
             .from('match_games')
@@ -230,12 +238,12 @@ export function useMatchScoringMutations({
 
       try {
         if (isVacateRequest) {
-          // Deny vacate request: restore both confirmations to keep the winner locked
+          // Deny vacate request: Just clear the vacate_requested_by flag
+          // Original confirmations are preserved, so just remove the vacate flag
           const { error } = await supabase
             .from('match_games')
             .update({
-              confirmed_by_home: true,
-              confirmed_by_away: true,
+              vacate_requested_by: null,
             })
             .eq('id', existingGame.id);
 
@@ -249,8 +257,8 @@ export function useMatchScoringMutations({
               winner_player_id: null,
               break_and_run: false,
               golden_break: false,
-              confirmed_by_home: false,
-              confirmed_by_away: false,
+              confirmed_by_home: null,
+              confirmed_by_away: null,
               confirmed_at: null,
             })
             .eq('id', existingGame.id);
@@ -327,8 +335,8 @@ export function useMatchScoringMutations({
           winner_player_id: scoringGame.winnerPlayerId,
           break_and_run: breakAndRun,
           golden_break: goldenBreak,
-          confirmed_by_home: isHomeTeamScoring,
-          confirmed_by_away: !isHomeTeamScoring,
+          confirmed_by_home: isHomeTeamScoring ? memberId : null,
+          confirmed_by_away: !isHomeTeamScoring ? memberId : null,
         };
 
         // Check if game already exists
@@ -345,15 +353,23 @@ export function useMatchScoringMutations({
             break_and_run: gameData.break_and_run,
             golden_break: gameData.golden_break,
             confirmed_by_home: isHomeTeamScoring
-              ? true
+              ? memberId
               : existingGame.confirmed_by_home,
             confirmed_by_away: !isHomeTeamScoring
-              ? true
+              ? memberId
               : existingGame.confirmed_by_away,
           };
 
           console.log('Updating game with:', updateData);
           console.log('Updating game ID:', existingGame.id);
+          console.log('Update data types:', {
+            winner_team_id: typeof updateData.winner_team_id,
+            winner_player_id: typeof updateData.winner_player_id,
+            break_and_run: typeof updateData.break_and_run,
+            golden_break: typeof updateData.golden_break,
+            confirmed_by_home: typeof updateData.confirmed_by_home,
+            confirmed_by_away: typeof updateData.confirmed_by_away,
+          });
 
           const { data, error, count } = await supabase
             .from('match_games')
@@ -382,12 +398,7 @@ export function useMatchScoringMutations({
 
           console.log('Game updated successfully');
         } else {
-          // Insert new game
-          // TODO: BUG - Missing game_type field in insert
-          // Error: null value in column "game_type" of relation "match_games" violates not-null constraint
-          // The match_games table requires a game_type field (e.g., '9-ball', '8-ball', '10-ball')
-          // but we're not including it in gameData. Need to get game_type from the league/match
-          // and include it in the insert. This happens when new league operators try to score.
+          // Insert new game (includes game_type from league)
           const { error } = await supabase.from('match_games').insert(gameData);
 
           if (error) throw error;

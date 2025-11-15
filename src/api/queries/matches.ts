@@ -277,16 +277,29 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
       season_id,
       home_team_id,
       away_team_id,
+      home_lineup_id,
+      away_lineup_id,
+      started_at,
+      match_result,
       home_team_verified_by,
       away_team_verified_by,
+      home_games_to_win,
+      home_games_to_tie,
+      home_games_to_lose,
+      away_games_to_win,
+      away_games_to_tie,
+      away_games_to_lose,
       home_team:teams!matches_home_team_id_fkey(id, team_name),
       away_team:teams!matches_away_team_id_fkey(id, team_name),
+      scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
+      season_week:season_weeks(scheduled_date),
       season:seasons!matches_season_id_fkey(
         league:leagues(
           handicap_variant,
           team_handicap_variant,
           golden_break_counts_as_win,
-          game_type
+          game_type,
+          team_format
         )
       )
     `)
@@ -305,21 +318,37 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
 
   const homeTeam = Array.isArray(data.home_team) ? data.home_team[0] : data.home_team;
   const awayTeam = Array.isArray(data.away_team) ? data.away_team[0] : data.away_team;
+  const venue = Array.isArray(data.scheduled_venue) ? data.scheduled_venue[0] : data.scheduled_venue;
+  const seasonWeek = Array.isArray(data.season_week) ? data.season_week[0] : data.season_week;
 
   return {
     id: data.id,
     season_id: data.season_id,
     home_team_id: data.home_team_id,
     away_team_id: data.away_team_id,
+    home_lineup_id: data.home_lineup_id ?? null,
+    away_lineup_id: data.away_lineup_id ?? null,
+    started_at: data.started_at ?? null,
+    match_result: data.match_result ?? null,
+    scheduled_date: (seasonWeek as any)?.scheduled_date || '',
     home_team_verified_by: data.home_team_verified_by ?? null,
     away_team_verified_by: data.away_team_verified_by ?? null,
+    home_games_to_win: data.home_games_to_win ?? null,
+    home_games_to_tie: data.home_games_to_tie ?? null,
+    home_games_to_lose: data.home_games_to_lose ?? null,
+    away_games_to_win: data.away_games_to_win ?? null,
+    away_games_to_tie: data.away_games_to_tie ?? null,
+    away_games_to_lose: data.away_games_to_lose ?? null,
     home_team: homeTeam as any,
     away_team: awayTeam as any,
+    scheduled_venue: venue as any || null,
+    season_week: seasonWeek as any || null,
     league: {
       handicap_variant: (leagueData?.handicap_variant || 'standard') as any,
       team_handicap_variant: (leagueData?.team_handicap_variant || 'standard') as any,
       golden_break_counts_as_win: leagueData?.golden_break_counts_as_win ?? false,
       game_type: leagueData?.game_type || '8-ball',
+      team_format: (leagueData?.team_format || '5_man') as '5_man' | '8_man',
     },
   };
 }
@@ -328,20 +357,31 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
  * Fetch match lineups for both teams
  *
  * Gets lineup records for home and away teams.
- * Both lineups must be locked before scoring can begin.
- * Used by scoring pages to access player IDs and handicaps.
+ * Can optionally require both lineups to exist and be locked (for scoring pages).
+ * Or allow missing/unlocked lineups (for lineup setup pages).
  *
  * @param matchId - Match's primary key ID
  * @param homeTeamId - Home team's primary key ID
  * @param awayTeamId - Away team's primary key ID
- * @returns Object with homeLineup and awayLineup
- * @throws Error if lineups not found, not locked, or database error
+ * @param requireLocked - If true, throws error if lineups don't exist or aren't locked (default: true)
+ * @returns Object with homeLineup and awayLineup (may be null if requireLocked is false)
+ * @throws Error if lineups not found/locked (when requireLocked=true) or database error
  *
  * @example
+ * // For scoring page (requires both locked)
  * const { homeLineup, awayLineup } = await getMatchLineups(matchId, homeTeamId, awayTeamId);
- * console.log(`Home player 1: ${homeLineup.player1_id}`);
+ *
+ * @example
+ * // For lineup page (allows missing lineups)
+ * const { homeLineup, awayLineup } = await getMatchLineups(matchId, homeTeamId, awayTeamId, false);
+ * if (!homeLineup) console.log('Home lineup not created yet');
  */
-export async function getMatchLineups(matchId: string, homeTeamId: string, awayTeamId: string) {
+export async function getMatchLineups(
+  matchId: string,
+  homeTeamId: string,
+  awayTeamId: string,
+  requireLocked: boolean = true
+) {
   const { data: lineupsData, error: lineupsError } = await supabase
     .from('match_lineups')
     .select('*')
@@ -356,17 +396,20 @@ export async function getMatchLineups(matchId: string, homeTeamId: string, awayT
   const homeLineupData = lineupsData?.find(l => l.team_id === homeTeamId);
   const awayLineupData = lineupsData?.find(l => l.team_id === awayTeamId);
 
-  if (!homeLineupData || !awayLineupData) {
-    throw new Error('Both team lineups must be locked before scoring can begin');
-  }
+  // Only enforce locked requirement if requested (for scoring page)
+  if (requireLocked) {
+    if (!homeLineupData || !awayLineupData) {
+      throw new Error('Both team lineups must be locked before scoring can begin');
+    }
 
-  if (!homeLineupData.locked || !awayLineupData.locked) {
-    throw new Error('Both team lineups must be locked before scoring can begin');
+    if (!homeLineupData.locked || !awayLineupData.locked) {
+      throw new Error('Both team lineups must be locked before scoring can begin');
+    }
   }
 
   return {
-    homeLineup: homeLineupData,
-    awayLineup: awayLineupData,
+    homeLineup: homeLineupData || null,
+    awayLineup: awayLineupData || null,
   };
 }
 
@@ -396,4 +439,98 @@ export async function getMatchGames(matchId: string) {
   }
 
   return gamesData || [];
+}
+
+/**
+ * Complete a match after both teams have verified
+ *
+ * Updates match status, calculates final scores, points, and determines winner.
+ * All calculations are based on confirmed games only.
+ *
+ * For ties (winnerTeamId = null): saves scores/points but keeps status as 'in_progress'
+ * so tiebreaker can determine final winner later.
+ *
+ * For wins: saves all data and marks match as 'completed'.
+ *
+ * @param matchId - Match ID to complete
+ * @param completionData - Final match data including scores, winner, and points
+ * @throws Error if update fails
+ *
+ * @example
+ * // Saving tie scores (match stays in progress)
+ * await completeMatch(matchId, {
+ *   homeGamesWon: 9,
+ *   awayGamesWon: 9,
+ *   homePointsEarned: 0,
+ *   awayPointsEarned: 0,
+ *   winnerTeamId: null,
+ *   matchResult: 'tie'
+ * });
+ *
+ * @example
+ * // Completing a match with winner
+ * await completeMatch(matchId, {
+ *   homeGamesWon: 10,
+ *   awayGamesWon: 8,
+ *   homePointsEarned: 1,
+ *   awayPointsEarned: -1,
+ *   winnerTeamId: 'home-team-id',
+ *   matchResult: 'home_win'
+ * });
+ */
+export async function completeMatch(
+  matchId: string,
+  completionData: {
+    homeTeamScore: number;
+    awayTeamScore: number;
+    homeGamesWon: number;
+    awayGamesWon: number;
+    homePointsEarned: number;
+    awayPointsEarned: number;
+    winnerTeamId: string | null;
+    matchResult: 'home_win' | 'away_win' | 'tie';
+    homeVerifiedBy: string | null;
+    awayVerifiedBy: string | null;
+    resultsConfirmedByHome: boolean;
+    resultsConfirmedByAway: boolean;
+  }
+) {
+  // Build update object with all required match completion fields
+  const updateData: Record<string, unknown> = {
+    // Scores
+    home_team_score: completionData.homeTeamScore,
+    away_team_score: completionData.awayTeamScore,
+    home_games_won: completionData.homeGamesWon,
+    away_games_won: completionData.awayGamesWon,
+    home_points_earned: completionData.homePointsEarned,
+    away_points_earned: completionData.awayPointsEarned,
+
+    // Result
+    winner_team_id: completionData.winnerTeamId,
+    match_result: completionData.matchResult,
+
+    // Verification
+    home_team_verified_by: completionData.homeVerifiedBy,
+    away_team_verified_by: completionData.awayVerifiedBy,
+    results_confirmed_by_home: completionData.resultsConfirmedByHome,
+    results_confirmed_by_away: completionData.resultsConfirmedByAway,
+
+    // Timestamp
+    completed_at: new Date().toISOString(),
+  };
+
+  // Only mark as completed if there's a winner (not a tie)
+  if (completionData.winnerTeamId !== null) {
+    updateData.status = 'completed';
+  }
+  // If tie (winnerTeamId = null), status stays 'in_progress' for tiebreaker
+
+  const { error } = await supabase
+    .from('matches')
+    .update(updateData)
+    .eq('id', matchId);
+
+  if (error) {
+    throw new Error(`Failed to complete match: ${error.message}`);
+  }
 }

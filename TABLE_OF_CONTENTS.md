@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-09 (consolidated Match types to /src/types/schedule.ts)
+> **Last Updated**: 2025-11-15 (added useQueryStates hook for consolidated error handling)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -509,10 +509,11 @@ Reusable wizard/form step components
 - `UserListItem.tsx` - User list item
 
 #### Operator Components (`/components/operator/`)
-- `ActiveLeagues.tsx` - Active leagues overview
+- `ActiveLeagues.tsx` - Active leagues overview (uses LeagueStatusCard)
 - `DashboardCard.tsx` - Dashboard card wrapper
 - `LeagueOverviewCard.tsx` - League overview
-- `LeagueProgressBar.tsx` - League progress
+- `LeagueProgressBar.tsx` - League progress bar component (used by LeagueStatusCard)
+- `LeagueStatusCard.tsx` - **UNIFIED league status component** - Single source of truth for league/season status, progress, and next actions (used on both Dashboard and League Detail pages)
 - `QuickStats.tsx` - Quick statistics
 - `ScheduleCard.tsx` - Schedule card
 - `SeasonStatusCard.tsx` - Season status
@@ -569,6 +570,7 @@ Reusable wizard/form step components
 - `useUserProfile.ts` - User profile data
 - `usePendingReportsCount.ts` - Pending reports count
 - `useTournamentSearch.ts` - Tournament search
+- `useQueryStates.tsx` - **Unified query error/loading handler** - Consolidates multiple TanStack Query states into single check
 
 #### Real-time & Messaging
 - `useRealtime.ts` - Supabase realtime subscriptions
@@ -625,8 +627,9 @@ Reusable wizard/form step components
 - `handicapCalculations.ts` - Handicap calculations and team handicap utilities
 - `nicknameGenerator.ts` - Player nickname generation
 
-#### League & Tournament
+#### League, Season & Tournament
 - `leagueUtils.ts` - League utilities
+- `seasonUtils.ts` - Season utilities (getMostRecentSeason, hasExistingSeasons)
 - `tournamentUtils.ts` - Tournament utilities
 
 #### Messaging
@@ -669,7 +672,8 @@ High-level business logic services
 #### Mutations (`/mutations/`) - Write Operations
 *Create/Update/Delete operations with automatic cache invalidation*
 
-- *(To be created as migration progresses)*
+- `matches.ts` - **✅ Match mutations** (generic updateMatch for any match field updates)
+- `matchLineups.ts` - **✅ Match lineup mutations** (generic updateMatchLineup + specific save/lock/unlock)
 
 #### Hooks (`/hooks/`) - React Query Hooks
 *React-specific wrappers combining queries with useQuery/useMutation*
@@ -745,6 +749,15 @@ Zod validation schemas
 
 - `leagueOperatorSchema.ts` - League operator validation
 - `playerSchema.ts` - Player validation
+
+---
+
+### 📡 Real-time (`/realtime/`)
+
+Supabase real-time subscription hooks for live data updates
+
+- `useMatchGamesRealtime.ts` - Real-time subscription for match games (scoring updates, confirmation requests)
+- `useMatchLineupsRealtime.ts` - Real-time subscription for match lineups (lineup status changes, lock/unlock events)
 
 ---
 

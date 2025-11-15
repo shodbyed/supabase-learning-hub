@@ -15,10 +15,11 @@ import { UserProvider } from './context/UserProvider';
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
 
-  // Hide navbar for match scoring (full-screen experience)
-  const hideNavbar = location.pathname.includes('/match/') &&
+  // Hide navbar for match scoring (full-screen experience) and team schedule
+  const hideNavbar = (location.pathname.includes('/match/') &&
                      (location.pathname.endsWith('/score') ||
-                      location.pathname.endsWith('/lineup'));
+                      location.pathname.endsWith('/lineup'))) ||
+                     location.pathname.match(/^\/team\/[^/]+\/schedule$/);
 
   // Show OperatorNavBar for operator routes
   const isOperatorRoute = location.pathname.startsWith('/operator') ||

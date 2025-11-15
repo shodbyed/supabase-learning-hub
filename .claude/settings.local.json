@@ -37,7 +37,14 @@
       "Bash(else echo \"✓ $hook only in api/hooks\")",
       "Bash(git log:*)",
       "Bash(mkdir:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(psql:*)",
+      "Bash(supabase migration new:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(docker volume inspect:*)",
+      "Bash(supabase db dump:*)",
+      "Bash(supabase stop:*)",
+      "Bash(supabase start:*)"
     ],
     "deny": [],
     "ask": []

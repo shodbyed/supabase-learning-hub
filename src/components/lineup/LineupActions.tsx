@@ -3,14 +3,22 @@
  *
  * Displays Lock/Unlock buttons and opponent status.
  * Handles button states and click events for lineup management.
+ *
+ * Status System (based on match lineup_id and locked state):
+ * - Absent: No lineup ID in match record (opponent hasn't joined yet)
+ * - Choosing Lineup: Has lineup ID but not locked (opponent is selecting players)
+ * - Ready: Has lineup ID and is locked (opponent is ready to start)
  */
 
 import { Button } from '@/components/ui/button';
-import { Lock, CheckCircle } from 'lucide-react';
+import { Lock, CheckCircle, UserX, Users } from 'lucide-react';
+
+type OpponentStatus = 'absent' | 'choosing' | 'ready';
 
 interface LineupActionsProps {
   locked: boolean;
-  opponentLocked: boolean;
+  opponentStatus: OpponentStatus; // New 3-status system
+  opponentStatusText?: string; // Optional detailed status text (e.g., "Players chosen: 2")
   canLock: boolean; // All positions filled
   canUnlock: boolean; // Opponent hasn't locked yet
   onLock: () => void;
@@ -26,7 +34,8 @@ interface LineupActionsProps {
  */
 export function LineupActions({
   locked,
-  opponentLocked,
+  opponentStatus,
+  opponentStatusText,
   canLock,
   canUnlock,
   onLock,
@@ -39,13 +48,27 @@ export function LineupActions({
       <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
         <span className="text-sm font-medium text-gray-700">Opponent Status:</span>
         <div className="flex items-center gap-2">
-          {opponentLocked ? (
+          {opponentStatus === 'absent' && (
+            <>
+              <UserX className="h-5 w-5 text-gray-400" />
+              <span className="text-sm text-gray-400">Absent</span>
+            </>
+          )}
+          {opponentStatus === 'choosing' && (
+            <>
+              <Users className="h-5 w-5 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-600">
+                {opponentStatusText || 'Choosing Lineup'}
+              </span>
+            </>
+          )}
+          {opponentStatus === 'ready' && (
             <>
               <CheckCircle className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-semibold text-green-600">Ready</span>
+              <span className="text-sm font-semibold text-green-600">
+                {opponentStatusText || 'Ready'}
+              </span>
             </>
-          ) : (
-            <span className="text-sm text-gray-500">Not Ready</span>
           )}
         </div>
       </div>
@@ -90,7 +113,7 @@ export function LineupActions({
         )}
 
         {/* Proceed to Scoring (only show when both teams locked) */}
-        {locked && opponentLocked && onProceed && (
+        {locked && opponentStatus === 'ready' && onProceed && (
           <Button
             onClick={onProceed}
             className="w-full bg-green-600 hover:bg-green-700"
@@ -115,7 +138,13 @@ export function LineupActions({
         </p>
       )}
 
-      {locked && !opponentLocked && (
+      {locked && opponentStatus === 'absent' && (
+        <p className="text-xs text-gray-500 text-center">
+          Waiting for opponent to join...
+        </p>
+      )}
+
+      {locked && opponentStatus === 'choosing' && (
         <p className="text-xs text-gray-500 text-center">
           Waiting for opponent to lock their lineup...
         </p>

@@ -9,8 +9,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { ArrowLeft, Calendar, MapPin, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseLocalDate } from '@/utils/formatters';
@@ -316,58 +317,34 @@ export const SeasonSchedulePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          {isOperator && !fromPlayer && (
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo={isOperator && !fromPlayer ? `/league/${leagueId}` : '/my-teams'}
+        backLabel={isOperator && !fromPlayer ? 'Back to League' : 'Back to My Teams'}
+        title="Season Schedule"
+        subtitle={seasonName}
+      >
+        {isOperator && !fromPlayer && schedule.length > 0 && (
+          <div className="mt-2 flex gap-3">
             <Button
-              variant="ghost"
-              onClick={() => navigate(`/league/${leagueId}`)}
-              className="mb-4"
+              variant="destructive"
+              onClick={handleClearSchedule}
+              disabled={clearing || accepting}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to League
+              <Trash2 className="h-4 w-4 mr-2" />
+              {clearing ? 'Clearing...' : 'Clear Schedule'}
             </Button>
-          )}
-          {(!isOperator || fromPlayer) && (
             <Button
-              variant="ghost"
-              onClick={() => navigate('/my-teams')}
-              className="mb-4"
+              onClick={() => setShowAcceptDialog(true)}
+              disabled={accepting || clearing}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to My Teams
+              {accepting ? 'Accepting...' : 'Accept Schedule & Complete Setup'}
             </Button>
-          )}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Season Schedule</h1>
-              <p className="text-gray-600 mt-1">
-                {seasonName}
-              </p>
-            </div>
-            {isOperator && !fromPlayer && schedule.length > 0 && (
-              <div className="flex gap-3">
-                <Button
-                  variant="destructive"
-                  onClick={handleClearSchedule}
-                  disabled={clearing || accepting}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {clearing ? 'Clearing...' : 'Clear Schedule'}
-                </Button>
-                <Button
-                  onClick={() => setShowAcceptDialog(true)}
-                  disabled={accepting || clearing}
-                >
-                  {accepting ? 'Accepting...' : 'Accept Schedule & Complete Setup'}
-                </Button>
-              </div>
-            )}
           </div>
-        </div>
+        )}
+      </PageHeader>
 
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Schedule by Week */}
         <div className="space-y-6">
           {schedule.map(({ week, matches }) => {

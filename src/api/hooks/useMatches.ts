@@ -13,7 +13,7 @@
  * @see api/queries/matches.ts - Pure query functions
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
 import {
   getMatchById,
@@ -24,6 +24,7 @@ import {
   getMatchWithLeagueSettings,
   getMatchLineups,
   getMatchGames,
+  completeMatch,
   getNextMatchForTeam,
 } from '../queries/matches';
 import { STALE_TIME } from '../client';
@@ -186,31 +187,36 @@ export function useMatchWithLeagueSettings(matchId: string | null | undefined) {
  * Hook to fetch match lineups for both teams
  *
  * Gets lineup records for home and away teams.
- * Both lineups must be locked before scoring can begin.
- * Used by scoring pages. Throws error if lineups not locked.
- * Cached for 0ms (live data - always refetch for scoring).
+ * Can optionally require both lineups to exist and be locked.
+ * Used by both scoring pages (requireLocked=true) and lineup pages (requireLocked=false).
+ * Cached for 0ms (live data - always refetch).
  *
  * @param matchId - Match's primary key ID
  * @param homeTeamId - Home team's primary key ID
  * @param awayTeamId - Away team's primary key ID
- * @returns TanStack Query result with { homeLineup, awayLineup }
+ * @param requireLocked - If true, throws error if lineups don't exist or aren't locked (default: true)
+ * @returns TanStack Query result with { homeLineup, awayLineup } (may be null if requireLocked=false)
  *
  * @example
- * const { data, isLoading, error } = useMatchLineups(matchId, homeTeamId, awayTeamId);
- * if (data) {
- *   const { homeLineup, awayLineup } = data;
- * }
+ * // For scoring page (requires locked lineups)
+ * const { data } = useMatchLineups(matchId, homeTeamId, awayTeamId);
+ *
+ * @example
+ * // For lineup page (allows missing lineups)
+ * const { data } = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
+ * if (data && !data.homeLineup) console.log('Home lineup not created yet');
  */
 export function useMatchLineups(
   matchId: string | null | undefined,
   homeTeamId: string | null | undefined,
-  awayTeamId: string | null | undefined
+  awayTeamId: string | null | undefined,
+  requireLocked: boolean = true
 ) {
   return useQuery({
-    queryKey: [...queryKeys.matches.lineup(matchId || ''), homeTeamId, awayTeamId],
-    queryFn: () => getMatchLineups(matchId!, homeTeamId!, awayTeamId!),
+    queryKey: [...queryKeys.matches.lineup(matchId || ''), homeTeamId, awayTeamId, requireLocked],
+    queryFn: () => getMatchLineups(matchId!, homeTeamId!, awayTeamId!, requireLocked),
     enabled: !!matchId && !!homeTeamId && !!awayTeamId,
-    staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh for scoring
+    staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh
     retry: 1,
   });
 }
@@ -237,6 +243,65 @@ export function useMatchGames(matchId: string | null | undefined) {
     enabled: !!matchId,
     staleTime: STALE_TIME.MATCH_LIVE, // 0ms - always fresh for scoring
     retry: 1,
+  });
+}
+
+/**
+ * Hook to complete a match after both teams verify
+ *
+ * Automatically invalidates match queries on success.
+ *
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * const completeMatchMutation = useCompleteMatch();
+ *
+ * const handleCompletion = async () => {
+ *   try {
+ *     await completeMatchMutation.mutateAsync({
+ *       matchId: 'match-123',
+ *       completionData: {
+ *         homeGamesWon: 10,
+ *         awayGamesWon: 8,
+ *         homePointsEarned: 1,
+ *         awayPointsEarned: -1,
+ *         winnerTeamId: 'home-team-id',
+ *         matchResult: 'home_win'
+ *       }
+ *     });
+ *   } catch (error) {
+ *     console.error('Failed to complete match:', error);
+ *   }
+ * };
+ */
+export function useCompleteMatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ matchId, completionData }: {
+      matchId: string;
+      completionData: {
+        homeGamesWon: number;
+        awayGamesWon: number;
+        homePointsEarned: number;
+        awayPointsEarned: number;
+        winnerTeamId: string | null;
+        matchResult: 'home_win' | 'away_win' | 'tie';
+        homeVerifiedBy: string | null;
+        awayVerifiedBy: string | null;
+      };
+    }) => completeMatch(matchId, completionData),
+    onSuccess: (_, variables) => {
+      // Invalidate match details
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.detail(variables.matchId),
+      });
+
+      // Invalidate season schedule (match status changed)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.all,
+      });
+    },
   });
 }
 

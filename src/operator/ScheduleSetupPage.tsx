@@ -7,8 +7,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 import { ScheduleSetup } from './ScheduleSetup';
 import { fetchTeamsWithDetails } from '@/api/hooks';
 import type { TeamWithQueryDetails } from '@/types/team';
@@ -116,26 +116,15 @@ export const ScheduleSetupPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/league/${leagueId}/manage-teams`)}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Team Management
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Generate Schedule</h1>
-            <p className="text-gray-600 mt-1">
-              Assign schedule positions and generate matchups for your season
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo={`/league/${leagueId}/manage-teams`}
+        backLabel="Back to Team Management"
+        title="Generate Schedule"
+        subtitle="Assign schedule positions and generate matchups for your season"
+      />
 
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Schedule Setup Component */}
         <ScheduleSetup
           seasonId={seasonId!}

@@ -28,8 +28,26 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   className = ""
 }) => {
   const [showInfo, setShowInfo] = useState(false);
+  const [popupPosition, setPopupPosition] = useState<'left' | 'right'>('right');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
+
+  // Calculate popup position to keep it on screen
+  useEffect(() => {
+    if (showInfo && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const popupWidth = 320; // w-80 = 320px
+
+      // If button is in the left half of screen, position popup to the right (left-0)
+      // If button is in the right half, position popup to the left (right-0)
+      if (buttonRect.left < viewportWidth / 2) {
+        setPopupPosition('left');
+      } else {
+        setPopupPosition('right');
+      }
+    }
+  }, [showInfo]);
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -74,7 +92,9 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
       {showInfo && (
         <div
           ref={popupRef}
-          className="absolute top-8 left-0 z-50 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg"
+          className={`absolute top-8 z-50 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg ${
+            popupPosition === 'left' ? 'left-0' : 'right-0'
+          }`}
         >
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900">{title}</h3>

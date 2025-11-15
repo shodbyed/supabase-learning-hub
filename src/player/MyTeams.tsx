@@ -26,12 +26,13 @@ import { Link } from 'react-router-dom';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
-import { MapPin, Users, AlertCircle, ArrowRight } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { MapPin, Users, AlertCircle, ArrowRight, Pencil } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
+import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { TenBallIcon } from '@/components/icons/TenBallIcon';
 import { NineBallIcon } from '@/components/icons/NineBallIcon';
 import { EightBallIcon } from '@/components/icons/EightBallIcon';
-import { BilliardRackIcon } from '@/components/icons/BilliardRackIcon';
 
 interface TeamData {
   team_id: string;
@@ -70,6 +71,7 @@ interface TeamData {
         game_type: string;
         day_of_week: string;
         division: string | null;
+        league_start_date: string;
       };
     };
   };
@@ -146,18 +148,17 @@ function TeamAccordionItem({
 
   // Get the appropriate ball icon based on game type
   const getBallIcon = () => {
-    const gameType = team.season.league.game_type.toLowerCase();
-    const iconSize = 24;
+    const gameType = team.season.league.game_type;
+    const iconSize = 32;
 
-    if (gameType.includes('8')) {
-      return <EightBallIcon size={iconSize} />;
-    } else if (gameType.includes('9')) {
+    if (gameType === 'nine_ball') {
       return <NineBallIcon size={iconSize} />;
-    } else if (gameType.includes('10')) {
+    } else if (gameType === 'ten_ball') {
       return <TenBallIcon size={iconSize} />;
+    } else {
+      // eight_ball or default
+      return <EightBallIcon size={iconSize} />;
     }
-    // Default to 8-ball if unknown
-    return <EightBallIcon size={iconSize} />;
   };
 
   return (
@@ -166,30 +167,53 @@ function TeamAccordionItem({
       value={team.id}
       className="bg-white border rounded-lg shadow-sm"
     >
-      <AccordionTrigger className="px-4 py-4 hover:no-underline">
-        <div className="flex flex-col gap-2 w-full pr-4 text-left">
-          {/* Row 1: Team name and game info */}
-          <div className="flex items-center justify-between w-full">
+      <AccordionTrigger className="pl-4 pr-1 py-4 hover:no-underline [&[data-state=open]>svg]:rotate-180">
+        <div className="flex flex-col gap-2 w-full">
+          {/* Row 1: League name with ball icon - grid only for this row */}
+          <div className="grid grid-cols-[36px_1fr_36px] gap-1 w-full items-center -mr-8">
+            {/* Ball icon on left */}
+            <div className="flex justify-center">
+              {getBallIcon()}
+            </div>
+
+            {/* League name (centered) */}
+            <div className="text-center">
+              <h3 className="font-semibold text-lg text-gray-700">
+                {team.season.league.league_start_date ? (
+                  buildLeagueTitle({
+                    gameType: team.season.league.game_type,
+                    dayOfWeek: team.season.league.day_of_week,
+                    division: team.season.league.division,
+                    season: getTimeOfYear(parseLocalDate(team.season.league.league_start_date)),
+                    year: parseLocalDate(team.season.league.league_start_date).getFullYear(),
+                  })
+                ) : (
+                  `${formatGameType(team.season.league.game_type as any)} ${formatDayOfWeek(team.season.league.day_of_week as any)}`
+                )}
+              </h3>
+            </div>
+
+            {/* Placeholder for chevron space (chevron is rendered outside grid by AccordionTrigger) */}
+            <div></div>
+          </div>
+
+          {/* Row 2: Team name - full width left aligned */}
+          <div className="flex items-center gap-2 w-full text-left">
             <h2 className="font-semibold text-xl text-gray-900">
               {team.team_name}
             </h2>
-            <div className="flex items-center gap-2 font-semibold text-xl text-gray-600">
-              {getBallIcon()}
-              <span>
-                {formatGameType(team.season.league.game_type as any)} •{' '}
-                {formatDayOfWeek(team.season.league.day_of_week as any)}
-              </span>
-            </div>
           </div>
 
-          {/* Rows 2+: Actionable matches (makeups + upcoming) */}
-          {/* TODO: VERIFY ACTIONABLE MATCHES DISPLAY */}
-          {/* Once you have makeup matches and upcoming matches, verify: */}
-          {/* 1. Makeup matches show with orange "MAKEUP" tag */}
-          {/* 2. Upcoming matches show with blue "UPCOMING" or "IN PROGRESS" tag */}
-          {/* 3. Quick Score buttons work for all matches */}
-          {/* 4. Accordion height expands nicely for multiple matches */}
-          {actionableMatches.length > 0 ? (
+          {/* Rows 3+: Actionable matches or setup incomplete warning */}
+          {!isReady && actionableMatches.length > 0 ? (
+            // Show single setup incomplete flag if team not ready
+            <div className="flex items-center justify-end w-full">
+              <span className="text-xs font-bold px-2 py-0.5 rounded text-yellow-700 bg-yellow-100">
+                SETUP INCOMPLETE
+              </span>
+            </div>
+          ) : actionableMatches.length > 0 ? (
+            // Show matches with Quick Score buttons if team is ready
             actionableMatches.map((match) => {
               const isMakeup = makeupMatches.some(m => m.id === match.id);
               const isInProgress = match.status === 'in_progress';
@@ -211,22 +235,27 @@ function TeamAccordionItem({
                     <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${tagColor}`}>
                       {tagText}
                     </span>
-                    <Link
-                      to={`/match/${match.id}/lineup`}
-                      onClick={(e) => e.stopPropagation()}
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className={`inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer px-2 h-7 ${
+                        isMakeup
+                          ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
+                          : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = `/match/${match.id}/lineup`;
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation();
+                          window.location.href = `/match/${match.id}/lineup`;
+                        }
+                      }}
                     >
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={`text-xs px-2 h-7 ${
-                          isMakeup
-                            ? 'text-orange-700 hover:text-orange-800 hover:bg-orange-50'
-                            : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
-                        }`}
-                      >
-                        Quick Score <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
+                      Quick Score <ArrowRight className="h-3 w-3 ml-1" />
+                    </div>
                   </div>
                 </div>
               );
@@ -262,11 +291,24 @@ function TeamAccordionItem({
             </div>
           )}
 
-          {/* Home Venue */}
+          {/* Home Venue with Edit Team Button (Captains Only) */}
           <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-              <MapPin className="h-4 w-4" />
-              <span>Home Venue</span>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                <MapPin className="h-4 w-4" />
+                <span>Home Venue</span>
+              </div>
+              {isCaptain && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-sm h-8 gap-1.5"
+                  onClick={() => onEditTeam(team.id)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit Team
+                </Button>
+              )}
             </div>
             <p className="text-base text-gray-900 ml-6">
               {team.venue?.name || 'No venue assigned'}
@@ -334,23 +376,19 @@ function TeamAccordionItem({
 
           {/* Action Buttons */}
           <div className="pt-2">
-            <Link to={`/team/${team.id}/schedule`} className="block">
-              <Button variant="outline" className="w-full">
-                View Schedule
-              </Button>
-            </Link>
-          </div>
-
-          {/* Edit Team Button (Captains Only) */}
-          {isCaptain && (
             <Button
-              variant="ghost"
-              className="w-full text-sm"
-              onClick={() => onEditTeam(team.id)}
+              variant="default"
+              className="w-full"
+              disabled={!isReady}
+              onClick={() => {
+                if (isReady) {
+                  window.location.href = `/team/${team.id}/schedule`;
+                }
+              }}
             >
-              Edit Team
+              View Schedule
             </Button>
-          )}
+          </div>
         </div>
       </AccordionContent>
     </AccordionItem>
@@ -423,15 +461,11 @@ export function MyTeams() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Mobile First */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <BilliardRackIcon size={50} />
-            <div className="text-4xl font-semibold text-gray-900">My Teams</div>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Back to Dashboard"
+        title="My Teams"
+      />
 
       {/* Main Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">

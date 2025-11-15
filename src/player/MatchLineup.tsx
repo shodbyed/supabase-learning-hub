@@ -7,11 +7,9 @@
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { supabase } from '@/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -20,649 +18,320 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowLeft, Users } from 'lucide-react';
-import { useCurrentMember } from '@/api/hooks';
-import { calculatePlayerHandicap } from '@/utils/calculatePlayerHandicap';
-import { getTeamHandicapBonus } from '@/utils/getTeamHandicapBonus';
-import type { HandicapVariant } from '@/utils/handicapCalculations';
+import {
+  useCurrentMember,
+  useMatchWithLeagueSettings,
+  useMatchLineups,
+  useUserTeamInMatch,
+  useTeamDetails,
+  useUpdateMatchLineup,
+} from '@/api/hooks';
+import type { Player } from '@/types/match';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
-import { PlayerRoster, type RosterPlayer } from '@/components/lineup/PlayerRoster';
+import {
+  PlayerRoster,
+  type RosterPlayer,
+} from '@/components/lineup/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
-import { InfoButton } from '@/components/InfoButton';
+import { HandicapSummary } from '@/components/lineup/HandicapSummary';
+import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
+import { useQueryStates } from '@/hooks/useQueryStates';
+import { useLineupState, useHandicapCalculations, useLineupValidation, useLineupPersistence, useMatchPreparation } from '@/hooks/lineup';
+import { formatHandicap } from '@/utils/lineup';
+import { useMatchLineupsRealtime } from '@/realtime/useMatchLineupsRealtime';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
 const SUB_AWAY_ID = '00000000-0000-0000-0000-000000000002';
 
-interface Match {
-  id: string;
-  scheduled_date: string;
-  season_id: string;
-  home_team_id: string;
-  away_team_id: string;
-  home_team: {
-    id: string;
-    team_name: string;
-  } | null;
-  away_team: {
-    id: string;
-    team_name: string;
-  } | null;
-  scheduled_venue: {
-    id: string;
-    name: string;
-    city: string;
-    state: string;
-  } | null;
-  season_week: {
-    scheduled_date: string;
-  } | null;
-}
-
-interface Player {
-  id: string;
-  first_name: string;
-  last_name: string;
-  nickname: string | null;
-  handicap: number; // Mock for now - will calculate from game history later
-}
-
 export function MatchLineup() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const { data: member, isLoading: memberLoading } = useCurrentMember();
+
+  // TanStack Query: Get current member data
+  const memberQuery = useCurrentMember();
+  const member = memberQuery.data;
   const memberId = member?.id;
 
-  const [match, setMatch] = useState<Match | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // TanStack Query: Get match data with league settings
+  const matchQuery = useMatchWithLeagueSettings(matchId);
+  const matchData = matchQuery.data;
+
+  // TanStack Query: Get lineups (both home and away)
+  // Lineups are auto-created by database trigger, so they always exist (may be unlocked)
+  const lineupsQuery = useMatchLineups(
+    matchId,
+    matchData?.home_team_id,
+    matchData?.away_team_id,
+    false // requireLocked: false - lineups exist but may not be locked yet
+  );
+
+  // TanStack Query: Determine which team user is on
+  const userTeamQuery = useUserTeamInMatch(
+    memberId,
+    matchData?.home_team_id,
+    matchData?.away_team_id
+  );
+  const userTeamData = userTeamQuery.data;
+
+  // Derive team info early for next query
+  const userTeamId = userTeamData?.team_id;
+
+  // TanStack Query: Get team roster with member details
+  const teamDetailsQuery = useTeamDetails(userTeamId);
+
+  // Unified query state handling - consolidates loading/error checks
+  const { renderState } = useQueryStates([
+    { query: memberQuery, name: 'member' },
+    { query: matchQuery, name: 'match' },
+    { query: lineupsQuery, name: 'lineups' }, // Auto-created by DB trigger
+    { query: userTeamQuery, name: 'user team' },
+    { query: teamDetailsQuery, name: 'team details' },
+  ]);
+
+  // Note: Mutation hooks (useUpdateMatch, useUpdateMatchLineup) are now used inside hooks
+
+  // Centralized lineup state management
+  const lineup = useLineupState();
+
+  // Get update mutation for direct dropdown saves
+  const updateLineupMutation = useUpdateMatchLineup();
+
+  // Extract players from team details query
+  const players: Player[] = teamDetailsQuery.data?.team_players?.map((tp: any) => ({
+    id: tp.members.id,
+    nickname: tp.members.nickname,
+    handicap: tp.members.handicap,
+    first_name: tp.members.first_name,
+    last_name: tp.members.last_name,
+  })) || [];
 
   // Team handicap bonus (only for home team)
-  const [teamHandicap, setTeamHandicap] = useState<number>(0);
+  const [teamHandicap] = useState<number>(0);
 
-  // Lineup selection (value is UUID or "SUBSTITUTE")
-  const [player1Id, setPlayer1Id] = useState<string>('');
-  const [player2Id, setPlayer2Id] = useState<string>('');
-  const [player3Id, setPlayer3Id] = useState<string>('');
-  const [lineupLocked, setLineupLocked] = useState(false);
+  // Derive values (safe to use optional chaining since hooks are called)
+  const isHomeTeam = userTeamData?.isHomeTeam || false;
 
-  // Substitute handicap (only used if one player is "SUBSTITUTE")
-  const [subHandicap, setSubHandicap] = useState<string>('');
+  // Get opponent lineup from query (updates in real-time)
+  const opponentLineup = isHomeTeam
+    ? lineupsQuery.data?.awayLineup
+    : lineupsQuery.data?.homeLineup;
 
-  // Opponent lineup status
-  const [opponentLineup, setOpponentLineup] = useState<any>(null);
+  // Handicap calculations
+  const handicaps = useHandicapCalculations({
+    player1Id: lineup.player1Id,
+    player2Id: lineup.player2Id,
+    player3Id: lineup.player3Id,
+    subHandicap: lineup.subHandicap,
+    testMode: lineup.testMode,
+    testHandicaps: lineup.testHandicaps,
+    players,
+    teamHandicap,
+    isHomeTeam,
+  });
 
-  // Determine user's team
-  const [userTeamId, setUserTeamId] = useState<string | null>(null);
-  const [isHomeTeam, setIsHomeTeam] = useState<boolean | null>(null);
+  // Lineup validation
+  const validation = useLineupValidation({
+    player1Id: lineup.player1Id,
+    player2Id: lineup.player2Id,
+    player3Id: lineup.player3Id,
+    subHandicap: lineup.subHandicap,
+    players,
+  });
 
-  // Lineup ID (for updates after initial save)
-  const [lineupId, setLineupId] = useState<string | null>(null);
+  // Lineup persistence operations
+  const { handleLockLineup, handleUnlockLineup } = useLineupPersistence({
+    matchId,
+    userTeamId: userTeamData?.team_id,
+    memberId,
+    lineupId: lineup.lineupId,
+    player1Id: lineup.player1Id,
+    player2Id: lineup.player2Id,
+    player3Id: lineup.player3Id,
+    player1Handicap: handicaps.player1Handicap,
+    player2Handicap: handicaps.player2Handicap,
+    player3Handicap: handicaps.player3Handicap,
+    teamHandicap,
+    isComplete: validation.isComplete,
+    hasDuplicates: validation.hasDuplicates,
+    onLineupIdChange: lineup.setLineupId,
+    onLockedChange: lineup.setLineupLocked,
+    matchData,
+  });
 
-  // Test mode for manual handicap override
-  const [testMode, setTestMode] = useState(false);
-  const [testHandicaps, setTestHandicaps] = useState<Record<string, number>>({});
-  const [, setTestTeamBonus] = useState<number | null>(null);
+  const teamFormat = (matchData?.league?.team_format || '5_man') as '5_man' | '8_man';
 
+  // Note: Lineups are now auto-created by database trigger when match is inserted
+  // See migration: 20251115000000_auto_create_match_lineups.sql
+
+  // Match preparation and auto-navigation
+  useMatchPreparation({
+    lineupLocked: lineup.lineupLocked,
+    opponentLineup,
+    matchId,
+    matchData,
+    isHomeTeam,
+    teamFormat,
+    player1Id: lineup.player1Id,
+    player2Id: lineup.player2Id,
+    player3Id: lineup.player3Id,
+    player1Handicap: handicaps.player1Handicap,
+    player2Handicap: handicaps.player2Handicap,
+    player3Handicap: handicaps.player3Handicap,
+  });
+
+  // Load lineup ID and data from database (auto-created by trigger)
+  // This is critical - without the lineup ID, we can't update the lineup
+  // Only loads ONCE on initial mount to avoid triggering auto-save loop
   useEffect(() => {
-    async function fetchMatchAndLineup() {
-      // Wait for member data to load
-      if (memberLoading) return;
+    if (lineupsQuery.data && userTeamData) {
+      const myLineup = isHomeTeam
+        ? lineupsQuery.data.homeLineup
+        : lineupsQuery.data.awayLineup;
 
-      if (!matchId || !memberId) {
-        setError('Missing match or member information');
-        setLoading(false);
-        return;
-      }
+      if (myLineup) {
+        // Always update lineup ID (needed for mutations)
+        lineup.setLineupId(myLineup.id);
 
-      try {
-        // Fetch match details with league handicap variants
-        const { data: matchData, error: matchError } = await supabase
-          .from('matches')
-          .select(`
-            id,
-            home_team_id,
-            away_team_id,
-            season_id,
-            home_team:teams!matches_home_team_id_fkey(id, team_name),
-            away_team:teams!matches_away_team_id_fkey(id, team_name),
-            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
-            season_week:season_weeks(scheduled_date),
-            season:seasons!matches_season_id_fkey(
-              league:leagues(
-                handicap_variant,
-                team_handicap_variant,
-                game_type,
-                team_format
-              )
-            )
-          `)
-          .eq('id', matchId)
-          .single();
-
-        if (matchError) throw matchError;
-
-        console.log('Match data received:', matchData);
-
-        // Extract handicap variants from nested league data
-        const seasonData = Array.isArray(matchData.season)
-          ? matchData.season[0]
-          : matchData.season;
-        const leagueData = seasonData && Array.isArray((seasonData as any).league)
-          ? (seasonData as any).league[0]
-          : (seasonData as any)?.league;
-        const playerVariant = (leagueData?.handicap_variant || 'standard') as HandicapVariant;
-        const teamVariant = (leagueData?.team_handicap_variant || 'standard') as HandicapVariant;
-        const gameType = (leagueData?.game_type || 'eight_ball') as 'eight_ball' | 'nine_ball' | 'ten_ball';
-        const teamFormat = (leagueData?.team_format || '5_man') as '5_man' | '8_man';
-        console.log('League settings:', { playerVariant, teamVariant, gameType, teamFormat });
-
-        // Transform to include scheduled_date - handle both array and object formats
-        const homeTeam = Array.isArray(matchData.home_team)
-          ? matchData.home_team[0]
-          : matchData.home_team;
-        const awayTeam = Array.isArray(matchData.away_team)
-          ? matchData.away_team[0]
-          : matchData.away_team;
-        const venue = Array.isArray(matchData.scheduled_venue)
-          ? matchData.scheduled_venue[0]
-          : matchData.scheduled_venue;
-        const seasonWeek = Array.isArray(matchData.season_week)
-          ? matchData.season_week[0]
-          : matchData.season_week;
-
-        const transformedMatch: Match = {
-          id: matchData.id,
-          scheduled_date: (seasonWeek as any)?.scheduled_date || '',
-          season_id: matchData.season_id,
-          home_team_id: matchData.home_team_id,
-          away_team_id: matchData.away_team_id,
-          home_team: homeTeam as any || null,
-          away_team: awayTeam as any || null,
-          scheduled_venue: venue as any || null,
-          season_week: seasonWeek as any || null,
-        };
-
-        console.log('Transformed match:', transformedMatch);
-        setMatch(transformedMatch);
-
-        // Calculate team handicap (only for home team)
-        // NOTE: Set to 0 for now - will be calculated from standings page when built
-        const calculatedTeamHandicap = 0;
-        setTeamHandicap(calculatedTeamHandicap);
-        console.log('Team handicap set to:', calculatedTeamHandicap);
-
-        // Determine which team the user is on
-        const { data: teamPlayerData, error: teamPlayerError } = await supabase
-          .from('team_players')
-          .select('team_id')
-          .eq('member_id', memberId)
-          .or(`team_id.eq.${matchData.home_team_id},team_id.eq.${matchData.away_team_id}`)
-          .single();
-
-        if (teamPlayerError) throw new Error('You are not on either team in this match');
-
-        const userTeam = teamPlayerData.team_id;
-        const isHome = userTeam === matchData.home_team_id;
-        console.log('User team determination:', {
-          userTeam,
-          homeTeamId: matchData.home_team_id,
-          awayTeamId: matchData.away_team_id,
-          isHome,
-        });
-        setUserTeamId(userTeam);
-        setIsHomeTeam(isHome);
-
-        // Fetch all players on user's team
-        const { data: playersData, error: playersError } = await supabase
-          .from('team_players')
-          .select(`
-            members:members!team_players_member_id_fkey(
-              id,
-              first_name,
-              last_name,
-              nickname
-            )
-          `)
-          .eq('team_id', userTeam);
-
-        if (playersError) throw playersError;
-
-        // Calculate handicaps for all players
-        // Handicaps are game-type specific (8-ball games don't count for 9-ball, etc.)
-        // Use Test Mode to manually override handicaps for testing
-        const transformedPlayers = await Promise.all(
-          (playersData || []).map(async (p: any) => {
-            const handicap = await calculatePlayerHandicap(
-              p.members.id,
-              teamFormat,
-              playerVariant,
-              gameType,
-              matchData.season_id // Prioritize current season games
-            );
-
-            return {
-              id: p.members.id,
-              first_name: p.members.first_name,
-              last_name: p.members.last_name,
-              nickname: p.members.nickname,
-              handicap,
-            };
-          })
-        );
-
-        // Add the appropriate substitute member to the players list
-        const substituteId = isHome ? SUB_HOME_ID : SUB_AWAY_ID;
-        const { data: subData, error: subError } = await supabase
-          .from('members')
-          .select('id, first_name, last_name, nickname')
-          .eq('id', substituteId)
-          .single();
-
-        if (!subError && subData) {
-          transformedPlayers.push({
-            id: subData.id,
-            first_name: subData.first_name,
-            last_name: subData.last_name,
-            nickname: subData.nickname,
-            handicap: 0, // Will be calculated based on highest unused or manual entry
-          });
+        // Only set player IDs if they exist in the database AND local state is empty
+        // This prevents overwriting user's current selections with old DB data
+        if (myLineup.player1_id && !lineup.player1Id) {
+          lineup.setPlayer1Id(myLineup.player1_id);
+        }
+        if (myLineup.player2_id && !lineup.player2Id) {
+          lineup.setPlayer2Id(myLineup.player2_id);
+        }
+        if (myLineup.player3_id && !lineup.player3Id) {
+          lineup.setPlayer3Id(myLineup.player3_id);
         }
 
-        console.log('Players with calculated handicaps (including substitute):', transformedPlayers);
-        setPlayers(transformedPlayers);
-
-        // Calculate team handicap bonus (only applies to home team)
-        if (isHome && matchData.away_team_id) {
-          const bonus = await getTeamHandicapBonus(
-            matchData.home_team_id,
-            matchData.away_team_id,
-            matchData.season_id,
-            teamFormat
-          );
-          setTeamHandicap(bonus);
-          console.log('Team handicap bonus calculated:', bonus);
-        }
-
-        // Check if lineup already exists for this team
-        const { data: existingLineup, error: lineupError } = await supabase
-          .from('match_lineups')
-          .select('*')
-          .eq('match_id', matchId)
-          .eq('team_id', userTeam)
-          .maybeSingle();
-
-        if (!lineupError && existingLineup) {
-          // Load existing lineup and use stored handicaps for consistency
-          console.log('Loading existing lineup from database:', existingLineup);
-
-          setLineupId(existingLineup.id);
-          // Use substitute ID if player_id is null or already a substitute ID
-          const getPlayerOrSub = (playerId: string | null) => {
-            if (!playerId) return isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID;
-            if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) return playerId;
-            return playerId;
-          };
-          setPlayer1Id(getPlayerOrSub(existingLineup.player1_id));
-          setPlayer2Id(getPlayerOrSub(existingLineup.player2_id));
-          setPlayer3Id(getPlayerOrSub(existingLineup.player3_id));
-          setLineupLocked(existingLineup.locked);
-
-          // Update players array with stored handicaps to ensure consistency
-          // across all team members viewing this lineup
-          const updatedPlayers = transformedPlayers.map((player) => {
-            if (player.id === existingLineup.player1_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player1_handicap) };
-            }
-            if (player.id === existingLineup.player2_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player2_handicap) };
-            }
-            if (player.id === existingLineup.player3_id) {
-              return { ...player, handicap: parseFloat(existingLineup.player3_handicap) };
-            }
-            return player;
-          });
-          setPlayers(updatedPlayers);
-
-          // If any player is a substitute, get the handicap
-          if (!existingLineup.player1_id) {
-            setSubHandicap(existingLineup.player1_handicap.toString());
-          } else if (!existingLineup.player2_id) {
-            setSubHandicap(existingLineup.player2_handicap.toString());
-          } else if (!existingLineup.player3_id) {
-            setSubHandicap(existingLineup.player3_handicap.toString());
-          }
-        }
-
-        // Fetch opponent's lineup
-        const opponentTeamId = isHome ? matchData.away_team_id : matchData.home_team_id;
-        const { data: opponentLineupData } = await supabase
-          .from('match_lineups')
-          .select('*')
-          .eq('match_id', matchId)
-          .eq('team_id', opponentTeamId)
-          .maybeSingle();
-
-        if (opponentLineupData) {
-          setOpponentLineup(opponentLineupData);
-        }
-      } catch (err: any) {
-        console.error('Error fetching match/lineup:', err);
-        setError(err.message || 'Failed to load match information');
-      } finally {
-        setLoading(false);
+        // Always sync locked state from database (source of truth)
+        lineup.setLineupLocked(!!myLineup.locked);
       }
     }
+    // Only run on initial load - don't include lineup in dependencies
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lineupsQuery.data, userTeamData, isHomeTeam]);
 
-    fetchMatchAndLineup();
-  }, [matchId, memberId, memberLoading]);
+  // Real-time subscription for lineup changes
+  useMatchLineupsRealtime(matchId, {
+    onMatchUpdate: () => matchQuery.refetch(),
+    onLineupUpdate: () => lineupsQuery.refetch(),
+  });
 
-  // Real-time subscription for opponent lineup changes
-  useEffect(() => {
-    if (!matchId || !match || isHomeTeam === null) return;
+  // Dropdown change handlers - save directly to database
+  const handlePlayer1Change = (playerId: string) => {
+    if (!lineup.lineupId || !matchId) return;
 
-    const opponentTeamId = isHomeTeam ? match.away_team_id : match.home_team_id;
+    lineup.setPlayer1Id(playerId);
 
-    console.log('Setting up real-time subscription:', {
+    updateLineupMutation.mutate({
+      lineupId: lineup.lineupId,
+      updates: {
+        player1_id: playerId,
+        player1_handicap: handicaps.player1Handicap,
+      },
       matchId,
-      userTeamId,
-      opponentTeamId,
-      isHomeTeam,
     });
-
-    // Subscribe to opponent's lineup changes
-    const channel = supabase
-      .channel(`match-lineup-${matchId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'match_lineups',
-          filter: `match_id=eq.${matchId}`,
-        },
-        (payload) => {
-          console.log('Real-time event received:', payload);
-          console.log('Opponent team ID:', opponentTeamId);
-          console.log('Event team ID:', (payload.new as any)?.team_id);
-
-          // Only update if it's the opponent's lineup
-          if (payload.new && (payload.new as any).team_id === opponentTeamId) {
-            console.log('Updating opponent lineup state');
-            setOpponentLineup(payload.new);
-          } else {
-            console.log('Ignoring event - not opponent team');
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
-
-    return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [matchId, match, isHomeTeam, userTeamId]);
-
-  // Auto-navigate to scoring page when both lineups are locked
-  useEffect(() => {
-    if (lineupLocked && opponentLineup?.locked) {
-      console.log('Both lineups locked - navigating to scoring page');
-      navigate(`/match/${matchId}/score`);
-    }
-  }, [lineupLocked, opponentLineup, matchId, navigate]);
-
-  /**
-   * Helper: Check if any player is a substitute
-   */
-  const hasSub = (): boolean => {
-    return player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID ||
-           player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID ||
-           player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID;
   };
 
-  /**
-   * Helper: Get the highest handicap of players NOT in the lineup
-   */
-  const getHighestUnusedHandicap = (): number => {
-    const usedPlayerIds = [player1Id, player2Id, player3Id].filter(
-      (id) => id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
-    );
-    const unusedPlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
+  const handlePlayer2Change = (playerId: string) => {
+    if (!lineup.lineupId || !matchId) return;
 
-    if (unusedPlayers.length === 0) return 0;
+    lineup.setPlayer2Id(playerId);
 
-    // Use test mode overrides if available
-    return Math.max(...unusedPlayers.map((p) => {
-      if (testMode && testHandicaps[p.id] !== undefined) {
-        return testHandicaps[p.id];
-      }
-      return p.handicap;
-    }));
+    updateLineupMutation.mutate({
+      lineupId: lineup.lineupId,
+      updates: {
+        player2_id: playerId,
+        player2_handicap: handicaps.player2Handicap,
+      },
+      matchId,
+    });
   };
 
-  /**
-   * Helper: Get handicap for a player slot
-   */
-  const getPlayerHandicap = (playerId: string): number => {
-    // In test mode, use override handicaps if available
-    if (testMode && testHandicaps[playerId] !== undefined) {
-      return testHandicaps[playerId];
-    }
+  const handlePlayer3Change = (playerId: string) => {
+    if (!lineup.lineupId || !matchId) return;
 
-    if (playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) {
-      const highestUnused = getHighestUnusedHandicap();
+    lineup.setPlayer3Id(playerId);
 
-      // If sub handicap is manually entered, use the HIGHER of the two
-      if (subHandicap) {
-        const subValue = parseFloat(subHandicap);
-        return Math.max(subValue, highestUnused);
-      }
-
-      // Otherwise use highest handicap of unused players
-      return highestUnused;
-    }
-    const player = players.find((p) => p.id === playerId);
-    return player?.handicap || 0;
+    updateLineupMutation.mutate({
+      lineupId: lineup.lineupId,
+      updates: {
+        player3_id: playerId,
+        player3_handicap: handicaps.player3Handicap,
+      },
+      matchId,
+    });
   };
 
-  /**
-   * Helper: Format handicap display (show whole number if .0, otherwise 1 decimal)
-   */
-  const formatHandicap = (handicap: number): string => {
-    return handicap % 1 === 0 ? handicap.toString() : handicap.toFixed(1);
-  };
+  // Early return for loading/error states - consolidated into single check
+  if (renderState) return renderState;
 
-  /**
-   * Calculate total player handicap (sum of 3 players)
-   */
-  const calculatePlayerHandicapTotal = (): number => {
-    const h1 = getPlayerHandicap(player1Id);
-    const h2 = getPlayerHandicap(player2Id);
-    const h3 = getPlayerHandicap(player3Id);
+  // After renderState check, all data is guaranteed to be defined
+  // TypeScript doesn't infer this, so we assert non-null
+  const match = matchData!;
 
-    const total = h1 + h2 + h3;
-    return Math.round(total * 10) / 10; // Round to 1 decimal
-  };
 
-  /**
-   * Calculate final team total (player handicaps + team bonus for home team)
-   */
-  const calculateFinalTeamHandicap = (): number => {
-    const playerTotal = calculatePlayerHandicapTotal();
-
-    // Team bonus set to 0 for now - will be calculated from standings page when built
-    // Only home team gets team handicap bonus (currently 0)
-    const bonus = isHomeTeam ? teamHandicap : 0;
-
-    return Math.round((playerTotal + bonus) * 10) / 10; // Round to 1 decimal
-  };
-
-  /**
-   * Check if lineup is complete
-   */
-  const isLineupComplete = (): boolean => {
-    const playersSelected = !!(player1Id && player2Id && player3Id);
-    // If there's a sub, handicap must be selected
-    if (hasSub()) {
-      return playersSelected && !!subHandicap;
-    }
-    return playersSelected;
-  };
-
-  /**
-   * Handle lock lineup - Save to database and lock
-   */
-  const handleLockLineup = async () => {
-    if (!isLineupComplete()) {
-      alert('Please select all 3 players before locking your lineup');
-      return;
-    }
-
-    if (!matchId || !userTeamId) {
-      alert('Error: Missing match or team information');
-      return;
-    }
-
-    try {
-      // Verify user is on the team
-      const { data: teamCheck, error: teamCheckError } = await supabase
-        .from('team_players')
-        .select('*')
-        .eq('team_id', userTeamId)
-        .eq('member_id', memberId)
-        .single();
-
-      console.log('Team membership check:', {
-        userTeamId,
-        memberId,
-        teamCheck,
-        error: teamCheckError,
-      });
-
-      if (teamCheckError || !teamCheck) {
-        throw new Error('You are not a member of this team');
-      }
-
-      // Prepare lineup data (keep substitute IDs, don't convert to null)
-      const lineupData = {
-        match_id: matchId,
-        team_id: userTeamId,
-        player1_id: player1Id,
-        player1_handicap: getPlayerHandicap(player1Id),
-        player2_id: player2Id,
-        player2_handicap: getPlayerHandicap(player2Id),
-        player3_id: player3Id,
-        player3_handicap: getPlayerHandicap(player3Id),
-        locked: true,
-      };
-
-      console.log('Attempting to save lineup:', lineupData);
-
-      let result;
-
-      if (lineupId) {
-        // Update existing lineup
-        result = await supabase
-          .from('match_lineups')
-          .update(lineupData)
-          .eq('id', lineupId)
-          .select()
-          .single();
-      } else {
-        // Insert new lineup
-        result = await supabase
-          .from('match_lineups')
-          .insert(lineupData)
-          .select()
-          .single();
-      }
-
-      if (result.error) {
-        console.error('Database error details:', {
-          code: result.error.code,
-          message: result.error.message,
-          details: result.error.details,
-          hint: result.error.hint,
-          lineupData,
-        });
-        throw result.error;
-      }
-
-      // Update local state
-      setLineupId(result.data.id);
-      setLineupLocked(true);
-
-      console.log('Lineup locked successfully:', result.data);
-    } catch (err: any) {
-      console.error('Error saving lineup:', err);
-      alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
-    }
-  };
-
-  /**
-   * Handle unlock lineup - Only allowed if opponent hasn't locked yet
-   */
-  const handleUnlockLineup = async () => {
-    if (!lineupId) {
-      alert('Error: No lineup to unlock');
-      return;
-    }
-
-    try {
-      const result = await supabase
-        .from('match_lineups')
-        .update({ locked: false, locked_at: null })
-        .eq('id', lineupId)
-        .select()
-        .single();
-
-      if (result.error) throw result.error;
-
-      setLineupLocked(false);
-      console.log('Lineup unlocked successfully:', result.data);
-    } catch (err: any) {
-      console.error('Error unlocking lineup:', err);
-      alert('Failed to unlock lineup. Please try again.');
-    }
-  };
 
   /**
    * Get opponent team info
    */
   const getOpponentTeam = () => {
-    if (!match) return null;
-    const opponent = isHomeTeam ? match.away_team : match.home_team;
-    console.log('Getting opponent:', { isHomeTeam, opponent, match });
-    return opponent;
+    if (!matchData) return null;
+    return isHomeTeam ? matchData.away_team : matchData.home_team;
   };
 
-  if (loading || memberLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Loading match...</p>
-      </div>
-    );
-  }
+  /**
+   * Calculate opponent status based on match lineup_id and locked state
+   * - absent: No lineup ID in match (opponent hasn't joined)
+   * - choosing: Has lineup ID but not locked (opponent selecting players)
+   * - ready: Has lineup ID and is locked (opponent ready)
+   *
+   * Shows detailed player selection progress:
+   * - "Players chosen: 1" when 1 player selected
+   * - "Players chosen: 2" when 2 players selected
+   * - "Players chosen: 3" when 3 players selected
+   * - "Locked" when lineup is locked
+   */
+  const getOpponentStatus = (): 'absent' | 'choosing' | 'ready' => {
+    if (!matchData) return 'absent';
 
-  if (error || !match) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-red-600">{error || 'Match not found'}</p>
-            <Link to="/my-teams">
-              <Button variant="outline" className="mt-4">
-                Back to My Teams
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    const opponentLineupField = isHomeTeam
+      ? 'away_lineup_id'
+      : 'home_lineup_id';
+    const opponentLineupId =
+      matchData[opponentLineupField as keyof typeof matchData];
+
+    // No lineup ID = opponent hasn't joined yet
+    if (!opponentLineupId) return 'absent';
+
+    // Has lineup ID, check if locked
+    if (opponentLineup?.locked) return 'ready';
+
+    // Has lineup ID but not locked = choosing lineup
+    return 'choosing';
+  };
+
+  /**
+   * Get detailed opponent selection status showing player count
+   */
+  const getOpponentSelectionStatus = (): string => {
+    const status = getOpponentStatus();
+
+    if (status === 'absent') return 'Absent';
+    if (status === 'ready') return 'Locked';
+
+    // Status is 'choosing' - count selected players
+    let playerCount = 0;
+    if (opponentLineup?.player1_id) playerCount++;
+    if (opponentLineup?.player2_id) playerCount++;
+    if (opponentLineup?.player3_id) playerCount++;
+
+    if (playerCount === 0) return 'Choosing lineup';
+    return `Players chosen: ${playerCount}`;
+  };
 
   const opponent = getOpponentTeam();
 
@@ -678,7 +347,9 @@ export function MatchLineup() {
             <ArrowLeft className="h-4 w-4" />
             Back to Schedule
           </Link>
-          <div className="text-4xl font-semibold text-gray-900">Lineup Entry</div>
+          <div className="text-4xl font-semibold text-gray-900">
+            Lineup Entry
+          </div>
         </div>
       </header>
 
@@ -687,9 +358,11 @@ export function MatchLineup() {
         {/* Match Info Card */}
         <MatchInfoCard
           scheduledDate={match.scheduled_date}
-          opponent={opponent ? { id: opponent.id, name: opponent.team_name } : null}
+          opponent={
+            opponent ? { id: opponent.id, name: opponent.team_name } : null
+          }
           isHomeTeam={isHomeTeam || false}
-          venue={match.scheduled_venue || undefined}
+          venueId={match.scheduled_venue?.id || null}
         />
 
         {/* Lineup Selection Card */}
@@ -703,39 +376,39 @@ export function MatchLineup() {
           <CardContent className="space-y-4">
             {/* Test Mode Toggle */}
             <TestModeToggle
-              enabled={testMode}
+              enabled={lineup.testMode}
               onChange={(enabled) => {
-                setTestMode(enabled);
+                lineup.setTestMode(enabled);
                 if (!enabled) {
-                  setTestHandicaps({});
-                  setTestTeamBonus(null);
+                  lineup.setTestHandicaps({});
                 }
               }}
-              disabled={lineupLocked}
+              disabled={lineup.lineupLocked}
             />
-
 
             {/* Available Players List */}
             <PlayerRoster
               players={players
-                .filter(p => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID) // Exclude substitute from roster
-                .map((p): RosterPlayer => ({
-                  id: p.id,
-                  firstName: p.first_name,
-                  lastName: p.last_name,
-                  nickname: p.nickname,
-                  handicap: p.handicap,
-                }))}
+                .filter((p) => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID) // Exclude substitute from roster
+                .map(
+                  (p): RosterPlayer => ({
+                    id: p.id,
+                    firstName: p.first_name,
+                    lastName: p.last_name,
+                    nickname: p.nickname,
+                    handicap: p.handicap || 0,
+                  })
+                )}
               showHandicaps={true}
-              testMode={testMode}
-              testHandicaps={testHandicaps}
+              testMode={lineup.testMode}
+              testHandicaps={lineup.testHandicaps}
               onHandicapOverride={(playerId, handicap) => {
-                setTestHandicaps(prev => ({
+                lineup.setTestHandicaps((prev) => ({
                   ...prev,
                   [playerId]: handicap,
                 }));
               }}
-              disabled={lineupLocked}
+              disabled={lineup.lineupLocked}
             />
 
             {/* Player Selection Dropdowns */}
@@ -743,13 +416,17 @@ export function MatchLineup() {
               {/* Header Row */}
               <div className="flex gap-3 items-center pb-1 border-b">
                 <div className="w-12 text-center">
-                  <div className="text-xs font-medium text-gray-500">Player</div>
+                  <div className="text-xs font-medium text-gray-500">
+                    Player
+                  </div>
                 </div>
                 <div className="w-12 text-center">
                   <div className="text-xs font-medium text-gray-500">H/C</div>
                 </div>
                 <div className="flex-1">
-                  <div className="text-xs font-medium text-gray-500">Player Name</div>
+                  <div className="text-xs font-medium text-gray-500">
+                    Player Name
+                  </div>
                 </div>
               </div>
 
@@ -761,16 +438,18 @@ export function MatchLineup() {
                   </div>
                   <div className="w-12 text-center">
                     <div className="text-sm font-semibold text-blue-600">
-                      {player1Id ? formatHandicap(getPlayerHandicap(player1Id)) : '-'}
+                      {lineup.player1Id
+                        ? formatHandicap(handicaps.player1Handicap)
+                        : '-'}
                     </div>
                   </div>
                   <div className="flex-1">
                     <Select
-                      value={player1Id}
-                      onValueChange={setPlayer1Id}
-                      disabled={lineupLocked}
+                      value={lineup.player1Id}
+                      onValueChange={handlePlayer1Change}
+                      disabled={lineup.lineupLocked}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-[120px]">
                         <SelectValue placeholder="Select Player 1" />
                       </SelectTrigger>
                       <SelectContent>
@@ -778,20 +457,25 @@ export function MatchLineup() {
                           <SelectItem
                             key={player.id}
                             value={player.id}
-                            disabled={player.id === player2Id || player.id === player3Id}
+                            disabled={
+                              player.id === lineup.player2Id || player.id === lineup.player3Id
+                            }
                           >
-                            {player.nickname || `${player.first_name} ${player.last_name}`}
+                            {player.nickname ||
+                              `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player1Id === SUB_HOME_ID || player1Id === SUB_AWAY_ID) && (
+                </div>
+                {(lineup.player1Id === SUB_HOME_ID || lineup.player1Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
-                        value={subHandicap}
-                        onValueChange={setSubHandicap}
-                        disabled={lineupLocked}
+                        value={lineup.subHandicap}
+                        onValueChange={lineup.setSubHandicap}
+                        disabled={lineup.lineupLocked}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Sub H/C" />
@@ -805,8 +489,8 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Player 2 */}
                 <div className="flex gap-3 items-center">
@@ -815,16 +499,18 @@ export function MatchLineup() {
                   </div>
                   <div className="w-12 text-center">
                     <div className="text-sm font-semibold text-blue-600">
-                      {player2Id ? formatHandicap(getPlayerHandicap(player2Id)) : '-'}
+                      {lineup.player2Id
+                        ? formatHandicap(handicaps.player2Handicap)
+                        : '-'}
                     </div>
                   </div>
                   <div className="flex-1">
                     <Select
-                      value={player2Id}
-                      onValueChange={setPlayer2Id}
-                      disabled={lineupLocked}
+                      value={lineup.player2Id}
+                      onValueChange={handlePlayer2Change}
+                      disabled={lineup.lineupLocked}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-[120px]">
                         <SelectValue placeholder="Select Player 2" />
                       </SelectTrigger>
                       <SelectContent>
@@ -832,20 +518,25 @@ export function MatchLineup() {
                           <SelectItem
                             key={player.id}
                             value={player.id}
-                            disabled={player.id === player1Id || player.id === player3Id}
+                            disabled={
+                              player.id === lineup.player1Id || player.id === lineup.player3Id
+                            }
                           >
-                            {player.nickname || `${player.first_name} ${player.last_name}`}
+                            {player.nickname ||
+                              `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player2Id === SUB_HOME_ID || player2Id === SUB_AWAY_ID) && (
+                </div>
+                {(lineup.player2Id === SUB_HOME_ID || lineup.player2Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
-                        value={subHandicap}
-                        onValueChange={setSubHandicap}
-                        disabled={lineupLocked}
+                        value={lineup.subHandicap}
+                        onValueChange={lineup.setSubHandicap}
+                        disabled={lineup.lineupLocked}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Sub H/C" />
@@ -859,8 +550,8 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Player 3 */}
                 <div className="flex gap-3 items-center">
@@ -869,16 +560,18 @@ export function MatchLineup() {
                   </div>
                   <div className="w-12 text-center">
                     <div className="text-sm font-semibold text-blue-600">
-                      {player3Id ? formatHandicap(getPlayerHandicap(player3Id)) : '-'}
+                      {lineup.player3Id
+                        ? formatHandicap(handicaps.player3Handicap)
+                        : '-'}
                     </div>
                   </div>
                   <div className="flex-1">
                     <Select
-                      value={player3Id}
-                      onValueChange={setPlayer3Id}
-                      disabled={lineupLocked}
+                      value={lineup.player3Id}
+                      onValueChange={handlePlayer3Change}
+                      disabled={lineup.lineupLocked}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="min-w-[120px]">
                         <SelectValue placeholder="Select Player 3" />
                       </SelectTrigger>
                       <SelectContent>
@@ -886,20 +579,25 @@ export function MatchLineup() {
                           <SelectItem
                             key={player.id}
                             value={player.id}
-                            disabled={player.id === player1Id || player.id === player2Id}
+                            disabled={
+                              player.id === lineup.player1Id || player.id === lineup.player2Id
+                            }
                           >
-                            {player.nickname || `${player.first_name} ${player.last_name}`}
+                            {player.nickname ||
+                              `${player.first_name} ${player.last_name}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  {(player3Id === SUB_HOME_ID || player3Id === SUB_AWAY_ID) && (
+                </div>
+                {(lineup.player3Id === SUB_HOME_ID || lineup.player3Id === SUB_AWAY_ID) && (
+                  <div className="flex gap-3 items-center ml-12">
                     <div className="flex-1">
                       <Select
-                        value={subHandicap}
-                        onValueChange={setSubHandicap}
-                        disabled={lineupLocked}
+                        value={lineup.subHandicap}
+                        onValueChange={lineup.setSubHandicap}
+                        disabled={lineup.lineupLocked}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Sub H/C" />
@@ -913,78 +611,35 @@ export function MatchLineup() {
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Team Handicap Display */}
-            <div className="border-t pt-4 space-y-2">
-              <div className="flex justify-between items-center text-sm text-gray-600">
-                <span>Player Handicaps:</span>
-                <span className="font-semibold">{formatHandicap(calculatePlayerHandicapTotal())}</span>
-              </div>
+            <HandicapSummary
+              playerTotal={handicaps.playerTotal}
+              teamHandicap={teamHandicap}
+              teamTotal={handicaps.teamTotal}
+              isHomeTeam={isHomeTeam}
+            />
 
-              {/* Only show team modifier if there is one (home team with non-zero modifier) */}
-              {isHomeTeam && teamHandicap !== 0 && (
-                <div className="flex justify-between items-center text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <span>Team Modifier:</span>
-                    <InfoButton title="Team Handicap Modifier">
-                      <div className="space-y-2">
-                        <p>
-                          This modifier is based on how your team's record compares to your opponent's in the standings.
-                        </p>
-                        <div className="bg-gray-50 p-2 rounded">
-                          <p className="font-semibold mb-1">How it works:</p>
-                          <p className="text-xs">For every 2 match wins ahead = -1 modifier (advantage)</p>
-                          <p className="text-xs">For every 2 match wins behind = +1 modifier (disadvantage)</p>
-                          <p className="text-xs mt-1 italic">Lower handicap = fewer games needed to win</p>
-                        </div>
-                        <div className="bg-blue-50 p-2 rounded">
-                          <p className="font-semibold mb-1">Examples:</p>
-                          <p className="text-xs">
-                            5 matches ahead → <strong>-2 modifier</strong> (advantage)<br />
-                            2 matches ahead → <strong>-1 modifier</strong> (advantage)<br />
-                            2 matches behind → <strong>+1 modifier</strong> (disadvantage)<br />
-                            4-5 matches behind → <strong>+2 modifier</strong> (disadvantage)
-                          </p>
-                        </div>
-                        <p className="text-xs">
-                          This modifier is only applied to the home team to ensure only one adjustment per match. It's added to the home team's player handicaps to help balance competition.
-                        </p>
-                      </div>
-                    </InfoButton>
-                  </div>
-                  <span className="font-semibold">
-                    {teamHandicap >= 0 ? '+' : ''}{formatHandicap(teamHandicap)}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center pt-2 border-t">
-                <span className="font-semibold text-gray-900">Team Total Handicap:</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  {formatHandicap(calculateFinalTeamHandicap())}
-                </span>
-              </div>
-
-              {!isHomeTeam && (
-                <p className="text-xs text-gray-500 italic">
-                  Team bonus shown above applies to home team only
-                </p>
-              )}
-            </div>
+            {/* Duplicate Nickname Error */}
+            <DuplicateNicknameWarning
+              show={validation.isComplete && validation.hasDuplicates}
+            />
 
             {/* Lock/Unlock and Status */}
             <LineupActions
-              locked={lineupLocked}
-              opponentLocked={opponentLineup?.locked || false}
-              canLock={isLineupComplete()}
-              canUnlock={!opponentLineup?.locked}
+              locked={lineup.lineupLocked}
+              opponentStatus={getOpponentStatus()}
+              opponentStatusText={getOpponentSelectionStatus()}
+              canLock={validation.canLock}
+              canUnlock={getOpponentStatus() !== 'ready'}
               onLock={handleLockLineup}
               onUnlock={handleUnlockLineup}
               onProceed={() => {
+                // TODO: Before navigating to score page, insert all 18 game rows into match_games table
                 navigate(`/match/${matchId}/score`);
               }}
             />

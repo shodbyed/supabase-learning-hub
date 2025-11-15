@@ -15,6 +15,7 @@ IMPORTANT FEATURES
 2.  rules \*\*
 3.  invite system \*\*
 4.  payout calculator
+5.  scorecard dispute page (league operator)
 
 FUTURE FEATURES
 

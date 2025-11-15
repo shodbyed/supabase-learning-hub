@@ -6,9 +6,10 @@
  */
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { parseLocalDate } from '@/utils/formatters';
+import { VenueWithMaps } from '@/components/VenueWithMaps';
 
 interface MatchInfoCardProps {
   scheduledDate?: string;
@@ -17,11 +18,7 @@ interface MatchInfoCardProps {
     name: string;
   } | null;
   isHomeTeam: boolean;
-  venue?: {
-    name: string;
-    city: string;
-    state: string;
-  } | null;
+  venueId?: string | null;
 }
 
 /**
@@ -33,7 +30,7 @@ export function MatchInfoCard({
   scheduledDate,
   opponent,
   isHomeTeam,
-  venue,
+  venueId,
 }: MatchInfoCardProps) {
   return (
     <Card>
@@ -68,15 +65,10 @@ export function MatchInfoCard({
           <span className="font-medium">
             {isHomeTeam ? 'Home Game' : 'Away Game'}
           </span>
-          {venue && (
+          {venueId && (
             <>
               <span>@</span>
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                <span>
-                  {venue.name}, {venue.city}, {venue.state}
-                </span>
-              </div>
+              <VenueWithMaps venueId={venueId} className="text-sm" />
             </>
           )}
         </div>
