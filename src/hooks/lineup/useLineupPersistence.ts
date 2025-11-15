@@ -1,0 +1,215 @@
+/**
+ * @fileoverview Hook for lineup save/lock/unlock operations
+ *
+ * Handles all database operations for saving and locking lineups.
+ * Manages the interaction between match_lineups and matches tables.
+ *
+ * NOTE: Lineups are auto-created by database trigger when matches are created.
+ * This hook only UPDATES existing lineups, never inserts new ones.
+ */
+
+import { supabase } from '@/supabaseClient';
+import { useUpdateMatch, useUpdateMatchLineup } from '@/api/hooks';
+
+interface LineupPersistenceParams {
+  matchId: string | undefined;
+  userTeamId: string | undefined;
+  memberId: string | undefined;
+  lineupId: string | null;
+  player1Id: string;
+  player2Id: string;
+  player3Id: string;
+  player1Handicap: number;
+  player2Handicap: number;
+  player3Handicap: number;
+  teamHandicap: number;
+  isComplete: boolean;
+  hasDuplicates: boolean;
+  onLineupIdChange: (id: string) => void;
+  onLockedChange: (locked: boolean) => void;
+  matchData?: any;
+}
+
+export function useLineupPersistence(params: LineupPersistenceParams) {
+  const {
+    matchId,
+    userTeamId,
+    memberId,
+    lineupId,
+    player1Id,
+    player2Id,
+    player3Id,
+    player1Handicap,
+    player2Handicap,
+    player3Handicap,
+    teamHandicap,
+    isComplete,
+    hasDuplicates,
+    onLineupIdChange,
+    onLockedChange,
+    matchData,
+  } = params;
+
+  const updateLineupMutation = useUpdateMatchLineup();
+  const updateMatchMutation = useUpdateMatch();
+
+  /**
+   * Handle lock lineup - Save to database and lock
+   */
+  const handleLockLineup = async () => {
+    if (!isComplete) {
+      alert('Please select all 3 players before locking your lineup');
+      return;
+    }
+
+    if (hasDuplicates) {
+      alert(
+        'Two or more players in your lineup have the same nickname. Please have at least one of them go to their profile page to change their nickname so they will be identifiable during scoring.'
+      );
+      return;
+    }
+
+    if (!matchId || !userTeamId) {
+      alert('Error: Missing match or team information');
+      return;
+    }
+
+    try {
+      // Verify user is on the team
+      const { data: teamCheck, error: teamCheckError } = await supabase
+        .from('team_players')
+        .select('*')
+        .eq('team_id', userTeamId)
+        .eq('member_id', memberId)
+        .single();
+
+      if (teamCheckError || !teamCheck) {
+        throw new Error('You are not a member of this team');
+      }
+
+      // Prepare lineup data (keep substitute IDs, don't convert to null)
+      const lineupData = {
+        match_id: matchId,
+        team_id: userTeamId,
+        player1_id: player1Id,
+        player1_handicap: player1Handicap,
+        player2_id: player2Id,
+        player2_handicap: player2Handicap,
+        player3_id: player3Id,
+        player3_handicap: player3Handicap,
+        home_team_modifier: teamHandicap, // Team modifier from standings (currently 0)
+        locked: true,
+        locked_at: new Date().toISOString(), // Timestamp when lineup was locked
+      };
+
+      // Lineups are auto-created by DB trigger - we should ONLY update, never insert
+      if (!lineupId) {
+        throw new Error('Lineup ID is missing. Lineups should be auto-created by the database trigger when the match is created.');
+      }
+
+      // Update existing lineup
+      const result = await updateLineupMutation.mutateAsync({
+        lineupId: lineupId,
+        updates: lineupData,
+        matchId,
+      });
+
+      // Update local state
+      onLineupIdChange(result.id);
+      onLockedChange(true);
+
+      // Save lineup ID to matches table
+      const isHomeTeam = userTeamId === matchData?.home_team_id;
+      const lineupField = isHomeTeam ? 'home_lineup_id' : 'away_lineup_id';
+
+      // Check if opponent lineup is already locked
+      const opponentLineupField = isHomeTeam
+        ? 'away_lineup_id'
+        : 'home_lineup_id';
+      const opponentLineupLocked = matchData?.[opponentLineupField] != null;
+
+      // If both lineups are now locked, set started_at timestamp
+      const matchUpdateData: any = { [lineupField]: result.id };
+      if (opponentLineupLocked && !matchData?.started_at) {
+        matchUpdateData.started_at = new Date().toISOString();
+      }
+
+      try {
+        await updateMatchMutation.mutateAsync({
+          matchId,
+          updates: matchUpdateData,
+        });
+      } catch (matchUpdateError: any) {
+        console.error('Error updating match with lineup ID:', matchUpdateError);
+        // Don't throw - lineup is still locked, just log the error
+      }
+    } catch (err: any) {
+      console.error('Error saving lineup:', err);
+      alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
+    }
+  };
+
+  /**
+   * Handle unlock lineup - Only allowed if opponent hasn't locked yet
+   */
+  const handleUnlockLineup = async () => {
+    if (!lineupId || !matchId) {
+      alert('Error: No lineup to unlock');
+      return;
+    }
+
+    try {
+      await updateLineupMutation.mutateAsync({
+        lineupId: lineupId,
+        updates: { locked: false, locked_at: null },
+        matchId,
+      });
+
+      onLockedChange(false);
+      console.log('Lineup unlocked successfully');
+    } catch (err: any) {
+      console.error('Error unlocking lineup:', err);
+      alert('Failed to unlock lineup. Please try again.');
+    }
+  };
+
+  /**
+   * Auto-save lineup selections (without locking)
+   * Called when player selections change in the dropdowns
+   */
+  const autoSaveLineup = async () => {
+    if (!lineupId || !matchId) {
+      console.log('⏭️ Skipping auto-save: no lineup ID yet');
+      return;
+    }
+
+    try {
+      const lineupData = {
+        player1_id: player1Id || null,
+        player2_id: player2Id || null,
+        player3_id: player3Id || null,
+        player1_handicap: player1Handicap,
+        player2_handicap: player2Handicap,
+        player3_handicap: player3Handicap,
+        // Don't update locked status or home_team_modifier
+      };
+
+      await updateLineupMutation.mutateAsync({
+        lineupId: lineupId,
+        updates: lineupData,
+        matchId,
+      });
+
+      console.log('💾 Lineup auto-saved');
+    } catch (err: any) {
+      console.error('Auto-save error:', err);
+      // Don't alert user - auto-save failures shouldn't be intrusive
+    }
+  };
+
+  return {
+    handleLockLineup,
+    handleUnlockLineup,
+    autoSaveLineup,
+  };
+}

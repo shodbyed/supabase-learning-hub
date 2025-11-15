@@ -18,6 +18,7 @@ type OpponentStatus = 'absent' | 'choosing' | 'ready';
 interface LineupActionsProps {
   locked: boolean;
   opponentStatus: OpponentStatus; // New 3-status system
+  opponentStatusText?: string; // Optional detailed status text (e.g., "Players chosen: 2")
   canLock: boolean; // All positions filled
   canUnlock: boolean; // Opponent hasn't locked yet
   onLock: () => void;
@@ -34,6 +35,7 @@ interface LineupActionsProps {
 export function LineupActions({
   locked,
   opponentStatus,
+  opponentStatusText,
   canLock,
   canUnlock,
   onLock,
@@ -55,13 +57,17 @@ export function LineupActions({
           {opponentStatus === 'choosing' && (
             <>
               <Users className="h-5 w-5 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-600">Choosing Lineup</span>
+              <span className="text-sm font-medium text-yellow-600">
+                {opponentStatusText || 'Choosing Lineup'}
+              </span>
             </>
           )}
           {opponentStatus === 'ready' && (
             <>
               <CheckCircle className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-semibold text-green-600">Ready</span>
+              <span className="text-sm font-semibold text-green-600">
+                {opponentStatusText || 'Ready'}
+              </span>
             </>
           )}
         </div>
