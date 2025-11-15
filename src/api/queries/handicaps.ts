@@ -24,11 +24,32 @@ import type { HandicapThresholds } from '@/types';
  * console.log(`Need ${thresholds.games_to_win} games to win`);
  */
 export async function getHandicapThresholds3v3(handicapDiff: number): Promise<HandicapThresholds> {
-  const { data, error } = await supabase
+  // First try with .single()
+  let { data, error } = await supabase
     .from('handicap_chart_3vs3')
     .select('*')
     .eq('hcp_diff', handicapDiff)
     .single();
+
+  // If RLS is blocking (406) or single() fails, try without single() and take first row
+  if (error?.code === 'PGRST116' || error?.code === '406' || error?.message?.includes('406')) {
+    console.log('⚠️ RLS blocking or multiple rows, trying without .single()');
+    const result = await supabase
+      .from('handicap_chart_3vs3')
+      .select('*')
+      .eq('hcp_diff', handicapDiff)
+      .limit(1);
+
+    if (result.error) {
+      throw new Error(`Failed to fetch handicap thresholds: ${result.error.message}`);
+    }
+
+    if (!result.data || result.data.length === 0) {
+      throw new Error(`No handicap threshold found for diff ${handicapDiff}`);
+    }
+
+    return result.data[0] as HandicapThresholds;
+  }
 
   if (error) {
     throw new Error(`Failed to fetch handicap thresholds: ${error.message}`);
