@@ -49,19 +49,9 @@ export function useMatchPreparation(params: MatchPreparationParams) {
   const matchPreparedRef = useRef(false);
 
   // Auto-navigate to scoring page when both lineups are locked - useEffect MUST be before early returns
-  // UNLESS this is a tiebreaker scenario (match_result = 'tie')
   // IMPORTANT: Only HOME team prepares the match to avoid race conditions
   useEffect(() => {
     if (lineupLocked && opponentLineup?.locked && !matchPreparedRef.current) {
-      // If this is a tiebreaker (match ended in tie), don't auto-navigate
-      // User will manually proceed when ready
-      if (matchData?.match_result === 'tie') {
-        console.log(
-          'Both lineups locked (tiebreaker) - waiting for manual proceed'
-        );
-        return;
-      }
-
       // Only home team prepares the match data to avoid both teams doing it simultaneously
       if (!isHomeTeam) {
         console.log('🚀 Away team navigating to scoring');
@@ -77,6 +67,26 @@ export function useMatchPreparation(params: MatchPreparationParams) {
 
         try {
           matchPreparedRef.current = true;
+
+          // Check if games already exist (tiebreaker scenario)
+          const { data: existingGames, error: checkError } = await supabase
+            .from('match_games')
+            .select('id')
+            .eq('match_id', matchId)
+            .limit(1);
+
+          if (checkError) {
+            throw new Error(`Failed to check existing games: ${checkError.message}`);
+          }
+
+          const gamesAlreadyExist = existingGames && existingGames.length > 0;
+
+          if (gamesAlreadyExist) {
+            console.log('Games already exist (tiebreaker mode) - skipping game creation');
+            // Just navigate, don't create games or calculate thresholds
+            navigate(`/match/${matchId}/score`);
+            return;
+          }
 
           // Build current user's lineup object from state
           const myLineup = {

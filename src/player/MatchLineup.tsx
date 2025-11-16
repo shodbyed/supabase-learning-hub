@@ -7,7 +7,7 @@
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,21 +26,20 @@ import {
   useUserTeamInMatch,
   useTeamDetails,
   useUpdateMatchLineup,
+  useMatchGames,
 } from '@/api/hooks';
+import { useUpdateMatchGame } from '@/api/hooks/useMatchMutations';
 import type { Player } from '@/types/match';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { TestModeToggle } from '@/components/lineup/TestModeToggle';
-import {
-  PlayerRoster,
-  type RosterPlayer,
-} from '@/components/lineup/PlayerRoster';
+import { PlayerRoster } from '@/components/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
 import { useQueryStates } from '@/hooks/useQueryStates';
 import { useLineupState, useHandicapCalculations, useLineupValidation, useLineupPersistence, useMatchPreparation } from '@/hooks/lineup';
 import { formatHandicap } from '@/utils/lineup';
-import { useMatchLineupsRealtime } from '@/realtime/useMatchLineupsRealtime';
+import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -98,6 +97,13 @@ export function MatchLineup() {
 
   // Get update mutation for direct dropdown saves
   const updateLineupMutation = useUpdateMatchLineup();
+
+  // Fetch all match games (for tiebreaker mode)
+  const matchGamesQuery = useMatchGames(matchId);
+  const allGames = matchGamesQuery.data || [];
+
+  // Get update game mutation (for tiebreaker mode)
+  const updateGameMutation = useUpdateMatchGame(matchId || '');
 
   // Extract players from team details query
   const players: Player[] = teamDetailsQuery.data?.team_players?.map((tp: any) => ({
@@ -215,10 +221,12 @@ export function MatchLineup() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineupsQuery.data, userTeamData, isHomeTeam]);
 
-  // Real-time subscription for lineup changes
-  useMatchLineupsRealtime(matchId, {
+  // Unified real-time subscription for match, lineups, and games
+  // Watches all three tables throughout entire match flow (lineup + tiebreaker + scoring)
+  useMatchRealtime(matchId, {
     onMatchUpdate: () => matchQuery.refetch(),
     onLineupUpdate: () => lineupsQuery.refetch(),
+    onGamesUpdate: () => matchGamesQuery.refetch(),
   });
 
   // Generic player change handler - works for any position (scalable to 5 players)
@@ -282,6 +290,74 @@ export function MatchLineup() {
     return allPlayers.filter((_, index) => index + 1 !== position);
   };
 
+  // Tiebreaker mode handlers - update game records instead of lineup
+  const handleTiebreakerPlayerChange = (position: 1 | 2 | 3, playerId: string) => {
+    if (!matchId) return;
+
+    // Map position to game number (1 → 19, 2 → 20, 3 → 21)
+    const gameNumber = 18 + position;
+
+    // Find the game
+    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    if (!game) {
+      console.error(`Tiebreaker game ${gameNumber} not found`);
+      return;
+    }
+
+    // Update local state (for UI responsiveness)
+    if (position === 1) lineup.setPlayer1Id(playerId);
+    else if (position === 2) lineup.setPlayer2Id(playerId);
+    else lineup.setPlayer3Id(playerId);
+
+    // Determine which player field to update based on team
+    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+
+    // Update the game record
+    updateGameMutation.mutate({
+      gameId: game.id,
+      updates: {
+        [playerField]: playerId,
+      },
+    });
+  };
+
+  const handleClearTiebreakerPlayer = (position: 1 | 2 | 3) => {
+    if (!matchId) return;
+
+    // Map position to game number
+    const gameNumber = 18 + position;
+
+    // Find the game
+    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    if (!game) return;
+
+    // Clear local state
+    if (position === 1) lineup.setPlayer1Id('');
+    else if (position === 2) lineup.setPlayer2Id('');
+    else lineup.setPlayer3Id('');
+
+    // Determine which player field to clear
+    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+
+    // Clear the game record
+    updateGameMutation.mutate({
+      gameId: game.id,
+      updates: {
+        [playerField]: null,
+      },
+    });
+  };
+
+  // Get tiebreaker game player ID by position
+  const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
+    const gameNumber = 18 + position;
+    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    if (!game) return '';
+
+    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+    return game[playerField as keyof typeof game] as string || '';
+  };
+
   // Early return for loading/error states - consolidated into single check
   if (renderState) return renderState;
 
@@ -341,15 +417,46 @@ export function MatchLineup() {
 
     // Status is 'choosing' - count selected players
     let playerCount = 0;
-    if (opponentLineup?.player1_id) playerCount++;
-    if (opponentLineup?.player2_id) playerCount++;
-    if (opponentLineup?.player3_id) playerCount++;
+
+    // In tiebreaker mode, count players from games 19, 20, 21
+    if (isTiebreakerMode) {
+      const opponentPlayerField = isHomeTeam ? 'away_player_id' : 'home_player_id';
+
+      [19, 20, 21].forEach((gameNumber) => {
+        const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+        if (game && game[opponentPlayerField as keyof typeof game]) {
+          playerCount++;
+        }
+      });
+    } else {
+      // Normal mode - count from lineup
+      if (opponentLineup?.player1_id) playerCount++;
+      if (opponentLineup?.player2_id) playerCount++;
+      if (opponentLineup?.player3_id) playerCount++;
+    }
 
     if (playerCount === 0) return 'Choosing lineup';
     return `Players chosen: ${playerCount}`;
   };
 
   const opponent = getOpponentTeam();
+
+  // Detect tiebreaker mode
+  const isTiebreakerMode = matchData?.match_result === 'tie';
+
+  // Get my lineup (for tiebreaker mode player source)
+  const myLineup = isHomeTeam
+    ? lineupsQuery.data?.homeLineup
+    : lineupsQuery.data?.awayLineup;
+
+  // In tiebreaker mode, get players from lineup record instead of team roster
+  const availablePlayers = isTiebreakerMode && myLineup
+    ? players.filter((p) =>
+        p.id === myLineup.player1_id ||
+        p.id === myLineup.player2_id ||
+        p.id === myLineup.player3_id
+      )
+    : players; // Normal mode: all team players
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -386,45 +493,32 @@ export function MatchLineup() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Select Your Lineup
+              {isTiebreakerMode ? 'Select Your Tiebreaker Lineup' : 'Select Your Lineup'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Test Mode Toggle */}
-            <TestModeToggle
-              enabled={lineup.testMode}
-              onChange={(enabled) => {
-                lineup.setTestMode(enabled);
-                if (!enabled) {
-                  lineup.setTestHandicaps({});
-                }
-              }}
-              disabled={lineup.lineupLocked}
-            />
+            {/* Test Mode Toggle - Hide in tiebreaker mode */}
+            {!isTiebreakerMode && (
+              <TestModeToggle
+                enabled={lineup.testMode}
+                onChange={(enabled) => {
+                  lineup.setTestMode(enabled);
+                  if (!enabled) {
+                    lineup.setTestHandicaps({});
+                  }
+                }}
+                disabled={lineup.lineupLocked}
+              />
+            )}
 
             {/* Available Players List */}
             <PlayerRoster
-              players={players
-                .filter((p) => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID) // Exclude substitute from roster
-                .map(
-                  (p): RosterPlayer => ({
-                    id: p.id,
-                    firstName: p.first_name,
-                    lastName: p.last_name,
-                    nickname: p.nickname,
-                    handicap: p.handicap || 0,
-                  })
-                )}
-              showHandicaps={true}
-              testMode={lineup.testMode}
-              testHandicaps={lineup.testHandicaps}
-              onHandicapOverride={(playerId, handicap) => {
-                lineup.setTestHandicaps((prev) => ({
-                  ...prev,
-                  [playerId]: handicap,
-                }));
-              }}
-              disabled={lineup.lineupLocked}
+              playerIds={availablePlayers.filter((p) => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID).map((p) => p.id)}
+              teamFormat={teamFormat}
+              handicapVariant={(matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none'}
+              gameType={matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
+              seasonId={matchData?.season_id}
+              hidePlayerNumber
             />
 
             {/* Player Selection Dropdowns */}
@@ -449,9 +543,29 @@ export function MatchLineup() {
               <div className="space-y-2 mt-2">
                 {/* Map over positions 1, 2, 3 (scalable to 5 in the future) */}
                 {([1, 2, 3] as const).map((position) => {
-                  const playerId = getPlayerIdByPosition(position);
+                  // In tiebreaker mode, get player from game record; otherwise from lineup
+                  const playerId = isTiebreakerMode
+                    ? getTiebreakerPlayerIdByPosition(position)
+                    : getPlayerIdByPosition(position);
                   const handicap = getHandicapByPosition(position);
-                  const otherPlayerIds = getOtherPlayerIds(position);
+
+                  // Get other selected player IDs (to disable them in dropdown)
+                  const otherPlayerIds = isTiebreakerMode
+                    ? // Tiebreaker mode: get from game records
+                      [1, 2, 3]
+                        .filter((p) => p !== position)
+                        .map((p) => getTiebreakerPlayerIdByPosition(p as 1 | 2 | 3))
+                        .filter(Boolean)
+                    : // Normal mode: get from lineup state
+                      getOtherPlayerIds(position);
+
+                  // Choose appropriate handlers based on mode
+                  const onPlayerChange = isTiebreakerMode
+                    ? handleTiebreakerPlayerChange
+                    : handlePlayerChange;
+                  const onClearPlayer = isTiebreakerMode
+                    ? handleClearTiebreakerPlayer
+                    : handleClearPlayer;
 
                   return (
                     <React.Fragment key={position}>
@@ -467,14 +581,14 @@ export function MatchLineup() {
                         <div className="flex-1">
                           <Select
                             value={playerId}
-                            onValueChange={(id) => handlePlayerChange(position, id)}
+                            onValueChange={(id) => onPlayerChange(position, id)}
                             disabled={lineup.lineupLocked}
                           >
                             <SelectTrigger className="min-w-[120px]">
                               <SelectValue placeholder={`Select Player ${position}`} />
                             </SelectTrigger>
                             <SelectContent>
-                              {players.map((player) => (
+                              {availablePlayers.map((player) => (
                                 <SelectItem
                                   key={player.id}
                                   value={player.id}
@@ -491,7 +605,7 @@ export function MatchLineup() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleClearPlayer(position)}
+                            onClick={() => onClearPlayer(position)}
                             className="h-8 w-8 flex-shrink-0"
                             title={`Clear player ${position}`}
                           >
@@ -537,10 +651,12 @@ export function MatchLineup() {
               isHomeTeam={isHomeTeam}
             />
 
-            {/* Duplicate Nickname Error */}
-            <DuplicateNicknameWarning
-              show={validation.isComplete && validation.hasDuplicates}
-            />
+            {/* Duplicate Nickname Error - Only show in normal mode, not tiebreaker */}
+            {!isTiebreakerMode && (
+              <DuplicateNicknameWarning
+                show={validation.isComplete && validation.hasDuplicates}
+              />
+            )}
 
             {/* Lock/Unlock and Status */}
             <LineupActions

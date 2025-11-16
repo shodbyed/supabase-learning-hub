@@ -22,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
 // getAllGames no longer needed - all game data comes from database
 import { getCompletedGamesCount } from '@/types/match';
@@ -31,6 +32,7 @@ import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
+import { TiebreakerScoreboard } from '@/components/scoring/TiebreakerScoreboard';
 import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
 
@@ -441,35 +443,83 @@ export function ScoreMatch() {
     );
   }
 
+  // Filter games based on mode (normal vs tiebreaker)
+  const isTiebreakerMode = match.match_result === 'tie';
+  const filteredGameResults = isTiebreakerMode
+    ? new Map(
+        Array.from(gameResults.entries()).filter(([gameNumber]) =>
+          gameNumber >= 19 && gameNumber <= 21
+        )
+      )
+    : gameResults;
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
+      {/* Header with back button and auto-confirm */}
+      <div className="bg-white border-b px-4 py-2 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-1"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Dashboard
+        </Button>
+        <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={autoConfirm}
+            onChange={(e) => setAutoConfirm(e.target.checked)}
+            className="w-3 h-3"
+          />
+          Auto-accept opponent results
+        </label>
+      </div>
+
       {/* Scoreboard - Fixed at top */}
-      <MatchScoreboard
-        match={{
-          ...match,
-          home_team_verified_by: (match as any).home_team_verified_by ?? null,
-          away_team_verified_by: (match as any).away_team_verified_by ?? null,
-        }}
-        homeLineup={homeLineup}
-        awayLineup={awayLineup}
-        gameResults={gameResults}
-        homeTeamHandicap={homeTeamHandicap}
-        homeThresholds={homeThresholds}
-        awayThresholds={awayThresholds}
-        showingHomeTeam={showingHomeTeam}
-        onToggleTeam={setShowingHomeTeam}
-        autoConfirm={autoConfirm}
-        onAutoConfirmChange={setAutoConfirm}
-        getPlayerDisplayName={getPlayerDisplayName}
-        allGamesComplete={allGamesComplete}
-        isHomeTeam={isHomeTeam ?? false}
-        onVerify={handleVerify}
-        isVerifying={isVerifying}
-      />
+      {isTiebreakerMode ? (
+        <TiebreakerScoreboard
+          match={{
+            ...match,
+            home_team_verified_by: (match as any).home_team_verified_by ?? null,
+            away_team_verified_by: (match as any).away_team_verified_by ?? null,
+          }}
+          gameResults={filteredGameResults}
+          isHomeTeam={isHomeTeam ?? false}
+          onVerify={handleVerify}
+          isVerifying={isVerifying}
+          gameType={gameType}
+        />
+      ) : (
+        <MatchScoreboard
+          match={{
+            ...match,
+            home_team_verified_by: (match as any).home_team_verified_by ?? null,
+            away_team_verified_by: (match as any).away_team_verified_by ?? null,
+          }}
+          homeLineup={homeLineup}
+          awayLineup={awayLineup}
+          gameResults={filteredGameResults}
+          homeTeamHandicap={homeTeamHandicap}
+          homeThresholds={homeThresholds}
+          awayThresholds={awayThresholds}
+          showingHomeTeam={showingHomeTeam}
+          onToggleTeam={setShowingHomeTeam}
+          autoConfirm={autoConfirm}
+          onAutoConfirmChange={setAutoConfirm}
+          getPlayerDisplayName={getPlayerDisplayName}
+          allGamesComplete={allGamesComplete}
+          isHomeTeam={isHomeTeam ?? false}
+          onVerify={handleVerify}
+          isVerifying={isVerifying}
+          gameType={gameType}
+        />
+      )}
 
       {/* Game list section - ALL data from database */}
       <GamesList
-        gameResults={gameResults}
+        gameResults={filteredGameResults}
         getPlayerDisplayName={getPlayerDisplayName}
         onGameClick={handlePlayerClick}
         onVacateClick={(gameNumber, winnerName) => {
@@ -493,7 +543,7 @@ export function ScoreMatch() {
         }}
         homeTeamId={match.home_team_id}
         awayTeamId={match.away_team_id}
-        totalGames={18}
+        totalGames={filteredGameResults.size}
         isHomeTeam={isHomeTeam}
       />
 

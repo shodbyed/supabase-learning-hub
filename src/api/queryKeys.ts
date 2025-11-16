@@ -241,6 +241,17 @@ export const queryKeys = {
     /** Tournament search */
     search: (query: string) => [...queryKeys.tournaments.all, 'search', query] as const,
   },
+
+  /**
+   * Player-related query keys (game stats, handicaps)
+   */
+  players: {
+    /** Base key for all player queries */
+    all: ['players'] as const,
+
+    /** Player handicap calculation */
+    handicap: (playerId: string) => [...queryKeys.players.all, 'handicap', playerId] as const,
+  },
 } as const;
 
 /**

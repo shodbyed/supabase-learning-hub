@@ -246,7 +246,7 @@ export async function getMembersByIds(memberIds: string[]) {
 
   const { data, error } = await supabase
     .from('members')
-    .select('id, first_name, last_name, nickname')
+    .select('*')
     .in('id', memberIds);
 
   if (error) throw error;

@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-15 (added useQueryStates hook for consolidated error handling)
+> **Last Updated**: 2025-11-15 (added TiebreakerLineup component for Phase 2 of tiebreaker flow)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 

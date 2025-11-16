@@ -77,6 +77,8 @@ interface MatchScoreboardProps {
   onVerify: () => void;
   /** Is verification in progress? */
   isVerifying?: boolean;
+  /** Game type for tiebreaker games (eight_ball, nine_ball, ten_ball) */
+  gameType: string;
 }
 
 /**
@@ -102,6 +104,7 @@ export function MatchScoreboard({
   isHomeTeam,
   onVerify,
   isVerifying = false,
+  gameType,
 }: MatchScoreboardProps) {
   const navigate = useNavigate();
 
@@ -131,6 +134,7 @@ export function MatchScoreboard({
             isHomeTeam={isHomeTeam}
             onVerify={onVerify}
             isVerifying={isVerifying}
+            gameType={gameType}
           />
         ) : (
           <>

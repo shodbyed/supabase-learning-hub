@@ -15,7 +15,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useCompleteMatch } from '@/api/hooks/useMatches';
+import { useCompleteMatch, useMatchLineups } from '@/api/hooks/useMatches';
+import { useCreateMatchGames } from '@/api/hooks/useMatchMutations';
+import { useUpdateMatchLineup } from '@/api/hooks';
 
 interface MatchEndVerificationProps {
   /** Match ID */
@@ -50,6 +52,8 @@ interface MatchEndVerificationProps {
   onVerify: () => void;
   /** Is verification in progress? */
   isVerifying?: boolean;
+  /** Game type for tiebreaker games (eight_ball, nine_ball, ten_ball) */
+  gameType: string;
 }
 
 /**
@@ -106,9 +110,18 @@ export function MatchEndVerification({
   isHomeTeam,
   onVerify,
   isVerifying = false,
+  gameType,
 }: MatchEndVerificationProps) {
   const navigate = useNavigate();
   const completeMatchMutation = useCompleteMatch();
+  const createGamesMutation = useCreateMatchGames();
+  const updateLineupMutation = useUpdateMatchLineup();
+
+  // Fetch lineups to get lineup IDs for unlocking
+  const lineupsQuery = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
+  const homeLineup = lineupsQuery.data?.homeLineup;
+  const awayLineup = lineupsQuery.data?.awayLineup;
+
   const [isCompleting, setIsCompleting] = useState(false);
 
   const result = determineMatchResult(
@@ -148,8 +161,6 @@ export function MatchEndVerification({
         await completeMatchMutation.mutateAsync({
           matchId,
           completionData: {
-            homeTeamScore: homeWins, // Team score = games won
-            awayTeamScore: awayWins, // Team score = games won
             homeGamesWon: homeWins,
             awayGamesWon: awayWins,
             homePointsEarned: homePoints,
@@ -158,13 +169,57 @@ export function MatchEndVerification({
             matchResult: result,
             homeVerifiedBy,
             awayVerifiedBy,
-            resultsConfirmedByHome: true, // Both teams verified
-            resultsConfirmedByAway: true, // Both teams verified
           },
         });
 
         // Navigate based on result
         if (result === 'tie') {
+          // Create 3 tiebreaker games before navigating to lineup page
+          await createGamesMutation.mutateAsync({
+            games: [
+              {
+                match_id: matchId,
+                game_number: 19,
+                home_action: 'breaks',
+                away_action: 'racks',
+                is_tiebreaker: true,
+                game_type: gameType,
+              },
+              {
+                match_id: matchId,
+                game_number: 20,
+                home_action: 'racks',
+                away_action: 'breaks',
+                is_tiebreaker: true,
+                game_type: gameType,
+              },
+              {
+                match_id: matchId,
+                game_number: 21,
+                home_action: 'breaks',
+                away_action: 'racks',
+                is_tiebreaker: true,
+                game_type: gameType,
+              },
+            ],
+          });
+
+          // Unlock both lineups so teams can select tiebreaker players
+          if (homeLineup?.id) {
+            await updateLineupMutation.mutateAsync({
+              lineupId: homeLineup.id,
+              updates: { locked: false, locked_at: null },
+              matchId,
+            });
+          }
+          if (awayLineup?.id) {
+            await updateLineupMutation.mutateAsync({
+              lineupId: awayLineup.id,
+              updates: { locked: false, locked_at: null },
+              matchId,
+            });
+          }
+
           // Navigate to lineup page for tiebreaker lineup selection
           navigate(`/match/${matchId}/lineup`);
         } else {
@@ -179,7 +234,7 @@ export function MatchEndVerification({
     };
 
     completeTheMatch();
-  }, [bothVerified, isCompleting, matchId, homeTeamId, awayTeamId, homeWins, awayWins, homePoints, awayPoints, result, completeMatchMutation, navigate]);
+  }, [bothVerified, isCompleting, matchId, homeTeamId, awayTeamId, homeWins, awayWins, homePoints, awayPoints, result, completeMatchMutation, createGamesMutation, gameType, navigate, homeVerifiedBy, awayVerifiedBy]);
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-orange-50 border-b-2 border-gray-300">

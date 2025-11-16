@@ -13,7 +13,7 @@ import { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, 
 import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
 import { useMembersByIds } from '@/api/hooks/useCurrentMember';
 import { useUserTeamInMatch } from '@/api/hooks/useTeams';
-import { useMatchGamesRealtime } from '@/realtime/useMatchGamesRealtime';
+import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import type {
   Player,
   HandicapThresholds,
@@ -329,20 +329,22 @@ export function useMatchScoring({
   // ============================================================================
 
   /**
-   * Real-time subscription to match_games table
-   * Listens for INSERT/UPDATE/DELETE events and refreshes game results
+   * Unified real-time subscription to matches, match_lineups, and match_games
+   * Listens for INSERT/UPDATE/DELETE events and refreshes data
    * Handles confirmation queue logic for opponent score updates
    */
-  useMatchGamesRealtime(matchId, {
-    onUpdate: refetchGames,
+  useMatchRealtime(matchId, {
     onMatchUpdate: refetchMatch,
-    match,
-    userTeamId,
-    players,
-    myVacateRequests,
-    addToConfirmationQueue,
-    autoConfirm,
-    confirmOpponentScore,
+    onGamesUpdate: refetchGames,
+    gameUpdateOptions: {
+      match,
+      userTeamId,
+      players,
+      myVacateRequests,
+      addToConfirmationQueue,
+      autoConfirm,
+      confirmOpponentScore,
+    },
   });
 
   // ============================================================================
