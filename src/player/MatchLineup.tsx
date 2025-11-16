@@ -31,15 +31,16 @@ import {
 import { useUpdateMatchGame } from '@/api/hooks/useMatchMutations';
 import type { Player } from '@/types/match';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
-import { TestModeToggle } from '@/components/lineup/TestModeToggle';
 import { PlayerRoster } from '@/components/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
 import { useQueryStates } from '@/hooks/useQueryStates';
 import { useLineupState, useHandicapCalculations, useLineupValidation, useLineupPersistence, useMatchPreparation } from '@/hooks/lineup';
+import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
 import { formatHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
+import { Loader2 } from 'lucide-react';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -91,6 +92,9 @@ export function MatchLineup() {
   ]);
 
   // Note: Mutation hooks (useUpdateMatch, useUpdateMatchLineup) are now used inside hooks
+
+  // Preparation status for loading screen
+  const { isPreparingMatch, setIsPreparingMatch, preparationMessage, setPreparationMessage } = usePreparationStatus();
 
   // Centralized lineup state management
   const lineup = useLineupState();
@@ -186,6 +190,8 @@ export function MatchLineup() {
     player1Handicap: handicaps.player1Handicap,
     player2Handicap: handicaps.player2Handicap,
     player3Handicap: handicaps.player3Handicap,
+    setIsPreparingMatch,
+    setPreparationMessage,
   });
 
   // Load lineup ID and data from database (auto-created by trigger)
@@ -450,13 +456,24 @@ export function MatchLineup() {
     : lineupsQuery.data?.awayLineup;
 
   // In tiebreaker mode, get players from lineup record instead of team roster
+  // In normal mode, include all team players plus substitute options
   const availablePlayers = isTiebreakerMode && myLineup
     ? players.filter((p) =>
         p.id === myLineup.player1_id ||
         p.id === myLineup.player2_id ||
         p.id === myLineup.player3_id
       )
-    : players; // Normal mode: all team players
+    : [
+        ...players, // Normal mode: all team players
+        // Add substitute option
+        {
+          id: isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
+          nickname: 'Substitute',
+          first_name: 'Substitute',
+          last_name: '',
+          handicap: 0,
+        } as Player,
+      ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -497,20 +514,6 @@ export function MatchLineup() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Test Mode Toggle - Hide in tiebreaker mode */}
-            {!isTiebreakerMode && (
-              <TestModeToggle
-                enabled={lineup.testMode}
-                onChange={(enabled) => {
-                  lineup.setTestMode(enabled);
-                  if (!enabled) {
-                    lineup.setTestHandicaps({});
-                  }
-                }}
-                disabled={lineup.lineupLocked}
-              />
-            )}
-
             {/* Available Players List */}
             <PlayerRoster
               playerIds={availablePlayers.filter((p) => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID).map((p) => p.id)}
@@ -675,6 +678,17 @@ export function MatchLineup() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Loading Overlay - Show while preparing match */}
+      {isPreparingMatch && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Preparing Match</h2>
+            <p className="text-gray-600">{preparationMessage}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

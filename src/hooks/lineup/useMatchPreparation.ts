@@ -6,12 +6,18 @@
  * Creates game rows and calculates handicap thresholds.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useUpdateMatch } from '@/api/hooks';
 import { calculateHandicapThresholds } from '@/utils/calculateHandicapThresholds';
 import { generateGameOrder } from '@/utils/gameOrder';
+
+export function usePreparationStatus() {
+  const [isPreparingMatch, setIsPreparingMatch] = useState(false);
+  const [preparationMessage, setPreparationMessage] = useState('');
+  return { isPreparingMatch, setIsPreparingMatch, preparationMessage, setPreparationMessage };
+}
 
 interface MatchPreparationParams {
   lineupLocked: boolean;
@@ -26,6 +32,8 @@ interface MatchPreparationParams {
   player1Handicap: number;
   player2Handicap: number;
   player3Handicap: number;
+  setIsPreparingMatch?: (preparing: boolean) => void;
+  setPreparationMessage?: (message: string) => void;
 }
 
 export function useMatchPreparation(params: MatchPreparationParams) {
@@ -42,6 +50,8 @@ export function useMatchPreparation(params: MatchPreparationParams) {
     player1Handicap,
     player2Handicap,
     player3Handicap,
+    setIsPreparingMatch,
+    setPreparationMessage,
   } = params;
 
   const navigate = useNavigate();
@@ -54,9 +64,18 @@ export function useMatchPreparation(params: MatchPreparationParams) {
     if (lineupLocked && opponentLineup?.locked && !matchPreparedRef.current) {
       // Only home team prepares the match data to avoid both teams doing it simultaneously
       if (!isHomeTeam) {
-        console.log('🚀 Away team navigating to scoring');
+        console.log('🚀 Away team waiting for home team to prepare match');
         matchPreparedRef.current = true;
-        navigate(`/match/${matchId}/score`);
+
+        // Show loading screen
+        setIsPreparingMatch?.(true);
+        setPreparationMessage?.('Waiting for match setup...');
+
+        // Wait 2 seconds for home team to create games
+        setTimeout(() => {
+          setIsPreparingMatch?.(false);
+          navigate(`/match/${matchId}/score`);
+        }, 2000);
         return;
       }
 
@@ -64,12 +83,14 @@ export function useMatchPreparation(params: MatchPreparationParams) {
         if (!matchId || !matchData || !opponentLineup) return;
 
         console.log('🚀 Home team preparing and navigating');
+        setIsPreparingMatch?.(true);
+        setPreparationMessage?.('Preparing match...');
 
         try {
           matchPreparedRef.current = true;
 
           // Check if games already exist (tiebreaker scenario)
-          const { data: existingGames, error: checkError } = await supabase
+          const { data: existingGames, error: checkError} = await supabase
             .from('match_games')
             .select('id')
             .eq('match_id', matchId)
@@ -84,7 +105,11 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           if (gamesAlreadyExist) {
             console.log('Games already exist (tiebreaker mode) - skipping game creation');
             // Just navigate, don't create games or calculate thresholds
-            navigate(`/match/${matchId}/score`);
+            setPreparationMessage?.('Loading match...');
+            setTimeout(() => {
+              setIsPreparingMatch?.(false);
+              navigate(`/match/${matchId}/score`);
+            }, 1000);
             return;
           }
 
@@ -99,6 +124,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           };
 
           // Step 1: Calculate handicap thresholds
+          setPreparationMessage?.('Calculating handicap thresholds...');
           const { homeThresholds, awayThresholds } =
             await calculateHandicapThresholds(
               myLineup as any,
@@ -110,6 +136,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             );
 
           // Step 2: Save thresholds to match table
+          setPreparationMessage?.('Saving match settings...');
           await updateMatchMutation.mutateAsync({
             matchId,
             updates: {
@@ -124,6 +151,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           // Mutation throws on error, no need to check
 
           // Step 3: Create all game rows in match_games table with complete game structure
+          setPreparationMessage?.('Creating games...');
           // Determine game format and count based on league.team_format
           const playersPerTeam = teamFormat === '8_man' ? 5 : 3;
           const useDoubleRoundRobin = playersPerTeam === 3; // 3v3 uses double round-robin (18 games), 5v5 uses single (25 games)
@@ -175,9 +203,16 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           console.log(
             'Match preparation complete - navigating to scoring page'
           );
-          navigate(`/match/${matchId}/score`);
+
+          // Wait a moment before navigating to ensure all DB operations complete
+          setPreparationMessage?.('Loading scoring page...');
+          setTimeout(() => {
+            setIsPreparingMatch?.(false);
+            navigate(`/match/${matchId}/score`);
+          }, 1000);
         } catch (error: any) {
           console.error('Error preparing match:', error);
+          setIsPreparingMatch?.(false);
           alert(`Failed to prepare match: ${error.message}`);
           matchPreparedRef.current = false; // Reset so they can try again
         }
