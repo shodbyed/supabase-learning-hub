@@ -66,13 +66,12 @@ export function TiebreakerScoreboard({
     }
   });
 
-  // Check if all 3 tiebreaker games are complete
-  const allGamesComplete = Array.from(gameResults.values()).every(
-    (game) => game.confirmed_by_home && game.confirmed_by_away
-  );
+  // Check if tiebreaker is complete
+  // Match ends when either team reaches 2 wins (best of 3)
+  const matchComplete = homeWins >= 2 || awayWins >= 2;
 
-  // If all games complete, show verification instead of scoreboard
-  if (allGamesComplete) {
+  // If match complete, show verification instead of scoreboard
+  if (matchComplete) {
     return (
       <MatchEndVerification
         matchId={match.id}

@@ -281,6 +281,8 @@ export function useCompleteMatch() {
     mutationFn: ({ matchId, completionData }: {
       matchId: string;
       completionData: {
+        homeTeamScore: number;
+        awayTeamScore: number;
         homeGamesWon: number;
         awayGamesWon: number;
         homePointsEarned: number;
@@ -289,6 +291,8 @@ export function useCompleteMatch() {
         matchResult: 'home_win' | 'away_win' | 'tie';
         homeVerifiedBy: string | null;
         awayVerifiedBy: string | null;
+        resultsConfirmedByHome: boolean;
+        resultsConfirmedByAway: boolean;
       };
     }) => completeMatch(matchId, completionData),
     onSuccess: (_, variables) => {

@@ -15,8 +15,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useCompleteMatch, useMatchLineups } from '@/api/hooks/useMatches';
-import { useCreateMatchGames } from '@/api/hooks/useMatchMutations';
+import { useCompleteMatch, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
+import { useCreateMatchGames, useUpdateMatchGame } from '@/api/hooks/useMatchMutations';
 import { useUpdateMatchLineup } from '@/api/hooks';
 
 interface MatchEndVerificationProps {
@@ -116,11 +116,17 @@ export function MatchEndVerification({
   const completeMatchMutation = useCompleteMatch();
   const createGamesMutation = useCreateMatchGames();
   const updateLineupMutation = useUpdateMatchLineup();
+  const updateGameMutation = useUpdateMatchGame(matchId);
 
   // Fetch lineups to get lineup IDs for unlocking
   const lineupsQuery = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
   const homeLineup = lineupsQuery.data?.homeLineup;
   const awayLineup = lineupsQuery.data?.awayLineup;
+
+  // Fetch tiebreaker games (if this is a tiebreaker)
+  const gamesQuery = useMatchGames(matchId);
+  const tiebreakerGames = (gamesQuery.data || []).filter(g => g.is_tiebreaker);
+  const isTiebreakerMode = tiebreakerGames.length > 0;
 
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -161,6 +167,8 @@ export function MatchEndVerification({
         await completeMatchMutation.mutateAsync({
           matchId,
           completionData: {
+            homeTeamScore: homeWins,
+            awayTeamScore: awayWins,
             homeGamesWon: homeWins,
             awayGamesWon: awayWins,
             homePointsEarned: homePoints,
@@ -169,8 +177,41 @@ export function MatchEndVerification({
             matchResult: result,
             homeVerifiedBy,
             awayVerifiedBy,
+            resultsConfirmedByHome: true,
+            resultsConfirmedByAway: true,
           },
         });
+
+        // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
+        if (isTiebreakerMode && winnerTeamId) {
+          console.log('Applying anti-sandbagging rule: Overriding tiebreaker game results');
+
+          // Get the winning and losing lineups
+          const winningLineup = winnerTeamId === homeTeamId ? homeLineup : awayLineup;
+          const losingLineup = winnerTeamId === homeTeamId ? awayLineup : homeLineup;
+
+          if (winningLineup && losingLineup) {
+            // Override all 3 tiebreaker games with winning team's players
+            for (const game of tiebreakerGames) {
+              const gameNumber = game.game_number;
+              const position = gameNumber - 18; // 19->1, 20->2, 21->3
+
+              // Get player IDs from lineups
+              const winningPlayerId = winningLineup[`player${position}_id` as keyof typeof winningLineup];
+
+              // Update game to show winning team player as winner
+              await updateGameMutation.mutateAsync({
+                gameId: game.id,
+                updates: {
+                  winner_team_id: winnerTeamId,
+                  winner_player_id: winningPlayerId,
+                  confirmed_by_home: true,
+                  confirmed_by_away: true,
+                },
+              });
+            }
+          }
+        }
 
         // Navigate based on result
         if (result === 'tie') {
