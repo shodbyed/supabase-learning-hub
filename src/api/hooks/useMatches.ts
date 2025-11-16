@@ -281,12 +281,12 @@ export function useCompleteMatch() {
     mutationFn: ({ matchId, completionData }: {
       matchId: string;
       completionData: {
-        homeTeamScore: number;
-        awayTeamScore: number;
-        homeGamesWon: number;
-        awayGamesWon: number;
-        homePointsEarned: number;
-        awayPointsEarned: number;
+        homeTeamScore?: number;
+        awayTeamScore?: number;
+        homeGamesWon?: number;
+        awayGamesWon?: number;
+        homePointsEarned?: number;
+        awayPointsEarned?: number;
         winnerTeamId: string | null;
         matchResult: 'home_win' | 'away_win' | 'tie';
         homeVerifiedBy: string | null;

@@ -481,12 +481,12 @@ export async function getMatchGames(matchId: string) {
 export async function completeMatch(
   matchId: string,
   completionData: {
-    homeTeamScore: number;
-    awayTeamScore: number;
-    homeGamesWon: number;
-    awayGamesWon: number;
-    homePointsEarned: number;
-    awayPointsEarned: number;
+    homeTeamScore?: number;
+    awayTeamScore?: number;
+    homeGamesWon?: number;
+    awayGamesWon?: number;
+    homePointsEarned?: number;
+    awayPointsEarned?: number;
     winnerTeamId: string | null;
     matchResult: 'home_win' | 'away_win' | 'tie';
     homeVerifiedBy: string | null;
@@ -495,16 +495,8 @@ export async function completeMatch(
     resultsConfirmedByAway: boolean;
   }
 ) {
-  // Build update object with all required match completion fields
+  // Build update object with required match completion fields
   const updateData: Record<string, unknown> = {
-    // Scores
-    home_team_score: completionData.homeTeamScore,
-    away_team_score: completionData.awayTeamScore,
-    home_games_won: completionData.homeGamesWon,
-    away_games_won: completionData.awayGamesWon,
-    home_points_earned: completionData.homePointsEarned,
-    away_points_earned: completionData.awayPointsEarned,
-
     // Result
     winner_team_id: completionData.winnerTeamId,
     match_result: completionData.matchResult,
@@ -518,6 +510,26 @@ export async function completeMatch(
     // Timestamp
     completed_at: new Date().toISOString(),
   };
+
+  // Only update scores if provided (regular match, not tiebreaker)
+  if (completionData.homeTeamScore !== undefined) {
+    updateData.home_team_score = completionData.homeTeamScore;
+  }
+  if (completionData.awayTeamScore !== undefined) {
+    updateData.away_team_score = completionData.awayTeamScore;
+  }
+  if (completionData.homeGamesWon !== undefined) {
+    updateData.home_games_won = completionData.homeGamesWon;
+  }
+  if (completionData.awayGamesWon !== undefined) {
+    updateData.away_games_won = completionData.awayGamesWon;
+  }
+  if (completionData.homePointsEarned !== undefined) {
+    updateData.home_points_earned = completionData.homePointsEarned;
+  }
+  if (completionData.awayPointsEarned !== undefined) {
+    updateData.away_points_earned = completionData.awayPointsEarned;
+  }
 
   // Only mark as completed if there's a winner (not a tie)
   if (completionData.winnerTeamId !== null) {

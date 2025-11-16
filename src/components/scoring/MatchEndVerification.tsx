@@ -15,8 +15,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useCompleteMatch, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
-import { useCreateMatchGames, useUpdateMatchGame } from '@/api/hooks/useMatchMutations';
+import { useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
+import { useCreateMatchGames, useUpdateMatchGame, useUpdateMatch } from '@/api/hooks/useMatchMutations';
 import { useUpdateMatchLineup } from '@/api/hooks';
 
 interface MatchEndVerificationProps {
@@ -113,7 +113,7 @@ export function MatchEndVerification({
   gameType,
 }: MatchEndVerificationProps) {
   const navigate = useNavigate();
-  const completeMatchMutation = useCompleteMatch();
+  const updateMatchMutation = useUpdateMatch();
   const createGamesMutation = useCreateMatchGames();
   const updateLineupMutation = useUpdateMatchLineup();
   const updateGameMutation = useUpdateMatchGame(matchId);
@@ -164,40 +164,69 @@ export function MatchEndVerification({
           result === 'away_win' ? awayTeamId :
           null; // tie
 
-        await completeMatchMutation.mutateAsync({
+        // For tiebreaker: only update winner/verification, NOT scores/points
+        // For regular match: update everything
+        const updates = isTiebreakerMode
+          ? {
+              // Tiebreaker: only update result and verification fields
+              winner_team_id: winnerTeamId,
+              match_result: result,
+              home_team_verified_by: homeVerifiedBy,
+              away_team_verified_by: awayVerifiedBy,
+              results_confirmed_by_home: true,
+              results_confirmed_by_away: true,
+              completed_at: new Date().toISOString(),
+              status: winnerTeamId ? 'completed' : 'in_progress',
+            }
+          : {
+              // Regular match: update scores, points, result, and verification
+              home_team_score: homeWins,
+              away_team_score: awayWins,
+              home_games_won: homeWins,
+              away_games_won: awayWins,
+              home_points_earned: homePoints,
+              away_points_earned: awayPoints,
+              winner_team_id: winnerTeamId,
+              match_result: result,
+              home_team_verified_by: homeVerifiedBy,
+              away_team_verified_by: awayVerifiedBy,
+              results_confirmed_by_home: true,
+              results_confirmed_by_away: true,
+              completed_at: new Date().toISOString(),
+              status: winnerTeamId ? 'completed' : 'in_progress',
+            };
+
+        await updateMatchMutation.mutateAsync({
           matchId,
-          completionData: {
-            homeTeamScore: homeWins,
-            awayTeamScore: awayWins,
-            homeGamesWon: homeWins,
-            awayGamesWon: awayWins,
-            homePointsEarned: homePoints,
-            awayPointsEarned: awayPoints,
-            winnerTeamId,
-            matchResult: result,
-            homeVerifiedBy,
-            awayVerifiedBy,
-            resultsConfirmedByHome: true,
-            resultsConfirmedByAway: true,
-          },
+          updates,
         });
 
         // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
         if (isTiebreakerMode && winnerTeamId) {
           console.log('Applying anti-sandbagging rule: Overriding tiebreaker game results');
+          console.log('Tiebreaker games found:', tiebreakerGames.map(g => ({ id: g.id, game_number: g.game_number, winner_team_id: g.winner_team_id })));
 
           // Get the winning and losing lineups
           const winningLineup = winnerTeamId === homeTeamId ? homeLineup : awayLineup;
-          const losingLineup = winnerTeamId === homeTeamId ? awayLineup : homeLineup;
 
-          if (winningLineup && losingLineup) {
-            // Override all 3 tiebreaker games with winning team's players
-            for (const game of tiebreakerGames) {
-              const gameNumber = game.game_number;
+          if (winningLineup) {
+            // Override all 3 tiebreaker games (19, 20, 21) with winning team's players
+            // Must update ALL 3 games, even if the 3rd game wasn't played
+            for (let gameNumber = 19; gameNumber <= 21; gameNumber++) {
               const position = gameNumber - 18; // 19->1, 20->2, 21->3
 
-              // Get player IDs from lineups
+              // Find the game by game_number
+              const game = tiebreakerGames.find(g => g.game_number === gameNumber);
+
+              if (!game) {
+                console.error(`❌ Tiebreaker game ${gameNumber} not found in database - cannot apply anti-sandbagging rule`);
+                continue;
+              }
+
+              // Get player ID from winning lineup
               const winningPlayerId = winningLineup[`player${position}_id` as keyof typeof winningLineup];
+
+              console.log(`Updating game ${gameNumber}: winner_team_id=${winnerTeamId}, winner_player_id=${winningPlayerId}`);
 
               // Update game to show winning team player as winner
               await updateGameMutation.mutateAsync({
@@ -210,11 +239,15 @@ export function MatchEndVerification({
                 },
               });
             }
+
+            console.log('✅ Anti-sandbagging rule applied to all tiebreaker games');
           }
         }
 
         // Navigate based on result
         if (result === 'tie') {
+          console.log('Match ended in tie - creating tiebreaker games and navigating to lineup page');
+
           // Create 3 tiebreaker games before navigating to lineup page
           await createGamesMutation.mutateAsync({
             games: [
@@ -262,9 +295,11 @@ export function MatchEndVerification({
           }
 
           // Navigate to lineup page for tiebreaker lineup selection
+          console.log('✅ Navigating to lineup page for tiebreaker');
           navigate(`/match/${matchId}/lineup`);
         } else {
-          // Navigate to dashboard
+          // Match has a winner - navigate to dashboard
+          console.log(`✅ Match complete with winner (${result}) - navigating to dashboard`);
           navigate('/dashboard');
         }
       } catch (error) {
@@ -275,7 +310,7 @@ export function MatchEndVerification({
     };
 
     completeTheMatch();
-  }, [bothVerified, isCompleting, matchId, homeTeamId, awayTeamId, homeWins, awayWins, homePoints, awayPoints, result, completeMatchMutation, createGamesMutation, gameType, navigate, homeVerifiedBy, awayVerifiedBy]);
+  }, [bothVerified, isCompleting, matchId, homeTeamId, awayTeamId, homeWins, awayWins, homePoints, awayPoints, result, updateMatchMutation, createGamesMutation, gameType, navigate, homeVerifiedBy, awayVerifiedBy, isTiebreakerMode, tiebreakerGames, homeLineup, awayLineup, updateGameMutation, updateLineupMutation]);
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-orange-50 border-b-2 border-gray-300">
@@ -285,6 +320,16 @@ export function MatchEndVerification({
           <div className="text-sm font-semibold text-gray-600">
             Match Complete
           </div>
+          {result === 'home_win' && (
+            <div className="text-lg font-bold text-blue-600 mt-1">
+              Home Team Wins!
+            </div>
+          )}
+          {result === 'away_win' && (
+            <div className="text-lg font-bold text-orange-600 mt-1">
+              Away Team Wins!
+            </div>
+          )}
         </div>
 
         {/* Score Table */}
