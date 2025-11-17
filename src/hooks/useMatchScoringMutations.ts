@@ -12,8 +12,10 @@
  */
 
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import type { Lineup, MatchGame } from '@/types/match';
+import { queryKeys } from '@/api/queryKeys';
 
 interface UseMatchScoringMutationsParams {
   /** Current match data */
@@ -66,6 +68,7 @@ export function useMatchScoringMutations({
   addToConfirmationQueue,
   getPlayerDisplayName,
 }: UseMatchScoringMutationsParams) {
+  const queryClient = useQueryClient();
   /**
    * Handle player button click to score a game
    *
@@ -202,13 +205,24 @@ export function useMatchScoringMutations({
           if (error) throw error;
         }
 
-        // Note: Real-time subscription will automatically refresh game results
+        // Wait 500ms for database to propagate, then invalidate queries
+        // This ensures the refetched data includes the update
+        setTimeout(() => {
+          if (match?.id) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.matches.detail(match.id),
+            });
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.matches.games(match.id),
+            });
+          }
+        }, 500);
       } catch (err: any) {
         console.error('Error confirming game:', err);
         alert(`Failed to confirm game: ${err.message}`);
       }
     },
-    [match, userTeamId, gameResults]
+    [match, userTeamId, gameResults, queryClient]
   );
 
   /**

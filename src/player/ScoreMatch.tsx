@@ -24,6 +24,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
+import { InfoButton } from '@/components/InfoButton';
 // getAllGames no longer needed - all game data comes from database
 import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
@@ -455,26 +456,39 @@ export function ScoreMatch() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header with back button and auto-confirm */}
-      <div className="bg-white border-b px-4 py-2 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-1"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Dashboard
-        </Button>
-        <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={autoConfirm}
-            onChange={(e) => setAutoConfirm(e.target.checked)}
-            className="w-3 h-3"
-          />
-          Auto-accept opponent results
-        </label>
+      {/* Header with back button, team name, and auto-confirm */}
+      <div className="bg-white border-b px-4 py-2">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Dashboard
+          </Button>
+          {/* Team Name */}
+          <div className="text-lg font-semibold text-gray-800">
+            {isHomeTeam ? match.home_team?.team_name : match.away_team?.team_name}
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={autoConfirm}
+                onChange={(e) => setAutoConfirm(e.target.checked)}
+                className="w-3 h-3"
+              />
+              Auto-Confirm
+            </label>
+            <InfoButton title="Auto-Confirm Opponent Selections" className="relative">
+              <p className="text-sm">
+                By enabling this your opponents game result selections will automatically be confirmed for your team. Your team is still responsible for ensuring the scoring is accurate. This option simply removes the need to confirm each game individually.
+              </p>
+            </InfoButton>
+          </div>
+        </div>
       </div>
 
       {/* Scoreboard - Fixed at top */}
@@ -506,8 +520,6 @@ export function ScoreMatch() {
           awayThresholds={awayThresholds}
           showingHomeTeam={showingHomeTeam}
           onToggleTeam={setShowingHomeTeam}
-          autoConfirm={autoConfirm}
-          onAutoConfirmChange={setAutoConfirm}
           getPlayerDisplayName={getPlayerDisplayName}
           allGamesComplete={allGamesComplete}
           isHomeTeam={isHomeTeam ?? false}
