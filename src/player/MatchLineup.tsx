@@ -239,6 +239,13 @@ export function MatchLineup() {
   const handlePlayerChange = (position: 1 | 2 | 3, playerId: string) => {
     if (!lineup.lineupId || !matchId) return;
 
+    console.log('🔄 handlePlayerChange called:', {
+      position,
+      playerId,
+      lineupId: lineup.lineupId,
+      matchId,
+    });
+
     // Update local state
     if (position === 1) lineup.setPlayer1Id(playerId);
     else if (position === 2) lineup.setPlayer2Id(playerId);
@@ -247,14 +254,27 @@ export function MatchLineup() {
     // Get the NEW player's handicap (respects test mode and test handicap overrides)
     const handicap = handicaps.getPlayerHandicap(playerId);
 
-    // Update database
-    updateLineupMutation.mutate({
+    console.log('🎯 Calculated handicap:', handicap, 'for player:', playerId);
+
+    const updatePayload = {
       lineupId: lineup.lineupId,
       updates: {
         [`player${position}_id`]: playerId,
         [`player${position}_handicap`]: handicap,
       },
       matchId,
+    };
+
+    console.log('💾 Sending update to database:', updatePayload);
+
+    // Update database
+    updateLineupMutation.mutate(updatePayload, {
+      onSuccess: (data) => {
+        console.log('✅ Database update successful:', data);
+      },
+      onError: (error) => {
+        console.error('❌ Database update failed:', error);
+      },
     });
   };
 
@@ -571,76 +591,107 @@ export function MatchLineup() {
                     : handleClearPlayer;
 
                   return (
-                    <React.Fragment key={position}>
-                      <div className="flex gap-2 items-center">
-                        <div className="w-12 text-center">
-                          <div className="text-sm font-semibold text-gray-700">{position}</div>
+                    <div key={position} className="flex gap-2 items-center">
+                      <div className="w-12 text-center">
+                        <div className="text-sm font-semibold text-gray-700">{position}</div>
+                      </div>
+                      <div className="w-12 text-center">
+                        <div className="text-sm font-semibold text-blue-600">
+                          {playerId ? formatHandicap(handicap) : '-'}
                         </div>
-                        <div className="w-12 text-center">
-                          <div className="text-sm font-semibold text-blue-600">
-                            {playerId ? formatHandicap(handicap) : '-'}
-                          </div>
-                        </div>
-                        <div className="flex-1">
+                      </div>
+                      <div className="flex-1">
+                        <Select
+                          value={playerId}
+                          onValueChange={(id) => onPlayerChange(position, id)}
+                          disabled={lineup.lineupLocked}
+                        >
+                          <SelectTrigger className="min-w-[120px]">
+                            <SelectValue placeholder={`Select Player ${position}`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availablePlayers.map((player) => (
+                              <SelectItem
+                                key={player.id}
+                                value={player.id}
+                                disabled={otherPlayerIds.includes(player.id)}
+                              >
+                                {player.nickname ||
+                                  `${player.first_name} ${player.last_name}`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {/* Sub handicap selector (if sub player selected) - inline on same row */}
+                      {(playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) && (
+                        <div className="w-24">
                           <Select
-                            value={playerId}
-                            onValueChange={(id) => onPlayerChange(position, id)}
+                            value={lineup.subHandicap}
+                            onValueChange={(newSubHandicap) => {
+                              if (!lineup.lineupId || !matchId) return;
+
+                              console.log('🔄 Sub handicap changed:', {
+                                position,
+                                playerId,
+                                newSubHandicap,
+                              });
+
+                              // Update local state
+                              lineup.setSubHandicap(newSubHandicap);
+
+                              // Calculate handicap with NEW subHandicap value manually
+                              // (can't use handicaps.getPlayerHandicap because state hasn't updated yet)
+                              const players = teamDetailsQuery.data?.members || [];
+                              const usedPlayerIds = [lineup.player1Id, lineup.player2Id, lineup.player3Id].filter(
+                                (id) => id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
+                              );
+                              const unusedPlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
+                              const highestUnused = unusedPlayers.length > 0
+                                ? Math.max(...unusedPlayers.map((p) => p.handicap || 0))
+                                : 0;
+                              const subValue = parseFloat(newSubHandicap);
+                              const calculatedHandicap = Math.max(subValue, highestUnused);
+
+                              console.log('🎯 Calculated sub handicap:', calculatedHandicap);
+
+                              // Update database with new handicap
+                              updateLineupMutation.mutate({
+                                lineupId: lineup.lineupId,
+                                updates: {
+                                  [`player${position}_id`]: playerId,
+                                  [`player${position}_handicap`]: calculatedHandicap,
+                                },
+                                matchId,
+                              });
+                            }}
                             disabled={lineup.lineupLocked}
                           >
-                            <SelectTrigger className="min-w-[120px]">
-                              <SelectValue placeholder={`Select Player ${position}`} />
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sub H/C" />
                             </SelectTrigger>
                             <SelectContent>
-                              {availablePlayers.map((player) => (
-                                <SelectItem
-                                  key={player.id}
-                                  value={player.id}
-                                  disabled={otherPlayerIds.includes(player.id)}
-                                >
-                                  {player.nickname ||
-                                    `${player.first_name} ${player.last_name}`}
-                                </SelectItem>
-                              ))}
+                              <SelectItem value="2">+2</SelectItem>
+                              <SelectItem value="1">+1</SelectItem>
+                              <SelectItem value="0">0</SelectItem>
+                              <SelectItem value="-1">-1</SelectItem>
+                              <SelectItem value="-2">-2</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
-                        {playerId && !lineup.lineupLocked && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onClearPlayer(position)}
-                            className="h-8 w-8 flex-shrink-0"
-                            title={`Clear player ${position}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Sub handicap selector (if sub player selected) */}
-                      {(playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) && (
-                        <div className="flex gap-3 items-center ml-12">
-                          <div className="flex-1">
-                            <Select
-                              value={lineup.subHandicap}
-                              onValueChange={lineup.setSubHandicap}
-                              disabled={lineup.lineupLocked}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Sub H/C" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="2">+2</SelectItem>
-                                <SelectItem value="1">+1</SelectItem>
-                                <SelectItem value="0">0</SelectItem>
-                                <SelectItem value="-1">-1</SelectItem>
-                                <SelectItem value="-2">-2</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
                       )}
-                    </React.Fragment>
+                      {playerId && !lineup.lineupLocked && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onClearPlayer(position)}
+                          className="h-8 w-8 flex-shrink-0"
+                          title={`Clear player ${position}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
