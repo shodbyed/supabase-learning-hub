@@ -15,9 +15,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
+import { useMatchLineups, useMatchGames, useMatchWithLeagueSettings } from '@/api/hooks/useMatches';
 import { useCreateMatchGames, useUpdateMatchGame, useUpdateMatch } from '@/api/hooks/useMatchMutations';
 import { useUpdateMatchLineup } from '@/api/hooks';
+import { calculatePoints } from '@/types/match';
 
 interface MatchEndVerificationProps {
   /** Match ID */
@@ -118,6 +119,9 @@ export function MatchEndVerification({
   const updateLineupMutation = useUpdateMatchLineup();
   const updateGameMutation = useUpdateMatchGame(matchId);
 
+  // Fetch match data for fresh verification status
+  const matchQuery = useMatchWithLeagueSettings(matchId);
+
   // Fetch lineups to get lineup IDs for unlocking
   const lineupsQuery = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
   const homeLineup = lineupsQuery.data?.homeLineup;
@@ -146,9 +150,25 @@ export function MatchEndVerification({
   // Current user's team verification status
   const userTeamVerified = isHomeTeam ? homeVerified : awayVerified;
 
-  // Calculate points (wins - threshold)
-  const homePoints = homeWins - homeWinThreshold;
-  const awayPoints = awayWins - awayWinThreshold;
+  // Convert games array to Map for calculatePoints function
+  const gameResultsMap = new Map(
+    (gamesQuery.data || []).map((game) => [game.game_number, game])
+  );
+
+  // Calculate points using the SAME function as the scoreboard (single source of truth)
+  const homeThresholds = {
+    games_to_win: homeWinThreshold,
+    games_to_tie: homeTieThreshold,
+    games_to_lose: homeTieThreshold !== null ? homeTieThreshold - 1 : homeWinThreshold - 1,
+  };
+  const awayThresholds = {
+    games_to_win: awayWinThreshold,
+    games_to_tie: awayTieThreshold,
+    games_to_lose: awayTieThreshold !== null ? awayTieThreshold - 1 : awayWinThreshold - 1,
+  };
+
+  const homePoints = calculatePoints(homeTeamId, homeThresholds, gameResultsMap);
+  const awayPoints = calculatePoints(awayTeamId, awayThresholds, gameResultsMap);
 
   // Auto-complete match when both teams verify
   useEffect(() => {
@@ -158,143 +178,189 @@ export function MatchEndVerification({
       setIsCompleting(true);
 
       try {
-        // Calculate completion data
-        const winnerTeamId =
-          result === 'home_win' ? homeTeamId :
-          result === 'away_win' ? awayTeamId :
-          null; // tie
+        // Step 1: Fetch fresh match data to see who verified FIRST
+        console.log('📥 Fetching fresh match data to determine first verifier...');
+        const { data: freshMatch } = await matchQuery.refetch();
 
-        // For tiebreaker: only update winner/verification, NOT scores/points
-        // For regular match: update everything
-        const updates = isTiebreakerMode
-          ? {
-              // Tiebreaker: only update result and verification fields
-              winner_team_id: winnerTeamId,
-              match_result: result,
-              home_team_verified_by: homeVerifiedBy,
-              away_team_verified_by: awayVerifiedBy,
-              results_confirmed_by_home: true,
-              results_confirmed_by_away: true,
-              completed_at: new Date().toISOString(),
-              status: winnerTeamId ? 'completed' : 'in_progress',
-            }
-          : {
-              // Regular match: update scores, points, result, and verification
-              home_team_score: homeWins,
-              away_team_score: awayWins,
-              home_games_won: homeWins,
-              away_games_won: awayWins,
-              home_points_earned: homePoints,
-              away_points_earned: awayPoints,
-              winner_team_id: winnerTeamId,
-              match_result: result,
-              home_team_verified_by: homeVerifiedBy,
-              away_team_verified_by: awayVerifiedBy,
-              results_confirmed_by_home: true,
-              results_confirmed_by_away: true,
-              completed_at: new Date().toISOString(),
-              status: winnerTeamId ? 'completed' : 'in_progress',
-            };
+        if (!freshMatch) {
+          throw new Error('Failed to fetch match verification status');
+        }
 
-        await updateMatchMutation.mutateAsync({
-          matchId,
-          updates,
+        // Determine which team verified FIRST (their timestamp in DB came first)
+        // The first verifier's device will handle database operations
+        const homeVerifiedFirst = freshMatch.home_team_verified_by === homeVerifiedBy;
+        const awayVerifiedFirst = freshMatch.away_team_verified_by === awayVerifiedBy;
+        const isFirstVerifier = (isHomeTeam && homeVerifiedFirst) || (!isHomeTeam && awayVerifiedFirst);
+
+        console.log('🔍 First verifier check:', {
+          isFirstVerifier,
+          myTeam: isHomeTeam ? 'home' : 'away',
+          homeVerifiedBy: freshMatch.home_team_verified_by,
+          awayVerifiedBy: freshMatch.away_team_verified_by,
         });
 
-        // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
-        if (isTiebreakerMode && winnerTeamId) {
-          console.log('Applying anti-sandbagging rule: Overriding tiebreaker game results');
-          console.log('Tiebreaker games found:', tiebreakerGames.map(g => ({ id: g.id, game_number: g.game_number, winner_team_id: g.winner_team_id })));
+        // Step 2: Only FIRST verifier updates match and creates games
+        if (isFirstVerifier) {
+          console.log('✅ This device is the first verifier - handling database updates');
 
-          // Get the winning and losing lineups
-          const winningLineup = winnerTeamId === homeTeamId ? homeLineup : awayLineup;
+          // Calculate completion data
+          const winnerTeamId =
+            result === 'home_win' ? homeTeamId :
+            result === 'away_win' ? awayTeamId :
+            null; // tie
 
-          if (winningLineup) {
-            // Override all 3 tiebreaker games (19, 20, 21) with winning team's players
-            // Must update ALL 3 games, even if the 3rd game wasn't played
-            for (let gameNumber = 19; gameNumber <= 21; gameNumber++) {
-              const position = gameNumber - 18; // 19->1, 20->2, 21->3
+          // For tiebreaker: only update winner/verification, NOT scores/points
+          // For regular match: update everything
+          const updates = isTiebreakerMode
+            ? {
+                // Tiebreaker: only update result and verification fields
+                winner_team_id: winnerTeamId,
+                match_result: result,
+                results_confirmed_by_home: true,
+                results_confirmed_by_away: true,
+                completed_at: new Date().toISOString(),
+                status: winnerTeamId ? 'completed' : 'in_progress',
+              }
+            : {
+                // Regular match: update scores, points, result, and verification
+                home_team_score: homeWins,
+                away_team_score: awayWins,
+                home_games_won: homeWins,
+                away_games_won: awayWins,
+                home_points_earned: homePoints,
+                away_points_earned: awayPoints,
+                winner_team_id: winnerTeamId,
+                match_result: result,
+                results_confirmed_by_home: true,
+                results_confirmed_by_away: true,
+                completed_at: new Date().toISOString(),
+                status: winnerTeamId ? 'completed' : 'in_progress',
+              };
 
-              // Find the game by game_number
-              const game = tiebreakerGames.find(g => g.game_number === gameNumber);
+          await updateMatchMutation.mutateAsync({
+            matchId,
+            updates,
+          });
 
-              if (!game) {
-                console.error(`❌ Tiebreaker game ${gameNumber} not found in database - cannot apply anti-sandbagging rule`);
-                continue;
+          // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
+          if (isTiebreakerMode && winnerTeamId) {
+            console.log('Applying anti-sandbagging rule: Overriding tiebreaker game results');
+            console.log('Tiebreaker games found:', tiebreakerGames.map(g => ({ id: g.id, game_number: g.game_number, winner_team_id: g.winner_team_id })));
+
+            // Get the winning lineup
+            const winningLineup = winnerTeamId === homeTeamId ? homeLineup : awayLineup;
+
+            if (winningLineup) {
+              // Override all 3 tiebreaker games (19, 20, 21) with winning team's players
+              for (let gameNumber = 19; gameNumber <= 21; gameNumber++) {
+                const position = gameNumber - 18;
+                const game = tiebreakerGames.find(g => g.game_number === gameNumber);
+
+                if (!game) {
+                  console.error(`❌ Tiebreaker game ${gameNumber} not found`);
+                  continue;
+                }
+
+                const winningPlayerId = winningLineup[`player${position}_id` as keyof typeof winningLineup];
+
+                await updateGameMutation.mutateAsync({
+                  gameId: game.id,
+                  updates: {
+                    winner_team_id: winnerTeamId,
+                    winner_player_id: winningPlayerId,
+                    confirmed_by_home: homeVerifiedBy,
+                    confirmed_by_away: awayVerifiedBy,
+                  },
+                });
               }
 
-              // Get player ID from winning lineup
-              const winningPlayerId = winningLineup[`player${position}_id` as keyof typeof winningLineup];
+              console.log('✅ Anti-sandbagging rule applied');
+            }
+          }
 
-              console.log(`Updating game ${gameNumber}: winner_team_id=${winnerTeamId}, winner_player_id=${winningPlayerId}`);
+          // Handle tie result - create tiebreaker games
+          if (result === 'tie') {
+            console.log('Creating tiebreaker games and unlocking lineups...');
 
-              // Update game to show winning team player as winner
-              await updateGameMutation.mutateAsync({
-                gameId: game.id,
-                updates: {
-                  winner_team_id: winnerTeamId,
-                  winner_player_id: winningPlayerId,
-                  confirmed_by_home: true,
-                  confirmed_by_away: true,
+            // Create 3 tiebreaker games
+            await createGamesMutation.mutateAsync({
+              games: [
+                {
+                  match_id: matchId,
+                  game_number: 19,
+                  home_action: 'breaks',
+                  away_action: 'racks',
+                  is_tiebreaker: true,
+                  game_type: gameType,
                 },
+                {
+                  match_id: matchId,
+                  game_number: 20,
+                  home_action: 'racks',
+                  away_action: 'breaks',
+                  is_tiebreaker: true,
+                  game_type: gameType,
+                },
+                {
+                  match_id: matchId,
+                  game_number: 21,
+                  home_action: 'breaks',
+                  away_action: 'racks',
+                  is_tiebreaker: true,
+                  game_type: gameType,
+                },
+              ],
+            });
+
+            // Unlock both lineups
+            if (homeLineup?.id) {
+              await updateLineupMutation.mutateAsync({
+                lineupId: homeLineup.id,
+                updates: { locked: false, locked_at: null },
+                matchId,
+              });
+            }
+            if (awayLineup?.id) {
+              await updateLineupMutation.mutateAsync({
+                lineupId: awayLineup.id,
+                updates: { locked: false, locked_at: null },
+                matchId,
               });
             }
 
-            console.log('✅ Anti-sandbagging rule applied to all tiebreaker games');
+            console.log('✅ First verifier finished tiebreaker setup');
           }
+        } else {
+          console.log('⏸️ Not first verifier - waiting for database updates...');
         }
 
-        // Navigate based on result
+        // Step 3: ALL devices (first verifier and others) poll for completion
         if (result === 'tie') {
-          console.log('Match ended in tie - creating tiebreaker games and navigating to lineup page');
+          // Poll for tiebreaker games to exist
+          console.log('⏳ Polling for tiebreaker games...');
+          let gamesReady = false;
+          let attempts = 0;
+          const maxAttempts = 10; // 10 attempts = 5 seconds max
 
-          // Create 3 tiebreaker games before navigating to lineup page
-          await createGamesMutation.mutateAsync({
-            games: [
-              {
-                match_id: matchId,
-                game_number: 19,
-                home_action: 'breaks',
-                away_action: 'racks',
-                is_tiebreaker: true,
-                game_type: gameType,
-              },
-              {
-                match_id: matchId,
-                game_number: 20,
-                home_action: 'racks',
-                away_action: 'breaks',
-                is_tiebreaker: true,
-                game_type: gameType,
-              },
-              {
-                match_id: matchId,
-                game_number: 21,
-                home_action: 'breaks',
-                away_action: 'racks',
-                is_tiebreaker: true,
-                game_type: gameType,
-              },
-            ],
-          });
+          while (!gamesReady && attempts < maxAttempts) {
+            const { data: checkGames } = await gamesQuery.refetch();
+            const tiebreakerGamesCount = (checkGames || []).filter(g => g.is_tiebreaker).length;
 
-          // Unlock both lineups so teams can select tiebreaker players
-          if (homeLineup?.id) {
-            await updateLineupMutation.mutateAsync({
-              lineupId: homeLineup.id,
-              updates: { locked: false, locked_at: null },
-              matchId,
-            });
-          }
-          if (awayLineup?.id) {
-            await updateLineupMutation.mutateAsync({
-              lineupId: awayLineup.id,
-              updates: { locked: false, locked_at: null },
-              matchId,
-            });
+            if (tiebreakerGamesCount >= 3) {
+              gamesReady = true;
+              console.log('✅ Tiebreaker games found in database');
+            } else {
+              attempts++;
+              console.log(`⏳ Waiting for games... (attempt ${attempts}/${maxAttempts})`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
           }
 
-          // Navigate to lineup page for tiebreaker lineup selection
+          if (!gamesReady) {
+            throw new Error('Timeout waiting for tiebreaker games to be created');
+          }
+
+          // Navigate to lineup page
           console.log('✅ Navigating to lineup page for tiebreaker');
           navigate(`/match/${matchId}/lineup`);
         } else {
@@ -470,7 +536,12 @@ export function MatchEndVerification({
         {/* Both Verified Message */}
         {bothVerified && (
           <div className="text-center text-sm font-medium text-green-600">
-            {isCompleting ? '✓ Both teams verified - Completing match...' : '✓ Both teams verified - Returning to dashboard...'}
+            {isCompleting
+              ? result === 'tie'
+                ? '✓ Both teams verified - Setting up tiebreaker...'
+                : '✓ Both teams verified - Completing match...'
+              : '✓ Both teams verified - Returning to dashboard...'
+            }
           </div>
         )}
       </div>

@@ -7,7 +7,7 @@
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,13 @@ import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
 import { useQueryStates } from '@/hooks/useQueryStates';
-import { useLineupState, useHandicapCalculations, useLineupValidation, useLineupPersistence, useMatchPreparation } from '@/hooks/lineup';
+import {
+  useLineupState,
+  useHandicapCalculations,
+  useLineupValidation,
+  useLineupPersistence,
+  useMatchPreparation,
+} from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
 import { formatHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
@@ -94,7 +100,12 @@ export function MatchLineup() {
   // Note: Mutation hooks (useUpdateMatch, useUpdateMatchLineup) are now used inside hooks
 
   // Preparation status for loading screen
-  const { isPreparingMatch, setIsPreparingMatch, preparationMessage, setPreparationMessage } = usePreparationStatus();
+  const {
+    isPreparingMatch,
+    setIsPreparingMatch,
+    preparationMessage,
+    setPreparationMessage,
+  } = usePreparationStatus();
 
   // Centralized lineup state management
   const lineup = useLineupState();
@@ -110,13 +121,14 @@ export function MatchLineup() {
   const updateGameMutation = useUpdateMatchGame(matchId || '');
 
   // Extract players from team details query
-  const players: Player[] = teamDetailsQuery.data?.team_players?.map((tp: any) => ({
-    id: tp.members.id,
-    nickname: tp.members.nickname,
-    handicap: tp.members.handicap,
-    first_name: tp.members.first_name,
-    last_name: tp.members.last_name,
-  })) || [];
+  const players: Player[] =
+    teamDetailsQuery.data?.team_players?.map((tp: any) => ({
+      id: tp.members.id,
+      nickname: tp.members.nickname,
+      handicap: tp.members.handicap,
+      first_name: tp.members.first_name,
+      last_name: tp.members.last_name,
+    })) || [];
 
   // Team handicap bonus (only for home team)
   const [teamHandicap] = useState<number>(0);
@@ -128,6 +140,9 @@ export function MatchLineup() {
   const opponentLineup = isHomeTeam
     ? lineupsQuery.data?.awayLineup
     : lineupsQuery.data?.homeLineup;
+
+  // Detect tiebreaker mode
+  const isTiebreakerMode = matchData?.match_result === 'tie';
 
   // Handicap calculations
   const handicaps = useHandicapCalculations({
@@ -149,6 +164,7 @@ export function MatchLineup() {
     player3Id: lineup.player3Id,
     subHandicap: lineup.subHandicap,
     players,
+    isTiebreakerMode,
   });
 
   // Lineup persistence operations
@@ -171,7 +187,9 @@ export function MatchLineup() {
     matchData,
   });
 
-  const teamFormat = (matchData?.league?.team_format || '5_man') as '5_man' | '8_man';
+  const teamFormat = (matchData?.league?.team_format || '5_man') as
+    | '5_man'
+    | '8_man';
 
   // Note: Lineups are now auto-created by database trigger when match is inserted
   // See migration: 20251115000000_auto_create_match_lineups.sql
@@ -300,15 +318,19 @@ export function MatchLineup() {
 
   // Helper functions to get player data by position (for mapping)
   const getPlayerIdByPosition = (position: 1 | 2 | 3): string => {
-    return position === 1 ? lineup.player1Id
-         : position === 2 ? lineup.player2Id
-         : lineup.player3Id;
+    return position === 1
+      ? lineup.player1Id
+      : position === 2
+      ? lineup.player2Id
+      : lineup.player3Id;
   };
 
   const getHandicapByPosition = (position: 1 | 2 | 3): number => {
-    return position === 1 ? handicaps.player1Handicap
-         : position === 2 ? handicaps.player2Handicap
-         : handicaps.player3Handicap;
+    return position === 1
+      ? handicaps.player1Handicap
+      : position === 2
+      ? handicaps.player2Handicap
+      : handicaps.player3Handicap;
   };
 
   const getOtherPlayerIds = (position: 1 | 2 | 3): string[] => {
@@ -317,14 +339,19 @@ export function MatchLineup() {
   };
 
   // Tiebreaker mode handlers - update game records instead of lineup
-  const handleTiebreakerPlayerChange = (position: 1 | 2 | 3, playerId: string) => {
+  const handleTiebreakerPlayerChange = (
+    position: 1 | 2 | 3,
+    playerId: string
+  ) => {
     if (!matchId) return;
 
     // Map position to game number (1 → 19, 2 → 20, 3 → 21)
     const gameNumber = 18 + position;
 
     // Find the game
-    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    const game = allGames.find(
+      (g) => g.game_number === gameNumber && g.is_tiebreaker
+    );
     if (!game) {
       console.error(`Tiebreaker game ${gameNumber} not found`);
       return;
@@ -354,7 +381,9 @@ export function MatchLineup() {
     const gameNumber = 18 + position;
 
     // Find the game
-    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    const game = allGames.find(
+      (g) => g.game_number === gameNumber && g.is_tiebreaker
+    );
     if (!game) return;
 
     // Clear local state
@@ -377,11 +406,13 @@ export function MatchLineup() {
   // Get tiebreaker game player ID by position
   const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
     const gameNumber = 18 + position;
-    const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+    const game = allGames.find(
+      (g) => g.game_number === gameNumber && g.is_tiebreaker
+    );
     if (!game) return '';
 
     const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-    return game[playerField as keyof typeof game] as string || '';
+    return (game[playerField as keyof typeof game] as string) || '';
   };
 
   // Early return for loading/error states - consolidated into single check
@@ -390,8 +421,6 @@ export function MatchLineup() {
   // After renderState check, all data is guaranteed to be defined
   // TypeScript doesn't infer this, so we assert non-null
   const match = matchData!;
-
-
 
   /**
    * Get opponent team info
@@ -446,10 +475,14 @@ export function MatchLineup() {
 
     // In tiebreaker mode, count players from games 19, 20, 21
     if (isTiebreakerMode) {
-      const opponentPlayerField = isHomeTeam ? 'away_player_id' : 'home_player_id';
+      const opponentPlayerField = isHomeTeam
+        ? 'away_player_id'
+        : 'home_player_id';
 
       [19, 20, 21].forEach((gameNumber) => {
-        const game = allGames.find((g) => g.game_number === gameNumber && g.is_tiebreaker);
+        const game = allGames.find(
+          (g) => g.game_number === gameNumber && g.is_tiebreaker
+        );
         if (game && game[opponentPlayerField as keyof typeof game]) {
           playerCount++;
         }
@@ -467,33 +500,22 @@ export function MatchLineup() {
 
   const opponent = getOpponentTeam();
 
-  // Detect tiebreaker mode
-  const isTiebreakerMode = matchData?.match_result === 'tie';
-
   // Get my lineup (for tiebreaker mode player source)
   const myLineup = isHomeTeam
     ? lineupsQuery.data?.homeLineup
     : lineupsQuery.data?.awayLineup;
 
-  // In tiebreaker mode, get players from lineup record instead of team roster
-  // In normal mode, include all team players plus substitute options
-  const availablePlayers = isTiebreakerMode && myLineup
-    ? players.filter((p) =>
-        p.id === myLineup.player1_id ||
-        p.id === myLineup.player2_id ||
-        p.id === myLineup.player3_id
-      )
-    : [
-        ...players, // Normal mode: all team players
-        // Add substitute option
-        {
-          id: isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
-          nickname: 'Substitute',
-          first_name: 'Substitute',
-          last_name: '',
-          handicap: 0,
-        } as Player,
-      ];
+  // Helper to get player display name
+  const getPlayerDisplayName = (playerId: string): string => {
+    const player = players.find((p) => p.id === playerId);
+    if (player) {
+      return player.nickname || `${player.first_name} ${player.last_name}`;
+    }
+    // For substitutes
+    if (playerId === SUB_HOME_ID) return 'Sub (Home)';
+    if (playerId === SUB_AWAY_ID) return 'Sub (Away)';
+    return 'Unknown';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -530,18 +552,39 @@ export function MatchLineup() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              {isTiebreakerMode ? 'Select Your Tiebreaker Lineup' : 'Select Your Lineup'}
+              {isTiebreakerMode
+                ? 'Select Your Tiebreaker Lineup'
+                : 'Select Your Lineup'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Available Players List */}
             <PlayerRoster
-              playerIds={availablePlayers.filter((p) => p.id !== SUB_HOME_ID && p.id !== SUB_AWAY_ID).map((p) => p.id)}
+              playerIds={
+                isTiebreakerMode && myLineup
+                  ? [
+                      myLineup.player1_id,
+                      myLineup.player2_id,
+                      myLineup.player3_id,
+                    ].filter(Boolean)
+                  : players.map((p) => p.id)
+              }
               teamFormat={teamFormat}
-              handicapVariant={(matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none'}
-              gameType={matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
+              handicapVariant={
+                (matchData?.league?.handicap_variant || 'standard') as
+                  | 'standard'
+                  | 'reduced'
+                  | 'none'
+              }
+              gameType={
+                matchData?.league?.game_type as
+                  | 'eight_ball'
+                  | 'nine_ball'
+                  | 'ten_ball'
+              }
               seasonId={matchData?.season_id}
               hidePlayerNumber
+              hideHandicap={isTiebreakerMode}
             />
 
             {/* Player Selection Dropdowns */}
@@ -577,7 +620,9 @@ export function MatchLineup() {
                     ? // Tiebreaker mode: get from game records
                       [1, 2, 3]
                         .filter((p) => p !== position)
-                        .map((p) => getTiebreakerPlayerIdByPosition(p as 1 | 2 | 3))
+                        .map((p) =>
+                          getTiebreakerPlayerIdByPosition(p as 1 | 2 | 3)
+                        )
                         .filter(Boolean)
                     : // Normal mode: get from lineup state
                       getOtherPlayerIds(position);
@@ -593,7 +638,9 @@ export function MatchLineup() {
                   return (
                     <div key={position} className="flex gap-2 items-center">
                       <div className="w-12 text-center">
-                        <div className="text-sm font-semibold text-gray-700">{position}</div>
+                        <div className="text-sm font-semibold text-gray-700">
+                          {position}
+                        </div>
                       </div>
                       <div className="w-12 text-center">
                         <div className="text-sm font-semibold text-blue-600">
@@ -607,24 +654,37 @@ export function MatchLineup() {
                           disabled={lineup.lineupLocked}
                         >
                           <SelectTrigger className="min-w-[120px]">
-                            <SelectValue placeholder={`Select Player ${position}`} />
+                            <SelectValue
+                              placeholder={`Select Player ${position}`}
+                            />
                           </SelectTrigger>
                           <SelectContent>
-                            {availablePlayers.map((player) => (
+                            {(isTiebreakerMode && myLineup
+                              ? [
+                                  myLineup.player1_id,
+                                  myLineup.player2_id,
+                                  myLineup.player3_id,
+                                ].filter(Boolean)
+                              : [
+                                  ...players.map((p) => p.id),
+                                  isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
+                                ]
+                            ).map((playerId) => (
                               <SelectItem
-                                key={player.id}
-                                value={player.id}
-                                disabled={otherPlayerIds.includes(player.id)}
+                                key={playerId}
+                                value={playerId}
+                                disabled={otherPlayerIds.includes(playerId)}
                               >
-                                {player.nickname ||
-                                  `${player.first_name} ${player.last_name}`}
+                                {getPlayerDisplayName(playerId)}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       {/* Sub handicap selector (if sub player selected) - inline on same row */}
-                      {(playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID) && (
+                      {!isTiebreakerMode &&
+                        (playerId === SUB_HOME_ID ||
+                          playerId === SUB_AWAY_ID) && (
                         <div className="w-24">
                           <Select
                             value={lineup.subHandicap}
@@ -642,25 +702,45 @@ export function MatchLineup() {
 
                               // Calculate handicap with NEW subHandicap value manually
                               // (can't use handicaps.getPlayerHandicap because state hasn't updated yet)
-                              const players = teamDetailsQuery.data?.members || [];
-                              const usedPlayerIds = [lineup.player1Id, lineup.player2Id, lineup.player3Id].filter(
-                                (id) => id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
+                              const players =
+                                teamDetailsQuery.data?.members || [];
+                              const usedPlayerIds = [
+                                lineup.player1Id,
+                                lineup.player2Id,
+                                lineup.player3Id,
+                              ].filter(
+                                (id) =>
+                                  id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
                               );
-                              const unusedPlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
-                              const highestUnused = unusedPlayers.length > 0
-                                ? Math.max(...unusedPlayers.map((p) => p.handicap || 0))
-                                : 0;
+                              const unusedPlayers = players.filter(
+                                (p: Player) => !usedPlayerIds.includes(p.id)
+                              );
+                              const highestUnused =
+                                unusedPlayers.length > 0
+                                  ? Math.max(
+                                      ...unusedPlayers.map(
+                                        (p: Player) => p.handicap || 0
+                                      )
+                                    )
+                                  : 0;
                               const subValue = parseFloat(newSubHandicap);
-                              const calculatedHandicap = Math.max(subValue, highestUnused);
+                              const calculatedHandicap = Math.max(
+                                subValue,
+                                highestUnused
+                              );
 
-                              console.log('🎯 Calculated sub handicap:', calculatedHandicap);
+                              console.log(
+                                '🎯 Calculated sub handicap:',
+                                calculatedHandicap
+                              );
 
                               // Update database with new handicap
                               updateLineupMutation.mutate({
                                 lineupId: lineup.lineupId,
                                 updates: {
                                   [`player${position}_id`]: playerId,
-                                  [`player${position}_handicap`]: calculatedHandicap,
+                                  [`player${position}_handicap`]:
+                                    calculatedHandicap,
                                 },
                                 matchId,
                               });

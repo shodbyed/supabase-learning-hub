@@ -55,14 +55,26 @@ export function PlayerRoster({
     return <div>Loading players...</div>;
   }
 
-  // Build dynamic grid columns based on visible columns
-  const visibleColumns = [
-    !hidePlayerNumber && 'auto',
-    !hideName && '1fr',
-    !hideNickname && 'auto',
-    !hideHandicap && 'auto',
-  ].filter(Boolean);
-  const gridCols = `grid-cols-[${visibleColumns.join('_')}]`;
+  // Build grid class based on visible columns
+  // Order: H/C Nickname Name Player#
+  const getGridClass = () => {
+    if (!hidePlayerNumber && !hideName && !hideNickname && !hideHandicap) {
+      return 'grid-cols-[48px_80px_1fr_64px]'; // H/C Nickname Name Player#
+    }
+    if (hidePlayerNumber && !hideName && !hideNickname && !hideHandicap) {
+      return 'grid-cols-[48px_80px_1fr]'; // H/C Nickname Name
+    }
+    if (hidePlayerNumber && !hideName && !hideNickname && hideHandicap) {
+      return 'grid-cols-[80px_1fr]'; // Nickname Name
+    }
+    if (!hidePlayerNumber && !hideName && !hideNickname && hideHandicap) {
+      return 'grid-cols-[80px_1fr_64px]'; // Nickname Name Player#
+    }
+    // Default fallback
+    return 'grid-cols-1';
+  };
+
+  const gridCols = getGridClass();
 
   return (
     <div>
@@ -71,38 +83,38 @@ export function PlayerRoster({
       </p>
 
       {/* Header Row */}
-      <div className={`grid ${gridCols} gap-3 text-xs font-medium text-gray-500 pb-1 border-b`}>
-        {!hidePlayerNumber && <span className="w-16">Player #</span>}
+      <div className={`grid ${gridCols} gap-4 text-xs font-medium text-gray-500 pb-1 border-b`}>
+        {!hideHandicap && <span className="text-center">H/C</span>}
+        {!hideNickname && <span>Nickname</span>}
         {!hideName && <span>Name</span>}
-        {!hideNickname && <span className="w-20">Nickname</span>}
-        {!hideHandicap && <span className="w-12 text-center">H/C</span>}
+        {!hidePlayerNumber && <span>Player #</span>}
       </div>
 
       {/* Player Rows */}
-      <div className="space-y-1 mt-1">
+      <div className="mt-1">
         {players.map((player) => {
           const handicap = handicaps.get(player.id);
 
           return (
-            <div key={player.id} className={`grid ${gridCols} gap-3 text-sm py-1 px-2 bg-gray-50 rounded`}>
-              {!hidePlayerNumber && (
-                <span className="text-gray-600 w-16">
-                  {player.system_player_number}
-                </span>
-              )}
-              {!hideName && (
-                <span className="text-gray-900">
-                  {player.first_name} {player.last_name}
+            <div key={player.id} className={`grid ${gridCols} gap-4 text-sm py-1 px-2 bg-gray-50 rounded`}>
+              {!hideHandicap && (
+                <span className="text-gray-600 text-center">
+                  {handicap !== undefined ? handicap : '-'}
                 </span>
               )}
               {!hideNickname && (
-                <span className="text-gray-600 text-xs w-20 truncate">
+                <span className="text-gray-900 truncate">
                   {player.nickname || '-'}
                 </span>
               )}
-              {!hideHandicap && (
-                <span className="text-gray-600 w-12 text-center">
-                  {handicap !== undefined ? handicap : '-'}
+              {!hideName && (
+                <span className="text-gray-600 text-xs truncate">
+                  {player.first_name} {player.last_name}
+                </span>
+              )}
+              {!hidePlayerNumber && (
+                <span className="text-gray-600">
+                  {player.system_player_number}
                 </span>
               )}
             </div>

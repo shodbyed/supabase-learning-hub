@@ -105,11 +105,12 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           if (gamesAlreadyExist) {
             console.log('Games already exist (tiebreaker mode) - skipping game creation');
             // Just navigate, don't create games or calculate thresholds
-            setPreparationMessage?.('Loading match...');
+            // Wait 2 seconds for both team lineups to be fully locked in database
+            setPreparationMessage?.('Loading tiebreaker match...');
             setTimeout(() => {
               setIsPreparingMatch?.(false);
               navigate(`/match/${matchId}/score`);
-            }, 1000);
+            }, 2000);
             return;
           }
 
