@@ -34,6 +34,7 @@ interface MatchPreparationParams {
   player3Handicap: number;
   setIsPreparingMatch?: (preparing: boolean) => void;
   setPreparationMessage?: (message: string) => void;
+  refetchLineups?: () => Promise<any>;
 }
 
 export function useMatchPreparation(params: MatchPreparationParams) {
@@ -52,6 +53,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
     player3Handicap,
     setIsPreparingMatch,
     setPreparationMessage,
+    refetchLineups,
   } = params;
 
   const navigate = useNavigate();
@@ -104,13 +106,36 @@ export function useMatchPreparation(params: MatchPreparationParams) {
 
           if (gamesAlreadyExist) {
             console.log('Games already exist (tiebreaker mode) - skipping game creation');
-            // Just navigate, don't create games or calculate thresholds
-            // Wait 2 seconds for both team lineups to be fully locked in database
-            setPreparationMessage?.('Loading tiebreaker match...');
-            setTimeout(() => {
-              setIsPreparingMatch?.(false);
-              navigate(`/match/${matchId}/score`);
-            }, 2000);
+            setPreparationMessage?.('Waiting for both teams to lock lineups...');
+
+            // Poll for both lineups to be locked before navigating
+            if (refetchLineups) {
+              let bothLineupsLocked = false;
+              let attempts = 0;
+              const maxAttempts = 20; // 10 seconds max
+
+              while (!bothLineupsLocked && attempts < maxAttempts) {
+                const { data: freshLineups } = await refetchLineups();
+
+                if (freshLineups &&
+                    freshLineups.homeLineup?.locked &&
+                    freshLineups.awayLineup?.locked) {
+                  bothLineupsLocked = true;
+                  console.log('✅ Both tiebreaker lineups confirmed locked');
+                } else {
+                  attempts++;
+                  console.log(`⏳ Waiting for both lineups to lock... (attempt ${attempts}/${maxAttempts})`);
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                }
+              }
+
+              if (!bothLineupsLocked) {
+                throw new Error('Timeout waiting for both lineups to be locked');
+              }
+            }
+
+            setIsPreparingMatch?.(false);
+            navigate(`/match/${matchId}/score`);
             return;
           }
 

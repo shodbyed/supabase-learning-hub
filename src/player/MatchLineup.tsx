@@ -144,6 +144,23 @@ export function MatchLineup() {
   // Detect tiebreaker mode
   const isTiebreakerMode = matchData?.match_result === 'tie';
 
+  // Get tiebreaker player IDs if in tiebreaker mode
+  const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
+    const gameNumber = 18 + position;
+    const game = allGames.find(
+      (g) => g.game_number === gameNumber && g.is_tiebreaker
+    );
+    if (!game) return '';
+
+    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+    return (game[playerField as keyof typeof game] as string) || '';
+  };
+
+  // In tiebreaker mode, use game records for validation; otherwise use lineup state
+  const validationPlayer1Id = isTiebreakerMode ? getTiebreakerPlayerIdByPosition(1) : lineup.player1Id;
+  const validationPlayer2Id = isTiebreakerMode ? getTiebreakerPlayerIdByPosition(2) : lineup.player2Id;
+  const validationPlayer3Id = isTiebreakerMode ? getTiebreakerPlayerIdByPosition(3) : lineup.player3Id;
+
   // Handicap calculations
   const handicaps = useHandicapCalculations({
     player1Id: lineup.player1Id,
@@ -159,9 +176,9 @@ export function MatchLineup() {
 
   // Lineup validation
   const validation = useLineupValidation({
-    player1Id: lineup.player1Id,
-    player2Id: lineup.player2Id,
-    player3Id: lineup.player3Id,
+    player1Id: validationPlayer1Id,
+    player2Id: validationPlayer2Id,
+    player3Id: validationPlayer3Id,
     subHandicap: lineup.subHandicap,
     players,
     isTiebreakerMode,
@@ -210,6 +227,7 @@ export function MatchLineup() {
     player3Handicap: handicaps.player3Handicap,
     setIsPreparingMatch,
     setPreparationMessage,
+    refetchLineups: lineupsQuery.refetch,
   });
 
   // Load lineup ID and data from database (auto-created by trigger)
@@ -401,18 +419,6 @@ export function MatchLineup() {
         [playerField]: null,
       },
     });
-  };
-
-  // Get tiebreaker game player ID by position
-  const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
-    const gameNumber = 18 + position;
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) return '';
-
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-    return (game[playerField as keyof typeof game] as string) || '';
   };
 
   // Early return for loading/error states - consolidated into single check

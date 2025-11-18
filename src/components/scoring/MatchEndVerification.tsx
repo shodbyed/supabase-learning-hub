@@ -12,7 +12,7 @@
  * - Auto-navigate to dashboard when both teams verify
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useMatchLineups, useMatchGames, useMatchWithLeagueSettings } from '@/api/hooks/useMatches';
@@ -133,6 +133,7 @@ export function MatchEndVerification({
   const isTiebreakerMode = tiebreakerGames.length > 0;
 
   const [isCompleting, setIsCompleting] = useState(false);
+  const completionStartedRef = useRef(false);
 
   const result = determineMatchResult(
     homeWins,
@@ -172,9 +173,10 @@ export function MatchEndVerification({
 
   // Auto-complete match when both teams verify
   useEffect(() => {
-    if (!bothVerified || isCompleting) return;
+    if (!bothVerified || isCompleting || completionStartedRef.current) return;
 
     const completeTheMatch = async () => {
+      completionStartedRef.current = true;
       setIsCompleting(true);
 
       try {
@@ -359,6 +361,13 @@ export function MatchEndVerification({
           if (!gamesReady) {
             throw new Error('Timeout waiting for tiebreaker games to be created');
           }
+
+          // Refetch lineups to ensure fresh unlocked state in cache
+          console.log('🔄 Refetching lineups to get fresh unlocked state...');
+          await lineupsQuery.refetch();
+
+          // Wait a moment for cache to propagate
+          await new Promise(resolve => setTimeout(resolve, 500));
 
           // Navigate to lineup page
           console.log('✅ Navigating to lineup page for tiebreaker');
