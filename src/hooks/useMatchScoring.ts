@@ -57,7 +57,8 @@ export function useMatchScoring({
   const {
     data: lineupsData,
     isLoading: lineupsLoading,
-    error: lineupsError
+    error: lineupsError,
+    refetch: refetchLineups
   } = useMatchLineups(
     matchId,
     matchData?.home_team_id,
@@ -288,6 +289,17 @@ export function useMatchScoring({
 
     calculateHandicaps();
   }, [matchId, memberId, matchType, matchData, lineupsData]);
+
+  /**
+   * Refetch lineups immediately on mount to ensure fresh data
+   * This prevents "both lineups must be locked" errors from stale cache
+   */
+  useEffect(() => {
+    if (matchId && matchData?.home_team_id && matchData?.away_team_id) {
+      console.log('🔄 Refetching lineups with fresh data on score page mount');
+      refetchLineups();
+    }
+  }, [matchId, matchData?.home_team_id, matchData?.away_team_id, refetchLineups]);
 
   /**
    * Update loading and error states based on TanStack Query status

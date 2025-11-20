@@ -305,7 +305,7 @@ export function TeamSchedule() {
                           </Link>
                         )}
                         {match.status === 'in_progress' && (
-                          <Link to={`/match/${match.id}/score`} className="block pt-2">
+                          <Link to={`/match/${match.id}/lineup`} className="block pt-2">
                             <Button className="w-full">
                               <Trophy className="h-4 w-4 mr-2" />
                               Continue Scoring

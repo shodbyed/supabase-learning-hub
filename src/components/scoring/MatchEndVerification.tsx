@@ -148,6 +148,16 @@ export function MatchEndVerification({
   const awayVerified = awayVerifiedBy !== null;
   const bothVerified = homeVerified && awayVerified;
 
+  console.log('🔍 Verification status:', {
+    homeVerified,
+    awayVerified,
+    bothVerified,
+    homeVerifiedBy,
+    awayVerifiedBy,
+    isCompleting,
+    completionStarted: completionStartedRef.current,
+  });
+
   // Current user's team verification status
   const userTeamVerified = isHomeTeam ? homeVerified : awayVerified;
 
@@ -173,6 +183,13 @@ export function MatchEndVerification({
 
   // Auto-complete match when both teams verify
   useEffect(() => {
+    console.log('🎯 useEffect triggered. Checking conditions:', {
+      bothVerified,
+      isCompleting,
+      completionStarted: completionStartedRef.current,
+      willProceed: bothVerified && !isCompleting && !completionStartedRef.current,
+    });
+
     if (!bothVerified || isCompleting || completionStartedRef.current) return;
 
     const completeTheMatch = async () => {
@@ -331,18 +348,24 @@ export function MatchEndVerification({
             }
 
             console.log('✅ First verifier finished tiebreaker setup');
+
+            // Wait for database writes to complete and propagate
+            console.log('⏳ Waiting 2 seconds for database writes to complete...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
           }
         } else {
-          console.log('⏸️ Not first verifier - waiting for database updates...');
+          console.log('⏸️ Not first verifier - waiting for first verifier to complete setup...');
         }
 
-        // Step 3: ALL devices (first verifier and others) poll for completion
+        // Step 3: ALL devices (first verifier and second verifier) MUST verify data before navigating
         if (result === 'tie') {
-          // Poll for tiebreaker games to exist
-          console.log('⏳ Polling for tiebreaker games...');
+          console.log('🔍 STEP 3: ALL devices verifying tiebreaker data before navigation...');
+
+          // STEP 3A: Poll for tiebreaker games to exist
+          console.log('⏳ STEP 3A: Polling for tiebreaker games...');
           let gamesReady = false;
           let attempts = 0;
-          const maxAttempts = 10; // 10 attempts = 5 seconds max
+          const maxAttempts = 20; // 20 attempts = 10 seconds max
 
           while (!gamesReady && attempts < maxAttempts) {
             const { data: checkGames } = await gamesQuery.refetch();
@@ -350,10 +373,10 @@ export function MatchEndVerification({
 
             if (tiebreakerGamesCount >= 3) {
               gamesReady = true;
-              console.log('✅ Tiebreaker games found in database');
+              console.log('✅ STEP 3A: Tiebreaker games found in database');
             } else {
               attempts++;
-              console.log(`⏳ Waiting for games... (attempt ${attempts}/${maxAttempts})`);
+              console.log(`⏳ STEP 3A: Waiting for games... (attempt ${attempts}/${maxAttempts})`);
               await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
@@ -362,15 +385,37 @@ export function MatchEndVerification({
             throw new Error('Timeout waiting for tiebreaker games to be created');
           }
 
-          // Refetch lineups to ensure fresh unlocked state in cache
-          console.log('🔄 Refetching lineups to get fresh unlocked state...');
-          await lineupsQuery.refetch();
+          // STEP 3B: Poll for both lineups to be unlocked
+          console.log('⏳ STEP 3B: Polling for both lineups to be unlocked...');
+          let lineupsUnlocked = false;
+          attempts = 0;
 
-          // Wait a moment for cache to propagate
+          while (!lineupsUnlocked && attempts < maxAttempts) {
+            const { data: checkLineups } = await lineupsQuery.refetch();
+
+            if (checkLineups?.homeLineup &&
+                checkLineups?.awayLineup &&
+                !checkLineups.homeLineup.locked &&
+                !checkLineups.awayLineup.locked) {
+              lineupsUnlocked = true;
+              console.log('✅ STEP 3B: Both lineups confirmed unlocked');
+            } else {
+              attempts++;
+              console.log(`⏳ STEP 3B: Waiting for lineups to unlock... (attempt ${attempts}/${maxAttempts})`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+
+          if (!lineupsUnlocked) {
+            throw new Error('Timeout waiting for lineups to be unlocked');
+          }
+
+          // STEP 3C: Final cache propagation delay
+          console.log('⏳ STEP 3C: Final cache propagation delay...');
           await new Promise(resolve => setTimeout(resolve, 500));
 
           // Navigate to lineup page
-          console.log('✅ Navigating to lineup page for tiebreaker');
+          console.log('✅ ALL VERIFICATION COMPLETE - Navigating to lineup page for tiebreaker');
           navigate(`/match/${matchId}/lineup`);
         } else {
           // Match has a winner - navigate to dashboard

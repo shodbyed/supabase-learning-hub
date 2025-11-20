@@ -228,6 +228,7 @@ export function MatchLineup() {
     setIsPreparingMatch,
     setPreparationMessage,
     refetchLineups: lineupsQuery.refetch,
+    refetchGames: matchGamesQuery.refetch,
   });
 
   // Load lineup ID and data from database (auto-created by trigger)
