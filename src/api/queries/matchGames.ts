@@ -41,9 +41,15 @@ export interface MatchGame {
  * 2. Then games from other seasons with matching game_type
  * 3. Ordered by created_at (newest first)
  * 4. Only returns games with a winner (completed games)
+ * 5. TIEBREAKER RULE: Excludes tiebreaker games where player lost
  *
  * IMPORTANT: 8-ball stats don't count for 9-ball handicaps and vice versa.
  * Players need separate handicaps for each game type.
+ *
+ * TIEBREAKER HANDICAP RULE:
+ * - Tiebreaker wins ARE included in handicap calculation
+ * - Tiebreaker losses are EXCLUDED from handicap calculation
+ * - This prevents unfair penalty from anti-sandbagging rule
  *
  * PERFORMANCE: Uses denormalized game_type field for fast filtering without joins.
  * Composite indexes (player + game_type + created_at) enable optimal query performance.
@@ -52,7 +58,7 @@ export interface MatchGame {
  * @param gameType - Game type to filter ('eight_ball', 'nine_ball', 'ten_ball')
  * @param currentSeasonId - Optional current season ID to prioritize
  * @param limit - Maximum number of games to return (default: 200)
- * @returns Array of completed games where the player participated
+ * @returns Array of completed games where the player participated (tiebreaker losses excluded)
  * @throws Error if query fails
  *
  * @example
@@ -70,6 +76,10 @@ export async function fetchPlayerGameHistory(
   // Composite indexes make this extremely fast for handicap calculations
   const selectFields = currentSeasonId ? '*, match:matches!inner(season_id)' : '*';
 
+  // Fetch extra games (25% buffer) to account for tiebreaker losses that will be filtered out
+  // Tiebreakers are rare, so 250 games ensures we have 200+ after filtering
+  const fetchLimit = Math.ceil(limit * 1.25);
+
   const { data, error } = await supabase
     .from('match_games')
     .select(selectFields)
@@ -77,7 +87,7 @@ export async function fetchPlayerGameHistory(
     .not('winner_player_id', 'is', null) // Only completed games
     .eq('game_type', gameType) // Direct filter - much faster than joins!
     .order('created_at', { ascending: false })
-    .limit(limit) as any; // TypeScript struggles with conditional selects, cast to any
+    .limit(fetchLimit) as any; // TypeScript struggles with conditional selects, cast to any
 
   if (error) {
     throw new Error(`Failed to fetch player game history: ${error.message}`);
@@ -87,18 +97,35 @@ export async function fetchPlayerGameHistory(
     return [];
   }
 
+  // TIEBREAKER HANDICAP RULE: Filter out tiebreaker games where player lost
+  // - Keep all non-tiebreaker games
+  // - Keep tiebreaker games where player WON (counts toward handicap)
+  // - Exclude tiebreaker games where player LOST (prevents anti-sandbagging penalty)
+  const filteredData = data.filter((game: any) => {
+    const isTiebreaker = game.is_tiebreaker === true;
+    const playerWon = game.winner_player_id === playerId;
+
+    // Keep all non-tiebreaker games
+    if (!isTiebreaker) return true;
+
+    // For tiebreaker games, only keep if player won
+    return playerWon;
+  });
+
   // If currentSeasonId provided, sort to prioritize current season games first
   if (currentSeasonId) {
-    const currentSeasonGames = data.filter(
+    const currentSeasonGames = filteredData.filter(
       (game: any) => game.match?.season_id === currentSeasonId
     );
-    const otherSeasonGames = data.filter(
+    const otherSeasonGames = filteredData.filter(
       (game: any) => game.match?.season_id !== currentSeasonId
     );
 
     // Return current season games first, then others (both already sorted by created_at)
+    // Take up to 'limit' games after filtering
     return [...currentSeasonGames, ...otherSeasonGames].slice(0, limit);
   }
 
-  return data;
+  // Return up to 'limit' games after filtering
+  return filteredData.slice(0, limit);
 }

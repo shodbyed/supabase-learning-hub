@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom';
 import { formatPartialMemberNumber } from '@/types/member';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { PlayerRoster } from '@/components/PlayerRoster';
 import { PageHeader } from '@/components/PageHeader';
 import { MapPin, Users, AlertCircle, ArrowRight, Pencil } from 'lucide-react';
 import { parseLocalDate } from '@/utils/formatters';
@@ -338,41 +339,13 @@ function TeamAccordionItem({
           </div>
 
           {/* Roster */}
-          <div>
-            <p className="text-sm font-medium text-gray-600 mb-2">
-              Roster ({team.team_players.length}/{team.roster_size})
-            </p>
-            <ul className="space-y-1 ml-6">
-              {nonCaptainPlayers.map((player) => (
-                <li
-                  key={player.member_id}
-                  className={`text-sm ${
-                    player.member_id === memberId
-                      ? 'font-semibold text-blue-600'
-                      : 'text-gray-900'
-                  }`}
-                >
-                  <PlayerNameLink
-                    playerId={player.members.id}
-                    playerName={`${player.members.first_name} ${player.members.last_name}`}
-                    className={player.member_id === memberId ? 'font-semibold' : ''}
-                  />{' '}
-                  {formatPartialMemberNumber(player.members)}
-                </li>
-              ))}
-              {/* Empty roster slots */}
-              {Array.from({
-                length: team.roster_size - team.team_players.length,
-              }).map((_, index) => (
-                <li
-                  key={`empty-${index}`}
-                  className="text-sm text-gray-400 italic ml-6"
-                >
-                  Player {nonCaptainPlayers.length + index + 2}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <PlayerRoster
+            playerIds={team.team_players.map(p => p.member_id)}
+            teamFormat={team.roster_size === 5 ? '5_man' : '8_man'}
+            handicapVariant="standard"
+            gameType={team.season.league.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
+            seasonId={team.season.id}
+          />
 
           {/* Action Buttons */}
           <div className="pt-2">

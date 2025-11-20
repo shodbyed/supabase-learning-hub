@@ -13,7 +13,7 @@ import { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, 
 import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
 import { useMembersByIds } from '@/api/hooks/useCurrentMember';
 import { useUserTeamInMatch } from '@/api/hooks/useTeams';
-import { useMatchGamesRealtime } from '@/realtime/useMatchGamesRealtime';
+import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import type {
   Player,
   HandicapThresholds,
@@ -57,7 +57,8 @@ export function useMatchScoring({
   const {
     data: lineupsData,
     isLoading: lineupsLoading,
-    error: lineupsError
+    error: lineupsError,
+    refetch: refetchLineups
   } = useMatchLineups(
     matchId,
     matchData?.home_team_id,
@@ -290,6 +291,17 @@ export function useMatchScoring({
   }, [matchId, memberId, matchType, matchData, lineupsData]);
 
   /**
+   * Refetch lineups immediately on mount to ensure fresh data
+   * This prevents "both lineups must be locked" errors from stale cache
+   */
+  useEffect(() => {
+    if (matchId && matchData?.home_team_id && matchData?.away_team_id) {
+      console.log('🔄 Refetching lineups with fresh data on score page mount');
+      refetchLineups();
+    }
+  }, [matchId, matchData?.home_team_id, matchData?.away_team_id, refetchLineups]);
+
+  /**
    * Update loading and error states based on TanStack Query status
    */
   useEffect(() => {
@@ -329,20 +341,22 @@ export function useMatchScoring({
   // ============================================================================
 
   /**
-   * Real-time subscription to match_games table
-   * Listens for INSERT/UPDATE/DELETE events and refreshes game results
+   * Unified real-time subscription to matches, match_lineups, and match_games
+   * Listens for INSERT/UPDATE/DELETE events and refreshes data
    * Handles confirmation queue logic for opponent score updates
    */
-  useMatchGamesRealtime(matchId, {
-    onUpdate: refetchGames,
+  useMatchRealtime(matchId, {
     onMatchUpdate: refetchMatch,
-    match,
-    userTeamId,
-    players,
-    myVacateRequests,
-    addToConfirmationQueue,
-    autoConfirm,
-    confirmOpponentScore,
+    onGamesUpdate: refetchGames,
+    gameUpdateOptions: {
+      match,
+      userTeamId,
+      players,
+      myVacateRequests,
+      addToConfirmationQueue,
+      autoConfirm,
+      confirmOpponentScore,
+    },
   });
 
   // ============================================================================

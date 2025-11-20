@@ -15,18 +15,20 @@ import { lineupHasSubstitute } from './substituteHelpers';
  * @param player2Id - Second player ID
  * @param player3Id - Third player ID
  * @param subHandicap - Substitute handicap (required if lineup has sub)
+ * @param isTiebreakerMode - Whether in tiebreaker mode (sub handicap already set)
  * @returns True if lineup is complete
  */
 export function isLineupComplete(
   player1Id: string,
   player2Id: string,
   player3Id: string,
-  subHandicap: string
+  subHandicap: string,
+  isTiebreakerMode?: boolean
 ): boolean {
   const playersSelected = !!(player1Id && player2Id && player3Id);
 
-  // If there's a sub, handicap must be selected
-  if (lineupHasSubstitute(player1Id, player2Id, player3Id)) {
+  // If there's a sub, handicap must be selected (unless in tiebreaker mode)
+  if (lineupHasSubstitute(player1Id, player2Id, player3Id) && !isTiebreakerMode) {
     return playersSelected && !!subHandicap;
   }
 
@@ -76,6 +78,7 @@ export function hasDuplicateNicknames(
  * @param player3Id - Third player ID
  * @param subHandicap - Substitute handicap
  * @param players - Array of available players
+ * @param isTiebreakerMode - Whether in tiebreaker mode (sub handicap already set)
  * @returns True if lineup can be locked
  */
 export function canLockLineup(
@@ -83,10 +86,11 @@ export function canLockLineup(
   player2Id: string,
   player3Id: string,
   subHandicap: string,
-  players: Player[]
+  players: Player[],
+  isTiebreakerMode?: boolean
 ): boolean {
   return (
-    isLineupComplete(player1Id, player2Id, player3Id, subHandicap) &&
+    isLineupComplete(player1Id, player2Id, player3Id, subHandicap, isTiebreakerMode) &&
     !hasDuplicateNicknames(player1Id, player2Id, player3Id, players)
   );
 }

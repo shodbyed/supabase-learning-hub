@@ -46,6 +46,8 @@ export interface MatchWithLeagueSettings {
   scheduled_date: string;
   home_team_verified_by?: string | null;
   away_team_verified_by?: string | null;
+  home_tiebreaker_verified_by?: string | null;
+  away_tiebreaker_verified_by?: string | null;
   home_games_to_win: number | null;
   home_games_to_tie: number | null;
   home_games_to_lose: number | null;
@@ -188,6 +190,7 @@ export interface MatchGame {
   golden_break: boolean;
   confirmed_by_home: boolean;
   confirmed_by_away: boolean;
+  is_tiebreaker: boolean;
 }
 
 /**
@@ -320,17 +323,34 @@ export function getCompletedGamesCount(gameResults: Map<number, MatchGame>): num
 /**
  * Calculate current points for a team
  *
- * Formula: games_won - (games_to_tie ?? games_to_win)
- * Points indicate how many games above/below the threshold a team is.
+ * Points calculation logic:
+ * - Positive points: wins above games_to_win (e.g., 11 wins when you need 10 = +1 point)
+ * - Zero points: wins between games_to_tie and games_to_win (inclusive)
+ * - Negative points: wins below games_to_tie
+ *
+ * When ties are possible:
+ * - Win exactly what you need (games_to_win) = 0 points
+ * - Tie (games_to_tie) = 0 points for both teams
+ * - Win more than needed = positive points
+ * - Below tie threshold = negative points
+ *
+ * When no tie possible (games_to_tie = null):
+ * - Uses games_to_win as the baseline for all calculations
  *
  * @param teamId - Team's ID to calculate points for
  * @param thresholds - Handicap thresholds (win/tie/lose game counts)
  * @param gameResults - Map of game numbers to game results
- * @returns Point differential (positive = winning, negative = losing)
+ * @returns Point differential (positive = above win threshold, 0 = tie range, negative = below tie threshold)
  *
  * @example
- * const points = calculatePoints('team-123', { games_to_win: 5, games_to_tie: null, games_to_lose: 0 }, gamesMap);
- * console.log(`Team is ${points} points ${points >= 0 ? 'ahead' : 'behind'}`);
+ * // With tie possible: games_to_win=10, games_to_tie=9
+ * const points1 = calculatePoints('team-123', { games_to_win: 10, games_to_tie: 9, games_to_lose: 8 }, gamesMap);
+ * // 11 wins = +1, 10 wins = 0, 9 wins = 0, 8 wins = -1
+ *
+ * @example
+ * // No tie: games_to_win=10, games_to_tie=null
+ * const points2 = calculatePoints('team-123', { games_to_win: 10, games_to_tie: null, games_to_lose: 9 }, gamesMap);
+ * // 11 wins = +1, 10 wins = 0, 9 wins = -1
  */
 export function calculatePoints(
   teamId: string,
@@ -339,6 +359,21 @@ export function calculatePoints(
 ): number {
   if (!thresholds) return 0;
   const { wins } = getTeamStats(teamId, gameResults);
-  const baseline = thresholds.games_to_tie ?? thresholds.games_to_win;
-  return wins - baseline;
+
+  // If ties are possible
+  if (thresholds.games_to_tie !== null) {
+    // Positive points: wins above games_to_win
+    if (wins > thresholds.games_to_win) {
+      return wins - thresholds.games_to_win;
+    }
+    // Zero points: in the tie range (games_to_tie to games_to_win, inclusive)
+    if (wins >= thresholds.games_to_tie && wins <= thresholds.games_to_win) {
+      return 0;
+    }
+    // Negative points: below tie threshold
+    return wins - thresholds.games_to_tie;
+  }
+
+  // No tie possible: use games_to_win as baseline
+  return wins - thresholds.games_to_win;
 }

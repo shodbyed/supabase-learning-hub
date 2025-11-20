@@ -13,8 +13,6 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import type { Lineup } from '@/types/match';
 import {
   getPlayerStats,
@@ -23,7 +21,6 @@ import {
   type HandicapThresholds,
 } from '@/types/match';
 import { MatchEndVerification } from './MatchEndVerification';
-import { InfoButton } from '@/components/InfoButton';
 
 interface MatchScoreboardProps {
   /** Current match data */
@@ -63,10 +60,6 @@ interface MatchScoreboardProps {
   showingHomeTeam: boolean;
   /** Handler to toggle team view */
   onToggleTeam: (showHome: boolean) => void;
-  /** Auto-confirm setting */
-  autoConfirm: boolean;
-  /** Handler to toggle auto-confirm */
-  onAutoConfirmChange: (checked: boolean) => void;
   /** Get player display name by ID */
   getPlayerDisplayName: (playerId: string) => string;
   /** Whether all games are complete */
@@ -77,6 +70,8 @@ interface MatchScoreboardProps {
   onVerify: () => void;
   /** Is verification in progress? */
   isVerifying?: boolean;
+  /** Game type for tiebreaker games (eight_ball, nine_ball, ten_ball) */
+  gameType: string;
 }
 
 /**
@@ -95,15 +90,13 @@ export function MatchScoreboard({
   awayThresholds,
   showingHomeTeam,
   onToggleTeam,
-  autoConfirm,
-  onAutoConfirmChange,
   getPlayerDisplayName,
   allGamesComplete,
   isHomeTeam,
   onVerify,
   isVerifying = false,
+  gameType,
 }: MatchScoreboardProps) {
-  const navigate = useNavigate();
 
   // Calculate team wins for verification component
   const homeWins = getTeamStats(match.home_team_id, gameResults as any).wins;
@@ -131,43 +124,10 @@ export function MatchScoreboard({
             isHomeTeam={isHomeTeam}
             onVerify={onVerify}
             isVerifying={isVerifying}
+            gameType={gameType}
           />
         ) : (
-          <>
-            {/* Header row: Dashboard button + My Team Name + Auto-confirm */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1 w-[160px]">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-1"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Dashboard
-                </Button>
-              </div>
-              <div className="text-sm font-semibold text-gray-700">
-                {isHomeTeam ? match.home_team?.team_name : match.away_team?.team_name}
-              </div>
-              <div className="flex items-center gap-2 w-[160px] justify-end">
-                <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={autoConfirm}
-                    onChange={(e) => onAutoConfirmChange(e.target.checked)}
-                    className="w-3 h-3"
-                  />
-                  Auto-Confirm
-                </label>
-                <InfoButton title="Auto-Confirm Opponent Selections" className="relative">
-                  <p className="text-sm">
-                    By enabling this your opponents game result selections will automatically be confirmed for your team. Your team is still responsible for ensuring the scoring is accurate. This option simply removes the need to confirm each game individually.
-                  </p>
-                </InfoButton>
-              </div>
-            </div>
-          </>
+          <></>
         )}
 
         {/* Mobile: Title above team selector buttons */}

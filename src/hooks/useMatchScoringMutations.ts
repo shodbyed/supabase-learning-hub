@@ -12,9 +12,10 @@
  */
 
 import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
-import { getAllGames } from '@/utils/gameOrder';
-import type { Lineup } from '@/types/match';
+import type { Lineup, MatchGame } from '@/types/match';
+import { queryKeys } from '@/api/queryKeys';
 
 interface UseMatchScoringMutationsParams {
   /** Current match data */
@@ -24,18 +25,7 @@ interface UseMatchScoringMutationsParams {
     away_team_id: string;
   } | null;
   /** Map of game results by game number */
-  gameResults: Map<
-    number,
-    {
-      id: string;
-      winner_player_id: string | null;
-      winner_team_id: string | null;
-      confirmed_by_home: string | null; // UUID of confirming member
-      confirmed_by_away: string | null; // UUID of confirming member
-      break_and_run: boolean;
-      golden_break: boolean;
-    }
-  >;
+  gameResults: Map<number, MatchGame>;
   /** Home team lineup */
   homeLineup: Lineup | null;
   /** Away team lineup */
@@ -78,6 +68,7 @@ export function useMatchScoringMutations({
   addToConfirmationQueue,
   getPlayerDisplayName,
 }: UseMatchScoringMutationsParams) {
+  const queryClient = useQueryClient();
   /**
    * Handle player button click to score a game
    *
@@ -214,13 +205,24 @@ export function useMatchScoringMutations({
           if (error) throw error;
         }
 
-        // Note: Real-time subscription will automatically refresh game results
+        // Wait 500ms for database to propagate, then invalidate queries
+        // This ensures the refetched data includes the update
+        setTimeout(() => {
+          if (match?.id) {
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.matches.detail(match.id),
+            });
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.matches.games(match.id),
+            });
+          }
+        }, 500);
       } catch (err: any) {
         console.error('Error confirming game:', err);
         alert(`Failed to confirm game: ${err.message}`);
       }
     },
-    [match, userTeamId, gameResults]
+    [match, userTeamId, gameResults, queryClient]
   );
 
   /**
@@ -306,22 +308,19 @@ export function useMatchScoringMutations({
           return;
         }
 
-        // Get game definition from game order
-        const gameDefinition = getAllGames().find(
-          (g) => g.gameNumber === scoringGame.gameNumber
-        );
-        if (!gameDefinition) {
-          alert('Invalid game number');
+        // Get the existing game record from the database
+        const existingGame = gameResults.get(scoringGame.gameNumber);
+        if (!existingGame) {
+          alert('Game not found');
           return;
         }
 
-        // Get player IDs from lineups
-        const homePlayerId = homeLineup[
-          `player${gameDefinition.homePlayerPosition}_id` as keyof Lineup
-        ] as string;
-        const awayPlayerId = awayLineup[
-          `player${gameDefinition.awayPlayerPosition}_id` as keyof Lineup
-        ] as string;
+        // Read player IDs and actions directly from the game record
+        // (Works for all game types: regular, tiebreaker, 5v5, etc.)
+        const homePlayerId = existingGame.home_player_id || '';
+        const awayPlayerId = existingGame.away_player_id || '';
+        const homeAction = existingGame.home_action || 'breaks';
+        const awayAction = existingGame.away_action || 'racks';
 
         // Prepare game data
         const gameData = {
@@ -329,8 +328,8 @@ export function useMatchScoringMutations({
           game_number: scoringGame.gameNumber,
           home_player_id: homePlayerId,
           away_player_id: awayPlayerId,
-          home_action: gameDefinition.homeAction,
-          away_action: gameDefinition.awayAction,
+          home_action: homeAction,
+          away_action: awayAction,
           winner_team_id: scoringGame.winnerTeamId,
           winner_player_id: scoringGame.winnerPlayerId,
           break_and_run: breakAndRun,
@@ -339,9 +338,7 @@ export function useMatchScoringMutations({
           confirmed_by_away: !isHomeTeamScoring ? memberId : null,
         };
 
-        // Check if game already exists
-        const existingGame = gameResults.get(scoringGame.gameNumber);
-
+        // Check if game already exists (using same game we fetched earlier)
         console.log('Saving game score:', gameData);
         console.log('Existing game:', existingGame);
 

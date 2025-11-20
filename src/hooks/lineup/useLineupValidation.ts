@@ -33,6 +33,7 @@ export interface LineupValidationInput {
   player3Id: string;
   subHandicap: string;
   players: Player[];
+  isTiebreakerMode?: boolean;
 }
 
 export interface LineupValidation {
@@ -56,7 +57,7 @@ export interface LineupValidation {
 export function useLineupValidation(
   input: LineupValidationInput
 ): LineupValidation {
-  const { player1Id, player2Id, player3Id, subHandicap, players } = input;
+  const { player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode } = input;
 
   // Check if lineup has a substitute
   const hasSub = useMemo(
@@ -66,8 +67,8 @@ export function useLineupValidation(
 
   // Check if lineup is complete
   const isComplete = useMemo(
-    () => isLineupComplete(player1Id, player2Id, player3Id, subHandicap),
-    [player1Id, player2Id, player3Id, subHandicap]
+    () => isLineupComplete(player1Id, player2Id, player3Id, subHandicap, isTiebreakerMode),
+    [player1Id, player2Id, player3Id, subHandicap, isTiebreakerMode]
   );
 
   // Check for duplicate nicknames
@@ -78,8 +79,8 @@ export function useLineupValidation(
 
   // Check if lineup can be locked
   const canLock = useMemo(
-    () => canLockLineup(player1Id, player2Id, player3Id, subHandicap, players),
-    [player1Id, player2Id, player3Id, subHandicap, players]
+    () => canLockLineup(player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode),
+    [player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode]
   );
 
   // Generate error messages

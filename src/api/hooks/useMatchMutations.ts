@@ -9,7 +9,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
-import { updateMatch } from '../mutations/matches';
+import { updateMatch, createMatchGames, updateMatchGame } from '../mutations/matches';
 
 /**
  * Options for controlling cache invalidation
@@ -72,6 +72,96 @@ export function useUpdateMatch(options: MatchMutationOptions = {}) {
       // Invalidate match list queries (in case status changed)
       queryClient.invalidateQueries({
         queryKey: queryKeys.matches.all,
+      });
+    },
+  });
+}
+
+/**
+ * Hook to create match game records
+ *
+ * Generic mutation that can create any number of games with any data.
+ * Optionally invalidates queries after success.
+ *
+ * @param options - Options to control refetching behavior
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * // Create tiebreaker games
+ * const createGamesMutation = useCreateMatchGames();
+ * await createGamesMutation.mutateAsync({
+ *   games: [
+ *     {
+ *       match_id: 'match-123',
+ *       game_number: 19,
+ *       home_action: 'breaks',
+ *       away_action: 'racks',
+ *       is_tiebreaker: true,
+ *       game_type: 'nine_ball'
+ *     }
+ *   ]
+ * });
+ */
+export function useCreateMatchGames(options: MatchMutationOptions = {}) {
+  const { invalidate = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createMatchGames,
+    onSuccess: (createdGames) => {
+      if (!invalidate || !createdGames.length) return;
+
+      const matchId = createdGames[0].match_id;
+
+      // Invalidate match games query
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.games(matchId),
+      });
+
+      // Invalidate match detail query
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.detail(matchId),
+      });
+    },
+  });
+}
+
+/**
+ * Hook to update a match game record
+ *
+ * Generic mutation that can update any fields on a game record.
+ * Used for updating player assignments, scores, confirmations, etc.
+ * Optionally invalidates queries after success.
+ *
+ * @param matchId - Match ID for cache invalidation
+ * @param options - Options to control refetching behavior
+ * @returns TanStack Query mutation result
+ *
+ * @example
+ * // Assign player to tiebreaker game
+ * const updateGameMutation = useUpdateMatchGame(matchId);
+ * await updateGameMutation.mutateAsync({
+ *   gameId: 'game-123',
+ *   updates: { home_player_id: 'player-456' }
+ * });
+ */
+export function useUpdateMatchGame(matchId: string, options: MatchMutationOptions = {}) {
+  const { invalidate = true } = options;
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMatchGame,
+    onSuccess: () => {
+      if (!invalidate) return;
+
+      // Invalidate match games query
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.games(matchId),
+      });
+
+      // Invalidate match detail query
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.matches.detail(matchId),
       });
     },
   });

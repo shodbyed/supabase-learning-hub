@@ -6,12 +6,18 @@
  * Creates game rows and calculates handicap thresholds.
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { useUpdateMatch } from '@/api/hooks';
 import { calculateHandicapThresholds } from '@/utils/calculateHandicapThresholds';
 import { generateGameOrder } from '@/utils/gameOrder';
+
+export function usePreparationStatus() {
+  const [isPreparingMatch, setIsPreparingMatch] = useState(false);
+  const [preparationMessage, setPreparationMessage] = useState('');
+  return { isPreparingMatch, setIsPreparingMatch, preparationMessage, setPreparationMessage };
+}
 
 interface MatchPreparationParams {
   lineupLocked: boolean;
@@ -26,6 +32,10 @@ interface MatchPreparationParams {
   player1Handicap: number;
   player2Handicap: number;
   player3Handicap: number;
+  setIsPreparingMatch?: (preparing: boolean) => void;
+  setPreparationMessage?: (message: string) => void;
+  refetchLineups?: () => Promise<any>;
+  refetchGames?: () => Promise<any>;
 }
 
 export function useMatchPreparation(params: MatchPreparationParams) {
@@ -42,6 +52,10 @@ export function useMatchPreparation(params: MatchPreparationParams) {
     player1Handicap,
     player2Handicap,
     player3Handicap,
+    setIsPreparingMatch,
+    setPreparationMessage,
+    refetchLineups,
+    refetchGames,
   } = params;
 
   const navigate = useNavigate();
@@ -49,24 +63,75 @@ export function useMatchPreparation(params: MatchPreparationParams) {
   const matchPreparedRef = useRef(false);
 
   // Auto-navigate to scoring page when both lineups are locked - useEffect MUST be before early returns
-  // UNLESS this is a tiebreaker scenario (match_result = 'tie')
   // IMPORTANT: Only HOME team prepares the match to avoid race conditions
   useEffect(() => {
     if (lineupLocked && opponentLineup?.locked && !matchPreparedRef.current) {
-      // If this is a tiebreaker (match ended in tie), don't auto-navigate
-      // User will manually proceed when ready
-      if (matchData?.match_result === 'tie') {
-        console.log(
-          'Both lineups locked (tiebreaker) - waiting for manual proceed'
-        );
-        return;
-      }
-
       // Only home team prepares the match data to avoid both teams doing it simultaneously
       if (!isHomeTeam) {
-        console.log('🚀 Away team navigating to scoring');
-        matchPreparedRef.current = true;
-        navigate(`/match/${matchId}/score`);
+        const awayTeamNavigate = async () => {
+          console.log('🚀 Away team preparing to navigate');
+          matchPreparedRef.current = true;
+          setIsPreparingMatch?.(true);
+
+          // STEP 1: Verify both lineups are actually locked with FRESH data
+          setPreparationMessage?.('Verifying lineups are locked...');
+          if (!refetchLineups) {
+            console.error('refetchLineups not available');
+            setIsPreparingMatch?.(false);
+            matchPreparedRef.current = false;
+            return;
+          }
+
+          let bothLineupsLocked = false;
+          let attempts = 0;
+          const maxAttempts = 20; // 10 seconds max
+
+          while (!bothLineupsLocked && attempts < maxAttempts) {
+            const { data: freshLineups } = await refetchLineups();
+
+            if (freshLineups &&
+                freshLineups.homeLineup?.locked &&
+                freshLineups.awayLineup?.locked) {
+              bothLineupsLocked = true;
+              console.log('✅ Both lineups confirmed locked with fresh data (away team)');
+            } else {
+              attempts++;
+              console.log(`⏳ Away team waiting for both lineups to lock... (attempt ${attempts}/${maxAttempts})`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+
+          if (!bothLineupsLocked) {
+            console.error('Timeout: Both lineups not locked');
+            setIsPreparingMatch?.(false);
+            matchPreparedRef.current = false;
+            return;
+          }
+
+          // STEP 2: Check if this is tiebreaker or regular mode with FRESH data
+          setPreparationMessage?.('Checking match type...');
+          let isTiebreaker = false;
+          if (refetchGames) {
+            const { data: existingGames } = await refetchGames();
+            isTiebreaker = existingGames && existingGames.length > 0;
+            console.log(`✅ Match type: ${isTiebreaker ? 'Tiebreaker' : 'Regular'}`);
+          }
+
+          // STEP 3: For regular matches, wait for home team to create games
+          if (!isTiebreaker) {
+            setPreparationMessage?.('Waiting for match setup...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+
+          // STEP 4: Final verification before navigation
+          setPreparationMessage?.('Final verification...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          setIsPreparingMatch?.(false);
+          navigate(`/match/${matchId}/score`);
+        };
+
+        awayTeamNavigate();
         return;
       }
 
@@ -74,10 +139,71 @@ export function useMatchPreparation(params: MatchPreparationParams) {
         if (!matchId || !matchData || !opponentLineup) return;
 
         console.log('🚀 Home team preparing and navigating');
+        setIsPreparingMatch?.(true);
 
         try {
           matchPreparedRef.current = true;
 
+          // STEP 1: Verify both lineups are actually locked with FRESH data
+          setPreparationMessage?.('Verifying lineups are locked...');
+          if (!refetchLineups) {
+            console.error('refetchLineups not available');
+            setIsPreparingMatch?.(false);
+            matchPreparedRef.current = false;
+            return;
+          }
+
+          let bothLineupsLocked = false;
+          let attempts = 0;
+          const maxAttempts = 20; // 10 seconds max
+
+          while (!bothLineupsLocked && attempts < maxAttempts) {
+            const { data: freshLineups } = await refetchLineups();
+
+            if (freshLineups &&
+                freshLineups.homeLineup?.locked &&
+                freshLineups.awayLineup?.locked) {
+              bothLineupsLocked = true;
+              console.log('✅ Both lineups confirmed locked with fresh data (home team)');
+            } else {
+              attempts++;
+              console.log(`⏳ Home team waiting for both lineups to lock... (attempt ${attempts}/${maxAttempts})`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+
+          if (!bothLineupsLocked) {
+            console.error('Timeout: Both lineups not locked');
+            setIsPreparingMatch?.(false);
+            matchPreparedRef.current = false;
+            return;
+          }
+
+          // STEP 2: Check if this is tiebreaker or regular mode with FRESH data
+          setPreparationMessage?.('Checking match type...');
+          if (!refetchGames) {
+            console.error('refetchGames not available');
+            setIsPreparingMatch?.(false);
+            matchPreparedRef.current = false;
+            return;
+          }
+
+          const { data: existingGames } = await refetchGames();
+          const isTiebreaker = existingGames && existingGames.length > 0;
+          console.log(`✅ Match type: ${isTiebreaker ? 'Tiebreaker' : 'Regular'}`);
+
+          // STEP 3: If tiebreaker mode, verify games exist and navigate
+          if (isTiebreaker) {
+            console.log('Tiebreaker mode - games already exist, navigating to score page');
+            setPreparationMessage?.('Final verification...');
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            setIsPreparingMatch?.(false);
+            navigate(`/match/${matchId}/score`);
+            return;
+          }
+
+          // STEP 4: Regular match - create games and thresholds
           // Build current user's lineup object from state
           const myLineup = {
             player1_id: player1Id,
@@ -88,7 +214,8 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             player3_handicap: player3Handicap,
           };
 
-          // Step 1: Calculate handicap thresholds
+          // Calculate handicap thresholds
+          setPreparationMessage?.('Calculating handicap thresholds...');
           const { homeThresholds, awayThresholds } =
             await calculateHandicapThresholds(
               myLineup as any,
@@ -99,7 +226,8 @@ export function useMatchPreparation(params: MatchPreparationParams) {
               teamFormat
             );
 
-          // Step 2: Save thresholds to match table
+          // Save thresholds to match table
+          setPreparationMessage?.('Saving match settings...');
           await updateMatchMutation.mutateAsync({
             matchId,
             updates: {
@@ -111,29 +239,24 @@ export function useMatchPreparation(params: MatchPreparationParams) {
               away_games_to_lose: awayThresholds.games_to_lose,
             },
           });
-          // Mutation throws on error, no need to check
 
-          // Step 3: Create all game rows in match_games table with complete game structure
-          // Determine game format and count based on league.team_format
+          // Create all game rows in match_games table
+          setPreparationMessage?.('Creating games...');
           const playersPerTeam = teamFormat === '8_man' ? 5 : 3;
-          const useDoubleRoundRobin = playersPerTeam === 3; // 3v3 uses double round-robin (18 games), 5v5 uses single (25 games)
+          const useDoubleRoundRobin = playersPerTeam === 3;
 
-          // Generate game order using the algorithm
           const allGames = generateGameOrder(
             playersPerTeam,
             useDoubleRoundRobin
           );
 
-          // Determine which lineup is home vs away
           const homeLineup = isHomeTeam ? myLineup : opponentLineup;
           const awayLineup = isHomeTeam ? opponentLineup : myLineup;
 
-          // Create games with actual player IDs looked up from lineups
           const gameRows = allGames.map((game) => ({
             match_id: matchId,
             game_number: game.gameNumber,
             game_type: matchData?.league.game_type || 'eight_ball',
-            // Look up actual player IDs from lineups using positions
             home_player_id: (homeLineup as any)[
               `player${game.homePlayerPosition}_id`
             ],
@@ -142,7 +265,6 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             ],
             home_action: game.homeAction,
             away_action: game.awayAction,
-            // Winner and confirmation fields remain null until game is scored
           }));
 
           console.log(
@@ -153,23 +275,25 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             .insert(gameRows);
 
           if (gamesError) {
-            // If games already exist (e.g., tiebreaker), that's OK - ignore duplicate key errors
             if (!gamesError.message.includes('duplicate key')) {
               throw new Error(`Failed to create games: ${gamesError.message}`);
             }
-            console.log(
-              'Games already exist (likely a tiebreaker) - continuing'
-            );
+            console.log('Games already exist - continuing');
           }
 
-          console.log(
-            'Match preparation complete - navigating to scoring page'
-          );
+          console.log('Match preparation complete - navigating to scoring page');
+
+          // STEP 5: Final verification and cache propagation before navigation
+          setPreparationMessage?.('Final verification...');
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          setIsPreparingMatch?.(false);
           navigate(`/match/${matchId}/score`);
         } catch (error: any) {
           console.error('Error preparing match:', error);
+          setIsPreparingMatch?.(false);
           alert(`Failed to prepare match: ${error.message}`);
-          matchPreparedRef.current = false; // Reset so they can try again
+          matchPreparedRef.current = false;
         }
       };
 

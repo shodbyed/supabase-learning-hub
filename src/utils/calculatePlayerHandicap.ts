@@ -28,7 +28,7 @@ type TeamFormat = '5_man' | '8_man';
 type HandicapVariant = 'standard' | 'reduced' | 'none';
 
 /**
- * Calculate a player's handicap based on their last 200 games
+ * Calculate a player's handicap based on their game history
  *
  * IMPORTANT: Handicaps are game-type specific. 8-ball games don't count for 9-ball handicaps.
  * Games from the current season are prioritized first, then other games of the same type.
@@ -38,10 +38,11 @@ type HandicapVariant = 'standard' | 'reduced' | 'none';
  * @param handicapVariant - 'standard', 'reduced', or 'none'
  * @param gameType - Game type to filter ('eight_ball', 'nine_ball', 'ten_ball')
  * @param currentSeasonId - Optional current season ID to prioritize those games first
+ * @param gameLimit - Number of recent games to consider (default: 200). Higher = more stable, lower = more volatile
  * @returns Handicap value (integer for 3v3, percentage for 5v5)
  *
  * @example
- * // 3v3 format, 9-ball, prioritizing current season
+ * // 3v3 format, 9-ball, prioritizing current season, last 200 games (default)
  * const handicap = await calculatePlayerHandicap(
  *   'player-123',
  *   '5_man',
@@ -52,12 +53,14 @@ type HandicapVariant = 'standard' | 'reduced' | 'none';
  * // Returns: -2, -1, 0, 1, or 2
  *
  * @example
- * // 5v5 format, 8-ball
+ * // More volatile handicap - only last 50 games
  * const handicap = await calculatePlayerHandicap(
  *   'player-456',
  *   '8_man',
  *   'standard',
- *   'eight_ball'
+ *   'eight_ball',
+ *   undefined,
+ *   50
  * );
  * // Returns: 0-100 (percentage)
  */
@@ -66,16 +69,17 @@ export async function calculatePlayerHandicap(
   teamFormat: TeamFormat,
   handicapVariant: HandicapVariant,
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball',
-  currentSeasonId?: string
+  currentSeasonId?: string,
+  gameLimit: number = 200
 ): Promise<number> {
   // Handle 'none' variant - return defaults
   if (handicapVariant === 'none') {
     return teamFormat === '5_man' ? 0 : 50;
   }
 
-  // Query last 200 games for this player (filtered by game type, prioritizing current season)
+  // Query last N games for this player (filtered by game type, prioritizing current season)
   try {
-    const games = await fetchPlayerGameHistory(playerId, gameType, currentSeasonId, 200);
+    const games = await fetchPlayerGameHistory(playerId, gameType, currentSeasonId, gameLimit);
 
     // If fewer than 18 games, return defaults
     if (!games || games.length < 18) {

@@ -123,3 +123,125 @@ export async function updateMatch(params: UpdateMatchParams): Promise<Match> {
 
   throw new Error(`Match ${matchId} not found or update failed`);
 }
+
+/**
+ * Generic match game creation parameters
+ */
+export interface CreateMatchGamesParams {
+  games: Array<Record<string, any>>; // Array of game objects with any fields
+}
+
+/**
+ * Match game database record
+ */
+export interface MatchGame {
+  id: string;
+  match_id: string;
+  game_number: number;
+  home_player_id?: string | null;
+  away_player_id?: string | null;
+  winner_team_id?: string | null;
+  winner_player_id?: string | null;
+  home_action: string;
+  away_action: string;
+  break_and_run: boolean;
+  golden_break: boolean;
+  confirmed_by_home: boolean;
+  confirmed_by_away: boolean;
+  confirmed_at?: string | null;
+  is_tiebreaker: boolean;
+  game_type: string;
+  vacate_requested_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any; // Allow any other fields
+}
+
+/**
+ * Create match game records
+ *
+ * Generic mutation that can create any number of games with any data.
+ * Use this for creating normal games, tiebreaker games, or any game records.
+ *
+ * @param params - Array of game objects to create
+ * @returns Array of created games
+ * @throws Error if database operation fails
+ *
+ * @example
+ * // Create 3 tiebreaker games
+ * await createMatchGames({
+ *   games: [
+ *     {
+ *       match_id: 'match-123',
+ *       game_number: 19,
+ *       home_action: 'breaks',
+ *       away_action: 'racks',
+ *       is_tiebreaker: true,
+ *       game_type: 'nine_ball'
+ *     },
+ *     {
+ *       match_id: 'match-123',
+ *       game_number: 20,
+ *       home_action: 'racks',
+ *       away_action: 'breaks',
+ *       is_tiebreaker: true,
+ *       game_type: 'nine_ball'
+ *     },
+ *     // ... etc
+ *   ]
+ * });
+ */
+export async function createMatchGames(params: CreateMatchGamesParams): Promise<MatchGame[]> {
+  const { data, error } = await supabase
+    .from('match_games')
+    .insert(params.games)
+    .select();
+
+  if (error) {
+    throw new Error(`Failed to create match games: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Generic match game update parameters
+ */
+export interface UpdateMatchGameParams {
+  gameId: string;
+  updates: Record<string, any>;
+}
+
+/**
+ * Update a match game record
+ *
+ * Generic mutation that can update any fields on a game record.
+ * Use this for updating player assignments, scores, confirmations, etc.
+ *
+ * @param params - Game ID and fields to update
+ * @returns Updated game record
+ * @throws Error if database operation fails
+ *
+ * @example
+ * // Assign player to tiebreaker game
+ * await updateMatchGame({
+ *   gameId: 'game-123',
+ *   updates: {
+ *     home_player_id: 'player-456'
+ *   }
+ * });
+ */
+export async function updateMatchGame(params: UpdateMatchGameParams): Promise<MatchGame> {
+  const { data, error } = await supabase
+    .from('match_games')
+    .update(params.updates)
+    .eq('id', params.gameId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update match game: ${error.message}`);
+  }
+
+  return data;
+}
