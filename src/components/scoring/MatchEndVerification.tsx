@@ -144,16 +144,30 @@ export function MatchEndVerification({
     awayTieThreshold
   );
 
-  const homeVerified = homeVerifiedBy !== null;
-  const awayVerified = awayVerifiedBy !== null;
+  // Get fresh match data to access tiebreaker verification columns
+  const freshMatch = matchQuery.data;
+
+  // Use appropriate verification columns based on mode
+  // Tiebreaker mode: use home_tiebreaker_verified_by / away_tiebreaker_verified_by
+  // Regular mode: use home_team_verified_by / away_team_verified_by
+  const homeVerifiedBy_actual = isTiebreakerMode
+    ? (freshMatch?.home_tiebreaker_verified_by ?? null)
+    : homeVerifiedBy;
+  const awayVerifiedBy_actual = isTiebreakerMode
+    ? (freshMatch?.away_tiebreaker_verified_by ?? null)
+    : awayVerifiedBy;
+
+  const homeVerified = homeVerifiedBy_actual !== null;
+  const awayVerified = awayVerifiedBy_actual !== null;
   const bothVerified = homeVerified && awayVerified;
 
   console.log('🔍 Verification status:', {
+    isTiebreakerMode,
     homeVerified,
     awayVerified,
     bothVerified,
-    homeVerifiedBy,
-    awayVerifiedBy,
+    homeVerifiedBy: homeVerifiedBy_actual,
+    awayVerifiedBy: awayVerifiedBy_actual,
     isCompleting,
     completionStarted: completionStartedRef.current,
   });
@@ -207,15 +221,21 @@ export function MatchEndVerification({
 
         // Determine which team verified FIRST (their timestamp in DB came first)
         // The first verifier's device will handle database operations
-        const homeVerifiedFirst = freshMatch.home_team_verified_by === homeVerifiedBy;
-        const awayVerifiedFirst = freshMatch.away_team_verified_by === awayVerifiedBy;
+        // Use appropriate verification columns based on mode
+        const homeVerifiedFirst = isTiebreakerMode
+          ? (freshMatch.home_tiebreaker_verified_by === homeVerifiedBy_actual)
+          : (freshMatch.home_team_verified_by === homeVerifiedBy);
+        const awayVerifiedFirst = isTiebreakerMode
+          ? (freshMatch.away_tiebreaker_verified_by === awayVerifiedBy_actual)
+          : (freshMatch.away_team_verified_by === awayVerifiedBy);
         const isFirstVerifier = (isHomeTeam && homeVerifiedFirst) || (!isHomeTeam && awayVerifiedFirst);
 
         console.log('🔍 First verifier check:', {
+          isTiebreakerMode,
           isFirstVerifier,
           myTeam: isHomeTeam ? 'home' : 'away',
-          homeVerifiedBy: freshMatch.home_team_verified_by,
-          awayVerifiedBy: freshMatch.away_team_verified_by,
+          homeVerifiedBy: isTiebreakerMode ? freshMatch.home_tiebreaker_verified_by : freshMatch.home_team_verified_by,
+          awayVerifiedBy: isTiebreakerMode ? freshMatch.away_tiebreaker_verified_by : freshMatch.away_team_verified_by,
         });
 
         // Step 2: Only FIRST verifier updates match and creates games
@@ -415,8 +435,16 @@ export function MatchEndVerification({
           await new Promise(resolve => setTimeout(resolve, 500));
 
           // Navigate to lineup page
-          console.log('✅ ALL VERIFICATION COMPLETE - Navigating to lineup page for tiebreaker');
+          console.log('✅ ALL VERIFICATION COMPLETE - About to call navigate()');
+          console.log('Navigation details:', {
+            matchId,
+            targetPath: `/match/${matchId}/lineup`,
+            isFirstVerifier,
+          });
+
+          setIsCompleting(false); // Reset completing state before navigation
           navigate(`/match/${matchId}/lineup`);
+          console.log('✅ navigate() called successfully');
         } else {
           // Match has a winner - navigate to dashboard
           console.log(`✅ Match complete with winner (${result}) - navigating to dashboard`);

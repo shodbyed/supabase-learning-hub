@@ -276,13 +276,6 @@ export function MatchLineup() {
   const handlePlayerChange = (position: 1 | 2 | 3, playerId: string) => {
     if (!lineup.lineupId || !matchId) return;
 
-    console.log('🔄 handlePlayerChange called:', {
-      position,
-      playerId,
-      lineupId: lineup.lineupId,
-      matchId,
-    });
-
     // Update local state
     if (position === 1) lineup.setPlayer1Id(playerId);
     else if (position === 2) lineup.setPlayer2Id(playerId);
@@ -676,13 +669,13 @@ export function MatchLineup() {
                                   ...players.map((p) => p.id),
                                   isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
                                 ]
-                            ).map((playerId) => (
+                            ).map((playerOptionId) => (
                               <SelectItem
-                                key={playerId}
-                                value={playerId}
-                                disabled={otherPlayerIds.includes(playerId)}
+                                key={playerOptionId}
+                                value={playerOptionId}
+                                disabled={otherPlayerIds.includes(playerOptionId)}
                               >
-                                {getPlayerDisplayName(playerId)}
+                                {getPlayerDisplayName(playerOptionId)}
                               </SelectItem>
                             ))}
                           </SelectContent>

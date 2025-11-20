@@ -85,8 +85,8 @@ export function TiebreakerScoreboard({
         awayWinThreshold={2}
         homeTieThreshold={null} // No ties in tiebreaker
         awayTieThreshold={null}
-        homeVerifiedBy={match.home_team_verified_by || null}
-        awayVerifiedBy={match.away_team_verified_by || null}
+        homeVerifiedBy={match.home_tiebreaker_verified_by || null}
+        awayVerifiedBy={match.away_tiebreaker_verified_by || null}
         isHomeTeam={isHomeTeam}
         onVerify={onVerify}
         isVerifying={isVerifying}

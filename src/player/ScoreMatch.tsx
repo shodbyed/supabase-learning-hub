@@ -197,22 +197,29 @@ export function ScoreMatch() {
     }
 
     // If changed from complete to incomplete, clear verification
+    // BUT: Don't clear if tiebreaker games exist (this is the tiebreaker flow, not a vacate)
     if (wasComplete && !isComplete && matchId) {
-      console.log(
-        'Game vacated after completion - clearing verification status'
-      );
-      supabase
-        .from('matches')
-        .update({
-          home_team_verified_by: null,
-          away_team_verified_by: null,
-        })
-        .eq('id', matchId)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error clearing verification status:', error);
-          }
-        });
+      // Check if there are tiebreaker games
+      const tiebreakerGames = Array.from(gameResults.values()).filter(g => g.is_tiebreaker);
+      const hasTiebreakerGames = tiebreakerGames.length > 0;
+
+      if (hasTiebreakerGames) {
+        console.log('Match transitioned to tiebreaker - keeping verification status');
+      } else {
+        console.log('Game vacated after completion - clearing verification status');
+        supabase
+          .from('matches')
+          .update({
+            home_team_verified_by: null,
+            away_team_verified_by: null,
+          })
+          .eq('id', matchId)
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error clearing verification status:', error);
+            }
+          });
+      }
     }
 
     // Update ref for next comparison
@@ -232,9 +239,16 @@ export function ScoreMatch() {
     setIsVerifying(true);
 
     try {
-      const updateField = isHomeTeam
-        ? 'home_team_verified_by'
-        : 'away_team_verified_by';
+      // Detect if this is a tiebreaker by checking for tiebreaker games
+      const tiebreakerGames = Array.from(gameResults.values()).filter(g => g.is_tiebreaker);
+      const isTiebreakerMode = tiebreakerGames.length > 0;
+
+      // Use appropriate verification column based on mode
+      const updateField = isTiebreakerMode
+        ? (isHomeTeam ? 'home_tiebreaker_verified_by' : 'away_tiebreaker_verified_by')
+        : (isHomeTeam ? 'home_team_verified_by' : 'away_team_verified_by');
+
+      console.log('Verifying with field:', updateField, 'isTiebreakerMode:', isTiebreakerMode);
 
       // Optimistically update the UI immediately
       const queryKey = [...queryKeys.matches.detail(matchId), 'leagueSettings'];
@@ -360,6 +374,22 @@ export function ScoreMatch() {
   }
 
   if (error) {
+    // If lineups aren't locked, redirect to lineup page instead of showing error
+    if (error.includes('lineups must be locked')) {
+      console.log('🔄 Lineups not locked - redirecting to lineup page');
+      navigate(`/match/${matchId}/lineup`);
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg font-semibold text-gray-700">
+              Redirecting to lineup page...
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show error for other types of errors
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -445,7 +475,14 @@ export function ScoreMatch() {
   }
 
   // Filter games based on mode (normal vs tiebreaker)
-  const isTiebreakerMode = match.match_result === 'tie';
+  // Only switch to tiebreaker mode when ALL conditions are met:
+  // 1. Match result is 'tie'
+  // 2. Both lineups are locked (players selected)
+  // 3. Tiebreaker games exist
+  // This ensures MatchEndVerification stays mounted during tie verification
+  const tiebreakerGamesExist = Array.from(gameResults.values()).some(g => g.is_tiebreaker);
+  const bothLineupsLocked = homeLineup?.locked && awayLineup?.locked;
+  const isTiebreakerMode = match.match_result === 'tie' && bothLineupsLocked && tiebreakerGamesExist;
   const filteredGameResults = isTiebreakerMode
     ? new Map(
         Array.from(gameResults.entries()).filter(([gameNumber]) =>

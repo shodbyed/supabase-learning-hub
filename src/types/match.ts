@@ -46,6 +46,8 @@ export interface MatchWithLeagueSettings {
   scheduled_date: string;
   home_team_verified_by?: string | null;
   away_team_verified_by?: string | null;
+  home_tiebreaker_verified_by?: string | null;
+  away_tiebreaker_verified_by?: string | null;
   home_games_to_win: number | null;
   home_games_to_tie: number | null;
   home_games_to_lose: number | null;
@@ -188,6 +190,7 @@ export interface MatchGame {
   golden_break: boolean;
   confirmed_by_home: boolean;
   confirmed_by_away: boolean;
+  is_tiebreaker: boolean;
 }
 
 /**
