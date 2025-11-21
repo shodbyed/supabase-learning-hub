@@ -73,21 +73,53 @@ export const LeagueStatusCard: React.FC<LeagueStatusCardProps> = ({
           setActiveSeason(activeSeasonData);
 
           // Get week counts for the active season
-          const { count: totalWeeks } = await supabase
+          const { data: regularWeeks } = await supabase
             .from('season_weeks')
-            .select('*', { count: 'exact', head: true })
+            .select('id')
             .eq('season_id', activeSeasonData.id)
             .eq('week_type', 'regular');
 
-          const { count: completedWeeks } = await supabase
-            .from('season_weeks')
-            .select('*', { count: 'exact', head: true })
-            .eq('season_id', activeSeasonData.id)
-            .eq('week_type', 'regular')
-            .eq('week_completed', true);
+          const totalWeeks = regularWeeks?.length || 0;
+          setTotalWeeksCount(totalWeeks);
 
-          setTotalWeeksCount(totalWeeks || 0);
-          setCompletedWeeksCount(completedWeeks || 0);
+          // Calculate completed weeks by checking match status
+          if (regularWeeks && regularWeeks.length > 0) {
+            const weekIds = regularWeeks.map(w => w.id);
+
+            // Get all matches grouped by week
+            const { data: matches } = await supabase
+              .from('matches')
+              .select('season_week_id, status')
+              .in('season_week_id', weekIds);
+
+            // Count matches per week and check if all are completed
+            const weekMatchCounts = new Map<string, { total: number; completed: number }>();
+
+            matches?.forEach(match => {
+              const weekId = match.season_week_id;
+              if (!weekId) return;
+
+              const counts = weekMatchCounts.get(weekId) || { total: 0, completed: 0 };
+              counts.total++;
+              if (match.status === 'completed' || match.status === 'verified') {
+                counts.completed++;
+              }
+              weekMatchCounts.set(weekId, counts);
+            });
+
+            // Count how many weeks have all matches completed
+            let completedWeeks = 0;
+            weekIds.forEach(weekId => {
+              const counts = weekMatchCounts.get(weekId);
+              if (counts && counts.total > 0 && counts.completed === counts.total) {
+                completedWeeks++;
+              }
+            });
+
+            setCompletedWeeksCount(completedWeeks);
+          } else {
+            setCompletedWeeksCount(0);
+          }
 
           // Get team count for active season
           const { count: teamCountResult } = await supabase
