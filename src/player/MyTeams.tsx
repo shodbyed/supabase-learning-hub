@@ -345,6 +345,7 @@ function TeamAccordionItem({
             handicapVariant="standard"
             gameType={team.season.league.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
             seasonId={team.season.id}
+            captainId={team.team_players.find(p => p.is_captain)?.member_id}
           />
 
           {/* Action Buttons */}

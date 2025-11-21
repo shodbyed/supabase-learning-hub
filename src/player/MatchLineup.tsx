@@ -585,6 +585,7 @@ export function MatchLineup() {
               seasonId={matchData?.season_id}
               hidePlayerNumber
               hideHandicap={isTiebreakerMode}
+              captainId={teamDetailsQuery.data?.captain_id}
             />
 
             {/* Player Selection Dropdowns */}

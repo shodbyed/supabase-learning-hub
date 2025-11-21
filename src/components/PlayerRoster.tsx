@@ -21,6 +21,7 @@ interface PlayerRosterProps {
   hideName?: boolean;
   hideNickname?: boolean;
   hideHandicap?: boolean;
+  captainId?: string; // ID of the team captain to display with (C) badge
 }
 
 /**
@@ -40,6 +41,7 @@ export function PlayerRoster({
   hideName = false,
   hideNickname = false,
   hideHandicap = false,
+  captainId,
 }: PlayerRosterProps) {
   const { data: players = [], isLoading: loadingPlayers } = useMembersByIds(playerIds);
   const { handicaps, isLoading: loadingHandicaps } = usePlayerHandicaps({
@@ -55,20 +57,34 @@ export function PlayerRoster({
     return <div>Loading players...</div>;
   }
 
+  // Sort players: captain first, then others in reverse order
+  const sortedPlayers = [...players].sort((a, b) => {
+    const aIsCaptain = a.id === captainId;
+    const bIsCaptain = b.id === captainId;
+
+    if (aIsCaptain && !bIsCaptain) return -1; // Captain comes first
+    if (!aIsCaptain && bIsCaptain) return 1;  // Non-captain comes after
+
+    // For non-captains, reverse the order (assume they came in reverse from DB)
+    const aIndex = playerIds.indexOf(a.id);
+    const bIndex = playerIds.indexOf(b.id);
+    return bIndex - aIndex; // Reverse order
+  });
+
   // Build grid class based on visible columns
   // Order: H/C Nickname Name Player#
   const getGridClass = () => {
     if (!hidePlayerNumber && !hideName && !hideNickname && !hideHandicap) {
-      return 'grid-cols-[48px_80px_1fr_64px]'; // H/C Nickname Name Player#
+      return 'grid-cols-[48px_120px_1fr_64px]'; // H/C Nickname Name Player#
     }
     if (hidePlayerNumber && !hideName && !hideNickname && !hideHandicap) {
-      return 'grid-cols-[48px_80px_1fr]'; // H/C Nickname Name
+      return 'grid-cols-[48px_120px_1fr]'; // H/C Nickname Name
     }
     if (hidePlayerNumber && !hideName && !hideNickname && hideHandicap) {
-      return 'grid-cols-[80px_1fr]'; // Nickname Name
+      return 'grid-cols-[120px_1fr]'; // Nickname Name
     }
     if (!hidePlayerNumber && !hideName && !hideNickname && hideHandicap) {
-      return 'grid-cols-[80px_1fr_64px]'; // Nickname Name Player#
+      return 'grid-cols-[120px_1fr_64px]'; // Nickname Name Player#
     }
     // Default fallback
     return 'grid-cols-1';
@@ -92,8 +108,9 @@ export function PlayerRoster({
 
       {/* Player Rows */}
       <div className="mt-1">
-        {players.map((player) => {
+        {sortedPlayers.map((player) => {
           const handicap = handicaps.get(player.id);
+          const isCaptain = player.id === captainId;
 
           return (
             <div key={player.id} className={`grid ${gridCols} gap-4 text-sm py-1 px-2 bg-gray-50 rounded`}>
@@ -103,13 +120,14 @@ export function PlayerRoster({
                 </span>
               )}
               {!hideNickname && (
-                <span className="text-gray-900 truncate">
+                <span className={`truncate ${isCaptain ? 'text-gray-900 font-semibold' : 'text-gray-900'}`}>
                   {player.nickname || '-'}
                 </span>
               )}
               {!hideName && (
                 <span className="text-gray-600 text-xs truncate">
                   {player.first_name} {player.last_name}
+                  {isCaptain && <span className="ml-1 text-blue-600 font-bold">(C)</span>}
                 </span>
               )}
               {!hidePlayerNumber && (

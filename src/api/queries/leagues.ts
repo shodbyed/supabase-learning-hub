@@ -245,6 +245,40 @@ export async function getLeaguesWithProgress(operatorId: string): Promise<League
 }
 
 /**
+ * Fetch league by season ID
+ *
+ * Gets the league that a season belongs to.
+ * Used when you have a seasonId and need league configuration (game_type, team_format, etc).
+ *
+ * @param seasonId - Season's primary key ID
+ * @returns Complete league record
+ * @throws Error if season or league not found or database error
+ *
+ * @example
+ * const league = await getLeagueBySeasonId('season-uuid');
+ * console.log(`Game type: ${league.game_type}, Format: ${league.team_format}`);
+ */
+export async function getLeagueBySeasonId(seasonId: string): Promise<League> {
+  // First get the season to find league_id
+  const { data: season, error: seasonError } = await supabase
+    .from('seasons')
+    .select('league_id')
+    .eq('id', seasonId)
+    .single();
+
+  if (seasonError) {
+    throw new Error(`Failed to fetch season: ${seasonError.message}`);
+  }
+
+  if (!season) {
+    throw new Error('Season not found');
+  }
+
+  // Then fetch the league
+  return getLeagueById(season.league_id);
+}
+
+/**
  * Fetch operator's profanity filter setting for a league
  *
  * Gets the league's operator and returns whether profanity validation
