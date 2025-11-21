@@ -4,6 +4,8 @@
  * Individual player rankings showing wins/losses/handicaps for a season.
  * Mobile-first design with responsive table.
  *
+ * TODO: Make page more mobile friendly - table is too wide on mobile screens
+ *
  * Data shown:
  * - Rank (based on most wins, win% as tiebreaker)
  * - Player Name
@@ -117,94 +119,56 @@ export function TopShooters() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Back Button */}
-        <div className="mb-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-      </div>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        {/* Stats Navigation */}
+        <StatsNavBar activePage="top-shooters" />
 
-      {/* Stats Navigation */}
-      <StatsNavBar activePage="top-shooters" />
+        {/* Page Title */}
+        <h1 className="text-xl sm:text-4xl font-bold text-center mb-4 sm:mb-6">Top Shooters</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-center text-4xl">Top Shooter </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Mobile-first: horizontal scroll wrapper */}
-          <div className="overflow-x-auto -mx-4 px-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[20px] px-4 text-center">
-                    Rank
-                  </TableHead>
-                  <TableHead className="w-[20px] px-4 text-center">
-                    H/C
-                  </TableHead>
-                  <TableHead className="min-w-[100px] max-w-[160px]">
-                    Player Name
-                  </TableHead>
-                  <TableHead className="w-[20px] px-4 text-center">
-                    Wins
-                  </TableHead>
-                  <TableHead className="w-[20px] px-4 text-center">
-                    Losses
-                  </TableHead>
-                  {teamFormat === '5_man' && (
-                    <TableHead className="w-[40px] px-4 text-center">
-                      Points
-                    </TableHead>
-                  )}
-                  <TableHead className="min-w-[90px] pl-8">Win %</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {players.map((player, index) => {
-                  const rank = index + 1;
-                  const points = player.gamesWon - player.gamesLost;
-                  return (
-                    <TableRow key={player.playerId}>
-                      <TableCell className="font-medium px-4 w-[20px] text-center">
-                        {rank}
+        {/* Table - no card wrapper */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">#</TableHead>
+                <TableHead className="w-[35px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">H/C</TableHead>
+                <TableHead className="px-1 sm:px-4 text-xs sm:text-sm">Player</TableHead>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">W</TableHead>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">L</TableHead>
+                {teamFormat === '5_man' && (
+                  <TableHead className="w-[35px] sm:w-[60px] px-1 sm:px-4 text-center text-xs sm:text-sm">Pts</TableHead>
+                )}
+                <TableHead className="w-[45px] sm:w-[70px] px-1 sm:px-4 text-center text-xs sm:text-sm">Win%</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {players.map((player, index) => {
+                const rank = index + 1;
+                const points = player.gamesWon - player.gamesLost;
+                return (
+                  <TableRow key={player.playerId}>
+                    <TableCell className="font-medium px-1 sm:px-4 text-center text-xs sm:text-base">{rank}</TableCell>
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                      {player.handicap > 0 ? `+${player.handicap}` : player.handicap}
+                    </TableCell>
+                    <TableCell className="px-1 sm:px-4 text-xs sm:text-base">{player.playerName}</TableCell>
+                    <TableCell className="font-medium px-1 sm:px-4 text-center text-xs sm:text-base">{player.gamesWon}</TableCell>
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">{player.gamesLost}</TableCell>
+                    {teamFormat === '5_man' && (
+                      <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                        {points > 0 ? `+${points}` : points}
                       </TableCell>
-                      <TableCell className="text-center px-4 w-[20px]">
-                        {player.handicap > 0
-                          ? `+${player.handicap}`
-                          : player.handicap}
-                      </TableCell>
-                      <TableCell className="w-[100px]">
-                        {player.playerName}
-                      </TableCell>
-                      <TableCell className="font-medium px-4 w-[20px] text-center">
-                        {player.gamesWon}
-                      </TableCell>
-                      <TableCell className="text-center px-4 w-[20px]">
-                        {player.gamesLost}
-                      </TableCell>
-                      {teamFormat === '5_man' && (
-                        <TableCell className="text-center px-4 w-[40px]">
-                          {points > 0 ? `+${points}` : points}
-                        </TableCell>
-                      )}
-                      <TableCell className="text-center px-4 w-[40px]">
-                        {player.winPercentage.toFixed(1)}%
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                    )}
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                      {player.winPercentage.toFixed(1)}%
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

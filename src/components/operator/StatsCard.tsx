@@ -38,8 +38,8 @@ export function StatsCard({ leagueId, seasonId }: StatsCardProps) {
         <CardTitle>Stats & Standings</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {/* Standings */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Stats & Standings */}
           <Button
             variant="outline"
             className="h-auto flex-col items-start p-4 hover:bg-blue-50 hover:border-blue-300"
@@ -47,47 +47,8 @@ export function StatsCard({ leagueId, seasonId }: StatsCardProps) {
           >
             <Trophy className="h-5 w-5 mb-2 text-blue-600" />
             <div className="text-left">
-              <div className="font-semibold text-gray-900">Standings</div>
-              <div className="text-sm text-gray-600">Team rankings</div>
-            </div>
-          </Button>
-
-          {/* Top Shooters */}
-          <Button
-            variant="outline"
-            className="h-auto flex-col items-start p-4 hover:bg-green-50 hover:border-green-300"
-            onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/top-shooters`)}
-          >
-            <Target className="h-5 w-5 mb-2 text-green-600" />
-            <div className="text-left">
-              <div className="font-semibold text-gray-900">Top Shooters</div>
-              <div className="text-sm text-gray-600">Player rankings</div>
-            </div>
-          </Button>
-
-          {/* Team Stats */}
-          <Button
-            variant="outline"
-            className="h-auto flex-col items-start p-4 hover:bg-purple-50 hover:border-purple-300"
-            onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/team-stats`)}
-          >
-            <Users className="h-5 w-5 mb-2 text-purple-600" />
-            <div className="text-left">
-              <div className="font-semibold text-gray-900">Team Stats</div>
-              <div className="text-sm text-gray-600">Detailed breakdown</div>
-            </div>
-          </Button>
-
-          {/* Feats of Excellence */}
-          <Button
-            variant="outline"
-            className="h-auto flex-col items-start p-4 hover:bg-yellow-50 hover:border-yellow-300"
-            onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/feats`)}
-          >
-            <Award className="h-5 w-5 mb-2 text-yellow-600" />
-            <div className="text-left">
-              <div className="font-semibold text-gray-900">Feats of Excellence</div>
-              <div className="text-sm text-gray-600">Special achievements</div>
+              <div className="font-semibold text-gray-900">Stats & Standings</div>
+              <div className="text-sm text-gray-600">All statistics</div>
             </div>
           </Button>
 

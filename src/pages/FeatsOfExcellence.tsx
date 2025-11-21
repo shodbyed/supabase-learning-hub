@@ -6,6 +6,8 @@
  * - Golden Breaks
  * - Flawless Nights
  *
+ * TODO: Make page more mobile friendly - tables are too wide on mobile screens
+ *
  * Mobile-first responsive design with three separate ranking tables.
  */
 
@@ -65,21 +67,12 @@ export function FeatsOfExcellence() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Back Button */}
-        <Button
-          onClick={() => navigate(-1)}
-          variant="ghost"
-          className="mb-4"
-        >
-          ← Back
-        </Button>
-
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Stats Navigation */}
         <StatsNavBar activePage="feats" />
 
         {/* Page Title */}
-        <h1 className="text-4xl font-bold text-center mb-8">Feats of Excellence</h1>
+        <h1 className="text-xl sm:text-4xl font-bold text-center mb-4 sm:mb-6">Feats of Excellence</h1>
 
         {/* Three Rankings */}
         <div className="space-y-8">
@@ -94,17 +87,17 @@ export function FeatsOfExcellence() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-center px-4 py-2 w-[60px]">Rank</th>
-                        <th className="text-left px-4 py-2">Player Name</th>
-                        <th className="text-center px-4 py-2 w-[80px]">Count</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[30px] sm:w-[60px] text-xs sm:text-sm">#</th>
+                        <th className="text-left px-1 sm:px-4 py-2 text-xs sm:text-sm">Player</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[45px] sm:w-[80px] text-xs sm:text-sm">Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {feats.breakAndRuns.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
-                          <td className="text-center px-4 py-2">{index + 1}</td>
-                          <td className="px-4 py-2">{player.playerName}</td>
-                          <td className="text-center px-4 py-2 font-semibold">{player.count}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -129,17 +122,17 @@ export function FeatsOfExcellence() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-center px-4 py-2 w-[60px]">Rank</th>
-                        <th className="text-left px-4 py-2">Player Name</th>
-                        <th className="text-center px-4 py-2 w-[80px]">Count</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[30px] sm:w-[60px] text-xs sm:text-sm">#</th>
+                        <th className="text-left px-1 sm:px-4 py-2 text-xs sm:text-sm">Player</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[45px] sm:w-[80px] text-xs sm:text-sm">Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {feats.goldenBreaks.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
-                          <td className="text-center px-4 py-2">{index + 1}</td>
-                          <td className="px-4 py-2">{player.playerName}</td>
-                          <td className="text-center px-4 py-2 font-semibold">{player.count}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -169,17 +162,17 @@ export function FeatsOfExcellence() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-center px-4 py-2 w-[60px]">Rank</th>
-                        <th className="text-left px-4 py-2">Player Name</th>
-                        <th className="text-center px-4 py-2 w-[80px]">Count</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[30px] sm:w-[60px] text-xs sm:text-sm">#</th>
+                        <th className="text-left px-1 sm:px-4 py-2 text-xs sm:text-sm">Player</th>
+                        <th className="text-center px-1 sm:px-4 py-2 w-[45px] sm:w-[80px] text-xs sm:text-sm">Count</th>
                       </tr>
                     </thead>
                     <tbody>
                       {feats.flawlessNights.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
-                          <td className="text-center px-4 py-2">{index + 1}</td>
-                          <td className="px-4 py-2">{player.playerName}</td>
-                          <td className="text-center px-4 py-2 font-semibold">{player.count}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}
                     </tbody>

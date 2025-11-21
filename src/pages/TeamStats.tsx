@@ -5,6 +5,8 @@
  * Shows team standings with player breakdown underneath each team.
  * Mobile-first design with responsive table.
  *
+ * TODO: Make page more mobile friendly - table is too wide on mobile screens
+ *
  * Layout:
  * - Team header rows: Bold, shows match-level stats
  * - Player detail rows: Indented, shows game-level stats with handicaps
@@ -104,75 +106,62 @@ export function TeamStats() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Back Button */}
-        <Button
-          onClick={() => navigate(-1)}
-          variant="ghost"
-          className="mb-4"
-        >
-          ← Back
-        </Button>
-
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Stats Navigation */}
         <StatsNavBar activePage="team-stats" />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-4xl">Team Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Mobile-first: horizontal scroll wrapper */}
-            <div className="overflow-x-auto -mx-4 px-4">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-center px-4 py-2 w-[60px]">H.C.</th>
-                    <th className="text-left px-4 py-2 w-[200px]">Team / Player</th>
-                    <th className="text-center px-4 py-2 w-[60px]">W</th>
-                    <th className="text-center px-4 py-2 w-[60px]">L</th>
-                    <th className="text-center px-4 py-2 w-[100px]">Matches</th>
-                    <th className="text-center px-4 py-2 w-[80px]">Games</th>
-                    <th className="text-center px-4 py-2 w-[80px]">Points</th>
+        {/* Page Title */}
+        <h1 className="text-xl sm:text-4xl font-bold text-center mb-4 sm:mb-6">Team Stats</h1>
+
+        {/* Table - no card wrapper */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="text-center px-1 sm:px-4 py-2 w-[35px] sm:w-[60px] text-xs sm:text-sm">H/C</th>
+                <th className="text-left px-1 sm:px-4 py-2 text-xs sm:text-sm">Team / Player</th>
+                <th className="text-center px-1 sm:px-4 py-2 w-[30px] sm:w-[60px] text-xs sm:text-sm">W</th>
+                <th className="text-center px-1 sm:px-4 py-2 w-[30px] sm:w-[60px] text-xs sm:text-sm">L</th>
+                <th className="text-center px-1 sm:px-4 py-2 w-[40px] sm:w-[80px] text-xs sm:text-sm">M</th>
+                <th className="text-center px-1 sm:px-4 py-2 w-[35px] sm:w-[70px] text-xs sm:text-sm">G</th>
+                <th className="text-center px-1 sm:px-4 py-2 w-[35px] sm:w-[70px] text-xs sm:text-sm">Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((team) => (
+                <>
+                  {/* Team Header Row */}
+                  <tr key={team.teamId} className="border-b bg-gray-100">
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base"></td>
+                    <td className="px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.teamName}</td>
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.matchWins}</td>
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.matchLosses}</td>
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.matchWins + team.matchLosses}</td>
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.gamesWon}</td>
+                    <td className="text-center px-1 sm:px-4 py-2 font-bold text-xs sm:text-base">{team.points}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {teams.map((team) => (
-                    <>
-                      {/* Team Header Row */}
-                      <tr key={team.teamId} className="border-b bg-gray-100">
-                        <td className="text-center px-4 py-3 font-bold"></td>
-                        <td className="px-4 py-3 font-bold">{team.teamName}</td>
-                        <td className="text-center px-4 py-3 font-bold">{team.matchWins}</td>
-                        <td className="text-center px-4 py-3 font-bold">{team.matchLosses}</td>
-                        <td className="text-center px-4 py-3 font-bold">{team.matchWins + team.matchLosses}</td>
-                        <td className="text-center px-4 py-3 font-bold">{team.gamesWon}</td>
-                        <td className="text-center px-4 py-3 font-bold">{team.points}</td>
+
+                  {/* Player Detail Rows */}
+                  {team.players.map((player) => {
+                    const handicap = player.isSubstitute ? '' : (handicaps.get(player.playerId) ?? '-');
+
+                    return (
+                      <tr key={`${team.teamId}-${player.playerId}`} className="border-b">
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs">{handicap}</td>
+                        <td className="px-2 sm:px-6 py-1 text-xs text-gray-700">{player.playerName}</td>
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs">{player.gamesWon}</td>
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs">{player.gamesLost}</td>
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs">{player.matchesPlayed}</td>
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs"></td>
+                        <td className="text-center px-1 sm:px-4 py-1 text-xs"></td>
                       </tr>
-
-                      {/* Player Detail Rows */}
-                      {team.players.map((player) => {
-                        const handicap = player.isSubstitute ? '' : (handicaps.get(player.playerId) ?? '-');
-
-                        return (
-                          <tr key={`${team.teamId}-${player.playerId}`} className="border-b">
-                            <td className="text-center px-4 py-2 text-sm">{handicap}</td>
-                            <td className="px-8 py-2 text-sm text-gray-700">{player.playerName}</td>
-                            <td className="text-center px-4 py-2 text-sm">{player.gamesWon}</td>
-                            <td className="text-center px-4 py-2 text-sm">{player.gamesLost}</td>
-                            <td className="text-center px-4 py-2 text-sm">{player.matchesPlayed}</td>
-                            <td className="text-center px-4 py-2 text-sm"></td>
-                            <td className="text-center px-4 py-2 text-sm"></td>
-                          </tr>
-                        );
-                      })}
-                    </>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+                    );
+                  })}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
