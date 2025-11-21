@@ -15,11 +15,16 @@ import { UserProvider } from './context/UserProvider';
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
 
-  // Hide navbar for match scoring (full-screen experience) and team schedule
+  // Hide navbar for match scoring (full-screen experience), team schedule, and stats pages
   const hideNavbar = (location.pathname.includes('/match/') &&
                      (location.pathname.endsWith('/score') ||
                       location.pathname.endsWith('/lineup'))) ||
-                     location.pathname.match(/^\/team\/[^/]+\/schedule$/);
+                     location.pathname.match(/^\/team\/[^/]+\/schedule$/) ||
+                     location.pathname.includes('/standings') ||
+                     location.pathname.includes('/top-shooters') ||
+                     location.pathname.includes('/team-stats') ||
+                     location.pathname.includes('/feats') ||
+                     location.pathname.includes('/match-data');
 
   // Show OperatorNavBar for operator routes
   const isOperatorRoute = location.pathname.startsWith('/operator') ||

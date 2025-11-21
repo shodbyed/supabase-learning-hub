@@ -8,7 +8,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, Target, Users, Database } from 'lucide-react';
+import { Trophy, Target, Users, Database, Award } from 'lucide-react';
 
 interface StatsCardProps {
   leagueId: string;
@@ -38,7 +38,7 @@ export function StatsCard({ leagueId, seasonId }: StatsCardProps) {
         <CardTitle>Stats & Standings</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Standings */}
           <Button
             variant="outline"
@@ -75,6 +75,19 @@ export function StatsCard({ leagueId, seasonId }: StatsCardProps) {
             <div className="text-left">
               <div className="font-semibold text-gray-900">Team Stats</div>
               <div className="text-sm text-gray-600">Detailed breakdown</div>
+            </div>
+          </Button>
+
+          {/* Feats of Excellence */}
+          <Button
+            variant="outline"
+            className="h-auto flex-col items-start p-4 hover:bg-yellow-50 hover:border-yellow-300"
+            onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/feats`)}
+          >
+            <Award className="h-5 w-5 mb-2 text-yellow-600" />
+            <div className="text-left">
+              <div className="font-semibold text-gray-900">Feats of Excellence</div>
+              <div className="text-sm text-gray-600">Special achievements</div>
             </div>
           </Button>
 

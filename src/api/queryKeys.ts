@@ -271,6 +271,9 @@ export const queryKeys = {
 
     /** Team stats (detailed breakdown) for a season */
     teamStats: (seasonId: string) => [...queryKeys.stats.all, 'team-stats', seasonId] as const,
+
+    /** Feats of Excellence (special achievements) for a season */
+    feats: (seasonId: string) => [...queryKeys.stats.all, 'feats', seasonId] as const,
   },
 } as const;
 

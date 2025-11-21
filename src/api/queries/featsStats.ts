@@ -1,0 +1,240 @@
+/**
+ * @fileoverview Feats of Excellence Query Functions
+ *
+ * Fetches special achievement statistics for players in a season:
+ * - Break & Runs: Games won with break and run
+ * - Golden Breaks: Games won on the break
+ * - Flawless Nights: Matches where player won every game they played
+ */
+
+import { supabase } from '@/supabaseClient';
+
+/**
+ * Player feat ranking
+ */
+export interface PlayerFeatRanking {
+  playerId: string;
+  playerName: string;
+  count: number;
+}
+
+/**
+ * All feats statistics for a season
+ */
+export interface FeatsStats {
+  breakAndRuns: PlayerFeatRanking[];
+  goldenBreaks: PlayerFeatRanking[];
+  flawlessNights: PlayerFeatRanking[];
+}
+
+/**
+ * Fetch feats of excellence statistics for a season
+ *
+ * Returns three rankings:
+ * 1. Break & Runs - Players with most break and runs
+ * 2. Golden Breaks - Players with most golden breaks
+ * 3. Flawless Nights - Players with most matches where they won every game
+ *
+ * Only includes:
+ * - Completed/verified matches
+ * - Regular games (excludes tiebreakers)
+ * - Players with at least 1 of each feat
+ *
+ * @param seasonId - Season's primary key ID
+ * @returns Object with three feat rankings
+ * @throws Error if database query fails
+ *
+ * @example
+ * const feats = await fetchFeatsStats('season-123');
+ * console.log(`Top Break & Run: ${feats.breakAndRuns[0].playerName} (${feats.breakAndRuns[0].count})`);
+ */
+export async function fetchFeatsStats(seasonId: string): Promise<FeatsStats> {
+  // Step 1: Fetch all completed match IDs for this season
+  const { data: matches, error: matchesError } = await supabase
+    .from('matches')
+    .select('id')
+    .eq('season_id', seasonId)
+    .in('status', ['completed', 'verified']);
+
+  if (matchesError) {
+    throw new Error(`Failed to fetch matches: ${matchesError.message}`);
+  }
+
+  const matchIds = matches?.map(m => m.id) || [];
+
+  if (matchIds.length === 0) {
+    return {
+      breakAndRuns: [],
+      goldenBreaks: [],
+      flawlessNights: [],
+    };
+  }
+
+  // Step 2: Fetch all games for these matches (excluding tiebreakers)
+  const { data: games, error: gamesError } = await supabase
+    .from('match_games')
+    .select(`
+      id,
+      match_id,
+      winner_player_id,
+      break_and_run,
+      golden_break,
+      is_tiebreaker,
+      home_player_id,
+      away_player_id
+    `)
+    .in('match_id', matchIds)
+    .eq('is_tiebreaker', false)
+    .not('winner_player_id', 'is', null);
+
+  if (gamesError) {
+    throw new Error(`Failed to fetch games: ${gamesError.message}`);
+  }
+
+  if (!games || games.length === 0) {
+    return {
+      breakAndRuns: [],
+      goldenBreaks: [],
+      flawlessNights: [],
+    };
+  }
+
+  // Step 3: Calculate Break & Runs
+  const breakAndRunCounts = new Map<string, number>();
+  games.forEach(game => {
+    if (game.break_and_run && game.winner_player_id) {
+      const count = breakAndRunCounts.get(game.winner_player_id) || 0;
+      breakAndRunCounts.set(game.winner_player_id, count + 1);
+    }
+  });
+
+  // Step 4: Calculate Golden Breaks
+  const goldenBreakCounts = new Map<string, number>();
+  games.forEach(game => {
+    if (game.golden_break && game.winner_player_id) {
+      const count = goldenBreakCounts.get(game.winner_player_id) || 0;
+      goldenBreakCounts.set(game.winner_player_id, count + 1);
+    }
+  });
+
+  // Step 5: Calculate Flawless Nights (matches where player won every game they played)
+  // Group games by match and player
+  const matchPlayerGames = new Map<string, Map<string, { won: number; lost: number }>>();
+
+  games.forEach(game => {
+    const matchId = game.match_id;
+    const winnerId = game.winner_player_id;
+    const homeId = game.home_player_id;
+    const awayId = game.away_player_id;
+
+    if (!matchPlayerGames.has(matchId)) {
+      matchPlayerGames.set(matchId, new Map());
+    }
+
+    const playerStats = matchPlayerGames.get(matchId)!;
+
+    // Track home player
+    if (homeId) {
+      const stats = playerStats.get(homeId) || { won: 0, lost: 0 };
+      if (winnerId === homeId) {
+        stats.won++;
+      } else {
+        stats.lost++;
+      }
+      playerStats.set(homeId, stats);
+    }
+
+    // Track away player
+    if (awayId) {
+      const stats = playerStats.get(awayId) || { won: 0, lost: 0 };
+      if (winnerId === awayId) {
+        stats.won++;
+      } else {
+        stats.lost++;
+      }
+      playerStats.set(awayId, stats);
+    }
+  });
+
+  // Count flawless nights (matches where player had losses = 0 and won > 0)
+  const flawlessNightCounts = new Map<string, number>();
+  matchPlayerGames.forEach((playerStats, _matchId) => {
+    playerStats.forEach((stats, playerId) => {
+      if (stats.lost === 0 && stats.won > 0) {
+        const count = flawlessNightCounts.get(playerId) || 0;
+        flawlessNightCounts.set(playerId, count + 1);
+      }
+    });
+  });
+
+  // Step 6: Get all unique player IDs
+  const allPlayerIds = new Set<string>();
+  breakAndRunCounts.forEach((_, playerId) => allPlayerIds.add(playerId));
+  goldenBreakCounts.forEach((_, playerId) => allPlayerIds.add(playerId));
+  flawlessNightCounts.forEach((_, playerId) => allPlayerIds.add(playerId));
+
+  // Step 7: Fetch player names
+  const { data: players, error: playersError } = await supabase
+    .from('members')
+    .select('id, first_name, last_name')
+    .in('id', Array.from(allPlayerIds));
+
+  if (playersError) {
+    throw new Error(`Failed to fetch player names: ${playersError.message}`);
+  }
+
+  const playerNames = new Map<string, string>();
+  players?.forEach(player => {
+    playerNames.set(player.id, `${player.first_name} ${player.last_name}`);
+  });
+
+  // Step 8: Build rankings (only include players with at least 1)
+  const breakAndRuns: PlayerFeatRanking[] = [];
+  breakAndRunCounts.forEach((count, playerId) => {
+    if (count > 0) {
+      breakAndRuns.push({
+        playerId,
+        playerName: playerNames.get(playerId) || 'Unknown Player',
+        count,
+      });
+    }
+  });
+
+  const goldenBreaks: PlayerFeatRanking[] = [];
+  goldenBreakCounts.forEach((count, playerId) => {
+    if (count > 0) {
+      goldenBreaks.push({
+        playerId,
+        playerName: playerNames.get(playerId) || 'Unknown Player',
+        count,
+      });
+    }
+  });
+
+  const flawlessNights: PlayerFeatRanking[] = [];
+  flawlessNightCounts.forEach((count, playerId) => {
+    if (count > 0) {
+      flawlessNights.push({
+        playerId,
+        playerName: playerNames.get(playerId) || 'Unknown Player',
+        count,
+      });
+    }
+  });
+
+  // Step 9: Sort by count (descending), then by name (ascending) as tiebreaker
+  const sortRankings = (rankings: PlayerFeatRanking[]) => {
+    return rankings.sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count; // Most feats first
+      }
+      return a.playerName.localeCompare(b.playerName); // Alphabetical tiebreaker
+    });
+  };
+
+  return {
+    breakAndRuns: sortRankings(breakAndRuns),
+    goldenBreaks: sortRankings(goldenBreaks),
+    flawlessNights: sortRankings(flawlessNights),
+  };
+}
