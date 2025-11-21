@@ -115,9 +115,10 @@ export function TopShooters() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Back Button */}
-      <div className="mb-4">
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Back Button */}
+        <div className="mb-4">
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
@@ -200,6 +201,7 @@ export function TopShooters() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
