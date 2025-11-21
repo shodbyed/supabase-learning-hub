@@ -88,64 +88,90 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
           });
         }
 
-        // Get the next 3 upcoming weeks (incomplete weeks of any type)
-        const { data: upcomingWeeksData, error: upcomingWeeksError } = await supabase
+        // Get all weeks to calculate completion based on match status
+        const { data: allWeeks } = await supabase
           .from('season_weeks')
-          .select('week_name, scheduled_date, week_type')
+          .select('id, week_name, scheduled_date, week_type')
           .eq('season_id', seasonData.id)
-          .eq('week_completed', false)
-          .gte('scheduled_date', new Date().toISOString().split('T')[0]) // Future dates only
-          .order('scheduled_date', { ascending: true })
-          .limit(3);
+          .order('scheduled_date', { ascending: true });
 
-        if (upcomingWeeksError) throw upcomingWeeksError;
+        // Initialize completion map
+        let weekCompletionMap = new Map<string, boolean>();
 
-        if (upcomingWeeksData) {
-          setUpcomingWeeks(upcomingWeeksData.map(week => ({
+        if (allWeeks && allWeeks.length > 0) {
+          const weekIds = allWeeks.map(w => w.id);
+
+          // Get all matches to determine which weeks are complete
+          const { data: matches } = await supabase
+            .from('matches')
+            .select('season_week_id, status')
+            .in('season_week_id', weekIds);
+
+          // Calculate completion per week
+          const weekMatchCounts = new Map<string, { total: number; completed: number }>();
+
+          matches?.forEach(match => {
+            const weekId = match.season_week_id;
+            if (!weekId) return;
+
+            const counts = weekMatchCounts.get(weekId) || { total: 0, completed: 0 };
+            counts.total++;
+            if (match.status === 'completed' || match.status === 'verified') {
+              counts.completed++;
+            }
+            weekMatchCounts.set(weekId, counts);
+          });
+
+          // Mark weeks as complete if all matches are done
+          weekIds.forEach(weekId => {
+            const counts = weekMatchCounts.get(weekId);
+            const isComplete = counts && counts.total > 0 && counts.completed === counts.total;
+            weekCompletionMap.set(weekId, isComplete || false);
+          });
+
+          // Get next 3 incomplete REGULAR weeks (matches only, not blackouts)
+          const today = new Date().toISOString().split('T')[0];
+          const incompleteRegularWeeks = allWeeks
+            .filter(week =>
+              week.week_type === 'regular' &&
+              !weekCompletionMap.get(week.id)
+            )
+            .slice(0, 3);
+
+          setUpcomingWeeks(incompleteRegularWeeks.map(week => ({
             name: week.week_name,
             date: week.scheduled_date,
             type: week.week_type
           })));
+
+          // Get the next blackout week (holiday/break) based on date only
+          const upcomingBlackouts = allWeeks
+            .filter(week =>
+              week.week_type === 'blackout' &&
+              week.scheduled_date >= today
+            );
+
+          if (upcomingBlackouts.length > 0) {
+            setNextBlackout({
+              name: upcomingBlackouts[0].week_name,
+              date: upcomingBlackouts[0].scheduled_date
+            });
+          } else {
+            setNextBlackout(null);
+          }
         }
 
-        // Get the next blackout week (upcoming holiday/break)
-        const { data: nextBlackoutData, error: nextBlackoutError } = await supabase
-          .from('season_weeks')
-          .select('week_name, scheduled_date')
-          .eq('season_id', seasonData.id)
-          .eq('week_type', 'blackout')
-          .gte('scheduled_date', new Date().toISOString().split('T')[0]) // Future dates only
-          .order('scheduled_date', { ascending: true })
-          .limit(1)
-          .single();
+        // Calculate week counts using match completion data
+        if (allWeeks) {
+          const regularWeeks = allWeeks.filter(w => w.week_type === 'regular');
+          setTotalWeeks(regularWeeks.length);
 
-        if (nextBlackoutError && nextBlackoutError.code !== 'PGRST116') {
-          throw nextBlackoutError;
+          // Count completed regular weeks using the completion map we already calculated
+          if (weekCompletionMap) {
+            const completedRegularWeeks = regularWeeks.filter(w => weekCompletionMap.get(w.id)).length;
+            setWeeksCompleted(completedRegularWeeks);
+          }
         }
-
-        if (nextBlackoutData) {
-          setNextBlackout({
-            name: nextBlackoutData.week_name,
-            date: nextBlackoutData.scheduled_date
-          });
-        }
-
-        // Get week counts (regular weeks only)
-        const { count: totalWeeksCount } = await supabase
-          .from('season_weeks')
-          .select('*', { count: 'exact', head: true })
-          .eq('season_id', seasonData.id)
-          .eq('week_type', 'regular');
-
-        const { count: completedWeeksCount } = await supabase
-          .from('season_weeks')
-          .select('*', { count: 'exact', head: true })
-          .eq('season_id', seasonData.id)
-          .eq('week_type', 'regular')
-          .eq('week_completed', true);
-
-        setTotalWeeks(totalWeeksCount || 0);
-        setWeeksCompleted(completedWeeksCount || 0);
 
         // Get Week 1 start date (first regular week)
         const { data: week1Data } = await supabase
