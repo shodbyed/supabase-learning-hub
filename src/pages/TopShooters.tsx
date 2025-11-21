@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/table';
 import { ArrowLeft } from 'lucide-react';
 import { useTopShooters } from '@/api/hooks/useTopShooters';
+import { StatsNavBar } from '@/components/StatsNavBar';
 
 /**
  * Top Shooters Component
@@ -128,6 +129,9 @@ export function TopShooters() {
           Back
         </Button>
       </div>
+
+      {/* Stats Navigation */}
+      <StatsNavBar activePage="top-shooters" />
 
       <Card>
         <CardHeader>

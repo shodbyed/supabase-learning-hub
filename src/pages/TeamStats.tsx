@@ -19,6 +19,7 @@ import { useTeamStats } from '@/api/hooks/useTeamStats';
 import { usePlayerHandicaps } from '@/api/hooks/usePlayerHandicaps';
 import { getLeagueBySeasonId } from '@/api/queries/leagues';
 import { queryKeys } from '@/api/queryKeys';
+import { StatsNavBar } from '@/components/StatsNavBar';
 
 /**
  * Team Stats Component
@@ -112,6 +113,9 @@ export function TeamStats() {
         >
           ← Back
         </Button>
+
+        {/* Stats Navigation */}
+        <StatsNavBar activePage="team-stats" />
 
         <Card>
           <CardHeader>

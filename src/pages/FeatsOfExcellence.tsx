@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InfoButton } from '@/components/InfoButton';
 import { useFeatsStats } from '@/api/hooks/useFeatsStats';
+import { StatsNavBar } from '@/components/StatsNavBar';
 
 /**
  * Feats of Excellence Component
@@ -73,6 +74,9 @@ export function FeatsOfExcellence() {
         >
           ← Back
         </Button>
+
+        {/* Stats Navigation */}
+        <StatsNavBar activePage="feats" />
 
         {/* Page Title */}
         <h1 className="text-4xl font-bold text-center mb-8">Feats of Excellence</h1>

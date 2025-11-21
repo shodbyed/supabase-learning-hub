@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft } from 'lucide-react';
 import { useStandings } from '@/api/hooks/useStandings';
+import { StatsNavBar } from '@/components/StatsNavBar';
 
 /**
  * Standings Component
@@ -104,6 +105,9 @@ export function Standings() {
           Back
         </Button>
       </div>
+
+      {/* Stats Navigation */}
+      <StatsNavBar activePage="standings" />
 
       <Card>
         <CardHeader>
