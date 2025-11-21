@@ -1,0 +1,112 @@
+/**
+ * @fileoverview Stats Navigation Bar Component
+ *
+ * Horizontal navigation bar for switching between stats pages.
+ * Shows: Standings | Top Shooters | Team Stats | Feats of Excellence
+ * Highlights the current active page.
+ */
+
+import { useNavigate, useParams } from 'react-router-dom';
+import { Trophy, Target, Users, Award, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { useCurrentMember } from '@/api/hooks/useCurrentMember';
+
+interface StatsNavBarProps {
+  /** Current active page */
+  activePage: 'standings' | 'top-shooters' | 'team-stats' | 'feats';
+}
+
+/**
+ * Stats Navigation Bar Component
+ *
+ * Provides quick navigation between all stats pages for a season.
+ * Uses icons and labels for each stats page.
+ *
+ * @param activePage - Which page is currently active (for highlighting)
+ */
+export function StatsNavBar({ activePage }: StatsNavBarProps) {
+  const navigate = useNavigate();
+  const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
+  const { data: member } = useCurrentMember();
+
+  // Check if current user is a league operator
+  const isOperator = member?.role === 'league_operator';
+
+  const navItems = [
+    {
+      id: 'standings' as const,
+      label: 'Standings',
+      icon: Trophy,
+      path: `/league/${leagueId}/season/${seasonId}/standings`,
+    },
+    {
+      id: 'top-shooters' as const,
+      label: 'Top Shooters',
+      icon: Target,
+      path: `/league/${leagueId}/season/${seasonId}/top-shooters`,
+    },
+    {
+      id: 'team-stats' as const,
+      label: 'Team Stats',
+      icon: Users,
+      path: `/league/${leagueId}/season/${seasonId}/team-stats`,
+    },
+    {
+      id: 'feats' as const,
+      label: 'Feats',
+      icon: Award,
+      path: `/league/${leagueId}/season/${seasonId}/feats`,
+    },
+  ];
+
+  return (
+    <div className="bg-white border-b border-gray-200 mb-6 -mx-4 px-4 overflow-x-auto">
+      <nav className="flex gap-1 min-w-max">
+        {/* Exit to Teams Button */}
+        <button
+          onClick={() => navigate('/my-teams')}
+          className="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="text-sm">My Teams</span>
+        </button>
+
+        {/* League Button (Operators Only) */}
+        {isOperator && (
+          <button
+            onClick={() => navigate(`/league/${leagueId}`)}
+            className="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm">League</span>
+          </button>
+        )}
+
+        {/* Divider */}
+        <div className="border-l border-gray-300 my-2"></div>
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = activePage === item.id;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => navigate(item.path)}
+              className={`
+                flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap
+                ${
+                  isActive
+                    ? 'border-blue-600 text-blue-600 font-semibold'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }
+              `}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="text-sm">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </div>
+  );
+}

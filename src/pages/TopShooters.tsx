@@ -1,66 +1,175 @@
 /**
- * @fileoverview Top Shooters Page (Placeholder)
+ * @fileoverview Top Shooters Page
  *
- * Individual player rankings showing wins/losses/points/win% for a season.
+ * Individual player rankings showing wins/losses/handicaps for a season.
  * Mobile-first design with responsive table.
  *
- * TODO: Implement full player stats calculation and ranking logic
+ * TODO: Make page more mobile friendly - table is too wide on mobile screens
+ *
+ * Data shown:
+ * - Rank (based on most wins, win% as tiebreaker)
+ * - Player Name
+ * - Wins (individual games won in season, excluding tiebreakers)
+ * - Losses (individual games lost in season, excluding tiebreakers)
+ * - Win % (calculated percentage)
+ * - Handicap (calculated from last 200 games across all seasons)
+ *
+ * TODO: For 8-man format, add "Beginning %" column showing player's win%
+ * from their first match of the season. This would show handicap growth/change
+ * throughout the season. Need to:
+ * 1. Query for each player's first match in the season (by date)
+ * 2. Calculate their win% from just that first match
+ * 3. Display as "Beginning %" column (or similar) next to current Win %
+ * 4. Could show delta/change (e.g., "+5.2%" or "-3.1%") to highlight improvement
  */
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ArrowLeft } from 'lucide-react';
+import { useTopShooters } from '@/api/hooks/useTopShooters';
+import { StatsNavBar } from '@/components/StatsNavBar';
 
 /**
- * Top Shooters Component (Placeholder)
+ * Top Shooters Component
  *
- * Will display player rankings with:
- * - Rank (based on most wins)
- * - Player Name
- * - Wins (individual games won)
- * - Losses (individual games lost)
- * - Points (wins - losses)
- * - Win/Loss % (calculated percentage)
+ * Displays player rankings with game statistics and calculated handicaps.
+ * Only shows games from the current season (excludes tiebreakers).
+ * Handicaps are calculated using the main handicap calculator function.
  */
 export function TopShooters() {
   const { seasonId } = useParams<{ seasonId: string; leagueId: string }>();
+  const navigate = useNavigate();
+
+  // Fetch player stats with handicaps
+  const { players, isLoading, error, teamFormat } = useTopShooters(
+    seasonId || ''
+  );
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Shooter</CardTitle>
+            <p className="text-sm text-gray-600">
+              Loading player statistics...
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">Loading...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Shooter</CardTitle>
+            <p className="text-sm text-red-600">
+              Failed to load player statistics
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-red-500">
+              Error: {error.message}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // No players found
+  if (players.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Shooter</CardTitle>
+            <p className="text-sm text-gray-600">Individual player rankings</p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-500">
+              No player statistics available for this season yet.
+              <br />
+              <span className="text-sm">
+                Games will appear here after matches are completed and verified.
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>Top Shooters</CardTitle>
-          <p className="text-sm text-gray-600">
-            Individual player rankings (placeholder - implementation pending)
-          </p>
-        </CardHeader>
-        <CardContent>
-          {/* Mobile-first: horizontal scroll wrapper */}
-          <div className="overflow-x-auto -mx-4 px-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[60px]">Rank</TableHead>
-                  <TableHead className="min-w-[200px]">Player Name</TableHead>
-                  <TableHead className="min-w-[70px]">Wins</TableHead>
-                  <TableHead className="min-w-[70px]">Losses</TableHead>
-                  <TableHead className="min-w-[80px]">Points</TableHead>
-                  <TableHead className="min-w-[90px]">Win/Loss %</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    Player stats will be displayed here once implemented.
-                    <br />
-                    <span className="text-sm">Season ID: {seasonId}</span>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        {/* Stats Navigation */}
+        <StatsNavBar activePage="top-shooters" />
+
+        {/* Page Title */}
+        <h1 className="text-xl sm:text-4xl font-bold text-center mb-4 sm:mb-6">Top Shooters</h1>
+
+        {/* Table - no card wrapper */}
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">#</TableHead>
+                <TableHead className="w-[35px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">H/C</TableHead>
+                <TableHead className="px-1 sm:px-4 text-xs sm:text-sm">Player</TableHead>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">W</TableHead>
+                <TableHead className="w-[30px] sm:w-[50px] px-1 sm:px-4 text-center text-xs sm:text-sm">L</TableHead>
+                {teamFormat === '5_man' && (
+                  <TableHead className="w-[35px] sm:w-[60px] px-1 sm:px-4 text-center text-xs sm:text-sm">Pts</TableHead>
+                )}
+                <TableHead className="w-[45px] sm:w-[70px] px-1 sm:px-4 text-center text-xs sm:text-sm">Win%</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {players.map((player, index) => {
+                const rank = index + 1;
+                const points = player.gamesWon - player.gamesLost;
+                return (
+                  <TableRow key={player.playerId}>
+                    <TableCell className="font-medium px-1 sm:px-4 text-center text-xs sm:text-base">{rank}</TableCell>
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                      {player.handicap > 0 ? `+${player.handicap}` : player.handicap}
+                    </TableCell>
+                    <TableCell className="px-1 sm:px-4 text-xs sm:text-base">{player.playerName}</TableCell>
+                    <TableCell className="font-medium px-1 sm:px-4 text-center text-xs sm:text-base">{player.gamesWon}</TableCell>
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">{player.gamesLost}</TableCell>
+                    {teamFormat === '5_man' && (
+                      <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                        {points > 0 ? `+${points}` : points}
+                      </TableCell>
+                    )}
+                    <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
+                      {player.winPercentage.toFixed(1)}%
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
     </div>
   );
 }

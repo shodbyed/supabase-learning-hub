@@ -251,6 +251,29 @@ export const queryKeys = {
 
     /** Player handicap calculation */
     handicap: (playerId: string) => [...queryKeys.players.all, 'handicap', playerId] as const,
+
+    /** Player stats for a season */
+    statsBySeason: (seasonId: string) => [...queryKeys.players.all, 'stats', 'season', seasonId] as const,
+  },
+
+  /**
+   * Stats and Standings query keys
+   */
+  stats: {
+    /** Base key for all stats queries */
+    all: ['stats'] as const,
+
+    /** Top shooters (player rankings) for a season */
+    topShooters: (seasonId: string) => [...queryKeys.stats.all, 'top-shooters', seasonId] as const,
+
+    /** Team standings for a season */
+    standings: (seasonId: string) => [...queryKeys.stats.all, 'standings', seasonId] as const,
+
+    /** Team stats (detailed breakdown) for a season */
+    teamStats: (seasonId: string) => [...queryKeys.stats.all, 'team-stats', seasonId] as const,
+
+    /** Feats of Excellence (special achievements) for a season */
+    feats: (seasonId: string) => [...queryKeys.stats.all, 'feats', seasonId] as const,
   },
 } as const;
 

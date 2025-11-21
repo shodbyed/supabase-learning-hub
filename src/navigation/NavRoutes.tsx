@@ -35,6 +35,7 @@ import { MatchDataViewer } from '../pages/MatchDataViewer';
 import { Standings } from '../pages/Standings';
 import { TopShooters } from '../pages/TopShooters';
 import { TeamStats } from '../pages/TeamStats';
+import { FeatsOfExcellence } from '../pages/FeatsOfExcellence';
 import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
@@ -77,6 +78,7 @@ const memberRoutes = [
   { path: '/league/:leagueId/season/:seasonId/standings', element: <Standings /> },
   { path: '/league/:leagueId/season/:seasonId/top-shooters', element: <TopShooters /> },
   { path: '/league/:leagueId/season/:seasonId/team-stats', element: <TeamStats /> },
+  { path: '/league/:leagueId/season/:seasonId/feats', element: <FeatsOfExcellence /> },
   { path: '/league/:leagueId/season/:seasonId/match-data', element: <MatchDataViewer /> },
 ];
 

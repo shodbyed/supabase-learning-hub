@@ -269,6 +269,22 @@ function TeamAccordionItem({
 
       <AccordionContent className="px-4 pb-4">
         <div className="space-y-4 pt-2">
+          {/* View Schedule Button */}
+          <div>
+            <Button
+              variant="default"
+              className="w-full"
+              disabled={!isReady}
+              onClick={() => {
+                if (isReady) {
+                  window.location.href = `/team/${team.id}/schedule`;
+                }
+              }}
+            >
+              View Schedule
+            </Button>
+          </div>
+
           {/* Team Readiness Warning (Captains Only) */}
           {isCaptain && !isReady && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -345,21 +361,19 @@ function TeamAccordionItem({
             handicapVariant="standard"
             gameType={team.season.league.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
             seasonId={team.season.id}
+            captainId={team.team_players.find(p => p.is_captain)?.member_id}
           />
 
           {/* Action Buttons */}
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center">
             <Button
               variant="default"
-              className="w-full"
-              disabled={!isReady}
+              className="px-8"
               onClick={() => {
-                if (isReady) {
-                  window.location.href = `/team/${team.id}/schedule`;
-                }
+                window.location.href = `/league/${team.season.league.id}/season/${team.season.id}/standings`;
               }}
             >
-              View Schedule
+              Stats & Standings
             </Button>
           </div>
         </div>

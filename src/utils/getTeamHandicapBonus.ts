@@ -4,8 +4,10 @@
  * Self-contained helper to calculate team handicap bonus based on standings.
  * The team handicap bonus is only applied to the HOME team.
  *
- * Current implementation returns placeholder values until standings page is built.
+ * Uses team match wins from completed matches to calculate handicap differential.
  */
+
+import { supabase } from '@/supabaseClient';
 
 /**
  * Team format types
@@ -42,32 +44,60 @@ export async function getTeamHandicapBonus(
   seasonId: string,
   teamFormat: TeamFormat
 ): Promise<number> {
-  // Suppress unused variable warnings until implementation
-  void homeTeamId;
-  void awayTeamId;
-  void seasonId;
-
   // 5v5 (8_man) does not use team handicap
   if (teamFormat === '8_man') {
     return 0;
   }
 
-  // 3v3 (5_man) uses team handicap based on standings
-  // TODO: Implement real calculation after standings page is built
-  // Steps for future implementation:
-  // 1. Query matches for home team in this season (status = 'completed')
-  // 2. Count home team wins (where winner_team_id = homeTeamId)
-  // 3. Query matches for away team in this season (status = 'completed')
-  // 4. Count away team wins (where winner_team_id = awayTeamId)
-  // 5. Calculate: winDifference = homeWins - awayWins
-  // 6. Calculate: bonus = Math.floor(winDifference / 2)
-  // 7. Return bonus (can be positive, negative, or zero)
-  //
-  // Example: Home has 8 wins, Away has 3 wins
-  //   winDifference = 8 - 3 = 5
-  //   bonus = floor(5 / 2) = 2
-  //   Home team gets +2 team handicap bonus
+  // 3v3 (5_man) uses team handicap based on match win differential
+  // Formula: (home_wins - away_wins) / 2 (rounded down)
 
-  // Placeholder: Return 0 until standings page is implemented
-  return 0;
+  try {
+    // Fetch all completed matches for this season
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select('winner_team_id')
+      .eq('season_id', seasonId)
+      .eq('status', 'completed');
+
+    if (error) {
+      console.error('Error fetching matches for team handicap:', error);
+      return 0; // Return 0 on error (neutral handicap)
+    }
+
+    if (!matches || matches.length === 0) {
+      return 0; // No completed matches yet, no handicap
+    }
+
+    // Count wins for each team
+    let homeWins = 0;
+    let awayWins = 0;
+
+    matches.forEach((match) => {
+      if (match.winner_team_id === homeTeamId) {
+        homeWins++;
+      } else if (match.winner_team_id === awayTeamId) {
+        awayWins++;
+      }
+    });
+
+    // Calculate win differential and team handicap bonus
+    const winDifference = homeWins - awayWins;
+    const bonus = Math.floor(winDifference / 2);
+
+    return bonus;
+
+    // Example: Home has 8 wins, Away has 3 wins
+    //   winDifference = 8 - 3 = 5
+    //   bonus = floor(5 / 2) = 2
+    //   Home team gets +2 team handicap bonus
+    //
+    // Example: Home has 3 wins, Away has 7 wins
+    //   winDifference = 3 - 7 = -4
+    //   bonus = floor(-4 / 2) = -2
+    //   Home team gets -2 team handicap penalty
+  } catch (error) {
+    console.error('Exception in getTeamHandicapBonus:', error);
+    return 0; // Return 0 on exception (neutral handicap)
+  }
 }

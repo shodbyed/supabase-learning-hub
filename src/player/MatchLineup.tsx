@@ -29,6 +29,7 @@ import {
   useMatchGames,
 } from '@/api/hooks';
 import { useUpdateMatchGame } from '@/api/hooks/useMatchMutations';
+import { usePlayerHandicaps } from '@/api/hooks/usePlayerHandicaps';
 import type { Player } from '@/types/match';
 import { MatchInfoCard } from '@/components/lineup/MatchInfoCard';
 import { PlayerRoster } from '@/components/PlayerRoster';
@@ -121,14 +122,29 @@ export function MatchLineup() {
   const updateGameMutation = useUpdateMatchGame(matchId || '');
 
   // Extract players from team details query
-  const players: Player[] =
+  const playersWithoutHandicaps: Omit<Player, 'handicap'>[] =
     teamDetailsQuery.data?.team_players?.map((tp: any) => ({
       id: tp.members.id,
       nickname: tp.members.nickname,
-      handicap: tp.members.handicap,
       first_name: tp.members.first_name,
       last_name: tp.members.last_name,
     })) || [];
+
+  // Get calculated handicaps for all roster players
+  const { handicaps: playerHandicaps } = usePlayerHandicaps({
+    playerIds: playersWithoutHandicaps.map(p => p.id),
+    teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
+    handicapVariant: (matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none',
+    gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
+    seasonId: matchData?.season_id,
+    gameLimit: 200,
+  });
+
+  // Merge players with their calculated handicaps
+  const players: Player[] = playersWithoutHandicaps.map(p => ({
+    ...p,
+    handicap: playerHandicaps.get(p.id) ?? 0,
+  }));
 
   // Team handicap bonus (only for home team)
   const [teamHandicap] = useState<number>(0);
@@ -585,6 +601,7 @@ export function MatchLineup() {
               seasonId={matchData?.season_id}
               hidePlayerNumber
               hideHandicap={isTiebreakerMode}
+              captainId={teamDetailsQuery.data?.captain_id}
             />
 
             {/* Player Selection Dropdowns */}
