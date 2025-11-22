@@ -1,8 +1,9 @@
 /**
  * @fileoverview Match Lineup Page
  *
- * Mobile-first lineup selection page where players choose their 3-player lineup
- * before starting a match. Shows player handicaps and calculates team total.
+ * Mobile-first lineup selection page where players choose their lineup
+ * before starting a match. Supports both 3v3 (3 players) and 5v5 (5 players)
+ * formats. Shows player handicaps and calculates team total.
  *
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
@@ -36,6 +37,7 @@ import {
   useLineupValidation,
   useLineupPersistence,
   useMatchPreparation,
+  useOpponentStatus,
 } from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
 import { calculateSubstituteHandicap } from '@/utils/lineup';
@@ -442,83 +444,18 @@ export function MatchLineup() {
   // TypeScript doesn't infer this, so we assert non-null
   const match = matchData!;
 
-  /**
-   * Get opponent team info
-   */
-  const getOpponentTeam = () => {
-    if (!matchData) return null;
-    return isHomeTeam ? matchData.away_team : matchData.home_team;
-  };
-
-  /**
-   * Calculate opponent status based on match lineup_id and locked state
-   * - absent: No lineup ID in match (opponent hasn't joined)
-   * - choosing: Has lineup ID but not locked (opponent selecting players)
-   * - ready: Has lineup ID and is locked (opponent ready)
-   *
-   * Shows detailed player selection progress:
-   * - "Players chosen: 1" when 1 player selected
-   * - "Players chosen: 2" when 2 players selected
-   * - "Players chosen: 3" when 3 players selected
-   * - "Locked" when lineup is locked
-   */
-  const getOpponentStatus = (): 'absent' | 'choosing' | 'ready' => {
-    if (!matchData) return 'absent';
-
-    const opponentLineupField = isHomeTeam
-      ? 'away_lineup_id'
-      : 'home_lineup_id';
-    const opponentLineupId =
-      matchData[opponentLineupField as keyof typeof matchData];
-
-    // No lineup ID = opponent hasn't joined yet
-    if (!opponentLineupId) return 'absent';
-
-    // Has lineup ID, check if locked
-    if (opponentLineup?.locked) return 'ready';
-
-    // Has lineup ID but not locked = choosing lineup
-    return 'choosing';
-  };
-
-  /**
-   * Get detailed opponent selection status showing player count
-   */
-  const getOpponentSelectionStatus = (): string => {
-    const status = getOpponentStatus();
-
-    if (status === 'absent') return 'Absent';
-    if (status === 'ready') return 'Locked';
-
-    // Status is 'choosing' - count selected players
-    let playerCount = 0;
-
-    // In tiebreaker mode, count players from games 19, 20, 21
-    if (isTiebreakerMode) {
-      const opponentPlayerField = isHomeTeam
-        ? 'away_player_id'
-        : 'home_player_id';
-
-      [19, 20, 21].forEach((gameNumber) => {
-        const game = allGames.find(
-          (g) => g.game_number === gameNumber && g.is_tiebreaker
-        );
-        if (game && game[opponentPlayerField as keyof typeof game]) {
-          playerCount++;
-        }
-      });
-    } else {
-      // Normal mode - count from lineup
-      if (opponentLineup?.player1_id) playerCount++;
-      if (opponentLineup?.player2_id) playerCount++;
-      if (opponentLineup?.player3_id) playerCount++;
-    }
-
-    if (playerCount === 0) return 'Choosing lineup';
-    return `Players chosen: ${playerCount}`;
-  };
-
-  const opponent = getOpponentTeam();
+  // Get opponent status using custom hook
+  const {
+    opponentTeam: opponent,
+    status: opponentStatus,
+    selectionStatus: opponentSelectionStatus,
+  } = useOpponentStatus({
+    matchData,
+    isHomeTeam,
+    opponentLineup,
+    isTiebreakerMode,
+    allGames,
+  });
 
   // Get my lineup (for tiebreaker mode player source)
   const myLineup = isHomeTeam
@@ -754,10 +691,10 @@ export function MatchLineup() {
             {/* Lock/Unlock and Status */}
             <LineupActions
               locked={lineup.lineupLocked}
-              opponentStatus={getOpponentStatus()}
-              opponentStatusText={getOpponentSelectionStatus()}
+              opponentStatus={opponentStatus}
+              opponentStatusText={opponentSelectionStatus}
               canLock={validation.canLock}
-              canUnlock={getOpponentStatus() !== 'ready'}
+              canUnlock={opponentStatus !== 'ready'}
               onLock={handleLockLineup}
               onUnlock={handleUnlockLineup}
               onProceed={() => {

@@ -9,3 +9,4 @@ export * from './useHandicapCalculations';
 export * from './useLineupValidation';
 export * from './useLineupPersistence';
 export * from './useMatchPreparation';
+export * from './useOpponentStatus';
