@@ -48,6 +48,7 @@ import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
 import { formatHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
+import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -108,8 +109,12 @@ export function MatchLineup() {
     setPreparationMessage,
   } = usePreparationStatus();
 
+  // Determine player count from team format (3 for 3v3, 5 for 5v5)
+  const teamFormat = (matchData?.league?.team_format || '5_man') as '5_man' | '8_man';
+  const playerCount = getPlayerCount(teamFormat);
+
   // Centralized lineup state management
-  const lineup = useLineupState();
+  const lineup = useLineupState(playerCount);
 
   // Get update mutation for direct dropdown saves
   const updateLineupMutation = useUpdateMatchLineup();
@@ -161,7 +166,8 @@ export function MatchLineup() {
   const isTiebreakerMode = matchData?.match_result === 'tie';
 
   // Get tiebreaker player IDs if in tiebreaker mode
-  const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
+  // Note: Tiebreakers are always 3 games (best of 3), regardless of team format
+  const getTiebreakerPlayerIdByPosition = (position: number): string => {
     const gameNumber = 18 + position;
     const game = allGames.find(
       (g) => g.game_number === gameNumber && g.is_tiebreaker
@@ -182,6 +188,9 @@ export function MatchLineup() {
     player1Id: lineup.player1Id,
     player2Id: lineup.player2Id,
     player3Id: lineup.player3Id,
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
+    playerCount,
     subHandicap: lineup.subHandicap,
     testMode: lineup.testMode,
     testHandicaps: lineup.testHandicaps,
@@ -219,10 +228,6 @@ export function MatchLineup() {
     onLockedChange: lineup.setLineupLocked,
     matchData,
   });
-
-  const teamFormat = (matchData?.league?.team_format || '5_man') as
-    | '5_man'
-    | '8_man';
 
   // Note: Lineups are now auto-created by database trigger when match is inserted
   // See migration: 20251115000000_auto_create_match_lineups.sql
@@ -262,14 +267,14 @@ export function MatchLineup() {
 
         // Only set player IDs if they exist in the database AND local state is empty
         // This prevents overwriting user's current selections with old DB data
-        if (myLineup.player1_id && !lineup.player1Id) {
-          lineup.setPlayer1Id(myLineup.player1_id);
-        }
-        if (myLineup.player2_id && !lineup.player2Id) {
-          lineup.setPlayer2Id(myLineup.player2_id);
-        }
-        if (myLineup.player3_id && !lineup.player3Id) {
-          lineup.setPlayer3Id(myLineup.player3_id);
+        for (let pos = 1; pos <= playerCount; pos++) {
+          const playerIdField = `player${pos}_id` as keyof typeof myLineup;
+          const dbPlayerId = myLineup[playerIdField] as string | undefined;
+          const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
+
+          if (dbPlayerId && !currentPlayerId) {
+            lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId);
+          }
         }
 
         // Always sync locked state from database (source of truth)
@@ -288,14 +293,12 @@ export function MatchLineup() {
     onGamesUpdate: () => matchGamesQuery.refetch(),
   });
 
-  // Generic player change handler - works for any position (scalable to 5 players)
-  const handlePlayerChange = (position: 1 | 2 | 3, playerId: string) => {
+  // Generic player change handler - works for any position (3 or 5 players)
+  const handlePlayerChange = (position: number, playerId: string) => {
     if (!lineup.lineupId || !matchId) return;
 
-    // Update local state
-    if (position === 1) lineup.setPlayer1Id(playerId);
-    else if (position === 2) lineup.setPlayer2Id(playerId);
-    else lineup.setPlayer3Id(playerId);
+    // Update local state using generic setter
+    lineup.setPlayerId(position as 1 | 2 | 3 | 4 | 5, playerId);
 
     // Get the NEW player's handicap (respects test mode and test handicap overrides)
     const handicap = handicaps.getPlayerHandicap(playerId);
@@ -325,13 +328,11 @@ export function MatchLineup() {
   };
 
   // Clear player handler - remove player from lineup position
-  const handleClearPlayer = (position: 1 | 2 | 3) => {
+  const handleClearPlayer = (position: number) => {
     if (!lineup.lineupId || !matchId) return;
 
-    // Clear local state
-    if (position === 1) lineup.setPlayer1Id('');
-    else if (position === 2) lineup.setPlayer2Id('');
-    else lineup.setPlayer3Id('');
+    // Clear local state using generic setter
+    lineup.setPlayerId(position as 1 | 2 | 3 | 4 | 5, '');
 
     // Clear in database
     updateLineupMutation.mutate({
@@ -345,30 +346,32 @@ export function MatchLineup() {
   };
 
   // Helper functions to get player data by position (for mapping)
-  const getPlayerIdByPosition = (position: 1 | 2 | 3): string => {
-    return position === 1
-      ? lineup.player1Id
-      : position === 2
-      ? lineup.player2Id
-      : lineup.player3Id;
+  const getPlayerIdByPosition = (position: number): string => {
+    return lineup.getPlayerId(position as 1 | 2 | 3 | 4 | 5);
   };
 
-  const getHandicapByPosition = (position: 1 | 2 | 3): number => {
-    return position === 1
-      ? handicaps.player1Handicap
-      : position === 2
-      ? handicaps.player2Handicap
-      : handicaps.player3Handicap;
+  const getHandicapByPosition = (position: number): number => {
+    switch (position) {
+      case 1: return handicaps.player1Handicap;
+      case 2: return handicaps.player2Handicap;
+      case 3: return handicaps.player3Handicap;
+      case 4: return handicaps.player4Handicap || 0;
+      case 5: return handicaps.player5Handicap || 0;
+      default: return 0;
+    }
   };
 
-  const getOtherPlayerIds = (position: 1 | 2 | 3): string[] => {
-    const allPlayers = [lineup.player1Id, lineup.player2Id, lineup.player3Id];
+  const getOtherPlayerIds = (position: number): string[] => {
+    const allPlayers = Array.from({ length: playerCount }, (_, i) =>
+      lineup.getPlayerId((i + 1) as 1 | 2 | 3 | 4 | 5)
+    );
     return allPlayers.filter((_, index) => index + 1 !== position);
   };
 
   // Tiebreaker mode handlers - update game records instead of lineup
+  // Note: Tiebreaker always uses 3 positions (best of 3)
   const handleTiebreakerPlayerChange = (
-    position: 1 | 2 | 3,
+    position: number,
     playerId: string
   ) => {
     if (!matchId) return;
@@ -402,7 +405,7 @@ export function MatchLineup() {
     });
   };
 
-  const handleClearTiebreakerPlayer = (position: 1 | 2 | 3) => {
+  const handleClearTiebreakerPlayer = (position: number) => {
     if (!matchId) return;
 
     // Map position to game number
@@ -624,8 +627,8 @@ export function MatchLineup() {
               </div>
 
               <div className="space-y-2 mt-2">
-                {/* Map over positions 1, 2, 3 (scalable to 5 in the future) */}
-                {([1, 2, 3] as const).map((position) => {
+                {/* Map over positions dynamically based on player count */}
+                {Array.from({ length: playerCount }, (_, i) => i + 1).map((position) => {
                   // In tiebreaker mode, get player from game record; otherwise from lineup
                   const playerId = isTiebreakerMode
                     ? getTiebreakerPlayerIdByPosition(position)
