@@ -10,3 +10,4 @@ export * from './useLineupValidation';
 export * from './useLineupPersistence';
 export * from './useMatchPreparation';
 export * from './useOpponentStatus';
+export * from './useTiebreakerLineup';

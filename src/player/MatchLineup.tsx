@@ -38,6 +38,7 @@ import {
   useLineupPersistence,
   useMatchPreparation,
   useOpponentStatus,
+  useTiebreakerLineup,
 } from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
 import { calculateSubstituteHandicap } from '@/utils/lineup';
@@ -160,18 +161,20 @@ export function MatchLineup() {
   // Detect tiebreaker mode
   const isTiebreakerMode = matchData?.match_result === 'tie';
 
-  // Get tiebreaker player IDs if in tiebreaker mode
-  // Note: Tiebreakers are always 3 games (best of 3), regardless of team format
-  const getTiebreakerPlayerIdByPosition = (position: number): string => {
-    const gameNumber = 18 + position;
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) return '';
-
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-    return (game[playerField as keyof typeof game] as string) || '';
-  };
+  // Tiebreaker lineup management (for best-of-3 games 19-21)
+  const {
+    getTiebreakerPlayerIdByPosition,
+    handleTiebreakerPlayerChange,
+    handleClearTiebreakerPlayer,
+  } = useTiebreakerLineup({
+    allGames,
+    isHomeTeam,
+    matchId,
+    setPlayer1Id: lineup.setPlayer1Id,
+    setPlayer2Id: lineup.setPlayer2Id,
+    setPlayer3Id: lineup.setPlayer3Id,
+    updateGameMutation: updateGameMutation,
+  });
 
   // In tiebreaker mode, use game records for validation; otherwise use lineup state
   const validationPlayer1Id = isTiebreakerMode ? getTiebreakerPlayerIdByPosition(1) : lineup.player1Id;
@@ -369,72 +372,6 @@ export function MatchLineup() {
       lineup.getPlayerId((i + 1) as 1 | 2 | 3 | 4 | 5)
     );
     return allPlayers.filter((_, index) => index + 1 !== position);
-  };
-
-  // Tiebreaker mode handlers - update game records instead of lineup
-  // Note: Tiebreaker always uses 3 positions (best of 3)
-  const handleTiebreakerPlayerChange = (
-    position: number,
-    playerId: string
-  ) => {
-    if (!matchId) return;
-
-    // Map position to game number (1 → 19, 2 → 20, 3 → 21)
-    const gameNumber = 18 + position;
-
-    // Find the game
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) {
-      console.error(`Tiebreaker game ${gameNumber} not found`);
-      return;
-    }
-
-    // Update local state (for UI responsiveness)
-    if (position === 1) lineup.setPlayer1Id(playerId);
-    else if (position === 2) lineup.setPlayer2Id(playerId);
-    else lineup.setPlayer3Id(playerId);
-
-    // Determine which player field to update based on team
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-
-    // Update the game record
-    updateGameMutation.mutate({
-      gameId: game.id,
-      updates: {
-        [playerField]: playerId,
-      },
-    });
-  };
-
-  const handleClearTiebreakerPlayer = (position: number) => {
-    if (!matchId) return;
-
-    // Map position to game number
-    const gameNumber = 18 + position;
-
-    // Find the game
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) return;
-
-    // Clear local state
-    if (position === 1) lineup.setPlayer1Id('');
-    else if (position === 2) lineup.setPlayer2Id('');
-    else lineup.setPlayer3Id('');
-
-    // Determine which player field to clear
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-
-    // Clear the game record
-    updateGameMutation.mutate({
-      gameId: game.id,
-      updates: {
-        [playerField]: null,
-      },
-    });
   };
 
   // Early return for loading/error states - consolidated into single check
