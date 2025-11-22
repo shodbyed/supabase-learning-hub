@@ -169,6 +169,9 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
 
   /**
    * Handle unlock lineup - Only allowed if opponent hasn't locked yet
+   *
+   * For 5v5: If lineup has duplicate players (from opponent's double duty choice),
+   * replace the duplicate with the appropriate substitute ID.
    */
   const handleUnlockLineup = async () => {
     if (!lineupId || !matchId) {
@@ -177,9 +180,43 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
     }
 
     try {
+      const updates: any = { locked: false, locked_at: null };
+
+      // For 5v5: Check for duplicate players and restore substitute
+      if (playerCount === 5) {
+        const playerIds = [player1Id, player2Id, player3Id, player4Id, player5Id];
+        const playerIdCounts = new Map<string, number[]>();
+
+        // Count occurrences of each player ID and track positions
+        playerIds.forEach((id, index) => {
+          if (id) {
+            const positions = playerIdCounts.get(id) || [];
+            positions.push(index + 1);
+            playerIdCounts.set(id, positions);
+          }
+        });
+
+        // Find duplicates (player appearing in 2+ positions)
+        for (const [playerId, positions] of playerIdCounts.entries()) {
+          if (positions.length > 1) {
+            // Found duplicate - replace the second occurrence with substitute
+            const duplicatePosition = positions[1]; // Second position (index 1)
+            const isHomeTeam = userTeamId === matchData?.home_team_id;
+            const subId = isHomeTeam
+              ? '00000000-0000-0000-0000-000000000001' // SUB_HOME_ID
+              : '00000000-0000-0000-0000-000000000002'; // SUB_AWAY_ID
+
+            updates[`player${duplicatePosition}_id`] = subId;
+            updates[`player${duplicatePosition}_handicap`] = 50; // Default sub handicap
+            console.log(`🔄 Restoring substitute at position ${duplicatePosition}`);
+            break; // Only handle first duplicate found
+          }
+        }
+      }
+
       await updateLineupMutation.mutateAsync({
         lineupId: lineupId,
-        updates: { locked: false, locked_at: null },
+        updates,
         matchId,
       });
 
