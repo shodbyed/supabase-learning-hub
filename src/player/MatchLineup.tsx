@@ -10,15 +10,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Users, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import {
   useCurrentMember,
   useMatchWithLeagueSettings,
@@ -36,6 +28,7 @@ import { PlayerRoster } from '@/components/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
+import { PlayerSelectionRow } from '@/components/lineup/PlayerSelectionRow';
 import { useQueryStates } from '@/hooks/useQueryStates';
 import {
   useLineupState,
@@ -45,7 +38,7 @@ import {
   useMatchPreparation,
 } from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
-import { formatHandicap, calculateSubstituteHandicap } from '@/utils/lineup';
+import { calculateSubstituteHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
 import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
@@ -686,106 +679,58 @@ export function MatchLineup() {
                     ? handleClearTiebreakerPlayer
                     : handleClearPlayer;
 
+                  // Is this a substitute player?
+                  const isSubstitute = playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID;
+
+                  // Handler for substitute handicap change
+                  const handleSubHandicapChange = (newSubHandicap: string) => {
+                    if (!lineup.lineupId || !matchId) return;
+
+                    // Update local state
+                    lineup.setSubHandicap(newSubHandicap);
+
+                    // Collect used player IDs (excluding current position)
+                    const usedPlayerIds = [
+                      lineup.player1Id,
+                      lineup.player2Id,
+                      lineup.player3Id,
+                    ].filter(Boolean);
+
+                    // Calculate substitute handicap using utility function
+                    const calculatedHandicap = calculateSubstituteHandicap(
+                      usedPlayerIds,
+                      players,
+                      parseFloat(newSubHandicap)
+                    );
+
+                    // Update database with new handicap
+                    updateLineupMutation.mutate({
+                      lineupId: lineup.lineupId,
+                      updates: {
+                        [`player${position}_id`]: playerId,
+                        [`player${position}_handicap`]: calculatedHandicap,
+                      },
+                      matchId,
+                    });
+                  };
+
                   return (
-                    <div key={position} className="flex gap-2 items-center">
-                      <div className="w-12 text-center">
-                        <div className="text-sm font-semibold text-gray-700">
-                          {position}
-                        </div>
-                      </div>
-                      <div className="w-12 text-center">
-                        <div className="text-sm font-semibold text-blue-600">
-                          {playerId ? formatHandicap(handicap) : '-'}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <Select
-                          value={playerId}
-                          onValueChange={(id) => onPlayerChange(position, id)}
-                          disabled={lineup.lineupLocked}
-                        >
-                          <SelectTrigger className="min-w-[120px]">
-                            <SelectValue
-                              placeholder={`Select Player ${position}`}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getAvailablePlayerIds().map((playerOptionId) => (
-                              <SelectItem
-                                key={playerOptionId}
-                                value={playerOptionId}
-                                disabled={otherPlayerIds.includes(playerOptionId)}
-                              >
-                                {getPlayerDisplayName(playerOptionId)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Sub handicap selector (if sub player selected) - inline on same row */}
-                      {!isTiebreakerMode &&
-                        (playerId === SUB_HOME_ID ||
-                          playerId === SUB_AWAY_ID) && (
-                        <div className="w-24">
-                          <Select
-                            value={lineup.subHandicap}
-                            onValueChange={(newSubHandicap) => {
-                              if (!lineup.lineupId || !matchId) return;
-
-                              // Update local state
-                              lineup.setSubHandicap(newSubHandicap);
-
-                              // Collect used player IDs (excluding current position)
-                              const usedPlayerIds = [
-                                lineup.player1Id,
-                                lineup.player2Id,
-                                lineup.player3Id,
-                              ].filter(Boolean);
-
-                              // Calculate substitute handicap using utility function
-                              const calculatedHandicap = calculateSubstituteHandicap(
-                                usedPlayerIds,
-                                players,
-                                parseFloat(newSubHandicap)
-                              );
-
-                              // Update database with new handicap
-                              updateLineupMutation.mutate({
-                                lineupId: lineup.lineupId,
-                                updates: {
-                                  [`player${position}_id`]: playerId,
-                                  [`player${position}_handicap`]: calculatedHandicap,
-                                },
-                                matchId,
-                              });
-                            }}
-                            disabled={lineup.lineupLocked}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sub H/C" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="2">+2</SelectItem>
-                              <SelectItem value="1">+1</SelectItem>
-                              <SelectItem value="0">0</SelectItem>
-                              <SelectItem value="-1">-1</SelectItem>
-                              <SelectItem value="-2">-2</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      {playerId && !lineup.lineupLocked && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onClearPlayer(position)}
-                          className="h-8 w-8 flex-shrink-0"
-                          title={`Clear player ${position}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                    <PlayerSelectionRow
+                      key={position}
+                      position={position}
+                      playerId={playerId}
+                      handicap={handicap}
+                      locked={lineup.lineupLocked}
+                      availablePlayerIds={getAvailablePlayerIds()}
+                      otherPlayerIds={otherPlayerIds}
+                      getPlayerDisplayName={getPlayerDisplayName}
+                      onPlayerChange={onPlayerChange}
+                      onClearPlayer={onClearPlayer}
+                      isSubstitute={isSubstitute}
+                      subHandicap={lineup.subHandicap}
+                      onSubHandicapChange={handleSubHandicapChange}
+                      showSubHandicapSelector={!isTiebreakerMode}
+                    />
                   );
                 })}
               </div>
