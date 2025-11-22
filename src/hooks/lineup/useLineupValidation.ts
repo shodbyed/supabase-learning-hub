@@ -20,17 +20,16 @@
 
 import { useMemo } from 'react';
 import type { Player } from '@/types/match';
-import {
-  isLineupComplete,
-  hasDuplicateNicknames,
-  canLockLineup,
-} from '@/utils/lineup';
+import { hasDuplicateNicknames } from '@/utils/lineup';
 import { lineupHasSubstitute } from '@/utils/lineup';
 
 export interface LineupValidationInput {
   player1Id: string;
   player2Id: string;
   player3Id: string;
+  player4Id?: string; // Optional for 5v5
+  player5Id?: string; // Optional for 5v5
+  playerCount?: 3 | 5; // Defaults to 3 for backward compatibility
   subHandicap: string;
   players: Player[];
   isTiebreakerMode?: boolean;
@@ -57,30 +56,65 @@ export interface LineupValidation {
 export function useLineupValidation(
   input: LineupValidationInput
 ): LineupValidation {
-  const { player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode } = input;
+  const {
+    player1Id,
+    player2Id,
+    player3Id,
+    player4Id = '',
+    player5Id = '',
+    playerCount = 3,
+    subHandicap,
+    players,
+    isTiebreakerMode,
+  } = input;
 
-  // Check if lineup has a substitute
+  // Build array of all player IDs based on player count
+  const allPlayerIds = useMemo(() => {
+    const ids = [player1Id, player2Id, player3Id];
+    if (playerCount === 5) {
+      ids.push(player4Id, player5Id);
+    }
+    return ids;
+  }, [player1Id, player2Id, player3Id, player4Id, player5Id, playerCount]);
+
+  // Check if lineup has a substitute (check first 3 positions - subs only in 3v3)
   const hasSub = useMemo(
     () => lineupHasSubstitute(player1Id, player2Id, player3Id),
     [player1Id, player2Id, player3Id]
   );
 
-  // Check if lineup is complete
-  const isComplete = useMemo(
-    () => isLineupComplete(player1Id, player2Id, player3Id, subHandicap, isTiebreakerMode),
-    [player1Id, player2Id, player3Id, subHandicap, isTiebreakerMode]
-  );
+  // Check if lineup is complete (all positions filled)
+  const isComplete = useMemo(() => {
+    // All positions must be filled
+    const allFilled = allPlayerIds.slice(0, playerCount).every((id) => id !== '');
+
+    // If there's a sub and not in tiebreaker mode, must have subHandicap
+    if (hasSub && !isTiebreakerMode && !subHandicap) {
+      return false;
+    }
+
+    return allFilled;
+  }, [allPlayerIds, playerCount, hasSub, isTiebreakerMode, subHandicap]);
 
   // Check for duplicate nicknames
-  const hasDuplicates = useMemo(
-    () => hasDuplicateNicknames(player1Id, player2Id, player3Id, players),
-    [player1Id, player2Id, player3Id, players]
-  );
+  const hasDuplicates = useMemo(() => {
+    // For now, only check first 3 players (existing utility only supports 3)
+    // TODO: Update hasDuplicateNicknames utility to support 5 players
+    if (playerCount === 5) {
+      // Manual check for 5 players
+      const selectedPlayerIds = allPlayerIds.filter((id) => id !== '');
+      const selectedPlayers = players.filter((p) => selectedPlayerIds.includes(p.id));
+      const nicknames = selectedPlayers.map((p) => p.nickname || `${p.first_name} ${p.last_name}`);
+      const uniqueNicknames = new Set(nicknames);
+      return nicknames.length !== uniqueNicknames.size;
+    }
+    return hasDuplicateNicknames(player1Id, player2Id, player3Id, players);
+  }, [allPlayerIds, playerCount, players, player1Id, player2Id, player3Id]);
 
   // Check if lineup can be locked
   const canLock = useMemo(
-    () => canLockLineup(player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode),
-    [player1Id, player2Id, player3Id, subHandicap, players, isTiebreakerMode]
+    () => isComplete && !hasDuplicates,
+    [isComplete, hasDuplicates]
   );
 
   // Generate error messages
@@ -89,8 +123,8 @@ export function useLineupValidation(
     if (hasSub && !subHandicap) {
       return 'Please select a handicap for the substitute player';
     }
-    return 'Please select all 3 players before locking your lineup';
-  }, [isComplete, hasSub, subHandicap]);
+    return `Please select all ${playerCount} players before locking your lineup`;
+  }, [isComplete, hasSub, subHandicap, playerCount]);
 
   const duplicatesError = useMemo(() => {
     if (!hasDuplicates) return null;

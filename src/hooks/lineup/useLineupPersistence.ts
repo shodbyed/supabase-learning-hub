@@ -19,9 +19,14 @@ interface LineupPersistenceParams {
   player1Id: string;
   player2Id: string;
   player3Id: string;
+  player4Id?: string; // Optional for 5v5
+  player5Id?: string; // Optional for 5v5
   player1Handicap: number;
   player2Handicap: number;
   player3Handicap: number;
+  player4Handicap?: number; // Optional for 5v5
+  player5Handicap?: number; // Optional for 5v5
+  playerCount?: 3 | 5; // Defaults to 3 for backward compatibility
   teamHandicap: number;
   isComplete: boolean;
   hasDuplicates: boolean;
@@ -39,9 +44,14 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
     player1Id,
     player2Id,
     player3Id,
+    player4Id = '',
+    player5Id = '',
     player1Handicap,
     player2Handicap,
     player3Handicap,
+    player4Handicap = 0,
+    player5Handicap = 0,
+    playerCount = 3,
     teamHandicap,
     isComplete,
     hasDuplicates,
@@ -88,7 +98,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       }
 
       // Prepare lineup data (keep substitute IDs, don't convert to null)
-      const lineupData = {
+      const lineupData: any = {
         match_id: matchId,
         team_id: userTeamId,
         player1_id: player1Id,
@@ -101,6 +111,14 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         locked: true,
         locked_at: new Date().toISOString(), // Timestamp when lineup was locked
       };
+
+      // Add player4/5 if this is a 5v5 match
+      if (playerCount === 5) {
+        lineupData.player4_id = player4Id || null;
+        lineupData.player4_handicap = player4Handicap;
+        lineupData.player5_id = player5Id || null;
+        lineupData.player5_handicap = player5Handicap;
+      }
 
       // Lineups are auto-created by DB trigger - we should ONLY update, never insert
       if (!lineupId) {
