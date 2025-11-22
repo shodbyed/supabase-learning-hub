@@ -45,7 +45,7 @@ import {
   useMatchPreparation,
 } from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
-import { formatHandicap } from '@/utils/lineup';
+import { formatHandicap, calculateSubstituteHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
 import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
@@ -719,47 +719,21 @@ export function MatchLineup() {
                             onValueChange={(newSubHandicap) => {
                               if (!lineup.lineupId || !matchId) return;
 
-                              console.log('🔄 Sub handicap changed:', {
-                                position,
-                                playerId,
-                                newSubHandicap,
-                              });
-
                               // Update local state
                               lineup.setSubHandicap(newSubHandicap);
 
-                              // Calculate handicap with NEW subHandicap value manually
-                              // (can't use handicaps.getPlayerHandicap because state hasn't updated yet)
-                              const players =
-                                teamDetailsQuery.data?.members || [];
+                              // Collect used player IDs (excluding current position)
                               const usedPlayerIds = [
                                 lineup.player1Id,
                                 lineup.player2Id,
                                 lineup.player3Id,
-                              ].filter(
-                                (id) =>
-                                  id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
-                              );
-                              const unusedPlayers = players.filter(
-                                (p: Player) => !usedPlayerIds.includes(p.id)
-                              );
-                              const highestUnused =
-                                unusedPlayers.length > 0
-                                  ? Math.max(
-                                      ...unusedPlayers.map(
-                                        (p: Player) => p.handicap || 0
-                                      )
-                                    )
-                                  : 0;
-                              const subValue = parseFloat(newSubHandicap);
-                              const calculatedHandicap = Math.max(
-                                subValue,
-                                highestUnused
-                              );
+                              ].filter(Boolean);
 
-                              console.log(
-                                '🎯 Calculated sub handicap:',
-                                calculatedHandicap
+                              // Calculate substitute handicap using utility function
+                              const calculatedHandicap = calculateSubstituteHandicap(
+                                usedPlayerIds,
+                                players,
+                                parseFloat(newSubHandicap)
                               );
 
                               // Update database with new handicap
@@ -767,8 +741,7 @@ export function MatchLineup() {
                                 lineupId: lineup.lineupId,
                                 updates: {
                                   [`player${position}_id`]: playerId,
-                                  [`player${position}_handicap`]:
-                                    calculatedHandicap,
+                                  [`player${position}_handicap`]: calculatedHandicap,
                                 },
                                 matchId,
                               });
