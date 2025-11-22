@@ -514,9 +514,12 @@ export function MatchLineup() {
                     Player
                   </div>
                 </div>
-                <div className="w-12 text-center">
-                  <div className="text-xs font-medium text-gray-500">H/C</div>
-                </div>
+                {/* Hide handicap column in tiebreaker mode */}
+                {!isTiebreakerMode && (
+                  <div className="w-12 text-center">
+                    <div className="text-xs font-medium text-gray-500">H/C</div>
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="text-xs font-medium text-gray-500">
                     Player Name
@@ -604,19 +607,22 @@ export function MatchLineup() {
                       subHandicap={lineup.subHandicap}
                       onSubHandicapChange={handleSubHandicapChange}
                       showSubHandicapSelector={!isTiebreakerMode}
+                      hideHandicap={isTiebreakerMode}
                     />
                   );
                 })}
               </div>
             </div>
 
-            {/* Team Handicap Display */}
-            <HandicapSummary
-              playerTotal={handicaps.playerTotal}
-              teamHandicap={teamHandicap}
-              teamTotal={handicaps.teamTotal}
-              isHomeTeam={isHomeTeam}
-            />
+            {/* Team Handicap Display - Only show in normal mode, not tiebreaker */}
+            {!isTiebreakerMode && (
+              <HandicapSummary
+                playerTotal={handicaps.playerTotal}
+                teamHandicap={teamHandicap}
+                teamTotal={handicaps.teamTotal}
+                isHomeTeam={isHomeTeam}
+              />
+            )}
 
             {/* Duplicate Nickname Error - Only show in normal mode, not tiebreaker */}
             {!isTiebreakerMode && (

@@ -58,6 +58,9 @@ interface PlayerSelectionRowProps {
 
   /** Show substitute handicap selector? (only shown in normal mode, not tiebreaker) */
   showSubHandicapSelector?: boolean;
+
+  /** Hide handicap display? (used in tiebreaker mode) */
+  hideHandicap?: boolean;
 }
 
 /**
@@ -80,6 +83,7 @@ export function PlayerSelectionRow({
   subHandicap = '',
   onSubHandicapChange,
   showSubHandicapSelector = false,
+  hideHandicap = false,
 }: PlayerSelectionRowProps) {
   return (
     <div className="flex gap-2 items-center">
@@ -88,12 +92,14 @@ export function PlayerSelectionRow({
         <div className="text-sm font-semibold text-gray-700">{position}</div>
       </div>
 
-      {/* Handicap Display */}
-      <div className="w-12 text-center">
-        <div className="text-sm font-semibold text-blue-600">
-          {playerId ? formatHandicap(handicap) : '-'}
+      {/* Handicap Display - Hidden in tiebreaker mode */}
+      {!hideHandicap && (
+        <div className="w-12 text-center">
+          <div className="text-sm font-semibold text-blue-600">
+            {playerId ? formatHandicap(handicap) : '-'}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Player Dropdown */}
       <div className="flex-1">
