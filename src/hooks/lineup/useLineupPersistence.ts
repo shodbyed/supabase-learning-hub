@@ -33,6 +33,7 @@ interface LineupPersistenceParams {
   onLineupIdChange: (id: string) => void;
   onLockedChange: (locked: boolean) => void;
   matchData?: any;
+  refetchLineups?: () => void; // Optional refetch function for lineup updates
 }
 
 export function useLineupPersistence(params: LineupPersistenceParams) {
@@ -58,6 +59,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
     onLineupIdChange,
     onLockedChange,
     matchData,
+    refetchLineups,
   } = params;
 
   const updateLineupMutation = useUpdateMatchLineup();
@@ -170,8 +172,8 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
   /**
    * Handle unlock lineup - Only allowed if opponent hasn't locked yet
    *
-   * For 5v5: If lineup has duplicate players (from opponent's double duty choice),
-   * replace the duplicate with the appropriate substitute ID.
+   * Removes any duplicate players (both occurrences set to null).
+   * This handles the 5v5 double duty case where opponent chose a player to appear twice.
    */
   const handleUnlockLineup = async () => {
     if (!lineupId || !matchId) {
@@ -182,35 +184,28 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
     try {
       const updates: any = { locked: false, locked_at: null };
 
-      // For 5v5: Check for duplicate players and restore substitute
-      if (playerCount === 5) {
-        const playerIds = [player1Id, player2Id, player3Id, player4Id, player5Id];
-        const playerIdCounts = new Map<string, number[]>();
+      // Check for duplicate players across all positions (works for both 3v3 and 5v5)
+      const playerIds = [player1Id, player2Id, player3Id, player4Id, player5Id];
+      const playerIdCounts = new Map<string, number[]>();
 
-        // Count occurrences of each player ID and track positions
-        playerIds.forEach((id, index) => {
-          if (id) {
-            const positions = playerIdCounts.get(id) || [];
-            positions.push(index + 1);
-            playerIdCounts.set(id, positions);
-          }
-        });
+      // Count occurrences of each player ID and track positions
+      playerIds.forEach((id, index) => {
+        if (id) {
+          const positions = playerIdCounts.get(id) || [];
+          positions.push(index + 1);
+          playerIdCounts.set(id, positions);
+        }
+      });
 
-        // Find duplicates (player appearing in 2+ positions)
-        for (const [playerId, positions] of playerIdCounts.entries()) {
-          if (positions.length > 1) {
-            // Found duplicate - replace the second occurrence with substitute
-            const duplicatePosition = positions[1]; // Second position (index 1)
-            const isHomeTeam = userTeamId === matchData?.home_team_id;
-            const subId = isHomeTeam
-              ? '00000000-0000-0000-0000-000000000001' // SUB_HOME_ID
-              : '00000000-0000-0000-0000-000000000002'; // SUB_AWAY_ID
-
-            updates[`player${duplicatePosition}_id`] = subId;
-            updates[`player${duplicatePosition}_handicap`] = 50; // Default sub handicap
-            console.log(`🔄 Restoring substitute at position ${duplicatePosition}`);
-            break; // Only handle first duplicate found
-          }
+      // Find duplicates (player appearing in 2+ positions) and remove ALL occurrences
+      for (const [playerId, positions] of playerIdCounts.entries()) {
+        if (positions.length > 1) {
+          console.log(`🔄 Found duplicate player at positions: ${positions.join(', ')} - removing both`);
+          // Set both positions to null (ID) and 0 (handicap - can't be null due to DB constraint)
+          positions.forEach((pos) => {
+            updates[`player${pos}_id`] = null;
+            updates[`player${pos}_handicap`] = 0;
+          });
         }
       }
 
@@ -221,6 +216,12 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       });
 
       onLockedChange(false);
+
+      // Refetch lineups to sync UI with duplicate removals
+      if (refetchLineups) {
+        refetchLineups();
+      }
+
       console.log('Lineup unlocked successfully');
     } catch (err: any) {
       console.error('Error unlocking lineup:', err);

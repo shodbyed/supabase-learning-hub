@@ -229,6 +229,7 @@ export function MatchLineup() {
     players,
     teamHandicap,
     isHomeTeam,
+    teamFormat,
   });
 
   // Lineup validation
@@ -268,6 +269,7 @@ export function MatchLineup() {
     onLineupIdChange: lineup.setLineupId,
     onLockedChange: lineup.setLineupLocked,
     matchData,
+    refetchLineups: lineupsQuery.refetch,
   });
 
   // Note: Lineups are now auto-created by database trigger when match is inserted
@@ -325,15 +327,15 @@ export function MatchLineup() {
             }
           }
         } else {
-          // When unlocked, only set player IDs if local state is empty
-          // This prevents overwriting user's current selections with old DB data
+          // When unlocked, always sync from database (including nulls from duplicate removal)
           for (let pos = 1; pos <= playerCount; pos++) {
             const playerIdField = `player${pos}_id` as keyof typeof myLineup;
             const dbPlayerId = myLineup[playerIdField] as string | undefined;
             const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
 
-            if (dbPlayerId && !currentPlayerId) {
-              lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId);
+            // Always sync - this handles duplicate removal where DB has null
+            if (dbPlayerId !== currentPlayerId) {
+              lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId || '');
             }
           }
         }
