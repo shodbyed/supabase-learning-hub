@@ -88,6 +88,10 @@ export function useStandings(seasonId: string): UseStandingsResult {
   }
 
   // Sort by ranking logic: wins → points → games
+  // TODO: For 8-man (5v5) format, sort by points first, then games won
+  // 8-man leagues use BCA points system where points are primary ranking metric
+  // Current sort: matchWins → points → gamesWon (correct for 5-man/3v3)
+  // Needed for 8-man: points → gamesWon (matchWins not relevant in BCA scoring)
   const sortedStandings = [...standingsData].sort((a, b) => {
     // Primary: Most match wins
     if (b.matchWins !== a.matchWins) {
