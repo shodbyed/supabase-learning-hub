@@ -30,6 +30,9 @@ export interface HandicapCalculationsInput {
   player1Id: string;
   player2Id: string;
   player3Id: string;
+  player4Id?: string; // Optional for 5v5
+  player5Id?: string; // Optional for 5v5
+  playerCount: 3 | 5; // Number of players in lineup
   subHandicap: string;
   players: Player[];
   testMode: boolean;
@@ -39,13 +42,15 @@ export interface HandicapCalculationsInput {
 }
 
 export interface HandicapCalculations {
-  // Individual player handicaps
+  // Individual player handicaps (1-3 always present, 4-5 optional)
   player1Handicap: number;
   player2Handicap: number;
   player3Handicap: number;
+  player4Handicap?: number; // For 5v5
+  player5Handicap?: number; // For 5v5
 
   // Totals
-  playerTotal: number;   // Sum of 3 players
+  playerTotal: number;   // Sum of all players (3 or 5)
   teamTotal: number;     // Player total + team bonus (home only)
 
   // Helper functions
@@ -65,6 +70,9 @@ export function useHandicapCalculations(
     player1Id,
     player2Id,
     player3Id,
+    player4Id = '',
+    player5Id = '',
+    playerCount,
     subHandicap,
     players,
     testMode,
@@ -79,7 +87,7 @@ export function useHandicapCalculations(
    */
   const getHighestUnusedHandicap = useMemo(() => {
     return (): number => {
-      const usedPlayerIds = [player1Id, player2Id, player3Id].filter(
+      const usedPlayerIds = [player1Id, player2Id, player3Id, player4Id, player5Id].filter(
         (id) => id && !isSubstitute(id)
       );
       const unusedPlayers = players.filter((p) => !usedPlayerIds.includes(p.id));
@@ -96,7 +104,7 @@ export function useHandicapCalculations(
         })
       );
     };
-  }, [player1Id, player2Id, player3Id, players, testMode, testHandicaps]);
+  }, [player1Id, player2Id, player3Id, player4Id, player5Id, players, testMode, testHandicaps]);
 
   /**
    * Get handicap for a specific player
@@ -144,11 +152,24 @@ export function useHandicapCalculations(
     [player3Id, getPlayerHandicap]
   );
 
-  // Calculate player total (sum of 3 players)
+  const player4Handicap = useMemo(
+    () => (player4Id ? getPlayerHandicap(player4Id) : 0),
+    [player4Id, getPlayerHandicap]
+  );
+
+  const player5Handicap = useMemo(
+    () => (player5Id ? getPlayerHandicap(player5Id) : 0),
+    [player5Id, getPlayerHandicap]
+  );
+
+  // Calculate player total (sum of 3 or 5 players based on playerCount)
   const playerTotal = useMemo(() => {
-    const total = player1Handicap + player2Handicap + player3Handicap;
+    let total = player1Handicap + player2Handicap + player3Handicap;
+    if (playerCount === 5) {
+      total += player4Handicap + player5Handicap;
+    }
     return roundHandicap(total);
-  }, [player1Handicap, player2Handicap, player3Handicap]);
+  }, [player1Handicap, player2Handicap, player3Handicap, player4Handicap, player5Handicap, playerCount]);
 
   // Calculate team total (player total + team bonus for home team)
   const teamTotal = useMemo(() => {
@@ -160,6 +181,7 @@ export function useHandicapCalculations(
     player1Handicap,
     player2Handicap,
     player3Handicap,
+    ...(playerCount === 5 && { player4Handicap, player5Handicap }),
     playerTotal,
     teamTotal,
     getPlayerHandicap,

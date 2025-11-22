@@ -9,12 +9,14 @@
 
 import { InfoButton } from '@/components/InfoButton';
 import { formatHandicap } from '@/utils/lineup';
+import type { TeamFormat } from '@/types/league';
 
 interface HandicapSummaryProps {
   playerTotal: number;
   teamHandicap: number;
   teamTotal: number;
   isHomeTeam: boolean;
+  teamFormat: TeamFormat;
 }
 
 export function HandicapSummary({
@@ -22,12 +24,15 @@ export function HandicapSummary({
   teamHandicap,
   teamTotal,
   isHomeTeam,
+  teamFormat,
 }: HandicapSummaryProps) {
+  const showPercentage = teamFormat === '8_man';
+
   return (
     <div className="border-t pt-4 space-y-2">
       <div className="flex justify-between items-center text-sm text-gray-600">
         <span>Player Handicaps:</span>
-        <span className="font-semibold">{formatHandicap(playerTotal)}</span>
+        <span className="font-semibold">{formatHandicap(playerTotal, showPercentage)}</span>
       </div>
 
       {/* Only show team modifier if there is one (home team with non-zero modifier) */}
@@ -76,7 +81,7 @@ export function HandicapSummary({
           </div>
           <span className="font-semibold">
             {teamHandicap >= 0 ? '+' : ''}
-            {formatHandicap(teamHandicap)}
+            {formatHandicap(teamHandicap, showPercentage)}
           </span>
         </div>
       )}
@@ -86,7 +91,7 @@ export function HandicapSummary({
           Team Total Handicap:
         </span>
         <span className="text-2xl font-bold text-blue-600">
-          {formatHandicap(teamTotal)}
+          {formatHandicap(teamTotal, showPercentage)}
         </span>
       </div>
 

@@ -32,6 +32,10 @@ interface MatchPreparationParams {
   player1Handicap: number;
   player2Handicap: number;
   player3Handicap: number;
+  player4Id?: string; // 5v5 only
+  player5Id?: string; // 5v5 only
+  player4Handicap?: number; // 5v5 only
+  player5Handicap?: number; // 5v5 only
   setIsPreparingMatch?: (preparing: boolean) => void;
   setPreparationMessage?: (message: string) => void;
   refetchLineups?: () => Promise<any>;
@@ -52,6 +56,10 @@ export function useMatchPreparation(params: MatchPreparationParams) {
     player1Handicap,
     player2Handicap,
     player3Handicap,
+    player4Id,
+    player5Id,
+    player4Handicap,
+    player5Handicap,
     setIsPreparingMatch,
     setPreparationMessage,
     refetchLineups,
@@ -205,7 +213,8 @@ export function useMatchPreparation(params: MatchPreparationParams) {
 
           // STEP 4: Regular match - create games and thresholds
           // Build current user's lineup object from state
-          const myLineup = {
+          // Supports both 3v3 (player1-3) and 5v5 (player1-5)
+          const myLineup: any = {
             player1_id: player1Id,
             player1_handicap: player1Handicap,
             player2_id: player2Id,
@@ -213,6 +222,14 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             player3_id: player3Id,
             player3_handicap: player3Handicap,
           };
+
+          // Add player4/5 for 5v5 matches (backward compatible)
+          if (teamFormat === '8_man') {
+            myLineup.player4_id = player4Id || null;
+            myLineup.player4_handicap = player4Handicap || 0;
+            myLineup.player5_id = player5Id || null;
+            myLineup.player5_handicap = player5Handicap || 0;
+          }
 
           // Calculate handicap thresholds
           setPreparationMessage?.('Calculating handicap thresholds...');

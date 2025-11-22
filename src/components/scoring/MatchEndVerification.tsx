@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useMatchLineups, useMatchGames, useMatchWithLeagueSettings } from '@/api/hooks/useMatches';
 import { useCreateMatchGames, useUpdateMatchGame, useUpdateMatch } from '@/api/hooks/useMatchMutations';
 import { useUpdateMatchLineup } from '@/api/hooks';
-import { calculatePoints } from '@/types/match';
+import { calculatePoints, calculateBCAPoints } from '@/types/match';
 
 interface MatchEndVerificationProps {
   /** Match ID */
@@ -121,6 +121,11 @@ export function MatchEndVerification({
 
   // Fetch match data for fresh verification status
   const matchQuery = useMatchWithLeagueSettings(matchId);
+  const match = matchQuery.data;
+
+  // Detect team format (5v5 vs 3v3)
+  const teamFormat = match?.league?.team_format || '5_man';
+  const is5v5 = teamFormat === '8_man';
 
   // Fetch lineups to get lineup IDs for unlocking
   const lineupsQuery = useMatchLineups(matchId, homeTeamId, awayTeamId, false);
@@ -161,6 +166,12 @@ export function MatchEndVerification({
   const awayVerified = awayVerifiedBy_actual !== null;
   const bothVerified = homeVerified && awayVerified;
 
+  // Reset completion ref if verifications are cleared
+  if (!bothVerified && completionStartedRef.current) {
+    console.log('🔄 Resetting completionStartedRef because verifications were cleared');
+    completionStartedRef.current = false;
+  }
+
   console.log('🔍 Verification status:', {
     isTiebreakerMode,
     homeVerified,
@@ -192,8 +203,13 @@ export function MatchEndVerification({
     games_to_lose: awayTieThreshold !== null ? awayTieThreshold - 1 : awayWinThreshold - 1,
   };
 
-  const homePoints = calculatePoints(homeTeamId, homeThresholds, gameResultsMap);
-  const awayPoints = calculatePoints(awayTeamId, awayThresholds, gameResultsMap);
+  // Use BCA points for 5v5, regular points for 3v3
+  const homePoints = is5v5
+    ? calculateBCAPoints(homeTeamId, homeThresholds, gameResultsMap)
+    : calculatePoints(homeTeamId, homeThresholds, gameResultsMap);
+  const awayPoints = is5v5
+    ? calculateBCAPoints(awayTeamId, awayThresholds, gameResultsMap)
+    : calculatePoints(awayTeamId, awayThresholds, gameResultsMap);
 
   // Auto-complete match when both teams verify
   useEffect(() => {
@@ -276,10 +292,22 @@ export function MatchEndVerification({
                 status: winnerTeamId ? 'completed' : 'in_progress',
               };
 
-          await updateMatchMutation.mutateAsync({
+          console.log('📝 Match updates to apply:', {
+            matchId,
+            isTiebreakerMode,
+            updates,
+            homePoints,
+            awayPoints,
+            homeWins,
+            awayWins,
+          });
+
+          const updateResult = await updateMatchMutation.mutateAsync({
             matchId,
             updates,
           });
+
+          console.log('✅ Match update completed:', updateResult);
 
           // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
           if (isTiebreakerMode && winnerTeamId) {

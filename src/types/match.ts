@@ -321,7 +321,7 @@ export function getCompletedGamesCount(gameResults: Map<number, MatchGame>): num
 }
 
 /**
- * Calculate current points for a team
+ * Calculate current points for a team (3v3 system)
  *
  * Points calculation logic:
  * - Positive points: wins above games_to_win (e.g., 11 wins when you need 10 = +1 point)
@@ -376,4 +376,52 @@ export function calculatePoints(
 
   // No tie possible: use games_to_win as baseline
   return wins - thresholds.games_to_win;
+}
+
+/**
+ * Calculate BCA points for a team (5v5 system)
+ *
+ * BCA point system with bonus jumps:
+ * - 0.1 points per game won
+ * - At 70% threshold: Jump to 1.5 points, then continue adding 0.1 per game
+ * - At win threshold: Jump to 3 points, then continue adding 0.1 per game
+ *
+ * @param teamId - Team's ID to calculate points for
+ * @param thresholds - Handicap thresholds (games needed to win)
+ * @param gameResults - Map of game numbers to game results
+ * @returns Total BCA points earned
+ *
+ * @example
+ * // Team needs 13 wins (70% = 9 games)
+ * // 8 wins: 0.8 points
+ * // 9 wins: 1.5 points (bonus jump!)
+ * // 10 wins: 1.6 points
+ * // 13 wins: 3.0 points (bonus jump!)
+ * // 14 wins: 3.1 points
+ */
+export function calculateBCAPoints(
+  teamId: string,
+  thresholds: HandicapThresholds | null,
+  gameResults: Map<number, MatchGame>
+): number {
+  if (!thresholds) return 0;
+  const { wins } = getTeamStats(teamId, gameResults);
+
+  // Calculate 70% threshold for 1.5 bonus jump (straight round, not round up)
+  const bonus70Threshold = Math.round(thresholds.games_to_win * 0.7);
+
+  // Reached win threshold: 3 points + 0.1 for each game beyond
+  if (wins >= thresholds.games_to_win) {
+    const gamesOverThreshold = wins - thresholds.games_to_win;
+    return 3.0 + (gamesOverThreshold * 0.1);
+  }
+
+  // Reached 70% threshold: 1.5 points + 0.1 for each game beyond
+  if (wins >= bonus70Threshold) {
+    const gamesBeyond70 = wins - bonus70Threshold;
+    return 1.5 + (gamesBeyond70 * 0.1);
+  }
+
+  // Below 70%: 0.1 points per game
+  return wins * 0.1;
 }

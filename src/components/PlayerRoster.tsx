@@ -112,11 +112,18 @@ export function PlayerRoster({
           const handicap = handicaps.get(player.id);
           const isCaptain = player.id === captainId;
 
+          // Format handicap display: 5v5 shows %, 3v3 shows plain number
+          const handicapDisplay = handicap !== undefined
+            ? teamFormat === '8_man'
+              ? `${handicap}%`  // 5v5 uses percentages
+              : `${handicap}`    // 3v3 uses integers
+            : '-';
+
           return (
             <div key={player.id} className={`grid ${gridCols} gap-4 text-sm py-1 px-2 bg-gray-50 rounded`}>
               {!hideHandicap && (
                 <span className="text-gray-600 text-center">
-                  {handicap !== undefined ? handicap : '-'}
+                  {handicapDisplay}
                 </span>
               )}
               {!hideNickname && (

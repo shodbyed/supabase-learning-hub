@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-15 (added TiebreakerLineup component for Phase 2 of tiebreaker flow)
+> **Last Updated**: 2025-11-22 (refactored 3v3 handicap chart from database to hard-coded utility)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -625,7 +625,13 @@ Reusable wizard/form step components
 - `calculatePlayerHandicap.ts` - **Self-contained player handicap calculator** (3v3 & 5v5 support)
 - `getTeamHandicapBonus.ts` - **Team handicap bonus calculator** (placeholder until standings built)
 - `handicapCalculations.ts` - Handicap calculations and team handicap utilities
+- `calculateHandicapThresholds.ts` - Calculate handicap thresholds for matches
 - `nicknameGenerator.ts` - Player nickname generation
+
+#### Handicap System (`/utils/handicap/`)
+- `get3v3GamesNeeded.ts` - **Hard-coded 3v3 handicap chart** (25 rows, -12 to +12 range)
+- `get5v5GamesNeeded.ts` - **Hard-coded 5v5 BCA handicap chart** (7 ranges, percentage-based)
+- `index.ts` - **Unified handicap interface** (getGamesNeeded, getGamesNeededForBothTeams)
 
 #### League, Season & Tournament
 - `leagueUtils.ts` - League utilities

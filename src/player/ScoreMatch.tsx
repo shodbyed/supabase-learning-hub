@@ -33,9 +33,11 @@ import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
 import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
+import { FiveVFiveScoreboard } from '@/components/scoring/FiveVFiveScoreboard';
 import { TiebreakerScoreboard } from '@/components/scoring/TiebreakerScoreboard';
 import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
+import { calculateBCAPoints, getTeamStats, getPlayerStats as getPlayerStatsUtil } from '@/types';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -290,6 +292,14 @@ export function ScoreMatch() {
   const getPlayerDisplayName = getPlayerDisplayNameFromHook;
 
   /**
+   * Get player stats (wins/losses) for a specific player
+   * Wrapper around getPlayerStatsUtil that provides gameResults
+   */
+  const getPlayerStats = (playerId: string) => {
+    return getPlayerStatsUtil(playerId, gameResults);
+  };
+
+  /**
    * Add to confirmation queue (from useMatchScoring hook)
    */
   const addToConfirmationQueue = addToConfirmationQueueFromHook;
@@ -491,6 +501,16 @@ export function ScoreMatch() {
       )
     : gameResults;
 
+  // Detect team format (5v5 vs 3v3)
+  const teamFormat = match.league.team_format || '5_man';
+  const is5v5 = teamFormat === '8_man';
+
+  // Calculate BCA points for 5v5 scoreboard
+  const homeStats = getTeamStats(match.home_team_id, filteredGameResults);
+  const awayStats = getTeamStats(match.away_team_id, filteredGameResults);
+  const homeBCAPoints = calculateBCAPoints(match.home_team_id, homeThresholds, filteredGameResults);
+  const awayBCAPoints = calculateBCAPoints(match.away_team_id, awayThresholds, filteredGameResults);
+
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header with back button, team name, and auto-confirm */}
@@ -541,6 +561,31 @@ export function ScoreMatch() {
           onVerify={handleVerify}
           isVerifying={isVerifying}
           gameType={gameType}
+        />
+      ) : is5v5 ? (
+        <FiveVFiveScoreboard
+          match={{
+            ...match,
+            home_team_verified_by: (match as any).home_team_verified_by ?? null,
+            away_team_verified_by: (match as any).away_team_verified_by ?? null,
+          }}
+          homeLineup={homeLineup}
+          awayLineup={awayLineup}
+          homeThresholds={homeThresholds}
+          awayThresholds={awayThresholds}
+          homeWins={homeStats.wins}
+          awayWins={awayStats.wins}
+          homeLosses={homeStats.losses}
+          awayLosses={awayStats.losses}
+          homePoints={homeBCAPoints}
+          awayPoints={awayBCAPoints}
+          allGamesComplete={allGamesComplete}
+          isHomeTeam={isHomeTeam ?? false}
+          onVerify={handleVerify}
+          isVerifying={isVerifying}
+          gameType={gameType}
+          getPlayerDisplayName={getPlayerDisplayName}
+          getPlayerStats={getPlayerStats}
         />
       ) : (
         <MatchScoreboard

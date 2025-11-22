@@ -1,8 +1,9 @@
 /**
  * @fileoverview Match Lineup Page
  *
- * Mobile-first lineup selection page where players choose their 3-player lineup
- * before starting a match. Shows player handicaps and calculates team total.
+ * Mobile-first lineup selection page where players choose their lineup
+ * before starting a match. Supports both 3v3 (3 players) and 5v5 (5 players)
+ * formats. Shows player handicaps and calculates team total.
  *
  * Flow: Team Schedule → Score Match → Lineup Entry
  */
@@ -10,15 +11,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Users, Trash2 } from 'lucide-react';
+import { ArrowLeft, Users } from 'lucide-react';
 import {
   useCurrentMember,
   useMatchWithLeagueSettings,
@@ -36,6 +29,7 @@ import { PlayerRoster } from '@/components/PlayerRoster';
 import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
+import { PlayerSelectionRow } from '@/components/lineup/PlayerSelectionRow';
 import { useQueryStates } from '@/hooks/useQueryStates';
 import {
   useLineupState,
@@ -43,11 +37,15 @@ import {
   useLineupValidation,
   useLineupPersistence,
   useMatchPreparation,
+  useOpponentStatus,
+  useTiebreakerLineup,
 } from '@/hooks/lineup';
 import { usePreparationStatus } from '@/hooks/lineup/useMatchPreparation';
-import { formatHandicap } from '@/utils/lineup';
+import { calculateSubstituteHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
+import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
+import { shouldUseTeamBonus } from '@/utils/calculateHandicapThresholds';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -108,8 +106,12 @@ export function MatchLineup() {
     setPreparationMessage,
   } = usePreparationStatus();
 
+  // Determine player count from team format (3 for 3v3, 5 for 5v5)
+  const teamFormat = (matchData?.league?.team_format || '5_man') as '5_man' | '8_man';
+  const playerCount = getPlayerCount(teamFormat);
+
   // Centralized lineup state management
-  const lineup = useLineupState();
+  const lineup = useLineupState(playerCount);
 
   // Get update mutation for direct dropdown saves
   const updateLineupMutation = useUpdateMatchLineup();
@@ -146,7 +148,9 @@ export function MatchLineup() {
     handicap: playerHandicaps.get(p.id) ?? 0,
   }));
 
-  // Team handicap bonus (only for home team)
+  // Team handicap bonus (only for 3v3, only for home team)
+  // 5v5 does not use team bonus - it's disabled by default
+  const useTeamBonus = shouldUseTeamBonus(teamFormat);
   const [teamHandicap] = useState<number>(0);
 
   // Derive values (safe to use optional chaining since hooks are called)
@@ -160,17 +164,20 @@ export function MatchLineup() {
   // Detect tiebreaker mode
   const isTiebreakerMode = matchData?.match_result === 'tie';
 
-  // Get tiebreaker player IDs if in tiebreaker mode
-  const getTiebreakerPlayerIdByPosition = (position: 1 | 2 | 3): string => {
-    const gameNumber = 18 + position;
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) return '';
-
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-    return (game[playerField as keyof typeof game] as string) || '';
-  };
+  // Tiebreaker lineup management (for best-of-3 games 19-21)
+  const {
+    getTiebreakerPlayerIdByPosition,
+    handleTiebreakerPlayerChange,
+    handleClearTiebreakerPlayer,
+  } = useTiebreakerLineup({
+    allGames,
+    isHomeTeam,
+    matchId,
+    setPlayer1Id: lineup.setPlayer1Id,
+    setPlayer2Id: lineup.setPlayer2Id,
+    setPlayer3Id: lineup.setPlayer3Id,
+    updateGameMutation: updateGameMutation,
+  });
 
   // In tiebreaker mode, use game records for validation; otherwise use lineup state
   const validationPlayer1Id = isTiebreakerMode ? getTiebreakerPlayerIdByPosition(1) : lineup.player1Id;
@@ -182,6 +189,9 @@ export function MatchLineup() {
     player1Id: lineup.player1Id,
     player2Id: lineup.player2Id,
     player3Id: lineup.player3Id,
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
+    playerCount,
     subHandicap: lineup.subHandicap,
     testMode: lineup.testMode,
     testHandicaps: lineup.testHandicaps,
@@ -195,6 +205,9 @@ export function MatchLineup() {
     player1Id: validationPlayer1Id,
     player2Id: validationPlayer2Id,
     player3Id: validationPlayer3Id,
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
+    playerCount,
     subHandicap: lineup.subHandicap,
     players,
     isTiebreakerMode,
@@ -209,9 +222,14 @@ export function MatchLineup() {
     player1Id: lineup.player1Id,
     player2Id: lineup.player2Id,
     player3Id: lineup.player3Id,
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
     player1Handicap: handicaps.player1Handicap,
     player2Handicap: handicaps.player2Handicap,
     player3Handicap: handicaps.player3Handicap,
+    player4Handicap: handicaps.player4Handicap,
+    player5Handicap: handicaps.player5Handicap,
+    playerCount,
     teamHandicap,
     isComplete: validation.isComplete,
     hasDuplicates: validation.hasDuplicates,
@@ -219,10 +237,6 @@ export function MatchLineup() {
     onLockedChange: lineup.setLineupLocked,
     matchData,
   });
-
-  const teamFormat = (matchData?.league?.team_format || '5_man') as
-    | '5_man'
-    | '8_man';
 
   // Note: Lineups are now auto-created by database trigger when match is inserted
   // See migration: 20251115000000_auto_create_match_lineups.sql
@@ -241,6 +255,11 @@ export function MatchLineup() {
     player1Handicap: handicaps.player1Handicap,
     player2Handicap: handicaps.player2Handicap,
     player3Handicap: handicaps.player3Handicap,
+    // 5v5 support (backward compatible - undefined for 3v3)
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
+    player4Handicap: handicaps.player4Handicap,
+    player5Handicap: handicaps.player5Handicap,
     setIsPreparingMatch,
     setPreparationMessage,
     refetchLineups: lineupsQuery.refetch,
@@ -262,14 +281,14 @@ export function MatchLineup() {
 
         // Only set player IDs if they exist in the database AND local state is empty
         // This prevents overwriting user's current selections with old DB data
-        if (myLineup.player1_id && !lineup.player1Id) {
-          lineup.setPlayer1Id(myLineup.player1_id);
-        }
-        if (myLineup.player2_id && !lineup.player2Id) {
-          lineup.setPlayer2Id(myLineup.player2_id);
-        }
-        if (myLineup.player3_id && !lineup.player3Id) {
-          lineup.setPlayer3Id(myLineup.player3_id);
+        for (let pos = 1; pos <= playerCount; pos++) {
+          const playerIdField = `player${pos}_id` as keyof typeof myLineup;
+          const dbPlayerId = myLineup[playerIdField] as string | undefined;
+          const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
+
+          if (dbPlayerId && !currentPlayerId) {
+            lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId);
+          }
         }
 
         // Always sync locked state from database (source of truth)
@@ -288,14 +307,12 @@ export function MatchLineup() {
     onGamesUpdate: () => matchGamesQuery.refetch(),
   });
 
-  // Generic player change handler - works for any position (scalable to 5 players)
-  const handlePlayerChange = (position: 1 | 2 | 3, playerId: string) => {
+  // Generic player change handler - works for any position (3 or 5 players)
+  const handlePlayerChange = (position: number, playerId: string) => {
     if (!lineup.lineupId || !matchId) return;
 
-    // Update local state
-    if (position === 1) lineup.setPlayer1Id(playerId);
-    else if (position === 2) lineup.setPlayer2Id(playerId);
-    else lineup.setPlayer3Id(playerId);
+    // Update local state using generic setter
+    lineup.setPlayerId(position as 1 | 2 | 3 | 4 | 5, playerId);
 
     // Get the NEW player's handicap (respects test mode and test handicap overrides)
     const handicap = handicaps.getPlayerHandicap(playerId);
@@ -325,13 +342,11 @@ export function MatchLineup() {
   };
 
   // Clear player handler - remove player from lineup position
-  const handleClearPlayer = (position: 1 | 2 | 3) => {
+  const handleClearPlayer = (position: number) => {
     if (!lineup.lineupId || !matchId) return;
 
-    // Clear local state
-    if (position === 1) lineup.setPlayer1Id('');
-    else if (position === 2) lineup.setPlayer2Id('');
-    else lineup.setPlayer3Id('');
+    // Clear local state using generic setter
+    lineup.setPlayerId(position as 1 | 2 | 3 | 4 | 5, '');
 
     // Clear in database
     updateLineupMutation.mutate({
@@ -345,90 +360,26 @@ export function MatchLineup() {
   };
 
   // Helper functions to get player data by position (for mapping)
-  const getPlayerIdByPosition = (position: 1 | 2 | 3): string => {
-    return position === 1
-      ? lineup.player1Id
-      : position === 2
-      ? lineup.player2Id
-      : lineup.player3Id;
+  const getPlayerIdByPosition = (position: number): string => {
+    return lineup.getPlayerId(position as 1 | 2 | 3 | 4 | 5);
   };
 
-  const getHandicapByPosition = (position: 1 | 2 | 3): number => {
-    return position === 1
-      ? handicaps.player1Handicap
-      : position === 2
-      ? handicaps.player2Handicap
-      : handicaps.player3Handicap;
-  };
-
-  const getOtherPlayerIds = (position: 1 | 2 | 3): string[] => {
-    const allPlayers = [lineup.player1Id, lineup.player2Id, lineup.player3Id];
-    return allPlayers.filter((_, index) => index + 1 !== position);
-  };
-
-  // Tiebreaker mode handlers - update game records instead of lineup
-  const handleTiebreakerPlayerChange = (
-    position: 1 | 2 | 3,
-    playerId: string
-  ) => {
-    if (!matchId) return;
-
-    // Map position to game number (1 → 19, 2 → 20, 3 → 21)
-    const gameNumber = 18 + position;
-
-    // Find the game
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
-    );
-    if (!game) {
-      console.error(`Tiebreaker game ${gameNumber} not found`);
-      return;
+  const getHandicapByPosition = (position: number): number => {
+    switch (position) {
+      case 1: return handicaps.player1Handicap;
+      case 2: return handicaps.player2Handicap;
+      case 3: return handicaps.player3Handicap;
+      case 4: return handicaps.player4Handicap || 0;
+      case 5: return handicaps.player5Handicap || 0;
+      default: return 0;
     }
-
-    // Update local state (for UI responsiveness)
-    if (position === 1) lineup.setPlayer1Id(playerId);
-    else if (position === 2) lineup.setPlayer2Id(playerId);
-    else lineup.setPlayer3Id(playerId);
-
-    // Determine which player field to update based on team
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-
-    // Update the game record
-    updateGameMutation.mutate({
-      gameId: game.id,
-      updates: {
-        [playerField]: playerId,
-      },
-    });
   };
 
-  const handleClearTiebreakerPlayer = (position: 1 | 2 | 3) => {
-    if (!matchId) return;
-
-    // Map position to game number
-    const gameNumber = 18 + position;
-
-    // Find the game
-    const game = allGames.find(
-      (g) => g.game_number === gameNumber && g.is_tiebreaker
+  const getOtherPlayerIds = (position: number): string[] => {
+    const allPlayers = Array.from({ length: playerCount }, (_, i) =>
+      lineup.getPlayerId((i + 1) as 1 | 2 | 3 | 4 | 5)
     );
-    if (!game) return;
-
-    // Clear local state
-    if (position === 1) lineup.setPlayer1Id('');
-    else if (position === 2) lineup.setPlayer2Id('');
-    else lineup.setPlayer3Id('');
-
-    // Determine which player field to clear
-    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
-
-    // Clear the game record
-    updateGameMutation.mutate({
-      gameId: game.id,
-      updates: {
-        [playerField]: null,
-      },
-    });
+    return allPlayers.filter((_, index) => index + 1 !== position);
   };
 
   // Early return for loading/error states - consolidated into single check
@@ -438,83 +389,19 @@ export function MatchLineup() {
   // TypeScript doesn't infer this, so we assert non-null
   const match = matchData!;
 
-  /**
-   * Get opponent team info
-   */
-  const getOpponentTeam = () => {
-    if (!matchData) return null;
-    return isHomeTeam ? matchData.away_team : matchData.home_team;
-  };
-
-  /**
-   * Calculate opponent status based on match lineup_id and locked state
-   * - absent: No lineup ID in match (opponent hasn't joined)
-   * - choosing: Has lineup ID but not locked (opponent selecting players)
-   * - ready: Has lineup ID and is locked (opponent ready)
-   *
-   * Shows detailed player selection progress:
-   * - "Players chosen: 1" when 1 player selected
-   * - "Players chosen: 2" when 2 players selected
-   * - "Players chosen: 3" when 3 players selected
-   * - "Locked" when lineup is locked
-   */
-  const getOpponentStatus = (): 'absent' | 'choosing' | 'ready' => {
-    if (!matchData) return 'absent';
-
-    const opponentLineupField = isHomeTeam
-      ? 'away_lineup_id'
-      : 'home_lineup_id';
-    const opponentLineupId =
-      matchData[opponentLineupField as keyof typeof matchData];
-
-    // No lineup ID = opponent hasn't joined yet
-    if (!opponentLineupId) return 'absent';
-
-    // Has lineup ID, check if locked
-    if (opponentLineup?.locked) return 'ready';
-
-    // Has lineup ID but not locked = choosing lineup
-    return 'choosing';
-  };
-
-  /**
-   * Get detailed opponent selection status showing player count
-   */
-  const getOpponentSelectionStatus = (): string => {
-    const status = getOpponentStatus();
-
-    if (status === 'absent') return 'Absent';
-    if (status === 'ready') return 'Locked';
-
-    // Status is 'choosing' - count selected players
-    let playerCount = 0;
-
-    // In tiebreaker mode, count players from games 19, 20, 21
-    if (isTiebreakerMode) {
-      const opponentPlayerField = isHomeTeam
-        ? 'away_player_id'
-        : 'home_player_id';
-
-      [19, 20, 21].forEach((gameNumber) => {
-        const game = allGames.find(
-          (g) => g.game_number === gameNumber && g.is_tiebreaker
-        );
-        if (game && game[opponentPlayerField as keyof typeof game]) {
-          playerCount++;
-        }
-      });
-    } else {
-      // Normal mode - count from lineup
-      if (opponentLineup?.player1_id) playerCount++;
-      if (opponentLineup?.player2_id) playerCount++;
-      if (opponentLineup?.player3_id) playerCount++;
-    }
-
-    if (playerCount === 0) return 'Choosing lineup';
-    return `Players chosen: ${playerCount}`;
-  };
-
-  const opponent = getOpponentTeam();
+  // Get opponent status using custom hook
+  const {
+    opponentTeam: opponent,
+    status: opponentStatus,
+    selectionStatus: opponentSelectionStatus,
+  } = useOpponentStatus({
+    matchData,
+    isHomeTeam,
+    opponentLineup,
+    isTiebreakerMode,
+    allGames,
+    playerCount, // Pass player count for 5v5 support
+  });
 
   // Get my lineup (for tiebreaker mode player source)
   const myLineup = isHomeTeam
@@ -531,6 +418,29 @@ export function MatchLineup() {
     if (playerId === SUB_HOME_ID) return 'Sub (Home)';
     if (playerId === SUB_AWAY_ID) return 'Sub (Away)';
     return 'Unknown';
+  };
+
+  /**
+   * Get available player IDs for dropdown selection
+   *
+   * In tiebreaker mode: Only players from the original locked lineup
+   * In normal mode: All roster players + substitute option
+   */
+  const getAvailablePlayerIds = (): string[] => {
+    if (isTiebreakerMode && myLineup) {
+      // Tiebreaker: Only original 3 players can be selected
+      return [
+        myLineup.player1_id,
+        myLineup.player2_id,
+        myLineup.player3_id,
+      ].filter(Boolean) as string[];
+    }
+
+    // Normal mode: All roster players + substitute
+    return [
+      ...players.map((p) => p.id),
+      isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
+    ];
   };
 
   return (
@@ -613,9 +523,12 @@ export function MatchLineup() {
                     Player
                   </div>
                 </div>
-                <div className="w-12 text-center">
-                  <div className="text-xs font-medium text-gray-500">H/C</div>
-                </div>
+                {/* Hide handicap column in tiebreaker mode */}
+                {!isTiebreakerMode && (
+                  <div className="w-12 text-center">
+                    <div className="text-xs font-medium text-gray-500">H/C</div>
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="text-xs font-medium text-gray-500">
                     Player Name
@@ -624,8 +537,8 @@ export function MatchLineup() {
               </div>
 
               <div className="space-y-2 mt-2">
-                {/* Map over positions 1, 2, 3 (scalable to 5 in the future) */}
-                {([1, 2, 3] as const).map((position) => {
+                {/* Map over positions dynamically based on player count */}
+                {Array.from({ length: playerCount }, (_, i) => i + 1).map((position) => {
                   // In tiebreaker mode, get player from game record; otherwise from lineup
                   const playerId = isTiebreakerMode
                     ? getTiebreakerPlayerIdByPosition(position)
@@ -652,155 +565,76 @@ export function MatchLineup() {
                     ? handleClearTiebreakerPlayer
                     : handleClearPlayer;
 
+                  // Is this a substitute player?
+                  const isSubstitute = playerId === SUB_HOME_ID || playerId === SUB_AWAY_ID;
+
+                  // Handler for substitute handicap change
+                  const handleSubHandicapChange = (newSubHandicap: string) => {
+                    if (!lineup.lineupId || !matchId) return;
+
+                    // Update local state
+                    lineup.setSubHandicap(newSubHandicap);
+
+                    // Collect used player IDs (excluding current position)
+                    const usedPlayerIds = [
+                      lineup.player1Id,
+                      lineup.player2Id,
+                      lineup.player3Id,
+                    ].filter(Boolean);
+
+                    // Calculate substitute handicap using utility function
+                    const calculatedHandicap = calculateSubstituteHandicap(
+                      usedPlayerIds,
+                      players,
+                      parseFloat(newSubHandicap)
+                    );
+
+                    // Update database with new handicap
+                    updateLineupMutation.mutate({
+                      lineupId: lineup.lineupId,
+                      updates: {
+                        [`player${position}_id`]: playerId,
+                        [`player${position}_handicap`]: calculatedHandicap,
+                      },
+                      matchId,
+                    });
+                  };
+
                   return (
-                    <div key={position} className="flex gap-2 items-center">
-                      <div className="w-12 text-center">
-                        <div className="text-sm font-semibold text-gray-700">
-                          {position}
-                        </div>
-                      </div>
-                      <div className="w-12 text-center">
-                        <div className="text-sm font-semibold text-blue-600">
-                          {playerId ? formatHandicap(handicap) : '-'}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <Select
-                          value={playerId}
-                          onValueChange={(id) => onPlayerChange(position, id)}
-                          disabled={lineup.lineupLocked}
-                        >
-                          <SelectTrigger className="min-w-[120px]">
-                            <SelectValue
-                              placeholder={`Select Player ${position}`}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(isTiebreakerMode && myLineup
-                              ? [
-                                  myLineup.player1_id,
-                                  myLineup.player2_id,
-                                  myLineup.player3_id,
-                                ].filter(Boolean)
-                              : [
-                                  ...players.map((p) => p.id),
-                                  isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
-                                ]
-                            ).map((playerOptionId) => (
-                              <SelectItem
-                                key={playerOptionId}
-                                value={playerOptionId}
-                                disabled={otherPlayerIds.includes(playerOptionId)}
-                              >
-                                {getPlayerDisplayName(playerOptionId)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {/* Sub handicap selector (if sub player selected) - inline on same row */}
-                      {!isTiebreakerMode &&
-                        (playerId === SUB_HOME_ID ||
-                          playerId === SUB_AWAY_ID) && (
-                        <div className="w-24">
-                          <Select
-                            value={lineup.subHandicap}
-                            onValueChange={(newSubHandicap) => {
-                              if (!lineup.lineupId || !matchId) return;
-
-                              console.log('🔄 Sub handicap changed:', {
-                                position,
-                                playerId,
-                                newSubHandicap,
-                              });
-
-                              // Update local state
-                              lineup.setSubHandicap(newSubHandicap);
-
-                              // Calculate handicap with NEW subHandicap value manually
-                              // (can't use handicaps.getPlayerHandicap because state hasn't updated yet)
-                              const players =
-                                teamDetailsQuery.data?.members || [];
-                              const usedPlayerIds = [
-                                lineup.player1Id,
-                                lineup.player2Id,
-                                lineup.player3Id,
-                              ].filter(
-                                (id) =>
-                                  id && id !== SUB_HOME_ID && id !== SUB_AWAY_ID
-                              );
-                              const unusedPlayers = players.filter(
-                                (p: Player) => !usedPlayerIds.includes(p.id)
-                              );
-                              const highestUnused =
-                                unusedPlayers.length > 0
-                                  ? Math.max(
-                                      ...unusedPlayers.map(
-                                        (p: Player) => p.handicap || 0
-                                      )
-                                    )
-                                  : 0;
-                              const subValue = parseFloat(newSubHandicap);
-                              const calculatedHandicap = Math.max(
-                                subValue,
-                                highestUnused
-                              );
-
-                              console.log(
-                                '🎯 Calculated sub handicap:',
-                                calculatedHandicap
-                              );
-
-                              // Update database with new handicap
-                              updateLineupMutation.mutate({
-                                lineupId: lineup.lineupId,
-                                updates: {
-                                  [`player${position}_id`]: playerId,
-                                  [`player${position}_handicap`]:
-                                    calculatedHandicap,
-                                },
-                                matchId,
-                              });
-                            }}
-                            disabled={lineup.lineupLocked}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Sub H/C" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="2">+2</SelectItem>
-                              <SelectItem value="1">+1</SelectItem>
-                              <SelectItem value="0">0</SelectItem>
-                              <SelectItem value="-1">-1</SelectItem>
-                              <SelectItem value="-2">-2</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                      {playerId && !lineup.lineupLocked && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onClearPlayer(position)}
-                          className="h-8 w-8 flex-shrink-0"
-                          title={`Clear player ${position}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
+                    <PlayerSelectionRow
+                      key={position}
+                      position={position}
+                      playerId={playerId}
+                      handicap={handicap}
+                      locked={lineup.lineupLocked}
+                      teamFormat={teamFormat}
+                      availablePlayerIds={getAvailablePlayerIds()}
+                      otherPlayerIds={otherPlayerIds}
+                      getPlayerDisplayName={getPlayerDisplayName}
+                      onPlayerChange={onPlayerChange}
+                      onClearPlayer={onClearPlayer}
+                      isSubstitute={isSubstitute}
+                      subHandicap={lineup.subHandicap}
+                      onSubHandicapChange={handleSubHandicapChange}
+                      showSubHandicapSelector={!isTiebreakerMode}
+                      hideHandicap={isTiebreakerMode}
+                    />
                   );
                 })}
               </div>
             </div>
 
-            {/* Team Handicap Display */}
-            <HandicapSummary
-              playerTotal={handicaps.playerTotal}
-              teamHandicap={teamHandicap}
-              teamTotal={handicaps.teamTotal}
-              isHomeTeam={isHomeTeam}
-            />
+            {/* Team Handicap Display - Only show in normal mode, not tiebreaker */}
+            {/* For 5v5, team bonus is always 0 (disabled by shouldUseTeamBonus) */}
+            {!isTiebreakerMode && (
+              <HandicapSummary
+                playerTotal={handicaps.playerTotal}
+                teamHandicap={useTeamBonus ? teamHandicap : 0}
+                teamTotal={handicaps.teamTotal}
+                isHomeTeam={isHomeTeam}
+                teamFormat={teamFormat}
+              />
+            )}
 
             {/* Duplicate Nickname Error - Only show in normal mode, not tiebreaker */}
             {!isTiebreakerMode && (
@@ -812,10 +646,10 @@ export function MatchLineup() {
             {/* Lock/Unlock and Status */}
             <LineupActions
               locked={lineup.lineupLocked}
-              opponentStatus={getOpponentStatus()}
-              opponentStatusText={getOpponentSelectionStatus()}
+              opponentStatus={opponentStatus}
+              opponentStatusText={opponentSelectionStatus}
               canLock={validation.canLock}
-              canUnlock={getOpponentStatus() !== 'ready'}
+              canUnlock={opponentStatus !== 'ready'}
               onLock={handleLockLineup}
               onUnlock={handleUnlockLineup}
               onProceed={() => {
