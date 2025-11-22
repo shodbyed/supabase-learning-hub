@@ -54,8 +54,8 @@ interface FiveVFiveScoreboardProps {
   gameType: string;
   /** Function to get player display name by ID */
   getPlayerDisplayName: (playerId: string) => string;
-  /** Function to get player stats (wins/losses) */
-  getPlayerStats: (playerId: string) => { wins: number; losses: number };
+  /** Function to get player stats (wins/losses) by position - for double duty tracking */
+  getPlayerStats: (playerId: string, position: number, playerIsHomeTeam: boolean) => { wins: number; losses: number };
 }
 
 /**
@@ -223,8 +223,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{homeLineup.player1_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player1_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id, 1, true).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id, 1, true).losses}</div>
                         </>
                       )}
 
@@ -233,8 +233,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{homeLineup.player2_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player2_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id, 2, true).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id, 2, true).losses}</div>
                         </>
                       )}
 
@@ -243,8 +243,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{homeLineup.player3_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player3_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id, 3, true).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id, 3, true).losses}</div>
                         </>
                       )}
 
@@ -253,8 +253,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{homeLineup.player4_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player4_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id, 4, true).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id, 4, true).losses}</div>
                         </>
                       )}
 
@@ -263,8 +263,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{homeLineup.player5_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player5_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id, 5, true).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id, 5, true).losses}</div>
                         </>
                       )}
                     </div>
@@ -347,8 +347,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{awayLineup.player1_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player1_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id, 1, false).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id, 1, false).losses}</div>
                         </>
                       )}
 
@@ -357,8 +357,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{awayLineup.player2_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player2_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id, 2, false).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id, 2, false).losses}</div>
                         </>
                       )}
 
@@ -367,8 +367,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{awayLineup.player3_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player3_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id, 3, false).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id, 3, false).losses}</div>
                         </>
                       )}
 
@@ -377,8 +377,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{awayLineup.player4_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player4_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id, 4, false).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id, 4, false).losses}</div>
                         </>
                       )}
 
@@ -387,8 +387,8 @@ export function FiveVFiveScoreboard({
                         <>
                           <div className="text-gray-700">{awayLineup.player5_handicap}</div>
                           <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player5_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id).losses}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id, 5, false).wins}</div>
+                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id, 5, false).losses}</div>
                         </>
                       )}
                     </div>

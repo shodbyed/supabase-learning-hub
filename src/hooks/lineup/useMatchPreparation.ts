@@ -280,6 +280,8 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             away_player_id: (awayLineup as any)[
               `player${game.awayPlayerPosition}_id`
             ],
+            home_position: game.homePlayerPosition, // Track position for double duty players
+            away_position: game.awayPlayerPosition, // Track position for double duty players
             home_action: game.homeAction,
             away_action: game.awayAction,
           }));

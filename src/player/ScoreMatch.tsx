@@ -29,6 +29,7 @@ import { InfoButton } from '@/components/InfoButton';
 import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { useMatchScoringMutations } from '@/hooks/useMatchScoringMutations';
+import { getPlayerStatsByPosition } from '@/hooks/usePlayerStatsByPosition';
 import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
@@ -292,10 +293,20 @@ export function ScoreMatch() {
   const getPlayerDisplayName = getPlayerDisplayNameFromHook;
 
   /**
-   * Get player stats (wins/losses) for a specific player
-   * Wrapper around getPlayerStatsUtil that provides gameResults
+   * Get player stats (wins/losses) for a specific player and position
+   * For 5v5: Filters by position to handle double duty players correctly
+   * For 3v3: Position parameter ignored (uses getPlayerStatsUtil)
+   *
+   * @param playerId - Player's member ID
+   * @param position - Lineup position (1-5) for 5v5
+   * @param playerIsHomeTeam - Whether this specific player is on home team (true) or away team (false)
    */
-  const getPlayerStats = (playerId: string) => {
+  const getPlayerStats = (playerId: string, position?: number, playerIsHomeTeam?: boolean) => {
+    // For 5v5 with position specified, use position-aware function
+    if (position !== undefined && teamFormat === '8_man' && playerIsHomeTeam !== undefined) {
+      return getPlayerStatsByPosition(playerId, position, playerIsHomeTeam, gameResults);
+    }
+    // For 3v3 or no position specified, use original util
     return getPlayerStatsUtil(playerId, gameResults);
   };
 
