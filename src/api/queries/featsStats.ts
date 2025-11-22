@@ -81,7 +81,9 @@ export async function fetchFeatsStats(seasonId: string): Promise<FeatsStats> {
       golden_break,
       is_tiebreaker,
       home_player_id,
-      away_player_id
+      away_player_id,
+      home_position,
+      away_position
     `)
     .in('match_id', matchIds)
     .eq('is_tiebreaker', false)
@@ -118,53 +120,59 @@ export async function fetchFeatsStats(seasonId: string): Promise<FeatsStats> {
   });
 
   // Step 5: Calculate Flawless Nights (matches where player won every game they played)
-  // Group games by match and player
-  const matchPlayerGames = new Map<string, Map<string, { won: number; lost: number }>>();
+  // Group games by match, player, AND position (for 5v5 double duty players)
+  // Key format: "matchId|playerId|position"
+  const matchPlayerPositionGames = new Map<string, { won: number; lost: number }>();
 
   games.forEach(game => {
     const matchId = game.match_id;
     const winnerId = game.winner_player_id;
     const homeId = game.home_player_id;
     const awayId = game.away_player_id;
+    const homePosition = game.home_position;
+    const awayPosition = game.away_position;
 
-    if (!matchPlayerGames.has(matchId)) {
-      matchPlayerGames.set(matchId, new Map());
-    }
-
-    const playerStats = matchPlayerGames.get(matchId)!;
-
-    // Track home player
+    // Track home player (by position if available, otherwise just by player)
     if (homeId) {
-      const stats = playerStats.get(homeId) || { won: 0, lost: 0 };
+      const key = homePosition
+        ? `${matchId}|${homeId}|${homePosition}`
+        : `${matchId}|${homeId}`;
+
+      const stats = matchPlayerPositionGames.get(key) || { won: 0, lost: 0 };
       if (winnerId === homeId) {
         stats.won++;
       } else {
         stats.lost++;
       }
-      playerStats.set(homeId, stats);
+      matchPlayerPositionGames.set(key, stats);
     }
 
-    // Track away player
+    // Track away player (by position if available, otherwise just by player)
     if (awayId) {
-      const stats = playerStats.get(awayId) || { won: 0, lost: 0 };
+      const key = awayPosition
+        ? `${matchId}|${awayId}|${awayPosition}`
+        : `${matchId}|${awayId}`;
+
+      const stats = matchPlayerPositionGames.get(key) || { won: 0, lost: 0 };
       if (winnerId === awayId) {
         stats.won++;
       } else {
         stats.lost++;
       }
-      playerStats.set(awayId, stats);
+      matchPlayerPositionGames.set(key, stats);
     }
   });
 
   // Count flawless nights (matches where player had losses = 0 and won > 0)
+  // Each position counts separately for double duty players
   const flawlessNightCounts = new Map<string, number>();
-  matchPlayerGames.forEach((playerStats, _matchId) => {
-    playerStats.forEach((stats, playerId) => {
-      if (stats.lost === 0 && stats.won > 0) {
-        const count = flawlessNightCounts.get(playerId) || 0;
-        flawlessNightCounts.set(playerId, count + 1);
-      }
-    });
+  matchPlayerPositionGames.forEach((stats, key) => {
+    if (stats.lost === 0 && stats.won > 0) {
+      // Extract playerId from key (format: "matchId|playerId|position" or "matchId|playerId")
+      const playerId = key.split('|')[1];
+      const count = flawlessNightCounts.get(playerId) || 0;
+      flawlessNightCounts.set(playerId, count + 1);
+    }
   });
 
   // Step 6: Get all unique player IDs
