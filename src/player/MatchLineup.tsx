@@ -544,6 +544,29 @@ export function MatchLineup() {
     return 'Unknown';
   };
 
+  /**
+   * Get available player IDs for dropdown selection
+   *
+   * In tiebreaker mode: Only players from the original locked lineup
+   * In normal mode: All roster players + substitute option
+   */
+  const getAvailablePlayerIds = (): string[] => {
+    if (isTiebreakerMode && myLineup) {
+      // Tiebreaker: Only original 3 players can be selected
+      return [
+        myLineup.player1_id,
+        myLineup.player2_id,
+        myLineup.player3_id,
+      ].filter(Boolean) as string[];
+    }
+
+    // Normal mode: All roster players + substitute
+    return [
+      ...players.map((p) => p.id),
+      isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
+    ];
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -687,17 +710,7 @@ export function MatchLineup() {
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {(isTiebreakerMode && myLineup
-                              ? [
-                                  myLineup.player1_id,
-                                  myLineup.player2_id,
-                                  myLineup.player3_id,
-                                ].filter(Boolean)
-                              : [
-                                  ...players.map((p) => p.id),
-                                  isHomeTeam ? SUB_HOME_ID : SUB_AWAY_ID,
-                                ]
-                            ).map((playerOptionId) => (
+                            {getAvailablePlayerIds().map((playerOptionId) => (
                               <SelectItem
                                 key={playerOptionId}
                                 value={playerOptionId}
