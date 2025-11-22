@@ -17,6 +17,8 @@ interface OpponentStatusParams {
   isTiebreakerMode?: boolean;
   /** All games (for tiebreaker mode player counting) */
   allGames?: any[];
+  /** Player count (3 for 3v3, 5 for 5v5) */
+  playerCount?: 3 | 5;
 }
 
 export type OpponentStatus = 'absent' | 'choosing' | 'ready';
@@ -60,6 +62,7 @@ export function useOpponentStatus(params: OpponentStatusParams): OpponentStatusR
     opponentLineup,
     isTiebreakerMode = false,
     allGames = [],
+    playerCount = 3, // Default to 3 for backward compatibility
   } = params;
 
   /**
@@ -102,7 +105,7 @@ export function useOpponentStatus(params: OpponentStatusParams): OpponentStatusR
     if (status === 'ready') return 'Locked';
 
     // Status is 'choosing' - count selected players
-    let playerCount = 0;
+    let selectedCount = 0;
 
     // In tiebreaker mode, count players from games 19, 20, 21
     if (isTiebreakerMode) {
@@ -115,18 +118,24 @@ export function useOpponentStatus(params: OpponentStatusParams): OpponentStatusR
           (g) => g.game_number === gameNumber && g.is_tiebreaker
         );
         if (game && game[opponentPlayerField as keyof typeof game]) {
-          playerCount++;
+          selectedCount++;
         }
       });
     } else {
-      // Normal mode - count from lineup
-      if (opponentLineup?.player1_id) playerCount++;
-      if (opponentLineup?.player2_id) playerCount++;
-      if (opponentLineup?.player3_id) playerCount++;
+      // Normal mode - count from lineup (support both 3v3 and 5v5)
+      if (opponentLineup?.player1_id) selectedCount++;
+      if (opponentLineup?.player2_id) selectedCount++;
+      if (opponentLineup?.player3_id) selectedCount++;
+
+      // Add player4/5 for 5v5 matches
+      if (playerCount === 5) {
+        if (opponentLineup?.player4_id) selectedCount++;
+        if (opponentLineup?.player5_id) selectedCount++;
+      }
     }
 
-    if (playerCount === 0) return 'Choosing lineup';
-    return `Players chosen: ${playerCount}`;
+    if (selectedCount === 0) return 'Choosing lineup';
+    return `Players chosen: ${selectedCount}`;
   };
 
   return {

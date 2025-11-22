@@ -45,6 +45,7 @@ import { calculateSubstituteHandicap } from '@/utils/lineup';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
 import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
+import { shouldUseTeamBonus } from '@/utils/calculateHandicapThresholds';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -147,7 +148,9 @@ export function MatchLineup() {
     handicap: playerHandicaps.get(p.id) ?? 0,
   }));
 
-  // Team handicap bonus (only for home team)
+  // Team handicap bonus (only for 3v3, only for home team)
+  // 5v5 does not use team bonus - it's disabled by default
+  const useTeamBonus = shouldUseTeamBonus(teamFormat);
   const [teamHandicap] = useState<number>(0);
 
   // Derive values (safe to use optional chaining since hooks are called)
@@ -252,6 +255,11 @@ export function MatchLineup() {
     player1Handicap: handicaps.player1Handicap,
     player2Handicap: handicaps.player2Handicap,
     player3Handicap: handicaps.player3Handicap,
+    // 5v5 support (backward compatible - undefined for 3v3)
+    player4Id: lineup.player4Id,
+    player5Id: lineup.player5Id,
+    player4Handicap: handicaps.player4Handicap,
+    player5Handicap: handicaps.player5Handicap,
     setIsPreparingMatch,
     setPreparationMessage,
     refetchLineups: lineupsQuery.refetch,
@@ -392,6 +400,7 @@ export function MatchLineup() {
     opponentLineup,
     isTiebreakerMode,
     allGames,
+    playerCount, // Pass player count for 5v5 support
   });
 
   // Get my lineup (for tiebreaker mode player source)
@@ -598,6 +607,7 @@ export function MatchLineup() {
                       playerId={playerId}
                       handicap={handicap}
                       locked={lineup.lineupLocked}
+                      teamFormat={teamFormat}
                       availablePlayerIds={getAvailablePlayerIds()}
                       otherPlayerIds={otherPlayerIds}
                       getPlayerDisplayName={getPlayerDisplayName}
@@ -615,12 +625,14 @@ export function MatchLineup() {
             </div>
 
             {/* Team Handicap Display - Only show in normal mode, not tiebreaker */}
+            {/* For 5v5, team bonus is always 0 (disabled by shouldUseTeamBonus) */}
             {!isTiebreakerMode && (
               <HandicapSummary
                 playerTotal={handicaps.playerTotal}
-                teamHandicap={teamHandicap}
+                teamHandicap={useTeamBonus ? teamHandicap : 0}
                 teamTotal={handicaps.teamTotal}
                 isHomeTeam={isHomeTeam}
+                teamFormat={teamFormat}
               />
             )}
 

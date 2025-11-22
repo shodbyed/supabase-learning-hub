@@ -28,7 +28,7 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
   className = ""
 }) => {
   const [showInfo, setShowInfo] = useState(false);
-  const [popupPosition, setPopupPosition] = useState<'left' | 'right'>('right');
+  const [popupPosition, setPopupPosition] = useState<'left' | 'right' | 'center'>('center');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -38,13 +38,21 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const popupWidth = 320; // w-80 = 320px
+      const buttonCenter = buttonRect.left + buttonRect.width / 2;
 
-      // If button is in the left half of screen, position popup to the right (left-0)
-      // If button is in the right half, position popup to the left (right-0)
-      if (buttonRect.left < viewportWidth / 2) {
+      // Check if centering the popup would go off screen
+      const popupLeft = buttonCenter - popupWidth / 2;
+      const popupRight = buttonCenter + popupWidth / 2;
+
+      if (popupLeft < 0) {
+        // Too far left, align to left edge
         setPopupPosition('left');
-      } else {
+      } else if (popupRight > viewportWidth) {
+        // Too far right, align to right edge
         setPopupPosition('right');
+      } else {
+        // Fits centered
+        setPopupPosition('center');
       }
     }
   }, [showInfo]);
@@ -93,7 +101,7 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
         <div
           ref={popupRef}
           className={`absolute top-8 z-50 w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-lg ${
-            popupPosition === 'left' ? 'left-0' : 'right-0'
+            popupPosition === 'left' ? 'left-0' : popupPosition === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'
           }`}
         >
           <div className="flex items-center justify-between mb-2">

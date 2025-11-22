@@ -83,14 +83,18 @@ export function useMatchScoring({
     refetch: refetchGames,
   } = useMatchGames(matchId);
 
-  // Fetch player IDs from lineups for member lookup
+  // Fetch player IDs from lineups for member lookup (supports both 3v3 and 5v5)
   const playerIds = lineupsData ? [
     lineupsData.homeLineup.player1_id,
     lineupsData.homeLineup.player2_id,
     lineupsData.homeLineup.player3_id,
+    lineupsData.homeLineup.player4_id,
+    lineupsData.homeLineup.player5_id,
     lineupsData.awayLineup.player1_id,
     lineupsData.awayLineup.player2_id,
     lineupsData.awayLineup.player3_id,
+    lineupsData.awayLineup.player4_id,
+    lineupsData.awayLineup.player5_id,
   ].filter(Boolean) as string[] : null;
 
   // Fetch player names

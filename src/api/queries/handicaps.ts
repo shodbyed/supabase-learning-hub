@@ -1,59 +1,50 @@
 /**
  * @fileoverview Handicap Query Functions
  *
- * Pure data fetching functions for handicap-related queries.
- * These functions return plain data and throw errors (no loading states).
- * Used by TanStack Query hooks for caching and state management.
+ * Functions for getting handicap thresholds.
+ * Now uses hard-coded charts instead of database lookup for better performance.
+ * Supports both 3v3 and 5v5 formats.
  */
 
-import { supabase } from '@/supabaseClient';
+import { getGamesNeeded, type TeamFormat } from '@/utils/handicap';
 import type { HandicapThresholds } from '@/types';
 
 /**
- * Fetch handicap thresholds from 3v3 chart
+ * Get handicap thresholds for 3v3 match
+ *
+ * @deprecated Use getHandicapThresholds() with teamFormat parameter instead
  *
  * Looks up games to win/tie/lose based on handicap difference.
- * Used by 3v3 scoring to determine match outcome.
+ * Uses hard-coded chart (no database query needed).
  *
- * @param handicapDiff - Handicap difference (capped at ±12)
+ * @param handicapDiff - Handicap difference (will be capped at ±12)
  * @returns Handicap thresholds (games_to_win, games_to_tie, games_to_lose)
- * @throws Error if threshold not found or database error
+ */
+export function getHandicapThresholds3v3(handicapDiff: number): HandicapThresholds {
+  return getGamesNeeded(handicapDiff, '5_man');
+}
+
+/**
+ * Get handicap thresholds for any team format
+ *
+ * Unified interface for both 3v3 and 5v5 handicap lookups.
+ * Uses hard-coded charts (no database query needed).
+ *
+ * @param handicapDiff - Handicap difference
+ * @param teamFormat - Team format ('5_man' = 3v3, '8_man' = 5v5)
+ * @returns Handicap thresholds (games_to_win, games_to_tie, games_to_lose)
  *
  * @example
- * const thresholds = await getHandicapThresholds3v3(5);
- * console.log(`Need ${thresholds.games_to_win} games to win`);
+ * // 3v3 match
+ * const thresholds = getHandicapThresholds(5, '5_man');
+ *
+ * @example
+ * // 5v5 match
+ * const thresholds = getHandicapThresholds(16, '8_man');
  */
-export async function getHandicapThresholds3v3(handicapDiff: number): Promise<HandicapThresholds> {
-  // First try with .single()
-  let { data, error } = await supabase
-    .from('handicap_chart_3vs3')
-    .select('*')
-    .eq('hcp_diff', handicapDiff)
-    .single();
-
-  // If RLS is blocking (406) or single() fails, try without single() and take first row
-  if (error?.code === 'PGRST116' || error?.code === '406' || error?.message?.includes('406')) {
-    console.log('⚠️ RLS blocking or multiple rows, trying without .single()');
-    const result = await supabase
-      .from('handicap_chart_3vs3')
-      .select('*')
-      .eq('hcp_diff', handicapDiff)
-      .limit(1);
-
-    if (result.error) {
-      throw new Error(`Failed to fetch handicap thresholds: ${result.error.message}`);
-    }
-
-    if (!result.data || result.data.length === 0) {
-      throw new Error(`No handicap threshold found for diff ${handicapDiff}`);
-    }
-
-    return result.data[0] as HandicapThresholds;
-  }
-
-  if (error) {
-    throw new Error(`Failed to fetch handicap thresholds: ${error.message}`);
-  }
-
-  return data as HandicapThresholds;
+export function getHandicapThresholds(
+  handicapDiff: number,
+  teamFormat: TeamFormat
+): HandicapThresholds {
+  return getGamesNeeded(handicapDiff, teamFormat);
 }
