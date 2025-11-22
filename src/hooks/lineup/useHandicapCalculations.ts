@@ -39,6 +39,7 @@ export interface HandicapCalculationsInput {
   testHandicaps: Record<string, number>;
   teamHandicap: number;
   isHomeTeam: boolean;
+  teamFormat?: '5_man' | '8_man'; // Team format to determine sub handicap logic
 }
 
 export interface HandicapCalculations {
@@ -79,6 +80,7 @@ export function useHandicapCalculations(
     testHandicaps,
     teamHandicap,
     isHomeTeam,
+    teamFormat = '5_man',
   } = input;
 
   /**
@@ -118,6 +120,13 @@ export function useHandicapCalculations(
 
       // Handle substitutes
       if (isSubstitute(playerId)) {
+        // 5v5: SUB doesn't need a calculated handicap - opponent will choose double duty player
+        // Return 40 as placeholder (initial 5v5 handicap)
+        if (teamFormat === '8_man') {
+          return 40;
+        }
+
+        // 3v3: Calculate substitute handicap from highest unused player or manual entry
         const highestUnused = getHighestUnusedHandicap();
 
         // If sub handicap is manually entered, use the HIGHER of the two
@@ -134,7 +143,7 @@ export function useHandicapCalculations(
       const player = players.find((p) => p.id === playerId);
       return player?.handicap || 0;
     };
-  }, [players, testMode, testHandicaps, subHandicap, getHighestUnusedHandicap]);
+  }, [players, testMode, testHandicaps, subHandicap, teamFormat, getHighestUnusedHandicap]);
 
   // Calculate individual player handicaps
   const player1Handicap = useMemo(

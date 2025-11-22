@@ -33,6 +33,7 @@ export interface LineupValidationInput {
   subHandicap: string;
   players: Player[];
   isTiebreakerMode?: boolean;
+  teamFormat?: '5_man' | '8_man'; // Team format - 5v5 doesn't need sub handicap
 }
 
 export interface LineupValidation {
@@ -66,6 +67,7 @@ export function useLineupValidation(
     subHandicap,
     players,
     isTiebreakerMode,
+    teamFormat = '5_man',
   } = input;
 
   // Build array of all player IDs based on player count
@@ -88,13 +90,14 @@ export function useLineupValidation(
     // All positions must be filled
     const allFilled = allPlayerIds.slice(0, playerCount).every((id) => id !== '');
 
-    // If there's a sub and not in tiebreaker mode, must have subHandicap
-    if (hasSub && !isTiebreakerMode && !subHandicap) {
+    // If there's a sub and not in tiebreaker mode and not in 5v5, must have subHandicap
+    // 5v5 (8_man) doesn't need substitute handicap - opponent chooses double duty player
+    if (hasSub && !isTiebreakerMode && teamFormat !== '8_man' && !subHandicap) {
       return false;
     }
 
     return allFilled;
-  }, [allPlayerIds, playerCount, hasSub, isTiebreakerMode, subHandicap]);
+  }, [allPlayerIds, playerCount, hasSub, isTiebreakerMode, teamFormat, subHandicap]);
 
   // Check for duplicate nicknames
   const hasDuplicates = useMemo(() => {
@@ -120,11 +123,12 @@ export function useLineupValidation(
   // Generate error messages
   const completenessError = useMemo(() => {
     if (isComplete) return null;
-    if (hasSub && !subHandicap) {
+    // Only show substitute handicap error in 3v3 (not tiebreaker and not 5v5)
+    if (hasSub && !isTiebreakerMode && teamFormat !== '8_man' && !subHandicap) {
       return 'Please select a handicap for the substitute player';
     }
     return `Please select all ${playerCount} players before locking your lineup`;
-  }, [isComplete, hasSub, subHandicap, playerCount]);
+  }, [isComplete, hasSub, isTiebreakerMode, teamFormat, subHandicap, playerCount]);
 
   const duplicatesError = useMemo(() => {
     if (!hasDuplicates) return null;

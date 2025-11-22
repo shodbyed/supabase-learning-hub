@@ -6,13 +6,15 @@
  *
  * Supports both 3v3 and 5v5 formats with different handicap systems:
  * - 3v3: Returns integer handicap (-2 to +2 standard, -1 to +1 reduced, or 0)
- * - 5v5: Returns percentage handicap (0-100% standard, 0-50% reduced, or 50%)
+ * - 5v5: Returns percentage handicap (0-100% standard, 0-50% reduced, or 40%)
  *
- * Formula: (wins - losses) / weeks_played
- * where weeks_played = games_played / 6
+ * Formulas:
+ * - 3v3: (wins - losses) / weeks_played, where weeks_played = games_played / 6
+ * - 5v5: win percentage (wins / games_played * 100)
  *
- * Minimum games requirement: 18 games
- * - If < 18 games: Returns 0 for 3v3, 50% for 5v5
+ * Minimum games requirement:
+ * - 3v3: 18 games required (returns 0 if < 18 games)
+ * - 5v5: No minimum (returns 40% if 0 games, calculates immediately with 1+ games)
  */
 
 import { fetchPlayerGameHistory } from '@/api/queries/matchGames';
@@ -74,18 +76,25 @@ export async function calculatePlayerHandicap(
 ): Promise<number> {
   // Handle 'none' variant - return defaults
   if (handicapVariant === 'none') {
-    return teamFormat === '5_man' ? 0 : 50;
+    return teamFormat === '5_man' ? 0 : 40;
   }
 
   // Query last N games for this player (filtered by game type, prioritizing current season)
   try {
     const games = await fetchPlayerGameHistory(playerId, gameType, currentSeasonId, gameLimit);
 
-    // If fewer than 18 games, return defaults
-    if (!games || games.length < 18) {
-      return teamFormat === '5_man' ? 0 : 50;
+    // Handle different minimum game requirements by format
+    if (!games || games.length === 0) {
+      // No games played - return defaults
+      return teamFormat === '5_man' ? 0 : 40;
     }
 
+    // 3v3: Requires minimum 18 games before calculating handicap
+    if (teamFormat === '5_man' && games.length < 18) {
+      return 0;
+    }
+
+    // 5v5: Calculate handicap immediately with ANY games (no minimum)
     // Count wins and losses
     const wins = games.filter((game) => game.winner_player_id === playerId).length;
     const losses = games.length - wins;
@@ -104,7 +113,7 @@ export async function calculatePlayerHandicap(
     }
   } catch (error) {
     console.error('Error calculating player handicap:', error);
-    return teamFormat === '5_man' ? 0 : 50;
+    return teamFormat === '5_man' ? 0 : 40;
   }
 }
 

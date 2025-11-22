@@ -30,6 +30,7 @@ import { LineupActions } from '@/components/lineup/LineupActions';
 import { HandicapSummary } from '@/components/lineup/HandicapSummary';
 import { DuplicateNicknameWarning } from '@/components/lineup/DuplicateNicknameWarning';
 import { PlayerSelectionRow } from '@/components/lineup/PlayerSelectionRow';
+import { OpponentSubstituteModal } from '@/components/lineup/OpponentSubstituteModal';
 import { useQueryStates } from '@/hooks/useQueryStates';
 import {
   useLineupState,
@@ -87,6 +88,10 @@ export function MatchLineup() {
   // TanStack Query: Get team roster with member details
   const teamDetailsQuery = useTeamDetails(userTeamId);
 
+  // TanStack Query: Get opponent team roster (needed for 5v5 substitute modal)
+  const opponentTeamId = userTeamData?.isHomeTeam ? matchData?.away_team_id : matchData?.home_team_id;
+  const opponentTeamDetailsQuery = useTeamDetails(opponentTeamId);
+
   // Unified query state handling - consolidates loading/error checks
   const { renderState } = useQueryStates([
     { query: memberQuery, name: 'member' },
@@ -94,6 +99,7 @@ export function MatchLineup() {
     { query: lineupsQuery, name: 'lineups' }, // Auto-created by DB trigger
     { query: userTeamQuery, name: 'user team' },
     { query: teamDetailsQuery, name: 'team details' },
+    { query: opponentTeamDetailsQuery, name: 'opponent team details' },
   ]);
 
   // Note: Mutation hooks (useUpdateMatch, useUpdateMatchLineup) are now used inside hooks
@@ -148,6 +154,31 @@ export function MatchLineup() {
     handicap: playerHandicaps.get(p.id) ?? 0,
   }));
 
+  // Extract opponent players from opponent team details query
+  const opponentPlayersWithoutHandicaps: Omit<Player, 'handicap'>[] =
+    opponentTeamDetailsQuery.data?.team_players?.map((tp: any) => ({
+      id: tp.members.id,
+      nickname: tp.members.nickname,
+      first_name: tp.members.first_name,
+      last_name: tp.members.last_name,
+    })) || [];
+
+  // Get calculated handicaps for opponent roster players
+  const { handicaps: opponentPlayerHandicaps } = usePlayerHandicaps({
+    playerIds: opponentPlayersWithoutHandicaps.map(p => p.id),
+    teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
+    handicapVariant: (matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none',
+    gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
+    seasonId: matchData?.season_id,
+    gameLimit: 200,
+  });
+
+  // Merge opponent players with their calculated handicaps
+  const opponentPlayers: Player[] = opponentPlayersWithoutHandicaps.map(p => ({
+    ...p,
+    handicap: opponentPlayerHandicaps.get(p.id) ?? 0,
+  }));
+
   // Team handicap bonus (only for 3v3, only for home team)
   // 5v5 does not use team bonus - it's disabled by default
   const useTeamBonus = shouldUseTeamBonus(teamFormat);
@@ -198,6 +229,7 @@ export function MatchLineup() {
     players,
     teamHandicap,
     isHomeTeam,
+    teamFormat,
   });
 
   // Lineup validation
@@ -211,6 +243,7 @@ export function MatchLineup() {
     subHandicap: lineup.subHandicap,
     players,
     isTiebreakerMode,
+    teamFormat,
   });
 
   // Lineup persistence operations
@@ -236,6 +269,7 @@ export function MatchLineup() {
     onLineupIdChange: lineup.setLineupId,
     onLockedChange: lineup.setLineupLocked,
     matchData,
+    refetchLineups: lineupsQuery.refetch,
   });
 
   // Note: Lineups are now auto-created by database trigger when match is inserted
@@ -268,7 +302,7 @@ export function MatchLineup() {
 
   // Load lineup ID and data from database (auto-created by trigger)
   // This is critical - without the lineup ID, we can't update the lineup
-  // Only loads ONCE on initial mount to avoid triggering auto-save loop
+  // Syncs lineup state when database data changes (including real-time updates)
   useEffect(() => {
     if (lineupsQuery.data && userTeamData) {
       const myLineup = isHomeTeam
@@ -279,15 +313,30 @@ export function MatchLineup() {
         // Always update lineup ID (needed for mutations)
         lineup.setLineupId(myLineup.id);
 
-        // Only set player IDs if they exist in the database AND local state is empty
-        // This prevents overwriting user's current selections with old DB data
-        for (let pos = 1; pos <= playerCount; pos++) {
-          const playerIdField = `player${pos}_id` as keyof typeof myLineup;
-          const dbPlayerId = myLineup[playerIdField] as string | undefined;
-          const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
+        // Sync player IDs from database when lineup is locked
+        // This ensures opponent's double duty choice updates the UI
+        if (myLineup.locked) {
+          for (let pos = 1; pos <= playerCount; pos++) {
+            const playerIdField = `player${pos}_id` as keyof typeof myLineup;
+            const dbPlayerId = myLineup[playerIdField] as string | undefined;
+            const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
 
-          if (dbPlayerId && !currentPlayerId) {
-            lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId);
+            // Update if database has different player (e.g., opponent chose double duty)
+            if (dbPlayerId && dbPlayerId !== currentPlayerId) {
+              lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId);
+            }
+          }
+        } else {
+          // When unlocked, always sync from database (including nulls from duplicate removal)
+          for (let pos = 1; pos <= playerCount; pos++) {
+            const playerIdField = `player${pos}_id` as keyof typeof myLineup;
+            const dbPlayerId = myLineup[playerIdField] as string | undefined;
+            const currentPlayerId = lineup.getPlayerId(pos as 1 | 2 | 3 | 4 | 5);
+
+            // Always sync - this handles duplicate removal where DB has null
+            if (dbPlayerId !== currentPlayerId) {
+              lineup.setPlayerId(pos as 1 | 2 | 3 | 4 | 5, dbPlayerId || '');
+            }
           }
         }
 
@@ -295,7 +344,7 @@ export function MatchLineup() {
         lineup.setLineupLocked(!!myLineup.locked);
       }
     }
-    // Only run on initial load - don't include lineup in dependencies
+    // Include lineupsQuery.data to sync when database updates (real-time)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lineupsQuery.data, userTeamData, isHomeTeam]);
 
@@ -306,6 +355,69 @@ export function MatchLineup() {
     onLineupUpdate: () => lineupsQuery.refetch(),
     onGamesUpdate: () => matchGamesQuery.refetch(),
   });
+
+  // 5v5 Substitute Modal State
+  const [showOpponentSubModal, setShowOpponentSubModal] = useState(false);
+
+  // Detect if opponent has substitute in their lineup (5v5 only)
+  useEffect(() => {
+    if (!opponentLineup || !matchData || isTiebreakerMode) {
+      setShowOpponentSubModal(false);
+      return;
+    }
+
+    const is5v5 = (matchData.league?.team_format || '5_man') === '8_man';
+    if (!is5v5) {
+      setShowOpponentSubModal(false);
+      return;
+    }
+
+    // Check if opponent's lineup is locked and has a substitute
+    if (!opponentLineup.locked) {
+      setShowOpponentSubModal(false);
+      return;
+    }
+
+    // Check all 5 positions for SUB_HOME_ID or SUB_AWAY_ID
+    const hasSubstitute = [
+      opponentLineup.player1_id,
+      opponentLineup.player2_id,
+      opponentLineup.player3_id,
+      opponentLineup.player4_id,
+      opponentLineup.player5_id,
+    ].some(id => id === SUB_HOME_ID || id === SUB_AWAY_ID);
+
+    setShowOpponentSubModal(hasSubstitute);
+  }, [opponentLineup, matchData, isTiebreakerMode]);
+
+  // Handle opponent substitute choice
+  const handleOpponentSubChoice = (playerId: string, handicap: number, subPosition: number) => {
+    if (!opponentLineup?.id || !matchId) return;
+
+    console.log('🎯 Opponent sub choice:', { playerId, handicap, subPosition });
+
+    // Update opponent's lineup - replace SUB with chosen player
+    updateLineupMutation.mutate({
+      lineupId: opponentLineup.id,
+      updates: {
+        [`player${subPosition}_id`]: playerId,
+        [`player${subPosition}_handicap`]: handicap,
+      },
+      matchId,
+    }, {
+      onSuccess: async () => {
+        console.log('✅ Opponent lineup updated with double duty player');
+        // Manually refetch lineups to ensure UI updates immediately
+        console.log('🔄 Refetching lineups...');
+        const result = await lineupsQuery.refetch();
+        console.log('🔄 Refetch result:', result);
+        setShowOpponentSubModal(false);
+      },
+      onError: (error) => {
+        console.error('❌ Failed to update opponent lineup:', error);
+      },
+    });
+  };
 
   // Generic player change handler - works for any position (3 or 5 players)
   const handlePlayerChange = (position: number, playerId: string) => {
@@ -411,6 +523,18 @@ export function MatchLineup() {
   // Helper to get player display name
   const getPlayerDisplayName = (playerId: string): string => {
     const player = players.find((p) => p.id === playerId);
+    if (player) {
+      return player.nickname || `${player.first_name} ${player.last_name}`;
+    }
+    // For substitutes
+    if (playerId === SUB_HOME_ID) return 'Sub (Home)';
+    if (playerId === SUB_AWAY_ID) return 'Sub (Away)';
+    return 'Unknown';
+  };
+
+  // Helper to get opponent player display name (for 5v5 substitute modal)
+  const getOpponentPlayerDisplayName = (playerId: string): string => {
+    const player = opponentPlayers.find((p) => p.id === playerId);
     if (player) {
       return player.nickname || `${player.first_name} ${player.last_name}`;
     }
@@ -616,7 +740,7 @@ export function MatchLineup() {
                       isSubstitute={isSubstitute}
                       subHandicap={lineup.subHandicap}
                       onSubHandicapChange={handleSubHandicapChange}
-                      showSubHandicapSelector={!isTiebreakerMode}
+                      showSubHandicapSelector={!isTiebreakerMode && teamFormat !== '8_man'}
                       hideHandicap={isTiebreakerMode}
                     />
                   );
@@ -670,6 +794,19 @@ export function MatchLineup() {
             <p className="text-gray-600">{preparationMessage}</p>
           </div>
         </div>
+      )}
+
+      {/* Opponent Substitute Modal - 5v5 Only */}
+      {opponentLineup && (
+        <OpponentSubstituteModal
+          isOpen={showOpponentSubModal}
+          opponentLineup={opponentLineup}
+          getPlayerDisplayName={getOpponentPlayerDisplayName}
+          onPlayerChosen={handleOpponentSubChoice}
+          onClose={() => setShowOpponentSubModal(false)}
+          subHomeId={SUB_HOME_ID}
+          subAwayId={SUB_AWAY_ID}
+        />
       )}
     </div>
   );
