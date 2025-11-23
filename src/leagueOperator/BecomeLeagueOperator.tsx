@@ -113,30 +113,38 @@ export const BecomeLeagueOperator: React.FC = () => {
                   <div className="text-sm text-blue-200 mb-1">only</div>
                   <div className="text-4xl font-bold mb-2">$1</div>
                   <div className="text-blue-100">per team, per week</div>
+                  <div className="text-xs text-blue-200 mt-2">+ $10 setup per season</div>
                 </div>
               </div>
               <div className="lg:col-span-2">
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="font-semibold text-gray-800 mb-4">Example: 12-Week Season</h3>
+                  <h3 className="font-semibold text-gray-800 mb-4">Example: 16-Week Season</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span>6 teams × 12 weeks:</span>
-                      <span className="font-semibold text-lg">$72</span>
+                      <span>6 teams × 16 weeks + $10:</span>
+                      <span className="font-semibold text-lg">$106</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span>8 teams × 12 weeks:</span>
-                      <span className="font-semibold text-lg">$96</span>
+                      <span>8 teams × 16 weeks + $10:</span>
+                      <span className="font-semibold text-lg">$138</span>
                     </div>
                     <div className="flex justify-between items-center py-2">
-                      <span>10 teams × 12 weeks:</span>
-                      <span className="font-semibold text-lg">$120</span>
+                      <span>10 teams × 16 weeks + $10:</span>
+                      <span className="font-semibold text-lg">$170</span>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t text-sm text-gray-600">
-                    * Payment due by week 3-4 of each season
+                    <p className="mb-2">✓ 4-week grace period to collect dues</p>
+                    <p className="mb-2">✓ Payment due before week 5</p>
+                    <p>✓ Playoff weeks are FREE</p>
                   </div>
                 </div>
               </div>
+            </div>
+            <div className="mt-6 text-center">
+              <Link to="/pricing" className="text-blue-600 hover:text-blue-800 font-medium text-lg">
+                View detailed pricing breakdown with examples →
+              </Link>
             </div>
           </div>
 
