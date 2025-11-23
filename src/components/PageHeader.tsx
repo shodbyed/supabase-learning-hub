@@ -13,11 +13,11 @@ import { ArrowLeft } from 'lucide-react';
 
 interface PageHeaderProps {
   /** Path to navigate back to */
-  backTo: string;
+  backTo?: string;
   /** Text for the back link (e.g., "Back to My Teams") */
-  backLabel: string;
+  backLabel?: string;
   /** Main page title */
-  hideBack: boolean;
+  hideBack?: boolean;
   title: string;
   /** Optional subtitle below title */
   subtitle?: string;
@@ -42,7 +42,7 @@ export function PageHeader({ backTo, backLabel, hideBack = false, title, subtitl
   return (
     <header className="bg-white border-b sticky top-0 z-10">
       <div className="px-4 py-3">
-        {!hideBack && (
+        {!hideBack && backTo && backLabel && (
           <Link to={backTo} className="flex items-center gap-2 text-sm text-gray-600 mb-2">
             <ArrowLeft className="h-4 w-4" />
             {backLabel}

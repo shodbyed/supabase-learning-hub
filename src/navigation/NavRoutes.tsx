@@ -6,6 +6,7 @@ import { ForgotPassword } from '../login/ForgotPassword';
 import { ResetPassword } from '../login/ResetPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
+import { Pricing } from '../about/Pricing';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
@@ -46,6 +47,7 @@ import HandicapLookupTest from '../pages/HandicapLookupTest';
 const publicRoutes = [
   { path: '/', element: <Home /> },
   { path: '/about', element: <About /> },
+  { path: '/pricing', element: <Pricing /> },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/forgot-password', element: <ForgotPassword /> },
