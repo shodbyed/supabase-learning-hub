@@ -32,23 +32,26 @@ export const ScheduleReviewTable: React.FC<ScheduleReviewTableProps> = ({
   currentPlayWeek,
 }) => {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto mb-4">
       <table className="min-w-full bg-white border border-gray-200 rounded-lg">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+            <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700">
               Week
             </th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+            <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700">
               Date
             </th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+            <th className="hidden lg:block py-3 px-4 text-center text-sm font-semibold text-gray-700">
               Status
             </th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700">
+            <th className="lg:hidden py-3 px-4 text-center text-sm font-semibold text-gray-700">
+            {' '}
+            </th>
+            <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700">
               Conflicts
             </th>
-            <th className="py-3 px-4 text-left text-sm font-semibold text-gray-700 w-48">
+            <th className="py-3 px-4 text-center text-sm font-semibold text-gray-700 w-48">
               Actions
             </th>
           </tr>

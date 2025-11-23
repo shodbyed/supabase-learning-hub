@@ -41,10 +41,10 @@ export const OperatorDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-8 px-2">
+          <span className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
             League Operator Dashboard
-          </h1>
+          </span>
           <p className="text-gray-600">
             Welcome back, {member?.first_name}! Manage your leagues and grow the pool community.
           </p>

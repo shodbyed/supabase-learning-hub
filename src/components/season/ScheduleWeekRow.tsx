@@ -58,6 +58,12 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
     year: 'numeric',
   });
 
+  const displayDateMobile = parseLocalDate(week.date).toLocaleDateString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: '2-digit',
+  });
+
   return (
     <tr
       className={`border-b ${
@@ -69,39 +75,60 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
       }`}
     >
       {/* Week Name */}
-      <td className="py-3 px-4 font-medium">
+      <td className="py-3 px-4 text-sm lg:text-md">
         {week.weekName}
       </td>
 
       {/* Date */}
-      <td className="py-3 px-4 text-gray-700">{displayDate}</td>
+      <>
+      <td className="hidden lg:block text-xs lg:text-md py-3 px-4 text-gray-700">{displayDate}</td>
+      <td className="lg:hidden text-xs lg:text-md py-3 px-4 text-gray-700">{displayDateMobile}</td>
+      </>
 
       {/* Status */}
-      <td className="py-3 px-4">
+      <td className="py-3 px px-4">
         {isWeekOff ? (
-          <span className="text-gray-500 text-sm">🚫 Week Off</span>
+          <div className="w-full flex justify-center">
+            <span className="hidden lg:block text-gray-500 text-sm">🚫 Week Off</span>
+            <span className="lg:hidden text-gray-500 text-sm">🚫</span>
+          </div>
         ) : hasConflicts ? (
-          <>
+          <div className="w-full flex justify-center">
             {highestSeverity === 'critical' && (
-              <span className="text-red-600 font-medium">🔴 Critical</span>
+              <>
+                <span className="hidden lg:block text-red-600 font-medium">🔴 Critical</span>
+                <span className="lg:hidden text-red-600 font-medium">🔴</span>
+              </>
             )}
             {highestSeverity === 'high' && (
-              <span className="text-orange-600 font-medium">🟠 High</span>
+              <>
+                <span className="hidden lg:block text-orange-600 font-medium">🟠 High</span>
+                <span className="lg:hidden text-orange-600 font-medium">🟠</span>
+              </>
             )}
             {highestSeverity === 'medium' && (
-              <span className="text-yellow-600 font-medium">🟡 Medium</span>
+              <>
+                <span className="hidden lg:block text-yellow-600 font-medium">🟡 Medium</span>
+                <span className="lg:hidden text-yellow-600 font-medium">🟡</span>
+              </>
             )}
             {highestSeverity === 'low' && (
-              <span className="text-blue-600 font-medium">🔵 Low</span>
+              <>
+                <span className="hidden lg:block text-blue-600 font-medium">🔵 Low</span>
+                <span className="lg:hidden text-blue-600 font-medium">🔵</span>
+              </>
             )}
-          </>
+          </div>
         ) : (
-          <span className="text-green-600 font-medium">✓ Play</span>
+          <div className="w-full flex justify-center">
+            <span className="hidden lg:block text-green-600 font-medium">✓ Play</span>
+            <span className="lg:hidden text-green-600 font-medium">✓</span>
+          </div>
         )}
       </td>
 
       {/* Conflicts - show for regular weeks and playoffs */}
-      <td className="py-3 px-4">
+      <td className="py-3 px lg:px-4">
         {hasConflicts && (week.type === 'regular' || week.type === 'playoffs') && (
           <div className="flex flex-col gap-2">
             {week.conflicts.map((conflict, i) => (
@@ -118,19 +145,36 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
             🔒 Week Completed
           </span>
         ) : (
-          <Button
-            variant={isWeekOff ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onToggleWeekOff(index)}
-          >
-            {isSeasonEndBreak
-              ? 'Remove Season End Break'
-              : isPlayoffs
-              ? 'Insert Season End Break'
-              : isWeekOff
-              ? 'Remove Week Off'
-              : 'Insert Week Off'}
-          </Button>
+          <>
+            <Button
+              className="hidden lg:block"
+              variant={isWeekOff ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onToggleWeekOff(index)}
+            >
+              {isSeasonEndBreak
+                ? 'Remove Season End Break'
+                : isPlayoffs
+                ? 'Insert Season End Break'
+                : isWeekOff
+                ? 'Remove Week Off'
+                : 'Insert Week Off'}
+            </Button>
+            <Button
+              className="lg:hidden"
+              variant={isWeekOff ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onToggleWeekOff(index)}
+            >
+              {isSeasonEndBreak
+                ? 'No Break'
+                : isPlayoffs
+                ? 'Add Break'
+                : isWeekOff
+                ? 'Play'
+                : 'Skip'}
+            </Button>
+          </>
         )}
       </td>
     </tr>

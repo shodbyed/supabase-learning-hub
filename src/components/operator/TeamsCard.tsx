@@ -69,7 +69,7 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div className="bg-white lg:rounded-xl shadow-sm p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
         <Button

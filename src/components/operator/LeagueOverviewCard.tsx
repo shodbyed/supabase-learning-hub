@@ -381,7 +381,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
   const editOptions = getSeasonEditOptions();
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div className="lg:bg-white lg:rounded-xl lg:shadow-sm p-6 mb-6">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-semibold text-gray-900">League Overview</h2>
         <div className="flex gap-2">

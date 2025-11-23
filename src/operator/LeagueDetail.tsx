@@ -240,7 +240,7 @@ export const LeagueDetail: React.FC = () => {
         title={getLeagueName(league)}
       >
         <div className="flex items-center gap-3 mt-1">
-          <span className="text-xl text-gray-600">
+          <span className="text-md lg:text-xl text-gray-600">
             {league.team_format === '5_man' ? '5-Man Roster' : '8-Man Roster'}
           </span>
           {league.team_format === '5_man' && (
@@ -256,20 +256,20 @@ export const LeagueDetail: React.FC = () => {
               </div>
             </InfoButton>
           )}
-          <span className="text-xl text-gray-600">
+          <span className="text-md lg:text-xl text-gray-600">
             • Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
           </span>
         </div>
       </PageHeader>
 
-      <div className="container mx-auto px-4 max-w-7xl py-8">
+      <div className="container mx-auto lg:px-4 w-full lg:max-w-7xl py-8">
         {/* Status and Progress */}
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Use unified LeagueStatusCard component */}
           <LeagueStatusCard league={league} variant="section" />
 
           {/* Action Button - 1 column */}
-          <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center">
+          <div className="lg:bg-white lg:rounded-xl lg:shadow-sm p-6 flex flex-col items-center justify-center">
             <div className="text-6xl mb-4">🚀</div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">Ready to Begin?</h3>
             <p className="text-sm text-gray-600 mb-6 text-center">

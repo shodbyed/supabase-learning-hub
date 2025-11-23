@@ -66,25 +66,25 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
   switch (weekType) {
     case 'playoffs':
       return {
-        bgColor: 'bg-purple-50',
+        bgColor: 'bg-purple-50 rounded-t-xl -my-6 py-3',
         badge: 'PLAYOFFS',
         badgeColor: 'bg-purple-600 text-white',
       };
     case 'blackout':
       return {
-        bgColor: 'bg-gray-100',
+        bgColor: 'bg-gray-100 rounded-t-xl -my-6 py-3',
         badge: 'BLACKOUT',
         badgeColor: 'bg-gray-700 text-white',
       };
     case 'season_end_break':
       return {
-        bgColor: 'bg-yellow-50',
+        bgColor: 'bg-yellow-50 rounded-t-xl -my-6 py-3',
         badge: 'BREAK',
         badgeColor: 'bg-yellow-600 text-white',
       };
     default:
       return {
-        bgColor: 'bg-gray-50',
+        bgColor: 'bg-gray-50 rounded-t-xl -my-6 py-3',
         badge: '',
         badgeColor: '',
       };
@@ -366,16 +366,26 @@ export const SeasonSchedulePage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Calendar className="h-4 w-4" />
+                      <span className="hidden lg:block">
                       {parseLocalDate(week.scheduled_date).toLocaleDateString('en-US', {
                         weekday: 'long',
                         month: 'long',
                         day: 'numeric',
                         year: 'numeric'
                       })}
+                      </span>
+                      <span className="lg:hidden">
+                      {parseLocalDate(week.scheduled_date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                      </span>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-3">
                   {matches.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">
                       {week.week_type === 'playoffs'
@@ -391,53 +401,51 @@ export const SeasonSchedulePage: React.FC = () => {
                       return (
                       <div
                         key={match.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                        className="grid grid-cols-8 border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          {/* Teams */}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-4">
-                              <div className="text-right flex-1">
-                                <span className="font-semibold text-gray-900">
-                                  {match.home_team?.team_name || 'BYE'}
-                                </span>
-                                <span className="text-xs text-gray-500 ml-2">(Home)</span>
-                              </div>
-                              <div className="text-xl font-bold text-gray-400">vs</div>
-                              <div className="text-left flex-1">
-                                <span className="font-semibold text-gray-900">
-                                  {match.away_team?.team_name || 'BYE'}
-                                </span>
-                                <span className="text-xs text-gray-500 ml-2">(Away)</span>
-                              </div>
+                        {/* Teams */}
+                        <div className="col-span-5 flex items-center justify-between">
+                          <div className="flex w-full items-center gap-4">
+                            <div className="text-right flex-1 flex flex-col items-center">
+                              <span className="font-semibold text-gray-900">
+                                {match.home_team?.team_name || 'BYE'}
+                              </span>
+                              <span className="text-xs text-gray-500 ml-2">(Home)</span>
+                            </div>
+                            <div className="text-xl font-bold text-gray-400">vs</div>
+                            <div className="text-left flex-1 flex flex-col items-center">
+                              <span className="font-semibold text-gray-900">
+                                {match.away_team?.team_name || 'BYE'}
+                              </span>
+                              <span className="text-xs text-gray-500 ml-2">(Away)</span>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Venue */}
-                          <div className="flex items-center gap-2 text-sm text-gray-600 ml-6">
-                            <MapPin className="h-4 w-4" />
-                            {match.scheduled_venue ? (
-                              <div>
-                                <div className="font-medium">{match.scheduled_venue.name}</div>
-                                <div className="text-xs">
-                                  {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="text-gray-500 italic">Venue TBD</div>
-                            )}
-                          </div>
-
-                          {/* Table Number - only show if venue exists */}
-                          {match.scheduled_venue && tableNumber && (
-                            <div className="ml-6 text-right">
-                              <div className="text-xs text-gray-500">Table</div>
-                              <div className="text-lg font-semibold text-gray-900">
-                                {tableNumber}
+                        {/* Venue */}
+                        <div className="col-span-2 flex items-center gap-2 text-sm text-gray-600 ml-6">
+                          <MapPin className="h-4 w-4" />
+                          {match.scheduled_venue ? (
+                            <div>
+                              <div className="font-medium">{match.scheduled_venue.name}</div>
+                              <div className="text-xs">
+                                {match.scheduled_venue.city}, {match.scheduled_venue.state}
                               </div>
                             </div>
+                          ) : (
+                            <div className="text-gray-500 italic">Venue TBD</div>
                           )}
                         </div>
+
+                        {/* Table Number - only show if venue exists */}
+                        {match.scheduled_venue && tableNumber && (
+                          <div className="ml-6 text-right">
+                            <div className="text-xs text-gray-500">Table</div>
+                            <div className="text-lg font-semibold text-gray-900">
+                              {tableNumber}
+                            </div>
+                          </div>
+                        )}
                       </div>
                       );
                     })}

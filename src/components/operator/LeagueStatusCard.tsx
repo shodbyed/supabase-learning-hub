@@ -269,7 +269,7 @@ export const LeagueStatusCard: React.FC<LeagueStatusCardProps> = ({
 
   // Section variant (for detail page)
   return (
-    <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+    <div className="lg:col-span-2 bg-white lg:rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">
           {activeSeason ? 'Season Status' : 'League Status'}

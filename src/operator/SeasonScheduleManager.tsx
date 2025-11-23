@@ -6,6 +6,7 @@
  * Past weeks (already played) cannot be modified.
  */
 import React, { useState, useEffect } from 'react';
+import { PageHeader } from '@/components/PageHeader';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
@@ -390,42 +391,34 @@ export const SeasonScheduleManager: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <button
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo={`/league/${leagueId}`}
+        backLabel="Back To League"
+        title="Manage Schedule"
+        subtitle={`${season?.season_name} • ${league?.division || 'League'}`}
+      >
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <Button 
+            variant="outline"
             onClick={handleCancel}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="w-full"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to League
-          </button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manage Schedule</h1>
-              <p className="text-gray-600 mt-1">
-                {season?.season_name} • {league?.division || 'League'}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveChanges}
-                disabled={!hasChanges() || saving}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </div>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveChanges}
+            disabled={!hasChanges() || saving}
+            className="flex items-center gap-2 w-full"
+          >
+            <Save className="h-4 w-4" />
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
         </div>
-
+      </PageHeader>
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Instructions Info Button */}
-        <div className="mb-4">
+        <div className="my-4">
           <InfoButton title="Instructions" label="Instructions">
             <ul className="list-disc list-inside space-y-1 text-sm">
               <li>Click "Insert Week-Off" to add a blackout week (holiday, break, etc.)</li>
@@ -438,7 +431,7 @@ export const SeasonScheduleManager: React.FC = () => {
 
         {/* Season Configuration Summary */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="grid grid-cols-2 gap-32 text-sm">
+          <div className="grid lg:grid-cols-2 gap-3 lg:gap-32 text-sm">
             {/* Left Column: Start Date & Season Length */}
             <div className="space-y-3">
               <div>
@@ -502,7 +495,7 @@ export const SeasonScheduleManager: React.FC = () => {
         )}
 
         {/* Schedule Table */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="lg:bg-white lg:rounded-xl lg:shadow-sm lg:p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Season Schedule</h2>
           <ScheduleReviewTable
             schedule={schedule}
