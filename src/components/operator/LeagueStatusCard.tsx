@@ -130,7 +130,7 @@ export const LeagueStatusCard: React.FC<LeagueStatusCardProps> = ({
 
           // Get player count across all teams in active season
           const { count: playerCountResult } = await supabase
-            .from('team_members')
+            .from('team_players')
             .select('*', { count: 'exact', head: true })
             .eq('season_id', activeSeasonData.id);
           setPlayerCount(playerCountResult || 0);

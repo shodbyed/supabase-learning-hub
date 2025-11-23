@@ -10,7 +10,8 @@ import { useUserProfile } from '@/api/hooks';
 import { supabase } from '@/supabaseClient';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';
-import { ArrowLeft, CalendarX, Shield } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
+import { CalendarX, Shield } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import type { LeagueOperator, OperatorBlackoutPreference } from '@/types/operator';
@@ -470,20 +471,14 @@ export const OrganizationSettings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/operator-dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Organization Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your organization information and league rules</p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/operator-dashboard"
+        backLabel="Back to Dashboard"
+        title="Organization Settings"
+        subtitle="Manage your organization information and league rules"
+      />
+      <div className="container mx-auto px-4 max-w-6xl py-8">
 
         {/* Success Message */}
         {filterSuccess && (
