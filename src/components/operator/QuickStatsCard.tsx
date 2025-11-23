@@ -3,15 +3,11 @@
  *
  * Self-contained stats card that fetches its own data.
  * Displays operator dashboard statistics with automatic data fetching and caching.
+ * Uses a single RPC call to efficiently fetch all 7 stats at once.
  */
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  useLeagueCount,
-  useTeamCount,
-  usePlayerCount,
-  useVenueCount
-} from '@/api/hooks';
+import { useOperatorStats } from '@/api/hooks';
 
 interface QuickStatsCardProps {
   /** Operator ID to fetch stats for */
@@ -21,23 +17,32 @@ interface QuickStatsCardProps {
 /**
  * QuickStatsCard Component
  *
- * Fetches and displays operator statistics:
+ * Fetches and displays operator statistics in a single database call:
  * - Active leagues count
  * - Total teams count
  * - Total players count
  * - Total venues count
+ * - Completed seasons count
+ * - Completed matches count
+ * - Total games played count
  *
- * All data is fetched via TanStack Query hooks with automatic caching.
+ * All data is fetched via a single Postgres RPC function with automatic caching.
  *
  * @example
  * <QuickStatsCard operatorId={operatorId} />
  */
 export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ operatorId }) => {
-  // Fetch all stats using TanStack Query hooks
-  const { data: leagueCount = 0 } = useLeagueCount(operatorId);
-  const { data: teamCount = 0 } = useTeamCount(operatorId);
-  const { data: playerCount = 0 } = usePlayerCount(operatorId);
-  const { data: venueCount = 0 } = useVenueCount(operatorId);
+  // Fetch all stats in one call using RPC function
+  const { data: stats } = useOperatorStats(operatorId);
+
+  // Extract stats with defaults
+  const leagueCount = stats?.leagues ?? 0;
+  const teamCount = stats?.teams ?? 0;
+  const playerCount = stats?.players ?? 0;
+  const venueCount = stats?.venues ?? 0;
+  const completedSeasonCount = stats?.seasons_completed ?? 0;
+  const completedMatchCount = stats?.matches_completed ?? 0;
+  const gamesPlayedCount = stats?.games_played ?? 0;
 
   return (
     <Card>
@@ -81,11 +86,15 @@ export const QuickStatsCard: React.FC<QuickStatsCardProps> = ({ operatorId }) =>
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-gray-600">Seasons Completed</span>
-              <span className="font-medium text-gray-400">Coming Soon</span>
+              <span className="font-medium">{completedSeasonCount}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Total Matches</span>
-              <span className="font-medium text-gray-400">Coming Soon</span>
+              <span className="font-medium">{completedMatchCount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Games</span>
+              <span className="font-medium">{gamesPlayedCount}</span>
             </div>
           </div>
         </div>

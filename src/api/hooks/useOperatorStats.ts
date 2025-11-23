@@ -2,9 +2,10 @@
  * @fileoverview Operator Stats Query Hooks (TanStack Query)
  *
  * React hooks for fetching operator dashboard statistics with automatic caching.
- * Wraps pure query functions with TanStack Query for state management.
+ * Uses a single RPC function call to fetch all stats efficiently.
  *
  * Benefits:
+ * - Single database call instead of 7 separate queries
  * - Automatic caching (fetch once, reuse everywhere)
  * - No duplicate requests (deduplication across components)
  * - Background refetching keeps data fresh
@@ -14,76 +15,36 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  getTeamCount,
-  getPlayerCount,
-  getVenueCount,
-} from '../queries/operatorStats';
+import { getOperatorStats } from '../queries/operatorStats';
 import { STALE_TIME } from '../client';
 
 /**
- * Hook to fetch count of teams for an operator
+ * Hook to fetch all operator statistics in one call
  *
- * Counts teams across all operator's leagues and seasons.
+ * Fetches all 7 operator stats using a single Postgres RPC function:
+ * - leagues: Active leagues count
+ * - teams: Total teams across all leagues
+ * - players: Total players across all teams
+ * - venues: Active venues count
+ * - seasons_completed: Completed seasons count
+ * - matches_completed: Completed matches count
+ * - games_played: Total games with winner determined
+ *
  * Cached for 15 minutes.
  *
  * @param operatorId - Operator's primary key ID
- * @returns TanStack Query result with team count number
+ * @returns TanStack Query result with all operator statistics
  *
  * @example
- * const { data: teamCount = 0 } = useTeamCount(operatorId);
- * return <StatCard title="Total Teams" value={teamCount} />;
+ * const { data: stats } = useOperatorStats(operatorId);
+ * if (stats) {
+ *   console.log(`Managing ${stats.leagues} leagues with ${stats.teams} teams`);
+ * }
  */
-export function useTeamCount(operatorId: string | null | undefined) {
+export function useOperatorStats(operatorId: string | null | undefined) {
   return useQuery({
-    queryKey: ['operator', operatorId, 'teams', 'count'],
-    queryFn: () => getTeamCount(operatorId!),
-    enabled: !!operatorId,
-    staleTime: STALE_TIME.LEAGUES, // 15 minutes
-    retry: 1,
-  });
-}
-
-/**
- * Hook to fetch count of players for an operator
- *
- * Counts players enrolled in teams across all operator's leagues.
- * Cached for 15 minutes.
- *
- * @param operatorId - Operator's primary key ID
- * @returns TanStack Query result with player count number
- *
- * @example
- * const { data: playerCount = 0 } = usePlayerCount(operatorId);
- * return <StatCard title="Total Players" value={playerCount} />;
- */
-export function usePlayerCount(operatorId: string | null | undefined) {
-  return useQuery({
-    queryKey: ['operator', operatorId, 'players', 'count'],
-    queryFn: () => getPlayerCount(operatorId!),
-    enabled: !!operatorId,
-    staleTime: STALE_TIME.LEAGUES, // 15 minutes
-    retry: 1,
-  });
-}
-
-/**
- * Hook to fetch count of venues for an operator
- *
- * Counts venues created/managed by the operator.
- * Cached for 15 minutes.
- *
- * @param operatorId - Operator's primary key ID
- * @returns TanStack Query result with venue count number
- *
- * @example
- * const { data: venueCount = 0 } = useVenueCount(operatorId);
- * return <StatCard title="Total Venues" value={venueCount} />;
- */
-export function useVenueCount(operatorId: string | null | undefined) {
-  return useQuery({
-    queryKey: ['operator', operatorId, 'venues', 'count'],
-    queryFn: () => getVenueCount(operatorId!),
+    queryKey: ['operator', operatorId, 'stats'],
+    queryFn: () => getOperatorStats(operatorId!),
     enabled: !!operatorId,
     staleTime: STALE_TIME.LEAGUES, // 15 minutes
     retry: 1,

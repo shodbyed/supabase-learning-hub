@@ -118,9 +118,7 @@ export {
 
 // Operator stats queries
 export {
-  useTeamCount,
-  usePlayerCount,
-  useVenueCount,
+  useOperatorStats,
 } from './useOperatorStats';
 
 // Season queries
