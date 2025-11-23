@@ -220,5 +220,5 @@ export function FeatsOfExcellence() {
         </div>
       </div>
     </div>
- ;
+ )
 }
