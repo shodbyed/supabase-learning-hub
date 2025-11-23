@@ -116,6 +116,13 @@ export {
   useLeaguesWithProgress,
 } from './useLeagues';
 
+// Operator stats queries
+export {
+  useTeamCount,
+  usePlayerCount,
+  useVenueCount,
+} from './useOperatorStats';
+
 // Season queries
 export {
   useSeasonsByLeague,

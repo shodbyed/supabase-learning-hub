@@ -4,10 +4,10 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useUserProfile, useOperatorIdValue, useLeagueCount } from '@/api/hooks';
+import { useUserProfile, useOperatorIdValue } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
-import { QuickStats } from '@/components/operator/QuickStats';
+import { QuickStatsCard } from '@/components/operator/QuickStatsCard';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, Users, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone, Flag } from 'lucide-react';
@@ -34,9 +34,8 @@ export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
   const { count: pendingReportsCount } = usePendingReportsCount();
 
-  // Fetch operator ID and league count using TanStack Query hooks
+  // Fetch operator ID
   const operatorId = useOperatorIdValue();
-  const { data: leagueCount = 0 } = useLeagueCount(operatorId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,7 +93,7 @@ export const OperatorDashboard: React.FC = () => {
             />
 
             {/* Quick Stats */}
-            <QuickStats activeLeagues={leagueCount} />
+            <QuickStatsCard operatorId={operatorId} />
 
             {/* Recent Activity */}
             <Card>
