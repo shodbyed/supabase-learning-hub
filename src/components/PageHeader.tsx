@@ -17,6 +17,7 @@ interface PageHeaderProps {
   /** Text for the back link (e.g., "Back to My Teams") */
   backLabel: string;
   /** Main page title */
+  hideBack: boolean;
   title: string;
   /** Optional subtitle below title */
   subtitle?: string;
@@ -37,17 +38,19 @@ interface PageHeaderProps {
  *   subtitle="Mondays"
  * />
  */
-export function PageHeader({ backTo, backLabel, title, subtitle, children }: PageHeaderProps) {
+export function PageHeader({ backTo, backLabel, hideBack = false, title, subtitle, children }: PageHeaderProps) {
   return (
     <header className="bg-white border-b sticky top-0 z-10">
       <div className="px-4 py-3">
-        <Link to={backTo} className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-          <ArrowLeft className="h-4 w-4" />
-          {backLabel}
-        </Link>
-        <div className="text-4xl font-semibold text-gray-900">{title}</div>
+        {!hideBack && (
+          <Link to={backTo} className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+            <ArrowLeft className="h-4 w-4" />
+            {backLabel}
+          </Link>
+        )}
+        <div className="text-2xl lg:text-4xl font-semibold text-gray-900">{title}</div>
         {subtitle && (
-          <p className="text-xl text-gray-600">{subtitle}</p>
+          <p className="text-md lg:text-xl text-gray-600">{subtitle}</p>
         )}
         {children}
       </div>

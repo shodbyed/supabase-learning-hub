@@ -38,7 +38,7 @@ export function StatsCard({ leagueId, seasonId }: StatsCardProps) {
         <CardTitle>Stats & Standings</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-wrap gap-4">
           {/* Stats & Standings */}
           <Button
             variant="outline"

@@ -129,7 +129,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
 
   // Leagues list
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="lg:bg-white lg:rounded-xl lg:shadow-sm px-2">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-semibold text-gray-900">Your Active Leagues</h3>
         <Button asChild size="sm">

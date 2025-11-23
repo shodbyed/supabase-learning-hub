@@ -37,6 +37,8 @@ import {
 import { ArrowLeft } from 'lucide-react';
 import { useTopShooters } from '@/api/hooks/useTopShooters';
 import { StatsNavBar } from '@/components/StatsNavBar';
+import { PageHeader } from '@/components/PageHeader';
+import { useCurrentMember } from '@/api/hooks/useCurrentMember';
 
 /**
  * Top Shooters Component
@@ -46,8 +48,12 @@ import { StatsNavBar } from '@/components/StatsNavBar';
  * Handicaps are calculated using the main handicap calculator function.
  */
 export function TopShooters() {
-  const { seasonId } = useParams<{ seasonId: string; leagueId: string }>();
+  const { seasonId, leagueId } = useParams<{ seasonId: string; leagueId: string }>();
   const navigate = useNavigate();
+  const { data: member } = useCurrentMember();
+
+  // Check if current user is a league operator
+  const isOperator = member?.role === 'league_operator';
 
   // Fetch player stats with handicaps
   const { players, isLoading, error, teamFormat } = useTopShooters(
@@ -118,13 +124,38 @@ export function TopShooters() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        hideBack
+        title="Stats & Standings"
+      >
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => navigate(`/my-teams`)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            My Teams
+          </Button>
+          {isOperator && (
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => navigate(`/league/${leagueId}`)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              League Dashboard
+            </Button>
+          )}
+        </div>
+      </PageHeader>
+      <div className="container mx-auto px-4 pb-4 lg:pt-4 max-w-7xl">
         {/* Stats Navigation */}
         <StatsNavBar activePage="top-shooters" />
 
         {/* Page Title */}
-        <h1 className="text-xl sm:text-4xl font-bold text-center mb-4 sm:mb-6">Top Shooters</h1>
+        <span className="text-2xl lg:text-4xl font-bold text-center mb-4 sm:mb-6">Top Shooters</span>
 
         {/* Table - no card wrapper */}
         <div className="overflow-x-auto">

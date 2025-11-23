@@ -443,7 +443,7 @@ export const TeamManagement: React.FC = () => {
         title="Manage Teams"
         subtitle="Assign venues and create teams for your league"
       >
-        <div className="mt-2 flex items-center justify-between">
+        <div className="mt-2 flex flex-col gap-4">
           <InfoButton title="Quick Tip" label="Team Management Tips">
             <div className="space-y-3">
               <p className="text-sm text-gray-700">
@@ -459,8 +459,9 @@ export const TeamManagement: React.FC = () => {
             </div>
           </InfoButton>
           {teams.length > 0 && seasonId && (
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <Button
+                className="w-full"
                 size="lg"
                 variant="outline"
                 onClick={() => navigate(`/league/${leagueId}`)}
@@ -468,6 +469,7 @@ export const TeamManagement: React.FC = () => {
                 Save & Exit
               </Button>
               <Button
+                className="w-full"
                 size="lg"
                 onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
               >
@@ -478,11 +480,11 @@ export const TeamManagement: React.FC = () => {
           </div>
       </PageHeader>
 
-      <div className="container mx-auto px-4 max-w-7xl py-8">
+      <div className="container mx-auto px-4 max-w-7xl py-3 lg:py-8">
         {/* Layout: Venues (left) and Teams (right) */}
-        <div className="grid grid-cols-12 gap-6">
+        <div className="w-full grid grid-cols-1 gap-2 lg:grid-cols-12 lg:gap-6">
           {/* Left Column */}
-          <div className="col-span-4 space-y-6">
+          <div className="col-span-1 lg:col-span-4 space-y-3">
             {/* Status Card */}
             <div className="bg-white rounded-xl shadow-sm p-4">
               <h3 className="text-base font-semibold text-gray-900 mb-3">Setup Summary</h3>
@@ -600,7 +602,7 @@ export const TeamManagement: React.FC = () => {
           </div>
 
           {/* Teams Section - Main Right Area */}
-          <div className="col-span-8 bg-white rounded-xl shadow-sm p-6">
+          <div className="lg:col-span-8 bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
               <div className="flex gap-2">

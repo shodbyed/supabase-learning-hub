@@ -40,7 +40,7 @@ export const ConflictBadge: React.FC<ConflictBadgeProps> = ({ conflict }) => {
       className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border ${colorClass}`}
       title={conflict.reason}
     >
-      <span>{emoji}</span>
+      <span className="hidden lg:block">{emoji}</span>
       <span>{conflict.name}</span>
     </div>
   );

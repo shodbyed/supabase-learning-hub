@@ -44,7 +44,9 @@ const App: React.FC = () => {
     >
       <UserProvider>
         <Router>
+          {/*
           <NavigationWrapper />
+          */}
           <NavRoutes />
         </Router>
       </UserProvider>
