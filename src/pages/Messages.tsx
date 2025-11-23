@@ -18,7 +18,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 import { ConversationList } from '@/components/messages/ConversationList';
 import { MessageView } from '@/components/messages/MessageView';
 import { MessagesEmptyState } from '@/components/messages/MessagesEmptyState';
@@ -167,27 +167,17 @@ export function Messages() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      {/* Header - Shows when viewing conversation list */}
+      {/* Header - Shows when viewing conversation list, hidden on mobile when conversation selected */}
       <div
         className={cn(
-          'border-b bg-gray-300 px-4 md:px-6 py-4 md:py-4 flex items-center gap-2 flex-shrink-0',
-          // Hide on mobile when viewing a conversation
-          selectedConversationId ? 'hidden md:flex' : 'flex'
+          selectedConversationId ? 'hidden md:block' : 'block'
         )}
       >
-        {/* Back button - only on mobile */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/dashboard')}
-          className="md:hidden -ml-2 flex-shrink-0"
-          aria-label="Back to dashboard"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="text-xl md:text-4xl font-semibold">
-          {firstName ? `${firstName}'s Messages` : 'Messages'}
-        </div>
+        <PageHeader
+          backLabel="Back"
+          onBackClick={() => navigate(-1)}
+          title={firstName ? `${firstName}'s Messages` : 'Messages'}
+        />
       </div>
 
       {/* Responsive layout: Single panel on mobile, two-column on desktop */}
