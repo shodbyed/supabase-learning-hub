@@ -768,3 +768,5 @@ export const OrganizationSettings: React.FC = () => {
     </div>
   );
 };
+
+export default OrganizationSettings;

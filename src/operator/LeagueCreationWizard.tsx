@@ -289,3 +289,5 @@ export const LeagueCreationWizard: React.FC = () => {
     </div>
   );
 };
+
+export default LeagueCreationWizard;

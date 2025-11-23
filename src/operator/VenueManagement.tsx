@@ -127,3 +127,5 @@ export const VenueManagement: React.FC = () => {
     </div>
   );
 };
+
+export default VenueManagement;

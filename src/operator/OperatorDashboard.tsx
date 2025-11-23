@@ -146,3 +146,5 @@ export const OperatorDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default OperatorDashboard;

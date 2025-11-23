@@ -753,3 +753,5 @@ export const TeamManagement: React.FC = () => {
     </div>
   );
 };
+
+export default TeamManagement;

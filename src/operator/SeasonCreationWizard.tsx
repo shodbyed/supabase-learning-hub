@@ -749,3 +749,5 @@ export const SeasonCreationWizard: React.FC = () => {
     </div>
   );
 };
+
+export default SeasonCreationWizard;

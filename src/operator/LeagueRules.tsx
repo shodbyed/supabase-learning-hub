@@ -111,3 +111,5 @@ export const LeagueRules: React.FC = () => {
     </div>
   );
 };
+
+export default LeagueRules;

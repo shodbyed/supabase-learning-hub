@@ -488,3 +488,5 @@ export const SeasonSchedulePage: React.FC = () => {
     </div>
   );
 };
+
+export default SeasonSchedulePage;

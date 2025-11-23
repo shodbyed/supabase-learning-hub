@@ -136,3 +136,5 @@ export const ScheduleSetupPage: React.FC = () => {
     </div>
   );
 };
+
+export default ScheduleSetupPage;

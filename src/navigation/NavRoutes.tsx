@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Home } from '../home/Home';
 import { Login } from '../login/Login';
@@ -16,19 +17,6 @@ import { MatchLineup } from '../player/MatchLineup';
 import { ScoreMatch } from '../player/ScoreMatch';
 import { BecomeLeagueOperator } from '../leagueOperator/BecomeLeagueOperator';
 import { LeagueOperatorApplication } from '../leagueOperator/LeagueOperatorApplication';
-import { OperatorWelcome } from '../operator/OperatorWelcome';
-import { OperatorDashboard } from '../operator/OperatorDashboard';
-import { OrganizationSettings } from '../operator/OrganizationSettings';
-import { ReportsManagement } from '../operator/ReportsManagement';
-import { LeagueCreationWizard } from '../operator/LeagueCreationWizard';
-import { LeagueRules } from '../operator/LeagueRules';
-import { LeagueDetail } from '../operator/LeagueDetail';
-import { SeasonCreationWizard } from '../operator/SeasonCreationWizard';
-import { SeasonScheduleManager } from '../operator/SeasonScheduleManager';
-import { VenueManagement } from '../operator/VenueManagement';
-import { TeamManagement } from '../operator/TeamManagement';
-import { ScheduleSetupPage } from '../operator/ScheduleSetupPage';
-import { SeasonSchedulePage } from '../operator/SeasonSchedulePage';
 import { Messages } from '../pages/Messages';
 import { PlayerProfile } from '../pages/PlayerProfile';
 import { AdminReports } from '../pages/AdminReports';
@@ -41,7 +29,23 @@ import { FiveManFormatDetails } from '../info/FiveManFormatDetails';
 import { EightManFormatDetails } from '../info/EightManFormatDetails';
 import { FormatComparison } from '../info/FormatComparison';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import HandicapLookupTest from '../pages/HandicapLookupTest';
+
+// Lazy-loaded operator pages (only loaded when operator accesses them)
+const OperatorWelcome = lazy(() => import('../operator/OperatorWelcome'));
+const OperatorDashboard = lazy(() => import('../operator/OperatorDashboard'));
+const OrganizationSettings = lazy(() => import('../operator/OrganizationSettings'));
+const ReportsManagement = lazy(() => import('../operator/ReportsManagement'));
+const LeagueCreationWizard = lazy(() => import('../operator/LeagueCreationWizard'));
+const LeagueRules = lazy(() => import('../operator/LeagueRules'));
+const LeagueDetail = lazy(() => import('../operator/LeagueDetail'));
+const SeasonCreationWizard = lazy(() => import('../operator/SeasonCreationWizard'));
+const SeasonScheduleManager = lazy(() => import('../operator/SeasonScheduleManager'));
+const VenueManagement = lazy(() => import('../operator/VenueManagement'));
+const TeamManagement = lazy(() => import('../operator/TeamManagement'));
+const ScheduleSetupPage = lazy(() => import('../operator/ScheduleSetupPage'));
+const SeasonSchedulePage = lazy(() => import('../operator/SeasonSchedulePage'));
 
 // Public routes - no authentication required
 const publicRoutes = [
@@ -146,9 +150,11 @@ export const NavRoutes: React.FC = () => {
           key={path}
           path={path}
           element={
-            <ProtectedRoute requireAuth={true} requiredRole="league_operator">
-              {element}
-            </ProtectedRoute>
+            <Suspense fallback={<LoadingSpinner />}>
+              <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+                {element}
+              </ProtectedRoute>
+            </Suspense>
           }
         />
       ))}

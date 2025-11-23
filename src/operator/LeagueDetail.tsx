@@ -301,3 +301,5 @@ export const LeagueDetail: React.FC = () => {
     </div>
   );
 };
+
+export default LeagueDetail;

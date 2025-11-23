@@ -517,3 +517,5 @@ export const SeasonScheduleManager: React.FC = () => {
     </div>
   );
 };
+
+export default SeasonScheduleManager;
