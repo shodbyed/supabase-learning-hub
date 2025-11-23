@@ -19,6 +19,8 @@ interface TiebreakerScoreboardProps {
     away_team?: { team_name: string };
     home_team_verified_by?: string | null;
     away_team_verified_by?: string | null;
+    home_tiebreaker_verified_by?: string | null;
+    away_tiebreaker_verified_by?: string | null;
   };
   /** Map of game results by game number */
   gameResults: Map<

@@ -145,7 +145,7 @@ function TeamAccordionItem({
   const isReady = hasVenue && hasMinRoster;
 
   // Filter out captain from roster
-  const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
+  // const nonCaptainPlayers = team.team_players.filter(p => !p.is_captain);
 
   // Get the appropriate ball icon based on game type
   const getBallIcon = () => {

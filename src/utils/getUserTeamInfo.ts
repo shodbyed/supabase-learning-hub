@@ -26,9 +26,9 @@
  * );
  */
 export function getUserTeamInfo(
-  memberId: string,
+  _memberId: string,
   homeTeamId: string,
-  awayTeamId: string,
+  _awayTeamId: string,
   teamId: string
 ): { userTeamId: string; isHomeTeam: boolean } {
   const userTeamId = teamId;

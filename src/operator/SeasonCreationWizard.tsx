@@ -24,12 +24,12 @@ import { ScheduleReview } from '@/components/season/ScheduleReview';
 import { SeasonStatusCard } from '@/components/operator/SeasonStatusCard';
 import { getSeasonWizardSteps, clearSeasonCreationData, type SeasonFormData } from '@/data/seasonWizardSteps';
 import { fetchChampionshipDateOptions } from '@/utils/tournamentUtils';
-import { getMostRecentSeason } from '@/utils/seasonUtils';
+// import { getMostRecentSeason } from '@/utils/seasonUtils';
 import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
 import type { WeekEntry } from '@/types/season';
-import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { formatDayOfWeek } from '@/types/league';
 
 /**
  * Season Creation Wizard Component
@@ -172,7 +172,7 @@ export const SeasonCreationWizard: React.FC = () => {
 
   // Calculate step data for hooks - safe to do before guards since we handle null cases
   const hasExistingSeasons = state.existingSeasons.length > 0;
-  const mostRecentSeason = getMostRecentSeason(state.existingSeasons);
+  // const mostRecentSeason = getMostRecentSeason(state.existingSeasons);
   const defaultStartDate = hasExistingSeasons ? undefined : state.league?.league_start_date;
 
   /**

@@ -33,7 +33,7 @@ import { ArrowLeft } from 'lucide-react';
  * Only shows players with at least 1 of each feat
  */
 export function FeatsOfExcellence() {
-  const { seasonId } = useParams<{ seasonId: string; leagueId: string }>();
+  const { seasonId, leagueId } = useParams<{ seasonId: string; leagueId: string }>();
   const navigate = useNavigate();
   const { data: member } = useCurrentMember();
 

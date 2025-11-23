@@ -35,7 +35,7 @@ interface UseMatchScoringMutationsParams {
   /** Current user's member ID */
   memberId: string | null;
   /** Game type from league (8-ball, 9-ball, 10-ball) */
-  gameType: string;
+  // gameType: string;
   /** Auto-confirm setting (skip confirmation modal) */
   autoConfirm: boolean;
   /** Add confirmation to queue */
@@ -63,7 +63,7 @@ export function useMatchScoringMutations({
   awayLineup,
   userTeamId,
   memberId,
-  gameType,
+  // gameType,
   autoConfirm,
   addToConfirmationQueue,
   getPlayerDisplayName,

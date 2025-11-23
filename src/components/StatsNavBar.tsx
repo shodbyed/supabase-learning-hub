@@ -8,7 +8,7 @@
 
 import { useNavigate, useParams } from 'react-router-dom';
 import { Trophy, Target, Users, Award /* ArrowLeft, LayoutDashboard */ } from 'lucide-react';
-import { useCurrentMember } from '@/api/hooks/useCurrentMember';
+// import { useCurrentMember } from '@/api/hooks/useCurrentMember';
 
 interface StatsNavBarProps {
   /** Current active page */
@@ -26,10 +26,10 @@ interface StatsNavBarProps {
 export function StatsNavBar({ activePage }: StatsNavBarProps) {
   const navigate = useNavigate();
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
-  const { data: member } = useCurrentMember();
+  // const { data: member } = useCurrentMember();
 
   // Check if current user is a league operator
-  const isOperator = member?.role === 'league_operator';
+  // const isOperator = member?.role === 'league_operator';
 
   const navItems = [
     {

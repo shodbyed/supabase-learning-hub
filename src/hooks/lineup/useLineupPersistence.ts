@@ -198,7 +198,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       });
 
       // Find duplicates (player appearing in 2+ positions) and remove ALL occurrences
-      for (const [playerId, positions] of playerIdCounts.entries()) {
+      for (const [, positions] of playerIdCounts.entries()) {
         if (positions.length > 1) {
           console.log(`🔄 Found duplicate player at positions: ${positions.join(', ')} - removing both`);
           // Set both positions to null (ID) and 0 (handicap - can't be null due to DB constraint)
