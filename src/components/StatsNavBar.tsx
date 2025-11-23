@@ -7,7 +7,7 @@
  */
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Trophy, Target, Users, Award, ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { Trophy, Target, Users, Award /* ArrowLeft, LayoutDashboard */ } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks/useCurrentMember';
 
 interface StatsNavBarProps {

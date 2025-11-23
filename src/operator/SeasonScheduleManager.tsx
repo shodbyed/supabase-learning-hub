@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
 import { WeekOffReasonModal } from '@/components/modals/WeekOffReasonModal';
 import { InfoButton } from '@/components/InfoButton';
