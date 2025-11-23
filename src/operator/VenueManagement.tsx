@@ -62,8 +62,8 @@ export const VenueManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-dashboard"
-        backLabel="Back to Dashboard"
+        backTo="/operator-settings"
+        backLabel="Back to Settings"
         title="Manage Venues"
         subtitle="Add and manage venues where your leagues play"
       >

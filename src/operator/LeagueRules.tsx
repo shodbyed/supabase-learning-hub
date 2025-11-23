@@ -4,8 +4,8 @@
  * Provides access to official BCA rules for 8-Ball, 9-Ball, and 10-Ball.
  * Future: Will include optional house rules management.
  */
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import { PageHeader } from '@/components/PageHeader';
 
 /**
  * League Rules Component
@@ -14,23 +14,15 @@ import { ArrowLeft, ExternalLink } from 'lucide-react';
  * to configure optional house rules for their leagues
  */
 export const LeagueRules: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/operator-settings')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Organization Settings
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">League Rules</h1>
-          <p className="text-gray-600 mt-2">Official BCA rules and optional house rules</p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/operator-settings"
+        backLabel="Back to Settings"
+        title="League Rules"
+        subtitle="Official BCA rules and optional house rules"
+      />
+      <div className="container mx-auto px-4 max-w-4xl py-8">
 
         {/* Official BCA Rules Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
