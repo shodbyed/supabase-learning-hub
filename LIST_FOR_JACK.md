@@ -26,6 +26,22 @@
 - Test form inputs, buttons, and validation messages on small screens
 - Optimize layout and spacing for mobile
 
+## 5. Organization Settings Page Styling
+- Review and improve styling for `/operator/organization-settings` page
+- The layout and visual design needs refinement for better UX
+- Current sections include:
+  - Organization Information card (with individual editable sections)
+  - League Rules card
+  - Venue Management card
+  - Content Moderation (Profanity Filter) card
+  - Blackout Dates (BCA/APA Championship) card
+- Consider improving:
+  - Card layouts and spacing
+  - Edit mode transitions
+  - Form styling consistency
+  - Mobile responsiveness
+  - Visual hierarchy
+
 ---
 
-*Last Updated: 2025-11-23*
+*Last Updated: 2025-11-24*

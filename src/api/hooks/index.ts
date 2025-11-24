@@ -116,6 +116,11 @@ export {
   useLeaguesWithProgress,
 } from './useLeagues';
 
+// Operator queries
+export {
+  useOperatorProfile,
+} from './useOperatorProfile';
+
 // Operator stats queries
 export {
   useOperatorStats,

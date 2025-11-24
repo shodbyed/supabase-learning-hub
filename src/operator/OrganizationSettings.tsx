@@ -6,18 +6,19 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile } from '@/api/hooks';
-import { supabase } from '@/supabaseClient';
+import { useUserProfile, useOperatorProfile } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';
 import { PageHeader } from '@/components/PageHeader';
 import { CalendarX, Shield } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import type { LeagueOperator } from '@/types/operator';
 import { parseLocalDate } from '@/utils/formatters';
 import { useOperatorProfanityToggle } from '@/hooks/useOperatorProfanityToggle';
 import { useChampionshipPreferences } from '@/hooks/useChampionshipPreferences';
+import { useChampionshipDateEditor } from '@/hooks/useChampionshipDateEditor';
+import { useChampionshipIgnoreToggle } from '@/hooks/useChampionshipIgnoreToggle';
+import { OrganizationInfoCard } from '@/components/operator/OrganizationInfoCard';
 
 /**
  * Organization Settings Component
@@ -27,11 +28,23 @@ export const OrganizationSettings: React.FC = () => {
   const navigate = useNavigate();
   const { member } = useUserProfile();
 
-  // Operator profile state
-  const [operatorProfile, setOperatorProfile] = useState<LeagueOperator | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Operator profile (TanStack Query)
+  const {
+    data: operatorProfile,
+    isLoading: loading,
+    error: queryError,
+    refetch: refetchOperatorProfile,
+  } = useOperatorProfile(member?.id);
+
+  // Profanity filter state (still need this for toggle component)
   const [profanityFilterEnabled, setProfanityFilterEnabled] = useState(false);
+
+  // Sync profanity filter state when operator profile loads
+  useEffect(() => {
+    if (operatorProfile) {
+      setProfanityFilterEnabled(operatorProfile.profanity_filter_enabled || false);
+    }
+  }, [operatorProfile]);
 
   // Profanity filter toggle hook
   const { toggleFilter, isSaving: isSavingFilter, success: filterSuccess } = useOperatorProfanityToggle(
@@ -47,91 +60,28 @@ export const OrganizationSettings: React.FC = () => {
     refetchPreferences,
   } = useChampionshipPreferences(operatorProfile?.id);
 
-  // Inline edit state
-  const [editingBca, setEditingBca] = useState(false);
-  const [editingApa, setEditingApa] = useState(false);
-  const [bcaStartDate, setBcaStartDate] = useState('');
-  const [bcaEndDate, setBcaEndDate] = useState('');
-  const [apaStartDate, setApaStartDate] = useState('');
-  const [apaEndDate, setApaEndDate] = useState('');
+  // Championship date editor hooks (replaces all the duplicate edit state and functions)
+  const bcaEditor = useChampionshipDateEditor('BCA', bcaPreference, operatorProfile?.id, refetchPreferences);
+  const apaEditor = useChampionshipDateEditor('APA', apaPreference, operatorProfile?.id, refetchPreferences);
 
-  /**
-   * Fetch operator profile on mount
-   */
-  useEffect(() => {
-    const fetchOperatorProfile = async () => {
-      if (!member) {
-        setLoading(false);
-        return;
-      }
+  // Convert query error to string
+  const error = queryError ? (queryError as Error).message : null;
 
-      try {
-        const { data, error } = await supabase
-          .from('league_operators')
-          .select('*')
-          .eq('member_id', member.id)
-          .single();
+  // Operator profile now handled by useOperatorProfile TanStack Query hook above
+  // Championship preferences handled by useChampionshipPreferences hook above
+  // Championship ignore toggles handled by useChampionshipIgnoreToggle hook below
 
-        if (error) throw error;
+  const bcaIgnoreToggle = useChampionshipIgnoreToggle(
+    bcaPreference?.preference?.id,
+    bcaPreference?.preference?.preference_action,
+    refetchPreferences
+  );
 
-        setOperatorProfile(data);
-        setProfanityFilterEnabled(data.profanity_filter_enabled || false);
-      } catch (err) {
-        console.error('Failed to fetch operator profile:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load operator profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOperatorProfile();
-  }, [member]);
-
-  // Championship preferences now handled by useChampionshipPreferences hook above
-
-  /**
-   * Toggle ignore flag for BCA championship
-   */
-  const toggleBcaIgnore = async () => {
-    if (!operatorProfile || !bcaPreference?.preference) return;
-
-    const newAction = bcaPreference.preference.preference_action === 'ignore' ? 'blackout' : 'ignore';
-
-    try {
-      const { error } = await supabase
-        .from('operator_blackout_preferences')
-        .update({ preference_action: newAction })
-        .eq('id', bcaPreference.preference.id);
-
-      if (error) throw error;
-
-      await refetchPreferences();
-    } catch (err) {
-      console.error('Failed to toggle BCA ignore:', err);
-    }
-  };
-
-  /**
-   * Toggle ignore flag for APA championship
-   */
-  const toggleApaIgnore = async () => {
-    if (!operatorProfile || !apaPreference?.preference) return;
-
-    const newAction = apaPreference.preference.preference_action === 'ignore' ? 'blackout' : 'ignore';
-
-    try {
-      const { error } = await supabase
-        .from('operator_blackout_preferences')
-        .update({ preference_action: newAction })
-        .eq('id', apaPreference.preference.id);
-
-      if (error) throw error;
-
-      await refetchPreferences();
-    } catch (err) {
-      console.error('Failed to toggle APA ignore:', err);
-    }
-  };
+  const apaIgnoreToggle = useChampionshipIgnoreToggle(
+    apaPreference?.preference?.id,
+    apaPreference?.preference?.preference_action,
+    refetchPreferences
+  );
 
   /**
    * Toggle profanity filter for organization
@@ -139,195 +89,7 @@ export const OrganizationSettings: React.FC = () => {
    */
   const handleToggleProfanityFilter = toggleFilter;
 
-  /**
-   * Start editing BCA dates
-   */
-  const startEditingBca = () => {
-    if (bcaPreference?.championship) {
-      setBcaStartDate(bcaPreference.championship.start_date);
-      setBcaEndDate(bcaPreference.championship.end_date);
-    } else {
-      setBcaStartDate('');
-      setBcaEndDate('');
-    }
-    setEditingBca(true);
-  };
-
-  /**
-   * Start editing APA dates
-   */
-  const startEditingApa = () => {
-    if (apaPreference?.championship) {
-      setApaStartDate(apaPreference.championship.start_date);
-      setApaEndDate(apaPreference.championship.end_date);
-    } else {
-      setApaStartDate('');
-      setApaEndDate('');
-    }
-    setEditingApa(true);
-  };
-
-  /**
-   * Cancel editing BCA dates
-   */
-  const cancelEditingBca = () => {
-    setEditingBca(false);
-    setBcaStartDate('');
-    setBcaEndDate('');
-  };
-
-  /**
-   * Cancel editing APA dates
-   */
-  const cancelEditingApa = () => {
-    setEditingApa(false);
-    setApaStartDate('');
-    setApaEndDate('');
-  };
-
-  /**
-   * Save edited BCA dates
-   */
-  const saveBcaDates = async () => {
-    if (!operatorProfile || !bcaStartDate || !bcaEndDate) {
-      console.log('Save validation failed:', { operatorProfile: !!operatorProfile, bcaStartDate, bcaEndDate });
-      return;
-    }
-
-    // Validate that end date is after start date
-    const start = new Date(bcaStartDate);
-    const end = new Date(bcaEndDate);
-
-    if (end <= start) {
-      alert('End date must be after start date');
-      return;
-    }
-
-    console.log('Saving BCA dates:', { bcaStartDate, bcaEndDate, hasExisting: !!bcaPreference?.championship });
-
-    try {
-      if (bcaPreference?.championship) {
-        // Update existing championship_date_options record
-        const { error } = await supabase
-          .from('championship_date_options')
-          .update({
-            start_date: bcaStartDate,
-            end_date: bcaEndDate,
-          })
-          .eq('id', bcaPreference.championship.id);
-
-        if (error) throw error;
-      } else {
-        // Create new championship_date_options record
-        const currentYear = new Date().getFullYear();
-        const { data: newChampionship, error: champError } = await supabase
-          .from('championship_date_options')
-          .insert({
-            organization: 'BCA',
-            year: currentYear,
-            start_date: bcaStartDate,
-            end_date: bcaEndDate,
-            dev_verified: false,
-          })
-          .select()
-          .single();
-
-        if (champError) throw champError;
-
-        // Create the preference record linking to this championship
-        const { error: prefError } = await supabase
-          .from('operator_blackout_preferences')
-          .insert({
-            operator_id: operatorProfile.id,
-            preference_type: 'championship',
-            preference_action: 'blackout',
-            championship_id: newChampionship.id,
-            auto_apply: false,
-          });
-
-        if (prefError) throw prefError;
-      }
-
-      console.log('✅ BCA dates saved successfully');
-      await refetchPreferences();
-      setEditingBca(false);
-    } catch (err) {
-      console.error('❌ Failed to save BCA dates:', err);
-      alert('Failed to save BCA dates. Check console for details.');
-    }
-  };
-
-  /**
-   * Save edited APA dates
-   */
-  const saveApaDates = async () => {
-    if (!operatorProfile || !apaStartDate || !apaEndDate) {
-      console.log('Save validation failed:', { operatorProfile: !!operatorProfile, apaStartDate, apaEndDate });
-      return;
-    }
-
-    // Validate that end date is after start date
-    const start = new Date(apaStartDate);
-    const end = new Date(apaEndDate);
-
-    if (end <= start) {
-      alert('End date must be after start date');
-      return;
-    }
-
-    console.log('Saving APA dates:', { apaStartDate, apaEndDate, hasExisting: !!apaPreference?.championship });
-
-    try {
-      if (apaPreference?.championship) {
-        // Update existing championship_date_options record
-        const { error } = await supabase
-          .from('championship_date_options')
-          .update({
-            start_date: apaStartDate,
-            end_date: apaEndDate,
-          })
-          .eq('id', apaPreference.championship.id);
-
-        if (error) throw error;
-      } else {
-        // Create new championship_date_options record
-        const currentYear = new Date().getFullYear();
-        const { data: newChampionship, error: champError } = await supabase
-          .from('championship_date_options')
-          .insert({
-            organization: 'APA',
-            year: currentYear,
-            start_date: apaStartDate,
-            end_date: apaEndDate,
-            dev_verified: false,
-          })
-          .select()
-          .single();
-
-        if (champError) throw champError;
-
-        // Create the preference record linking to this championship
-        const { error: prefError } = await supabase
-          .from('operator_blackout_preferences')
-          .insert({
-            operator_id: operatorProfile.id,
-            preference_type: 'championship',
-            preference_action: 'blackout',
-            championship_id: newChampionship.id,
-            auto_apply: false,
-          });
-
-        if (prefError) throw prefError;
-      }
-
-      console.log('✅ APA dates saved successfully');
-      await refetchPreferences();
-      setEditingApa(false);
-    } catch (err) {
-      console.error('❌ Failed to save APA dates:', err);
-      alert('Failed to save APA dates. Check console for details.');
-    }
-  };
+  // All BCA/APA date editing logic now handled by useChampionshipDateEditor hooks above
 
   // Loading state
   if (loading) {
@@ -384,37 +146,10 @@ export const OrganizationSettings: React.FC = () => {
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Organization Info Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="text-indigo-600 text-2xl">⚙️</div>
-              <h3 className="font-semibold text-gray-900">Organization Information</h3>
-            </div>
-            <div className="space-y-3 mb-6">
-              <div>
-                <p className="text-sm text-gray-600">Organization Name</p>
-                <p className="text-gray-900 font-medium">{operatorProfile.organization_name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Mailing Address</p>
-                <p className="text-gray-900">{operatorProfile.organization_address}</p>
-                <p className="text-gray-900">{operatorProfile.organization_city}, {operatorProfile.organization_state} {operatorProfile.organization_zip_code}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Contact Email</p>
-                <p className="text-gray-900">{operatorProfile.league_email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Contact Phone</p>
-                <p className="text-gray-900">{operatorProfile.league_phone}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => console.log('Edit org info - Coming soon')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Edit Info
-            </button>
-          </div>
+          <OrganizationInfoCard
+            operatorProfile={operatorProfile}
+            onUpdate={() => refetchOperatorProfile()}
+          />
 
           {/* League Rules Card */}
           <DashboardCard
@@ -499,9 +234,9 @@ export const OrganizationSettings: React.FC = () => {
               <div className="border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600 font-medium">BCA Championship</span>
-                  {!editingBca ? (
+                  {!bcaEditor.isEditing ? (
                     <button
-                      onClick={startEditingBca}
+                      onClick={bcaEditor.startEditing}
                       className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
                     >
                       {bcaPreference?.championship ? 'Edit' : 'Add'}
@@ -509,14 +244,15 @@ export const OrganizationSettings: React.FC = () => {
                   ) : (
                     <div className="flex gap-2">
                       <Button
-                        onClick={saveBcaDates}
+                        onClick={bcaEditor.saveDates}
                         size="sm"
                         className="text-xs h-7"
+                        disabled={bcaEditor.isSaving}
                       >
-                        Save
+                        {bcaEditor.isSaving ? 'Saving...' : 'Save'}
                       </Button>
                       <Button
-                        onClick={cancelEditingBca}
+                        onClick={bcaEditor.cancelEditing}
                         size="sm"
                         variant="outline"
                         className="text-xs h-7"
@@ -526,22 +262,22 @@ export const OrganizationSettings: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {editingBca ? (
+                {bcaEditor.isEditing ? (
                   <div className="space-y-2 mb-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">Start Date</label>
                         <Calendar
-                          value={bcaStartDate}
-                          onChange={setBcaStartDate}
+                          value={bcaEditor.startDate}
+                          onChange={bcaEditor.setStartDate}
                           placeholder="Select start date"
                         />
                       </div>
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">End Date</label>
                         <Calendar
-                          value={bcaEndDate}
-                          onChange={setBcaEndDate}
+                          value={bcaEditor.endDate}
+                          onChange={bcaEditor.setEndDate}
                           placeholder="Select end date"
                         />
                       </div>
@@ -557,7 +293,8 @@ export const OrganizationSettings: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={bcaPreference.preference?.preference_action === 'ignore'}
-                          onChange={toggleBcaIgnore}
+                          onChange={bcaIgnoreToggle.toggleIgnore}
+                          disabled={bcaIgnoreToggle.isToggling}
                           className="rounded"
                         />
                         Ignore these dates
@@ -576,9 +313,9 @@ export const OrganizationSettings: React.FC = () => {
               <div className="border rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600 font-medium">APA Championship</span>
-                  {!editingApa ? (
+                  {!apaEditor.isEditing ? (
                     <button
-                      onClick={startEditingApa}
+                      onClick={apaEditor.startEditing}
                       className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
                     >
                       {apaPreference?.championship ? 'Edit' : 'Add'}
@@ -586,14 +323,15 @@ export const OrganizationSettings: React.FC = () => {
                   ) : (
                     <div className="flex gap-2">
                       <Button
-                        onClick={saveApaDates}
+                        onClick={apaEditor.saveDates}
                         size="sm"
                         className="text-xs h-7"
+                        disabled={apaEditor.isSaving}
                       >
-                        Save
+                        {apaEditor.isSaving ? 'Saving...' : 'Save'}
                       </Button>
                       <Button
-                        onClick={cancelEditingApa}
+                        onClick={apaEditor.cancelEditing}
                         size="sm"
                         variant="outline"
                         className="text-xs h-7"
@@ -603,22 +341,22 @@ export const OrganizationSettings: React.FC = () => {
                     </div>
                   )}
                 </div>
-                {editingApa ? (
+                {apaEditor.isEditing ? (
                   <div className="space-y-2 mb-2">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">Start Date</label>
                         <Calendar
-                          value={apaStartDate}
-                          onChange={setApaStartDate}
+                          value={apaEditor.startDate}
+                          onChange={apaEditor.setStartDate}
                           placeholder="Select start date"
                         />
                       </div>
                       <div>
                         <label className="block text-xs text-gray-600 mb-1">End Date</label>
                         <Calendar
-                          value={apaEndDate}
-                          onChange={setApaEndDate}
+                          value={apaEditor.endDate}
+                          onChange={apaEditor.setEndDate}
                           placeholder="Select end date"
                         />
                       </div>
@@ -634,7 +372,8 @@ export const OrganizationSettings: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={apaPreference.preference?.preference_action === 'ignore'}
-                          onChange={toggleApaIgnore}
+                          onChange={apaIgnoreToggle.toggleIgnore}
+                          disabled={apaIgnoreToggle.isToggling}
                           className="rounded"
                         />
                         Ignore these dates

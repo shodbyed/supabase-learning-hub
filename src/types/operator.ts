@@ -58,6 +58,9 @@ export interface LeagueOperator {
   billing_zip: string;
   payment_verified: boolean;
 
+  // Settings
+  profanity_filter_enabled?: boolean;  // Optional: Enable profanity filter for team names/content
+
   // Timestamps
   created_at: string;  // ISO timestamp
   updated_at: string;  // ISO timestamp
