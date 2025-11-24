@@ -15,8 +15,22 @@ export type {
   TeamFormat,
   HandicapSystem,
   GameType,
-  Season
+  Season,
+  League,
+  HandicapVariant
 } from './league';
+
+// Preferences types (organization and league settings)
+export type {
+  Preferences,
+  PreferenceEntityType,
+  PreferencesInsertData,
+  PreferencesUpdateData,
+  OrganizationPreferences,
+  LeaguePreferences,
+  ResolvedLeaguePreferences
+} from './preferences';
+export { SYSTEM_DEFAULTS } from './preferences';
 
 // Season types
 export type { SeasonWeek } from './season';

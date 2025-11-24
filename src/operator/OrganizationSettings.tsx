@@ -18,7 +18,10 @@ import { useOperatorProfanityToggle } from '@/hooks/useOperatorProfanityToggle';
 import { useChampionshipPreferences } from '@/hooks/useChampionshipPreferences';
 import { useChampionshipDateEditor } from '@/hooks/useChampionshipDateEditor';
 import { useChampionshipIgnoreToggle } from '@/hooks/useChampionshipIgnoreToggle';
-import { OrganizationInfoCard } from '@/components/operator/OrganizationInfoCard';
+import { OrganizationBasicInfoCard } from '@/components/operator/OrganizationBasicInfoCard';
+import { ContactInfoCard } from '@/components/operator/ContactInfoCard';
+import { PaymentMethodCard } from '@/components/operator/PaymentMethodCard';
+import { OrganizationPreferencesCard } from '@/components/operator/OrganizationPreferencesCard';
 
 /**
  * Organization Settings Component
@@ -145,9 +148,26 @@ export const OrganizationSettings: React.FC = () => {
 
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Organization Info Card */}
-          <OrganizationInfoCard
+          {/* Organization Basic Info Card */}
+          <OrganizationBasicInfoCard
             operatorProfile={operatorProfile}
+            onUpdate={() => refetchOperatorProfile()}
+          />
+
+          {/* Contact Info Card */}
+          <ContactInfoCard
+            operatorProfile={operatorProfile}
+            onUpdate={() => refetchOperatorProfile()}
+          />
+
+          {/* Payment Method Card */}
+          <PaymentMethodCard
+            operatorProfile={operatorProfile}
+          />
+
+          {/* Organization Preferences Card */}
+          <OrganizationPreferencesCard
+            operatorId={operatorProfile.id}
             onUpdate={() => refetchOperatorProfile()}
           />
 

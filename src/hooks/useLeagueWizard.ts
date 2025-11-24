@@ -12,6 +12,11 @@ import { parseLocalDate } from '@/utils/formatters';
 interface UseLeagueWizardParams {
   /** Callback when wizard is completed */
   onSubmit: () => void;
+  /** Organization preferences for pre-filling defaults */
+  orgPreferences?: {
+    team_format: string | null;
+    handicap_variant: string | null;
+  } | null;
 }
 
 /**
@@ -26,7 +31,7 @@ interface UseLeagueWizardParams {
  *
  * NOTE: Season length, tournament scheduling, and venues moved to separate wizards
  */
-export const useLeagueWizard = ({ onSubmit }: UseLeagueWizardParams) => {
+export const useLeagueWizard = ({ onSubmit, orgPreferences }: UseLeagueWizardParams) => {
   // Wizard step state with localStorage persistence
   const [currentStep, setCurrentStep] = useLocalStorage('league-wizard-step', 0);
   const [currentInput, setCurrentInput] = useState('');
@@ -93,6 +98,7 @@ export const useLeagueWizard = ({ onSubmit }: UseLeagueWizardParams) => {
     formData,
     updateFormData,
     validateStartDate,
+    orgPreferences,
   });
 
   /**

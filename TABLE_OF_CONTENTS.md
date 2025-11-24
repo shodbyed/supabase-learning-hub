@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-24 (cleaned up TODO/PLAN docs: archived 5 completed plans)
+> **Last Updated**: 2025-11-24 (added OrganizationPreferencesCard.tsx component)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -508,10 +508,14 @@ Reusable wizard/form step components
 
 #### Operator Components (`/components/operator/`)
 - `ActiveLeagues.tsx` - Active leagues overview (uses LeagueStatusCard)
+- `ContactInfoCard.tsx` - Organization contact info editor (email/phone with visibility)
 - `DashboardCard.tsx` - Dashboard card wrapper
 - `LeagueOverviewCard.tsx` - League overview
 - `LeagueProgressBar.tsx` - League progress bar component (used by LeagueStatusCard)
 - `LeagueStatusCard.tsx` - **UNIFIED league status component** - Single source of truth for league/season status, progress, and next actions (used on both Dashboard and League Detail pages)
+- `OrganizationBasicInfoCard.tsx` - Organization name and mailing address editor
+- `OrganizationPreferencesCard.tsx` - Organization-level preferences editor (handicap, format, rules defaults)
+- `PaymentMethodCard.tsx` - Payment method card (Stripe integration placeholder)
 - `QuickStats.tsx` - Quick statistics
 - `ScheduleCard.tsx` - Schedule card
 - `SeasonStatusCard.tsx` - Season status
