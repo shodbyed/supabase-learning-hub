@@ -6,6 +6,7 @@
 import React from 'react';
 import { fetchBCAChampionshipURL } from '@/utils/tournamentUtils';
 import { parseLocalDate, formatLocalDate, getDayOfWeekName } from '@/utils/formatters';
+import type { LeagueFormData } from '@/types/league';
 import {
   startDateInfo,
   seasonLengthInfo,
@@ -52,37 +53,7 @@ export interface WizardStep {
   infoLabel?: string;
 }
 
-/**
- * League form data interface (needed for step getValue/setValue functions)
- */
-export interface LeagueFormData {
-  gameType: string;
-  startDate: string;
-  dayOfWeek: string;
-  season: string;
-  year: number;
-  qualifier: string;
-  seasonLength: number;
-  endDate: string;
-  bcaNationalsChoice: string;
-  bcaNationalsStart: string;
-  bcaNationalsEnd: string;
-  apaNationalsStart: string;
-  apaNationalsEnd: string;
-  teamFormat: '5_man' | '8_man' | '';
-  handicapSystem: 'custom_5man' | 'bca_standard' | '';
-  handicapVariant: 'standard' | 'reduced' | 'none' | '';
-  teamHandicapVariant: 'standard' | 'reduced' | 'none' | '';
-  organizationName: string;
-  organizationAddress: string;
-  organizationCity: string;
-  organizationState: string;
-  organizationZipCode: string;
-  contactEmail: string;
-  contactPhone: string;
-  selectedVenueId: string;
-  venueIds: string[];
-}
+// LeagueFormData is imported from @/types/league to avoid duplication
 
 /**
  * Parameters for creating wizard steps

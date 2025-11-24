@@ -60,13 +60,13 @@ export function getPlayerDisplayName(member: Member | PartialMember): string {
  * Partial member object from database queries (captain/roster lookups)
  * Only includes fields needed for display purposes
  */
-export interface PartialMember {
-  id: string;
-  first_name: string;
-  last_name: string;
-  system_player_number: number;
-  bca_member_number: string | null;
-}
+export type PartialMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'system_player_number' | 'bca_member_number'>;
+
+/**
+ * Member subset used for messaging features
+ * Includes minimal fields needed for member selection and display in messages
+ */
+export type MemberForMessaging = Pick<Member, 'id' | 'first_name' | 'last_name' | 'system_player_number'>;
 
 /**
  * Format player number for partial member objects from queries

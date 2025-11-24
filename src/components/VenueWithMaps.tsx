@@ -25,15 +25,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
+import type { Venue } from '@/types';
 
-interface Venue {
-  id: string;
-  name: string;
-  street_address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-}
+type VenueForMaps = Pick<Venue, 'id' | 'name' | 'street_address' | 'city' | 'state' | 'zip_code'>;
 
 interface VenueWithMapsProps {
   venueId: string;
@@ -44,7 +38,7 @@ interface VenueWithMapsProps {
 /**
  * Fetch venue data by ID
  */
-async function fetchVenue(venueId: string): Promise<Venue> {
+async function fetchVenue(venueId: string): Promise<VenueForMaps> {
   const { data, error } = await supabase
     .from('venues')
     .select('id, name, street_address, city, state, zip_code')
@@ -54,13 +48,13 @@ async function fetchVenue(venueId: string): Promise<Venue> {
   if (error) throw error;
   if (!data) throw new Error('Venue not found');
 
-  return data;
+  return data as VenueForMaps;
 }
 
 /**
  * Open venue location in Google Maps
  */
-function openInMaps(venue: Venue) {
+function openInMaps(venue: VenueForMaps) {
   // Build address string from available fields
   const addressParts = [
     venue.street_address,

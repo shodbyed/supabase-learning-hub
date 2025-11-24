@@ -8,6 +8,7 @@
  *
  * Season length and tournament scheduling moved to ScheduleCreationWizard
  */
+import type { LeagueFormData as FullLeagueFormData } from '@/types/league';
 import {
   startDateInfo,
   gameFormatInfo,
@@ -51,19 +52,20 @@ export interface WizardStep {
 
 /**
  * League form data interface (simplified - only core identity fields)
+ * Uses Pick<> to extract needed fields from the full LeagueFormData type
  */
-export interface LeagueFormData {
-  gameType: string;
-  startDate: string;
-  dayOfWeek: string;
-  season: string;
-  year: number;
-  qualifier: string;
-  teamFormat: '5_man' | '8_man' | '';
-  handicapSystem: 'custom_5man' | 'bca_standard' | '';
-  handicapVariant: 'standard' | 'reduced' | 'none' | '';
-  teamHandicapVariant: 'standard' | 'reduced' | 'none' | '';
-}
+export type LeagueFormData = Pick<FullLeagueFormData,
+  | 'gameType'
+  | 'startDate'
+  | 'dayOfWeek'
+  | 'season'
+  | 'year'
+  | 'qualifier'
+  | 'teamFormat'
+  | 'handicapSystem'
+  | 'handicapVariant'
+  | 'teamHandicapVariant'
+>;
 
 /**
  * Parameters for creating wizard steps

@@ -7,7 +7,7 @@
  */
 
 // Member and User types
-export type { Member, PartialMember, UserRole } from './member';
+export type { Member, PartialMember, MemberForMessaging, UserRole } from './member';
 
 // League types
 export type {
@@ -17,6 +17,9 @@ export type {
   GameType,
   Season
 } from './league';
+
+// Season types
+export type { SeasonWeek } from './season';
 
 // Venue types
 export type { Venue, VenueFormData } from './venue';

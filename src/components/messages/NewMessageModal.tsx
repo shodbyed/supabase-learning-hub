@@ -19,13 +19,7 @@ import { supabase } from '@/supabaseClient';
 import { UserListItem } from './UserListItem';
 import { useBlockedUsers } from '@/api/hooks';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
-
-interface Member {
-  id: string;
-  first_name: string;
-  last_name: string;
-  system_player_number: number;
-}
+import type { MemberForMessaging } from '@/types';
 
 interface NewMessageModalProps {
   onClose: () => void;
@@ -42,7 +36,7 @@ export function NewMessageModal({
 }: NewMessageModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = useState<MemberForMessaging[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');

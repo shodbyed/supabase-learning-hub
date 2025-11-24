@@ -7,26 +7,16 @@
 
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import type { Team, Venue } from '@/types';
 
-interface Team {
-  id: string;
-  team_name: string;
-  captain_id: string;
-}
-
-interface Venue {
-  id: string;
-  name: string;
-  street_address?: string;
-  city?: string;
-  state?: string;
-}
+type TeamForMatchCard = Pick<Team, 'id' | 'team_name' | 'captain_id'>;
+type VenueForMatchCard = Pick<Venue, 'id' | 'name' | 'city' | 'state'> & { street_address?: string };
 
 interface MatchCardData {
   id: string;
-  home_team?: Team | null;
-  away_team?: Team | null;
-  scheduled_venue?: Venue | null;
+  home_team?: TeamForMatchCard | null;
+  away_team?: TeamForMatchCard | null;
+  scheduled_venue?: VenueForMatchCard | null;
   scheduled_venue_id?: string | null;
 }
 

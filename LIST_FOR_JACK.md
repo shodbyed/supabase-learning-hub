@@ -42,6 +42,14 @@
   - Mobile responsiveness
   - Visual hierarchy
 
+## 6. Type System Architecture Review
+- **Issue**: Over-abstraction with Pick<> types for single-record fetches
+- **Context**: Using `Pick<Member, 'id' | 'name' | ...>` for individual member queries adds maintenance overhead without performance benefit
+- **Question**: Should we grab full records (`select *`) for single-entity fetches and only use selective fetching for list queries where it matters?
+- **Trade-off**: Simplicity vs explicit dependencies. At current scale, simplicity likely wins.
+- **Files affected**: Message components (MemberForMessaging), various single-entity hooks
+- **Decision needed**: Establish pattern for when to use selective vs full fetching
+
 ---
 
 *Last Updated: 2025-11-24*
