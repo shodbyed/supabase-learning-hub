@@ -14,9 +14,10 @@ import { PageHeader } from '@/components/PageHeader';
 import { CalendarX, Shield } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import type { LeagueOperator, OperatorBlackoutPreference } from '@/types/operator';
-import type { ChampionshipDateOption } from '@/utils/tournamentUtils';
+import type { LeagueOperator } from '@/types/operator';
 import { parseLocalDate } from '@/utils/formatters';
+import { useOperatorProfanityToggle } from '@/hooks/useOperatorProfanityToggle';
+import { useChampionshipPreferences } from '@/hooks/useChampionshipPreferences';
 
 /**
  * Organization Settings Component
@@ -31,18 +32,20 @@ export const OrganizationSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profanityFilterEnabled, setProfanityFilterEnabled] = useState(false);
-  const [isSavingFilter, setIsSavingFilter] = useState(false);
-  const [filterSuccess, setFilterSuccess] = useState(false);
 
-  // Championship preferences state
-  const [bcaPreference, setBcaPreference] = useState<{
-    preference: OperatorBlackoutPreference | null;
-    championship: ChampionshipDateOption | null;
-  } | null>(null);
-  const [apaPreference, setApaPreference] = useState<{
-    preference: OperatorBlackoutPreference | null;
-    championship: ChampionshipDateOption | null;
-  } | null>(null);
+  // Profanity filter toggle hook
+  const { toggleFilter, isSaving: isSavingFilter, success: filterSuccess } = useOperatorProfanityToggle(
+    operatorProfile?.id || null,
+    profanityFilterEnabled,
+    setProfanityFilterEnabled
+  );
+
+  // Championship preferences hook
+  const {
+    bcaPreference,
+    apaPreference,
+    refetchPreferences,
+  } = useChampionshipPreferences(operatorProfile?.id);
 
   // Inline edit state
   const [editingBca, setEditingBca] = useState(false);
@@ -84,93 +87,7 @@ export const OrganizationSettings: React.FC = () => {
     fetchOperatorProfile();
   }, [member]);
 
-  /**
-   * Fetch championship preferences for BCA and APA
-   * Fetches both the preference and the associated championship date details
-   */
-  useEffect(() => {
-    const fetchChampionshipPreferences = async () => {
-      if (!operatorProfile) return;
-
-      try {
-        // Fetch all championship preferences for this operator
-        const { data: preferences, error: prefError } = await supabase
-          .from('operator_blackout_preferences')
-          .select('*')
-          .eq('operator_id', operatorProfile.id)
-          .eq('preference_type', 'championship');
-
-        if (prefError) throw prefError;
-
-        // Process each preference and fetch associated championship details
-        for (const pref of preferences || []) {
-          if (!pref.championship_id) continue;
-
-          const { data: championship } = await supabase
-            .from('championship_date_options')
-            .select('*')
-            .eq('id', pref.championship_id)
-            .single();
-
-          if (championship) {
-            if (championship.organization === 'BCA') {
-              setBcaPreference({ preference: pref, championship });
-            } else if (championship.organization === 'APA') {
-              setApaPreference({ preference: pref, championship });
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch championship preferences:', err);
-      }
-    };
-
-    fetchChampionshipPreferences();
-  }, [operatorProfile]);
-
-  /**
-   * Refetch championship preferences after saving changes
-   * Clears existing state and re-fetches to ensure UI is up to date
-   */
-  const refetchPreferences = async () => {
-    if (!operatorProfile) return;
-
-    // Clear existing state
-    setBcaPreference(null);
-    setApaPreference(null);
-
-    try {
-      // Fetch all championship preferences for this operator
-      const { data: preferences, error: prefError } = await supabase
-        .from('operator_blackout_preferences')
-        .select('*')
-        .eq('operator_id', operatorProfile.id)
-        .eq('preference_type', 'championship');
-
-      if (prefError) throw prefError;
-
-      // Process each preference and fetch associated championship details
-      for (const pref of preferences || []) {
-        if (!pref.championship_id) continue;
-
-        const { data: championship } = await supabase
-          .from('championship_date_options')
-          .select('*')
-          .eq('id', pref.championship_id)
-          .single();
-
-        if (championship) {
-          if (championship.organization === 'BCA') {
-            setBcaPreference({ preference: pref, championship });
-          } else if (championship.organization === 'APA') {
-            setApaPreference({ preference: pref, championship });
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch championship preferences:', err);
-    }
-  };
+  // Championship preferences now handled by useChampionshipPreferences hook above
 
   /**
    * Toggle ignore flag for BCA championship
@@ -218,34 +135,9 @@ export const OrganizationSettings: React.FC = () => {
 
   /**
    * Toggle profanity filter for organization
+   * Now delegates to useOperatorProfanityToggle hook
    */
-  const handleToggleProfanityFilter = async () => {
-    if (!operatorProfile) return;
-
-    setIsSavingFilter(true);
-    setFilterSuccess(false);
-
-    const newValue = !profanityFilterEnabled;
-
-    const { error: updateError } = await supabase
-      .from('league_operators')
-      .update({ profanity_filter_enabled: newValue })
-      .eq('id', operatorProfile.id);
-
-    if (updateError) {
-      console.error('Failed to update profanity filter:', updateError);
-      alert('Failed to update profanity filter. Please try again.');
-      setIsSavingFilter(false);
-      return;
-    }
-
-    setProfanityFilterEnabled(newValue);
-    setFilterSuccess(true);
-    setIsSavingFilter(false);
-
-    // Clear success message after 3 seconds
-    setTimeout(() => setFilterSuccess(false), 3000);
-  };
+  const handleToggleProfanityFilter = toggleFilter;
 
   /**
    * Start editing BCA dates
