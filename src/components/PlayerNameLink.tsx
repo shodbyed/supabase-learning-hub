@@ -24,6 +24,13 @@ import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser,
 import { ReportUserModal } from '@/components/ReportUserModal';
 import { ConfirmDialog } from '@/components/shared';
 
+interface CustomAction {
+  label: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+  className?: string;
+}
+
 interface PlayerNameLinkProps {
   playerId: string;
   playerName: string;
@@ -31,6 +38,7 @@ interface PlayerNameLinkProps {
   onSendMessage?: (playerId: string) => void;
   onReportUser?: (playerId: string) => void;
   onBlockUser?: (playerId: string) => void;
+  customActions?: CustomAction[];
 }
 
 export function PlayerNameLink({
@@ -40,6 +48,7 @@ export function PlayerNameLink({
   onSendMessage,
   onReportUser,
   onBlockUser,
+  customActions = [],
 }: PlayerNameLinkProps) {
   const navigate = useNavigate();
   const memberId = useMemberId();
@@ -229,6 +238,26 @@ export function PlayerNameLink({
               <Ban className="h-4 w-4" />
               <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
             </button>
+
+            {/* Custom Actions */}
+            {customActions.length > 0 && (
+              <>
+                <div className="border-t" />
+                {customActions.map((action, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      action.onClick();
+                      setOpen(false);
+                    }}
+                    className={action.className || "flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"}
+                  >
+                    {action.icon}
+                    <span>{action.label}</span>
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </PopoverContent>
       </Popover>

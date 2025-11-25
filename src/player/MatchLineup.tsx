@@ -144,7 +144,7 @@ export function MatchLineup() {
     teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
     handicapVariant: (matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none',
     gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
-    seasonId: matchData?.season_id,
+    leagueId: matchData?.league?.id,
     gameLimit: 200,
   });
 
@@ -169,7 +169,7 @@ export function MatchLineup() {
     teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
     handicapVariant: (matchData?.league?.handicap_variant || 'standard') as 'standard' | 'reduced' | 'none',
     gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
-    seasonId: matchData?.season_id,
+    leagueId: matchData?.league?.id,
     gameLimit: 200,
   });
 
@@ -663,7 +663,7 @@ export function MatchLineup() {
                   | 'nine_ball'
                   | 'ten_ball'
               }
-              seasonId={matchData?.season_id}
+              leagueId={matchData?.league?.id}
               hidePlayerNumber
               hideHandicap={isTiebreakerMode}
               captainId={teamDetailsQuery.data?.captain_id}

@@ -74,7 +74,7 @@ export function TeamStats() {
     teamFormat: league?.team_format || '5_man',
     handicapVariant: league?.handicap_variant || 'standard',
     gameType: league?.game_type || 'eight_ball',
-    seasonId,
+    leagueId,
     gameLimit: 200,
   });
 

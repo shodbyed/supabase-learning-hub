@@ -360,7 +360,7 @@ function TeamAccordionItem({
             teamFormat={team.roster_size === 5 ? '5_man' : '8_man'}
             handicapVariant="standard"
             gameType={team.season.league.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball'}
-            seasonId={team.season.id}
+            leagueId={team.season.league.id}
             captainId={team.team_players.find(p => p.is_captain)?.member_id}
           />
 

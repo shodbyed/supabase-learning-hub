@@ -6,6 +6,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 // import { OperatorNavBar } from './navigation/OperatorNavBar';
 import { NavRoutes } from './navigation/NavRoutes';
 import { UserProvider } from './context/UserProvider';
+import { Toaster } from './components/ui/sonner';
 
 
 /**
@@ -50,6 +51,7 @@ const App: React.FC = () => {
           <NavRoutes />
         </Router>
       </UserProvider>
+      <Toaster position="top-right" />
     </div>
   );
 };

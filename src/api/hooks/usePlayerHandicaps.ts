@@ -31,7 +31,7 @@ interface UsePlayerHandicapsParams {
   teamFormat: TeamFormat;
   handicapVariant: HandicapVariant;
   gameType: GameType;
-  seasonId?: string;
+  leagueId?: string;
   gameLimit?: number;
 }
 
@@ -51,7 +51,7 @@ interface UsePlayerHandicapsParams {
  *   teamFormat: '5_man',
  *   handicapVariant: 'standard',
  *   gameType: 'nine_ball',
- *   seasonId: 'season-123',
+ *   leagueId: 'league-123',
  *   gameLimit: 200 // optional, defaults to 200
  * });
  *
@@ -64,7 +64,7 @@ export function usePlayerHandicaps({
   teamFormat,
   handicapVariant,
   gameType,
-  seasonId,
+  leagueId,
   gameLimit = 200,
 }: UsePlayerHandicapsParams) {
   // Use useQueries to fetch all player handicaps in parallel
@@ -75,7 +75,7 @@ export function usePlayerHandicaps({
         teamFormat,
         handicapVariant,
         gameType,
-        seasonId || 'none',
+        leagueId || 'none',
         gameLimit,
       ],
       queryFn: () =>
@@ -84,7 +84,7 @@ export function usePlayerHandicaps({
           teamFormat,
           handicapVariant,
           gameType,
-          seasonId,
+          leagueId,
           gameLimit
         ),
       staleTime: 5 * 60 * 1000, // 5 minutes - handicaps don't change that frequently

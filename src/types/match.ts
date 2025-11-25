@@ -72,6 +72,7 @@ export interface MatchWithLeagueSettings {
     scheduled_date: string;
   } | null;
   league: {
+    id: string;
     handicap_variant: HandicapVariant;
     team_handicap_variant: HandicapVariant;
     golden_break_counts_as_win: boolean;
@@ -112,6 +113,7 @@ export interface MatchForLineup {
     scheduled_date: string;
   } | null;
   league: {
+    id: string;
     handicap_variant: HandicapVariant;
     team_handicap_variant: HandicapVariant;
     game_type: 'eight_ball' | 'nine_ball' | 'ten_ball';

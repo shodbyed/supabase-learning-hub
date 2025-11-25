@@ -37,6 +37,7 @@ const OperatorWelcome = lazy(() => import('../operator/OperatorWelcome'));
 const OperatorDashboard = lazy(() => import('../operator/OperatorDashboard'));
 const OrganizationSettings = lazy(() => import('../operator/OrganizationSettings'));
 const ReportsManagement = lazy(() => import('../operator/ReportsManagement'));
+const PlayerManagement = lazy(() => import('../operator/PlayerManagement'));
 const LeagueCreationWizard = lazy(() => import('../operator/LeagueCreationWizard'));
 const LeagueRules = lazy(() => import('../operator/LeagueRules'));
 const LeagueDetail = lazy(() => import('../operator/LeagueDetail'));
@@ -93,6 +94,7 @@ const operatorRoutes = [
   { path: '/operator-welcome', element: <OperatorWelcome /> },
   { path: '/operator-dashboard', element: <OperatorDashboard /> },
   { path: '/operator-reports', element: <ReportsManagement /> },
+  { path: '/manage-players', element: <PlayerManagement /> },
   { path: '/create-league', element: <LeagueCreationWizard /> },
   { path: '/operator-settings', element: <OrganizationSettings /> },
   { path: '/league-rules', element: <LeagueRules /> },
