@@ -15,7 +15,7 @@ interface PlayerRosterProps {
   teamFormat: TeamFormat;
   handicapVariant: HandicapVariant;
   gameType: GameType;
-  seasonId?: string;
+  leagueId?: string;
   gameLimit?: number;
   hidePlayerNumber?: boolean;
   hideName?: boolean;
@@ -35,7 +35,7 @@ export function PlayerRoster({
   teamFormat,
   handicapVariant,
   gameType,
-  seasonId,
+  leagueId,
   gameLimit = 200,
   hidePlayerNumber = false,
   hideName = false,
@@ -49,7 +49,7 @@ export function PlayerRoster({
     teamFormat,
     handicapVariant,
     gameType,
-    seasonId,
+    leagueId,
     gameLimit,
   });
 

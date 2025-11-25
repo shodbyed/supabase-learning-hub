@@ -119,7 +119,7 @@ export function useTopShooters(seasonId: string): UseTopShootersResult {
     teamFormat: league?.team_format || '5_man',
     handicapVariant: league?.handicap_variant || 'standard',
     gameType: league?.game_type || 'eight_ball',
-    seasonId, // Prioritize current season games in handicap calculation
+    leagueId: league?.id, // Use league ID to prioritize games from this league
     gameLimit: 200, // Standard handicap calculation uses last 200 games
   });
 

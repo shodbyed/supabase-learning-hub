@@ -18,6 +18,7 @@
  */
 
 import { fetchPlayerGameHistory } from '@/api/queries/matchGames';
+import { supabase } from '@/supabaseClient';
 
 /**
  * Team format types
@@ -32,25 +33,30 @@ type HandicapVariant = 'standard' | 'reduced' | 'none';
 /**
  * Calculate a player's handicap based on their game history
  *
+ * NEW LOGIC WITH STARTING HANDICAPS:
+ * 1. Fetch games from league (all seasons) first
+ * 2. If < 50 games, expand to all games of that type
+ * 3. If < 15 games total, use starting handicap from player profile
+ * 4. Otherwise calculate handicap from game history
+ *
  * IMPORTANT: Handicaps are game-type specific. 8-ball games don't count for 9-ball handicaps.
- * Games from the current season are prioritized first, then other games of the same type.
  *
  * @param playerId - The player's member ID
  * @param teamFormat - '5_man' (3v3) or '8_man' (5v5)
  * @param handicapVariant - 'standard', 'reduced', or 'none'
  * @param gameType - Game type to filter ('eight_ball', 'nine_ball', 'ten_ball')
- * @param currentSeasonId - Optional current season ID to prioritize those games first
+ * @param leagueId - Optional league ID to prioritize games from this league's seasons
  * @param gameLimit - Number of recent games to consider (default: 200). Higher = more stable, lower = more volatile
  * @returns Handicap value (integer for 3v3, percentage for 5v5)
  *
  * @example
- * // 3v3 format, 9-ball, prioritizing current season, last 200 games (default)
+ * // 3v3 format, 9-ball, from specific league, last 200 games (default)
  * const handicap = await calculatePlayerHandicap(
  *   'player-123',
  *   '5_man',
  *   'standard',
  *   'nine_ball',
- *   'season-456'
+ *   'league-456'
  * );
  * // Returns: -2, -1, 0, 1, or 2
  *
@@ -71,7 +77,7 @@ export async function calculatePlayerHandicap(
   teamFormat: TeamFormat,
   handicapVariant: HandicapVariant,
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball',
-  currentSeasonId?: string,
+  leagueId?: string,
   gameLimit: number = 200
 ): Promise<number> {
   // Handle 'none' variant - return defaults
@@ -79,22 +85,32 @@ export async function calculatePlayerHandicap(
     return teamFormat === '5_man' ? 0 : 40;
   }
 
-  // Query last N games for this player (filtered by game type, prioritizing current season)
+  // Query games for this player (filtered by game type, prioritizing league)
   try {
-    const games = await fetchPlayerGameHistory(playerId, gameType, currentSeasonId, gameLimit);
+    const games = await fetchPlayerGameHistory(playerId, gameType, leagueId, gameLimit);
 
-    // Handle different minimum game requirements by format
-    if (!games || games.length === 0) {
-      // No games played - return defaults
-      return teamFormat === '5_man' ? 0 : 40;
+    // NEW: If < 15 games total, use starting handicap from player profile
+    if (!games || games.length < 15) {
+      // Fetch player's starting handicap from database
+      const { data: player, error } = await supabase
+        .from('members')
+        .select('starting_handicap_3v3, starting_handicap_5v5')
+        .eq('id', playerId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching player starting handicap:', error);
+        return teamFormat === '5_man' ? 0 : 40;
+      }
+
+      // Return appropriate starting handicap based on format
+      if (teamFormat === '5_man') {
+        return player?.starting_handicap_3v3 ?? 0;
+      } else {
+        return player?.starting_handicap_5v5 ?? 40;
+      }
     }
 
-    // 3v3: Requires minimum 18 games before calculating handicap
-    if (teamFormat === '5_man' && games.length < 18) {
-      return 0;
-    }
-
-    // 5v5: Calculate handicap immediately with ANY games (no minimum)
     // Count wins and losses
     const wins = games.filter((game) => game.winner_player_id === playerId).length;
     const losses = games.length - wins;

@@ -64,7 +64,7 @@ export const OperatorDashboard: React.FC = () => {
             title="Manage Players"
             description="View registrations and player stats"
             buttonText="View Players"
-            onClick={() => console.log('Manage Players - Coming soon')}
+            linkTo="/manage-players"
           />
 
           <DashboardCard

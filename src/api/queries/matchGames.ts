@@ -36,9 +36,9 @@ export interface MatchGame {
 /**
  * Fetch last N games for a player (for handicap calculation)
  *
- * Returns games filtered by game type and prioritized by season:
- * 1. Games from current season first (if currentSeasonId provided)
- * 2. Then games from other seasons with matching game_type
+ * NEW LEAGUE-BASED LOOKUP LOGIC:
+ * 1. If leagueId provided, get all games from ALL SEASONS in that league
+ * 2. If < 50 games (or < 25% of limit), expand to ALL games of that game type (all leagues)
  * 3. Ordered by created_at (newest first)
  * 4. Only returns games with a winner (completed games)
  * 5. TIEBREAKER RULE: Excludes tiebreaker games where player lost
@@ -56,44 +56,72 @@ export interface MatchGame {
  *
  * @param playerId - The player's member ID
  * @param gameType - Game type to filter ('eight_ball', 'nine_ball', 'ten_ball')
- * @param currentSeasonId - Optional current season ID to prioritize
+ * @param leagueId - Optional league ID to prioritize games from this league's seasons
  * @param limit - Maximum number of games to return (default: 200)
  * @returns Array of completed games where the player participated (tiebreaker losses excluded)
  * @throws Error if query fails
  *
  * @example
- * // Get 9-ball games, prioritizing current season
- * const games = await fetchPlayerGameHistory('player-123', 'nine_ball', 'season-456', 200);
+ * // Get 9-ball games from specific league (all seasons)
+ * const games = await fetchPlayerGameHistory('player-123', 'nine_ball', 'league-456', 200);
  * const wins = games.filter(g => g.winner_player_id === 'player-123').length;
  */
 export async function fetchPlayerGameHistory(
   playerId: string,
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball',
-  currentSeasonId?: string,
+  leagueId?: string,
   limit: number = 200
 ): Promise<MatchGame[]> {
-  // Fast query using denormalized game_type field - no joins needed!
-  // Composite indexes make this extremely fast for handicap calculations
-  const selectFields = currentSeasonId ? '*, match:matches!inner(season_id)' : '*';
-
   // Fetch extra games (25% buffer) to account for tiebreaker losses that will be filtered out
   // Tiebreakers are rare, so 250 games ensures we have 200+ after filtering
   const fetchLimit = Math.ceil(limit * 1.25);
 
-  const { data, error } = await supabase
-    .from('match_games')
-    .select(selectFields)
-    .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`)
-    .not('winner_player_id', 'is', null) // Only completed games
-    .eq('game_type', gameType) // Direct filter - much faster than joins!
-    .order('created_at', { ascending: false })
-    .limit(fetchLimit) as any; // TypeScript struggles with conditional selects, cast to any
+  let leagueGames: any[] = [];
 
-  if (error) {
-    throw new Error(`Failed to fetch player game history: ${error.message}`);
+  // Step 1: If leagueId provided, get all games from ALL SEASONS in that league
+  if (leagueId) {
+    const { data: leagueData, error: leagueError } = await supabase
+      .from('match_games')
+      .select('*, match:matches!inner(season:seasons!inner(league_id))')
+      .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`)
+      .not('winner_player_id', 'is', null) // Only completed games
+      .eq('game_type', gameType)
+      .eq('match.season.league_id', leagueId)
+      .order('created_at', { ascending: false })
+      .limit(fetchLimit);
+
+    if (leagueError) {
+      throw new Error(`Failed to fetch league game history: ${leagueError.message}`);
+    }
+
+    leagueGames = leagueData || [];
   }
 
-  if (!data || data.length === 0) {
+  // Step 2: If < 50 games (or < 25% of limit), expand to ALL games of this game type
+  const threshold = Math.ceil(limit * 0.25); // 25% threshold (50 games for limit=200)
+  const needsExpansion = leagueGames.length < threshold;
+
+  let allGames: any[] = leagueGames;
+
+  if (needsExpansion) {
+    // Fetch all games of this game type (across all leagues)
+    const { data, error } = await supabase
+      .from('match_games')
+      .select('*')
+      .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`)
+      .not('winner_player_id', 'is', null) // Only completed games
+      .eq('game_type', gameType)
+      .order('created_at', { ascending: false })
+      .limit(fetchLimit);
+
+    if (error) {
+      throw new Error(`Failed to fetch player game history: ${error.message}`);
+    }
+
+    allGames = data || [];
+  }
+
+  if (!allGames || allGames.length === 0) {
     return [];
   }
 
@@ -101,7 +129,7 @@ export async function fetchPlayerGameHistory(
   // - Keep all non-tiebreaker games
   // - Keep tiebreaker games where player WON (counts toward handicap)
   // - Exclude tiebreaker games where player LOST (prevents anti-sandbagging penalty)
-  const filteredData = data.filter((game: any) => {
+  const filteredData = allGames.filter((game: any) => {
     const isTiebreaker = game.is_tiebreaker === true;
     const playerWon = game.winner_player_id === playerId;
 
@@ -111,20 +139,6 @@ export async function fetchPlayerGameHistory(
     // For tiebreaker games, only keep if player won
     return playerWon;
   });
-
-  // If currentSeasonId provided, sort to prioritize current season games first
-  if (currentSeasonId) {
-    const currentSeasonGames = filteredData.filter(
-      (game: any) => game.match?.season_id === currentSeasonId
-    );
-    const otherSeasonGames = filteredData.filter(
-      (game: any) => game.match?.season_id !== currentSeasonId
-    );
-
-    // Return current season games first, then others (both already sorted by created_at)
-    // Take up to 'limit' games after filtering
-    return [...currentSeasonGames, ...otherSeasonGames].slice(0, limit);
-  }
 
   // Return up to 'limit' games after filtering
   return filteredData.slice(0, limit);

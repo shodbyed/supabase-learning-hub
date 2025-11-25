@@ -50,6 +50,17 @@
 - **Files affected**: Message components (MemberForMessaging), various single-entity hooks
 - **Decision needed**: Establish pattern for when to use selective vs full fetching
 
+## 7. InfoButton Responsive Positioning
+- **Issue**: InfoButton popups get cut off on small screens
+- **Context**: The popup positioning logic in `/src/components/InfoButton.tsx` needs improvement for mobile
+- **Problem**: On narrow screens, the popup can extend beyond viewport edges, causing horizontal scrolling or cut-off content
+- **Solution needed**:
+  - Make popups stay fully within viewport at all screen widths
+  - At small widths, consider full-width or anchored-to-edge positioning
+  - At larger widths, keep centered positioning
+  - Prevent any content cutoff regardless of screen size
+- **File**: `/src/components/InfoButton.tsx`
+
 ---
 
-*Last Updated: 2025-11-24*
+*Last Updated: 2025-11-25*

@@ -297,6 +297,7 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
       season_week:season_weeks(scheduled_date),
       season:seasons!matches_season_id_fkey(
         league:leagues(
+          id,
           handicap_variant,
           team_handicap_variant,
           golden_break_counts_as_win,
@@ -348,6 +349,7 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
     scheduled_venue: venue as any || null,
     season_week: seasonWeek as any || null,
     league: {
+      id: leagueData?.id || '',
       handicap_variant: (leagueData?.handicap_variant || 'standard') as any,
       team_handicap_variant: (leagueData?.team_handicap_variant || 'standard') as any,
       golden_break_counts_as_win: leagueData?.golden_break_counts_as_win ?? false,
