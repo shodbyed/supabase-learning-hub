@@ -4,7 +4,7 @@
  * Custom hook that manages all state for the League Creation Wizard.
  * Handles form data, validation, step navigation, and localStorage persistence.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { createWizardSteps, type WizardStep, type LeagueFormData } from '@/data/leagueWizardSteps.simple';
 import { parseLocalDate } from '@/utils/formatters';
@@ -57,6 +57,32 @@ export const useLeagueWizard = ({ onSubmit, orgPreferences }: UseLeagueWizardPar
   const updateFormData = (field: keyof LeagueFormData, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  /**
+   * Initialize form data with org preferences when they load
+   * This ensures pre-selected values are saved to formData
+   */
+  useEffect(() => {
+    if (!orgPreferences) return;
+
+    // Only initialize if formData is still empty (first load)
+    if (!formData.teamFormat && orgPreferences.team_format) {
+      const handicapSystem = orgPreferences.team_format === '5_man' ? ('custom_5man' as const) : ('bca_standard' as const);
+      setFormData(prev => ({
+        ...prev,
+        teamFormat: orgPreferences.team_format as '5_man' | '8_man',
+        handicapSystem: handicapSystem,
+      }));
+    }
+
+    if (!formData.handicapVariant && orgPreferences.handicap_variant) {
+      setFormData(prev => ({
+        ...prev,
+        handicapVariant: orgPreferences.handicap_variant as 'standard' | 'reduced' | 'none',
+        teamHandicapVariant: orgPreferences.handicap_variant as 'standard' | 'reduced' | 'none',
+      }));
+    }
+  }, [orgPreferences]); // Only run when orgPreferences changes
 
   /**
    * Start date validation - must be a valid future date

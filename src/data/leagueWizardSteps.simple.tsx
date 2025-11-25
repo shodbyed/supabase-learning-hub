@@ -228,7 +228,7 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         if (formData.teamFormat) {
           return `${formData.teamFormat}|${formData.handicapSystem}`;
         }
-        // Otherwise use org preference as default
+        // Otherwise use org preference as default (formData will be auto-initialized by useEffect)
         if (orgPreferences?.team_format) {
           const handicapSystem = orgPreferences.team_format === '5_man' ? 'custom_5man' : 'bca_standard';
           return `${orgPreferences.team_format}|${handicapSystem}`;
@@ -277,8 +277,11 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         if (formData.handicapVariant) {
           return formData.handicapVariant;
         }
-        // Otherwise use org preference as default
-        return orgPreferences?.handicap_variant || '';
+        // Otherwise use org preference as default (formData will be auto-initialized by useEffect)
+        if (orgPreferences?.handicap_variant) {
+          return orgPreferences.handicap_variant;
+        }
+        return '';
       },
       setValue: (value: string) => {
         updateFormData('handicapVariant', value);
