@@ -8,7 +8,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trophy, Target, Users, Database, Award } from 'lucide-react';
+import { Trophy, Database } from 'lucide-react';
 
 interface StatsCardProps {
   leagueId: string;

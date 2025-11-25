@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLeaguesWithProgress } from '@/api/hooks';
 import type { League } from '@/types/league';
-import type { LeagueWithProgress } from '@/api/queries/leagues';
 import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate } from '@/utils/formatters';
 import { LeagueStatusCard } from './LeagueStatusCard';

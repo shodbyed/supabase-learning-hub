@@ -69,6 +69,7 @@ export async function createLeague(params: CreateLeagueParams): Promise<League> 
     team_handicap_variant: params.teamHandicapVariant,
     league_start_date: params.leagueStartDate,
     division: params.division || null,
+    golden_break_counts_as_win: false, // Default to false if not specified
   };
 
   const { data: newLeague, error } = await supabase

@@ -9,16 +9,10 @@
 import { Users } from 'lucide-react';
 import { LoadingState, EmptyState } from '@/components/shared';
 import { UserListItem } from '../UserListItem';
-
-interface Member {
-  id: string;
-  first_name: string;
-  last_name: string;
-  system_player_number: number;
-}
+import type { MemberForMessaging } from '@/types';
 
 interface MemberListProps {
-  members: Member[];
+  members: MemberForMessaging[];
   selectedUserIds: string[];
   loading: boolean;
   onToggle: (userId: string) => void;

@@ -1,0 +1,118 @@
+-- =====================================================
+-- Operator Stats RPC Function
+-- =====================================================
+-- This function consolidates 7 separate count queries into a single
+-- server-side operation for the operator dashboard QuickStats card.
+--
+-- Returns all operator statistics in one call:
+-- - Active leagues count
+-- - Total teams count
+-- - Total players count
+-- - Active venues count
+-- - Completed seasons count
+-- - Completed matches count
+-- - Total games played count (with winner)
+--
+-- Usage:
+-- SELECT * FROM get_operator_stats('operator-uuid-here');
+--
+-- Returns JSON:
+-- {
+--   "leagues": 3,
+--   "teams": 12,
+--   "players": 45,
+--   "venues": 7,
+--   "seasons_completed": 2,
+--   "matches_completed": 24,
+--   "games_played": 156
+-- }
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION get_operator_stats(operator_id_param UUID)
+RETURNS JSON
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  league_count INT;
+  team_count INT;
+  player_count INT;
+  venue_count INT;
+  season_count INT;
+  match_count INT;
+  game_count INT;
+BEGIN
+  -- Count all leagues (matches original query - no is_active filter)
+  SELECT COUNT(*)
+  INTO league_count
+  FROM leagues
+  WHERE operator_id = operator_id_param;
+
+  -- Count teams across all leagues/seasons
+  SELECT COUNT(*)
+  INTO team_count
+  FROM teams t
+  INNER JOIN seasons s ON t.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.operator_id = operator_id_param;
+
+  -- Count players across all teams
+  SELECT COUNT(*)
+  INTO player_count
+  FROM team_players tp
+  INNER JOIN teams t ON tp.team_id = t.id
+  INNER JOIN seasons s ON t.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.operator_id = operator_id_param;
+
+  -- Count active venues
+  SELECT COUNT(*)
+  INTO venue_count
+  FROM venues
+  WHERE created_by_operator_id = operator_id_param
+    AND is_active = true;
+
+  -- Count completed seasons
+  SELECT COUNT(*)
+  INTO season_count
+  FROM seasons s
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.operator_id = operator_id_param
+    AND s.status = 'completed';
+
+  -- Count completed matches
+  SELECT COUNT(*)
+  INTO match_count
+  FROM matches m
+  INNER JOIN seasons s ON m.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.operator_id = operator_id_param
+    AND m.status = 'completed';
+
+  -- Count total games played (with winner determined)
+  SELECT COUNT(*)
+  INTO game_count
+  FROM match_games mg
+  INNER JOIN matches m ON mg.match_id = m.id
+  INNER JOIN seasons s ON m.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.operator_id = operator_id_param
+    AND mg.winner_player_id IS NOT NULL;
+
+  -- Return all counts as JSON
+  RETURN json_build_object(
+    'leagues', league_count,
+    'teams', team_count,
+    'players', player_count,
+    'venues', venue_count,
+    'seasons_completed', season_count,
+    'matches_completed', match_count,
+    'games_played', game_count
+  );
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION get_operator_stats(UUID) TO authenticated;
+
+-- Example usage:
+-- SELECT * FROM get_operator_stats('your-operator-uuid-here');

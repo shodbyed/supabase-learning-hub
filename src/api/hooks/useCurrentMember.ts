@@ -30,13 +30,13 @@ import { STALE_TIME } from '../client';
  *
  * This hook:
  * - Gets auth user from UserContext
- * - Fetches member record from database
+ * - Fetches complete member record from database (all fields including role)
  * - Caches result for 30 minutes
  * - Only runs when user is authenticated
  * - Shares cache with all other components using this hook
  *
- * @returns TanStack Query result with member data
- * @returns {object} data - Member data { id, user_id, first_name, last_name }
+ * @returns TanStack Query result with complete member data
+ * @returns {Member} data - Complete member record with all fields including role
  * @returns {boolean} isLoading - True while fetching
  * @returns {boolean} isError - True if fetch failed
  * @returns {Error} error - Error object if fetch failed

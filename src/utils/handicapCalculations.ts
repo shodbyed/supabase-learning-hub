@@ -167,39 +167,51 @@ export async function calculateTeamHandicap(
     return 0;
   }
 
-  // Suppress unused variable warnings - these will be used when implementing real calculations
-  void homeTeamId;
-  void awayTeamId;
-  void seasonId;
-  void variant;
+  // Import supabase dynamically to avoid circular dependency
+  const { supabase } = await import('@/supabaseClient');
 
-  // TODO: Implement real calculation based on season standings
-  // This requires the standings page to be built first.
-  //
-  // Implementation steps:
-  // 1. Query matches for home team in this season:
-  //    SELECT * FROM matches
-  //    WHERE season_id = seasonId
-  //      AND (home_team_id = homeTeamId OR away_team_id = homeTeamId)
-  //      AND status = 'finalized'
-  //
-  // 2. Count home team wins (where winner_team_id = homeTeamId)
-  //
-  // 3. Query matches for away team in this season:
-  //    SELECT * FROM matches
-  //    WHERE season_id = seasonId
-  //      AND (home_team_id = awayTeamId OR away_team_id = awayTeamId)
-  //      AND status = 'finalized'
-  //
-  // 4. Count away team wins (where winner_team_id = awayTeamId)
-  //
-  // 5. Calculate:
-  //    winDifference = homeWins - awayWins
-  //    threshold = variant === 'standard' ? 2 : 3
-  //    return Math.floor(winDifference / threshold)
+  // Query completed matches for home team in this season
+  const { data: homeMatches, error: homeError } = await supabase
+    .from('matches')
+    .select('winner_team_id')
+    .eq('season_id', seasonId)
+    .or(`home_team_id.eq.${homeTeamId},away_team_id.eq.${homeTeamId}`)
+    .eq('status', 'completed');
 
-  // Placeholder: Return 0 until standings page is built
-  return 0;
+  if (homeError) {
+    console.error('Error fetching home team matches:', homeError);
+    return 0;
+  }
+
+  // Count home team wins
+  const homeWins = homeMatches?.filter(m => m.winner_team_id === homeTeamId).length || 0;
+
+  // Query completed matches for away team in this season
+  const { data: awayMatches, error: awayError } = await supabase
+    .from('matches')
+    .select('winner_team_id')
+    .eq('season_id', seasonId)
+    .or(`home_team_id.eq.${awayTeamId},away_team_id.eq.${awayTeamId}`)
+    .eq('status', 'completed');
+
+  if (awayError) {
+    console.error('Error fetching away team matches:', awayError);
+    return 0;
+  }
+
+  // Count away team wins
+  const awayWins = awayMatches?.filter(m => m.winner_team_id === awayTeamId).length || 0;
+
+  // Calculate win difference
+  const winDifference = homeWins - awayWins;
+
+  // Determine threshold based on variant
+  const threshold = variant === 'standard' ? 2 : 3;
+
+  // Calculate team handicap (floor division)
+  const teamHandicap = Math.floor(winDifference / threshold);
+
+  return teamHandicap;
 }
 
 /**

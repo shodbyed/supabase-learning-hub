@@ -8,7 +8,7 @@
  */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile, useCreateLeague } from '@/api/hooks';
+import { useUserProfile, useCreateLeague, useOrganizationPreferences } from '@/api/hooks';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
@@ -36,26 +36,29 @@ export const LeagueCreationWizard: React.FC = () => {
   const [operatorId, setOperatorId] = useState<string | null>(null);
   const [createdLeagueId, setCreatedLeagueId] = useState<string | null>(null);
 
+  // Fetch organization preferences with TanStack Query (cached, reusable)
+  const { data: orgPreferences } = useOrganizationPreferences(operatorId);
+
   // Use TanStack Query mutation for league creation
   const createLeagueMutation = useCreateLeague();
   const isCreating = createLeagueMutation.isPending;
 
   /**
    * Fetch operator ID and clear old form data on mount
-   * This ensures each new wizard starts with a clean slate
+   * Organization preferences fetched via TanStack Query hook above
    */
   useEffect(() => {
     const fetchOperatorId = async () => {
       if (!member) return;
 
-      const { data, error } = await supabase
+      const { data: operatorData, error: operatorError } = await supabase
         .from('league_operators')
         .select('id')
         .eq('member_id', member.id)
         .single();
 
-      if (data && !error) {
-        setOperatorId(data.id);
+      if (operatorData && !operatorError) {
+        setOperatorId(operatorData.id);
       }
     };
 
@@ -151,7 +154,8 @@ export const LeagueCreationWizard: React.FC = () => {
     handlePrevious,
     clearFormData
   } = useLeagueWizard({
-    onSubmit: handleSubmit
+    onSubmit: handleSubmit,
+    orgPreferences,
   });
 
   /**
@@ -289,3 +293,5 @@ export const LeagueCreationWizard: React.FC = () => {
     </div>
   );
 };
+
+export default LeagueCreationWizard;

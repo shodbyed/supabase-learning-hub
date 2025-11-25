@@ -8,6 +8,7 @@
  *
  * Season length and tournament scheduling moved to ScheduleCreationWizard
  */
+import type { LeagueFormData as FullLeagueFormData } from '@/types/league';
 import {
   startDateInfo,
   gameFormatInfo,
@@ -51,19 +52,20 @@ export interface WizardStep {
 
 /**
  * League form data interface (simplified - only core identity fields)
+ * Uses Pick<> to extract needed fields from the full LeagueFormData type
  */
-export interface LeagueFormData {
-  gameType: string;
-  startDate: string;
-  dayOfWeek: string;
-  season: string;
-  year: number;
-  qualifier: string;
-  teamFormat: '5_man' | '8_man' | '';
-  handicapSystem: 'custom_5man' | 'bca_standard' | '';
-  handicapVariant: 'standard' | 'reduced' | 'none' | '';
-  teamHandicapVariant: 'standard' | 'reduced' | 'none' | '';
-}
+export type LeagueFormData = Pick<FullLeagueFormData,
+  | 'gameType'
+  | 'startDate'
+  | 'dayOfWeek'
+  | 'season'
+  | 'year'
+  | 'qualifier'
+  | 'teamFormat'
+  | 'handicapSystem'
+  | 'handicapVariant'
+  | 'teamHandicapVariant'
+>;
 
 /**
  * Parameters for creating wizard steps
@@ -72,6 +74,10 @@ export interface WizardStepParams {
   formData: LeagueFormData;
   updateFormData: (field: keyof LeagueFormData, value: string | number) => void;
   validateStartDate: (value: string) => { isValid: boolean; error?: string };
+  orgPreferences?: {
+    team_format: string | null;
+    handicap_variant: string | null;
+  } | null;
 }
 
 /**
@@ -82,6 +88,7 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
     formData,
     updateFormData,
     validateStartDate,
+    orgPreferences,
   } = params;
 
   return [
@@ -216,7 +223,18 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           infoContent: eightManFormatInfo.content,
         }
       ],
-      getValue: () => formData.teamFormat ? `${formData.teamFormat}|${formData.handicapSystem}` : '',
+      getValue: () => {
+        // Use saved form data if available
+        if (formData.teamFormat) {
+          return `${formData.teamFormat}|${formData.handicapSystem}`;
+        }
+        // Otherwise use org preference as default (formData will be auto-initialized by useEffect)
+        if (orgPreferences?.team_format) {
+          const handicapSystem = orgPreferences.team_format === '5_man' ? 'custom_5man' : 'bca_standard';
+          return `${orgPreferences.team_format}|${handicapSystem}`;
+        }
+        return '';
+      },
       setValue: (value: string) => {
         const [teamFormat, handicapSystem] = value.split('|');
         updateFormData('teamFormat', teamFormat as '5_man' | '8_man');
@@ -254,7 +272,17 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           subtitle: 'Pure skill-based competition'
         }
       ],
-      getValue: () => formData.handicapVariant,
+      getValue: () => {
+        // Use saved form data if available
+        if (formData.handicapVariant) {
+          return formData.handicapVariant;
+        }
+        // Otherwise use org preference as default (formData will be auto-initialized by useEffect)
+        if (orgPreferences?.handicap_variant) {
+          return orgPreferences.handicap_variant;
+        }
+        return '';
+      },
       setValue: (value: string) => {
         updateFormData('handicapVariant', value);
         // Default team handicap to match player handicap

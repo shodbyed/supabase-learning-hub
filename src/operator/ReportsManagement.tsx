@@ -537,3 +537,5 @@ export function ReportsManagement() {
     </div>
   );
 }
+
+export default ReportsManagement;

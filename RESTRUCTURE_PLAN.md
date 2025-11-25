@@ -27,16 +27,18 @@ Reorganize the codebase to eliminate duplication, improve discoverability, and e
 
 ---
 
-### 2. Legacy/Deprecated Files Not Removed
+### 2. Legacy/Deprecated Files Not Removed ✅ PARTIALLY RESOLVED
 
 **Problem**: Old versions and refactor-in-progress files exist alongside production code
 
-**Examples**:
-- `LeagueCreationWizard.old.tsx`
-- `SeasonSchedulePage.refactored.tsx`
-- `BlockedUsersModal.REFACTORED.tsx`
+**Cleaned Up (2025-11-24)**:
+- ✅ Deleted 7 `.REFACTORED.tsx` files from messaging components
+- ✅ Deleted `SeasonSchedulePage.refactored.tsx`
 
-**Impact**: Unclear which version is current, codebase bloat, potential for using wrong version
+**Still Remaining**:
+- `LeagueCreationWizard.old.tsx` - Verify not referenced, then delete
+
+**Impact**: Codebase cleaner, but one legacy file still exists
 
 ---
 
@@ -427,6 +429,36 @@ Beyond the specific problems above, we need to decide:
 3. **Create Detailed Restructure Plan** (After decisions made)
 4. **Execute Restructure in Phases** (To avoid breaking everything)
 5. **Update Documentation & Patterns** (Memory bank, guidelines)
+
+---
+
+## 🔨 Large Files Needing Refactoring
+
+**Problem**: Multiple files exceed 700+ lines, making them difficult to maintain, test, and understand
+
+**Files That Need Breaking Down**:
+
+| File | Lines | Primary Issues | Suggested Approach |
+|------|-------|----------------|-------------------|
+| `player/MatchLineup.tsx` | 813 | Complex state management, handicap calculations, real-time logic | Already has hooks in `/hooks/lineup/` - refactor to use them |
+| `components/scoring/MatchScoreboard.tsx` | 764 | Rendering logic + game state + real-time updates | Extract game state hook, separate scoreboard display component |
+| `operator/TeamManagement.tsx` | 757 | Team CRUD + roster management + validation | Split into TeamList, TeamEditor, RosterManager components |
+| `operator/SeasonCreationWizard.tsx` | 753 | Multi-step wizard with complex validation | Extract wizard steps into separate components, use wizard state hook |
+| `player/ScoreMatch.tsx` | 752 | Scoring logic + confirmation flow + real-time sync | Already uses `useMatchScoring` hook - extract UI components |
+| `info/FiveManFormatDetails.tsx` | 746 | Large informational content | Consider moving to markdown docs or split into sections |
+
+**Refactoring Priority**:
+1. **High Priority**: `TeamManagement.tsx`, `SeasonCreationWizard.tsx` - Operator features used frequently
+2. **Medium Priority**: `MatchScoreboard.tsx`, `ScoreMatch.tsx` - Complex but already partially refactored
+3. **Low Priority**: `MatchLineup.tsx` - Already has hooks, just needs UI extraction
+4. **Defer**: `FiveManFormatDetails.tsx` - Mostly static content, low maintenance burden
+
+**General Refactoring Pattern**:
+1. Extract business logic into hooks (`/hooks/feature/`)
+2. Extract utilities into pure functions (`/utils/feature/`)
+3. Break UI into smaller components (`/components/feature/`)
+4. Keep main file as orchestrator (queries → hooks → render)
+5. Target: Main files under 300 lines, components under 200 lines
 
 ---
 

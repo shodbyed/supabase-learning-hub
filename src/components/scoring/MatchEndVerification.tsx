@@ -168,20 +168,8 @@ export function MatchEndVerification({
 
   // Reset completion ref if verifications are cleared
   if (!bothVerified && completionStartedRef.current) {
-    console.log('🔄 Resetting completionStartedRef because verifications were cleared');
     completionStartedRef.current = false;
   }
-
-  console.log('🔍 Verification status:', {
-    isTiebreakerMode,
-    homeVerified,
-    awayVerified,
-    bothVerified,
-    homeVerifiedBy: homeVerifiedBy_actual,
-    awayVerifiedBy: awayVerifiedBy_actual,
-    isCompleting,
-    completionStarted: completionStartedRef.current,
-  });
 
   // Current user's team verification status
   const userTeamVerified = isHomeTeam ? homeVerified : awayVerified;
@@ -213,13 +201,6 @@ export function MatchEndVerification({
 
   // Auto-complete match when both teams verify
   useEffect(() => {
-    console.log('🎯 useEffect triggered. Checking conditions:', {
-      bothVerified,
-      isCompleting,
-      completionStarted: completionStartedRef.current,
-      willProceed: bothVerified && !isCompleting && !completionStartedRef.current,
-    });
-
     if (!bothVerified || isCompleting || completionStartedRef.current) return;
 
     const completeTheMatch = async () => {
@@ -228,7 +209,6 @@ export function MatchEndVerification({
 
       try {
         // Step 1: Fetch fresh match data to see who verified FIRST
-        console.log('📥 Fetching fresh match data to determine first verifier...');
         const { data: freshMatch } = await matchQuery.refetch();
 
         if (!freshMatch) {
@@ -246,17 +226,8 @@ export function MatchEndVerification({
           : (freshMatch.away_team_verified_by === awayVerifiedBy);
         const isFirstVerifier = (isHomeTeam && homeVerifiedFirst) || (!isHomeTeam && awayVerifiedFirst);
 
-        console.log('🔍 First verifier check:', {
-          isTiebreakerMode,
-          isFirstVerifier,
-          myTeam: isHomeTeam ? 'home' : 'away',
-          homeVerifiedBy: isTiebreakerMode ? freshMatch.home_tiebreaker_verified_by : freshMatch.home_team_verified_by,
-          awayVerifiedBy: isTiebreakerMode ? freshMatch.away_tiebreaker_verified_by : freshMatch.away_team_verified_by,
-        });
-
         // Step 2: Only FIRST verifier updates match and creates games
         if (isFirstVerifier) {
-          console.log('✅ This device is the first verifier - handling database updates');
 
           // Calculate completion data
           const winnerTeamId =
@@ -292,27 +263,13 @@ export function MatchEndVerification({
                 status: winnerTeamId ? 'completed' : 'in_progress',
               };
 
-          console.log('📝 Match updates to apply:', {
-            matchId,
-            isTiebreakerMode,
-            updates,
-            homePoints,
-            awayPoints,
-            homeWins,
-            awayWins,
-          });
-
-          const updateResult = await updateMatchMutation.mutateAsync({
+          await updateMatchMutation.mutateAsync({
             matchId,
             updates,
           });
-
-          console.log('✅ Match update completed:', updateResult);
 
           // Anti-sandbagging rule for tiebreaker: Override all game results with winning team
           if (isTiebreakerMode && winnerTeamId) {
-            console.log('Applying anti-sandbagging rule: Overriding tiebreaker game results');
-            console.log('Tiebreaker games found:', tiebreakerGames.map(g => ({ id: g.id, game_number: g.game_number, winner_team_id: g.winner_team_id })));
 
             // Get the winning lineup
             const winningLineup = winnerTeamId === homeTeamId ? homeLineup : awayLineup;
@@ -324,7 +281,7 @@ export function MatchEndVerification({
                 const game = tiebreakerGames.find(g => g.game_number === gameNumber);
 
                 if (!game) {
-                  console.error(`❌ Tiebreaker game ${gameNumber} not found`);
+                  console.error(`Tiebreaker game ${gameNumber} not found`);
                   continue;
                 }
 
@@ -340,14 +297,11 @@ export function MatchEndVerification({
                   },
                 });
               }
-
-              console.log('✅ Anti-sandbagging rule applied');
             }
           }
 
           // Handle tie result - create tiebreaker games
           if (result === 'tie') {
-            console.log('Creating tiebreaker games and unlocking lineups...');
 
             // Create 3 tiebreaker games
             await createGamesMutation.mutateAsync({
@@ -395,22 +349,14 @@ export function MatchEndVerification({
               });
             }
 
-            console.log('✅ First verifier finished tiebreaker setup');
-
             // Wait for database writes to complete and propagate
-            console.log('⏳ Waiting 2 seconds for database writes to complete...');
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
-        } else {
-          console.log('⏸️ Not first verifier - waiting for first verifier to complete setup...');
         }
 
         // Step 3: ALL devices (first verifier and second verifier) MUST verify data before navigating
         if (result === 'tie') {
-          console.log('🔍 STEP 3: ALL devices verifying tiebreaker data before navigation...');
-
           // STEP 3A: Poll for tiebreaker games to exist
-          console.log('⏳ STEP 3A: Polling for tiebreaker games...');
           let gamesReady = false;
           let attempts = 0;
           const maxAttempts = 20; // 20 attempts = 10 seconds max
@@ -421,10 +367,8 @@ export function MatchEndVerification({
 
             if (tiebreakerGamesCount >= 3) {
               gamesReady = true;
-              console.log('✅ STEP 3A: Tiebreaker games found in database');
             } else {
               attempts++;
-              console.log(`⏳ STEP 3A: Waiting for games... (attempt ${attempts}/${maxAttempts})`);
               await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
@@ -434,7 +378,6 @@ export function MatchEndVerification({
           }
 
           // STEP 3B: Poll for both lineups to be unlocked
-          console.log('⏳ STEP 3B: Polling for both lineups to be unlocked...');
           let lineupsUnlocked = false;
           attempts = 0;
 
@@ -446,10 +389,8 @@ export function MatchEndVerification({
                 !checkLineups.homeLineup.locked &&
                 !checkLineups.awayLineup.locked) {
               lineupsUnlocked = true;
-              console.log('✅ STEP 3B: Both lineups confirmed unlocked');
             } else {
               attempts++;
-              console.log(`⏳ STEP 3B: Waiting for lineups to unlock... (attempt ${attempts}/${maxAttempts})`);
               await new Promise(resolve => setTimeout(resolve, 500));
             }
           }
@@ -459,23 +400,13 @@ export function MatchEndVerification({
           }
 
           // STEP 3C: Final cache propagation delay
-          console.log('⏳ STEP 3C: Final cache propagation delay...');
           await new Promise(resolve => setTimeout(resolve, 500));
 
           // Navigate to lineup page
-          console.log('✅ ALL VERIFICATION COMPLETE - About to call navigate()');
-          console.log('Navigation details:', {
-            matchId,
-            targetPath: `/match/${matchId}/lineup`,
-            isFirstVerifier,
-          });
-
           setIsCompleting(false); // Reset completing state before navigation
           navigate(`/match/${matchId}/lineup`);
-          console.log('✅ navigate() called successfully');
         } else {
           // Match has a winner - navigate to dashboard
-          console.log(`✅ Match complete with winner (${result}) - navigating to dashboard`);
           navigate('/dashboard');
         }
       } catch (error) {

@@ -4,10 +4,11 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useUserProfile, useOperatorIdValue, useLeagueCount } from '@/api/hooks';
+import { useUserProfile, useOperatorIdValue } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
-import { QuickStats } from '@/components/operator/QuickStats';
+import { QuickStatsCard } from '@/components/operator/QuickStatsCard';
+import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, Users, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone, Flag } from 'lucide-react';
 import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
@@ -33,23 +34,18 @@ export const OperatorDashboard: React.FC = () => {
   const { member } = useUserProfile();
   const { count: pendingReportsCount } = usePendingReportsCount();
 
-  // Fetch operator ID and league count using TanStack Query hooks
+  // Fetch operator ID
   const operatorId = useOperatorIdValue();
-  const { data: leagueCount = 0 } = useLeagueCount(operatorId);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8 px-2">
-          <span className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
-            League Operator Dashboard
-          </span>
-          <p className="text-gray-600">
-            Welcome back, {member?.first_name}! Manage your leagues and grow the pool community.
-          </p>
-        </div>
-
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Back to Player Dashboard"
+        title="League Operator Dashboard"
+        subtitle={`Welcome back, ${member?.first_name}! Manage your leagues and grow the pool community.`}
+      />
+      <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Main Grid - All content */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Row 1 - Quick Actions */}
@@ -59,7 +55,7 @@ export const OperatorDashboard: React.FC = () => {
             title="Messaging"
             description="Send messages and announcements"
             buttonText="Open Messages"
-            onClick={() => console.log('Messaging - Coming soon')}
+            linkTo="/messages"
           />
 
           <DashboardCard
@@ -97,7 +93,7 @@ export const OperatorDashboard: React.FC = () => {
             />
 
             {/* Quick Stats */}
-            <QuickStats activeLeagues={leagueCount} />
+            <QuickStatsCard operatorId={operatorId} />
 
             {/* Recent Activity */}
             <Card>
@@ -146,3 +142,5 @@ export const OperatorDashboard: React.FC = () => {
     </div>
   );
 };
+
+export default OperatorDashboard;

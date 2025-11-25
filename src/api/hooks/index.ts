@@ -116,6 +116,22 @@ export {
   useLeaguesWithProgress,
 } from './useLeagues';
 
+// Operator queries
+export {
+  useOperatorProfile,
+} from './useOperatorProfile';
+
+// Preferences queries
+export {
+  useOrganizationPreferences,
+  useLeaguePreferences,
+} from './usePreferences';
+
+// Operator stats queries
+export {
+  useOperatorStats,
+} from './useOperatorStats';
+
 // Season queries
 export {
   useSeasonsByLeague,

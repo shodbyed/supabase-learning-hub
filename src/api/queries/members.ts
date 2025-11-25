@@ -17,20 +17,20 @@ import type { Member, PartialMember } from '@/types/member';
  * Fetch current member by auth user ID
  *
  * Connects authenticated user to their member record.
- * Used across the app to get member ID and basic info.
+ * Used across the app to get member ID and complete profile info.
  *
  * @param userId - Supabase auth user ID
- * @returns Member data with id, user_id, and first_name
+ * @returns Complete member record with all fields including role
  * @throws Error if member not found or database error
  *
  * @example
  * const member = await getCurrentMember(user.id);
- * console.log(member.id, member.first_name);
+ * console.log(member.id, member.first_name, member.role);
  */
-export async function getCurrentMember(userId: string) {
+export async function getCurrentMember(userId: string): Promise<Member> {
   const { data, error } = await supabase
     .from('members')
-    .select('id, user_id, first_name, last_name')
+    .select('*')
     .eq('user_id', userId)
     .single();
 

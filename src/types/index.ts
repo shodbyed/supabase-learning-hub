@@ -7,7 +7,7 @@
  */
 
 // Member and User types
-export type { Member, PartialMember, UserRole } from './member';
+export type { Member, PartialMember, MemberForMessaging, UserRole } from './member';
 
 // League types
 export type {
@@ -15,8 +15,25 @@ export type {
   TeamFormat,
   HandicapSystem,
   GameType,
-  Season
+  Season,
+  League,
+  HandicapVariant
 } from './league';
+
+// Preferences types (organization and league settings)
+export type {
+  Preferences,
+  PreferenceEntityType,
+  PreferencesInsertData,
+  PreferencesUpdateData,
+  OrganizationPreferences,
+  LeaguePreferences,
+  ResolvedLeaguePreferences
+} from './preferences';
+export { SYSTEM_DEFAULTS } from './preferences';
+
+// Season types
+export type { SeasonWeek } from './season';
 
 // Venue types
 export type { Venue, VenueFormData } from './venue';

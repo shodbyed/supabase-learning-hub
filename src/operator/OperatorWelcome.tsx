@@ -133,3 +133,4 @@ export const OperatorWelcome: React.FC = () => {
     </div>
   );
 };
+export default OperatorWelcome;

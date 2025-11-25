@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import type { League } from '@/types/league';
-import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
 import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { PageHeader } from '@/components/PageHeader';
@@ -37,12 +36,12 @@ export const LeagueDetail: React.FC = () => {
 
   const [league, setLeague] = useState<League | null>(null);
   const [seasonCount, setSeasonCount] = useState(0);
-  const [teamCount, setTeamCount] = useState(0);
-  const [playerCount, setPlayerCount] = useState(0);
-  const [scheduleExists, setScheduleExists] = useState(false);
+  // const [teamCount, setTeamCount] = useState(0);
+  // const [playerCount, setPlayerCount] = useState(0);
+  // const [scheduleExists, setScheduleExists] = useState(false);
   const [activeSeason, setActiveSeason] = useState<any | null>(null);
-  const [completedWeeksCount, setCompletedWeeksCount] = useState(0);
-  const [totalWeeksCount, setTotalWeeksCount] = useState(0);
+  // const [completedWeeksCount, setCompletedWeeksCount] = useState(0);
+  // const [totalWeeksCount, setTotalWeeksCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,54 +86,54 @@ export const LeagueDetail: React.FC = () => {
           setActiveSeason(activeSeasonData);
 
           // Get week counts for the active season
-          const { count: totalWeeks } = await supabase
-            .from('season_weeks')
-            .select('*', { count: 'exact', head: true })
-            .eq('season_id', activeSeasonData.id)
-            .eq('week_type', 'regular'); // Only count regular play weeks
+          // const { count: totalWeeks } = await supabase
+          //   .from('season_weeks')
+          //   .select('*', { count: 'exact', head: true })
+          //   .eq('season_id', activeSeasonData.id)
+          //   .eq('week_type', 'regular'); // Only count regular play weeks
 
-          const { count: completedWeeks } = await supabase
-            .from('season_weeks')
-            .select('*', { count: 'exact', head: true })
-            .eq('season_id', activeSeasonData.id)
-            .eq('week_type', 'regular')
-            .eq('week_completed', true);
+          // const { count: completedWeeks } = await supabase
+          //   .from('season_weeks')
+          //   .select('*', { count: 'exact', head: true })
+          //   .eq('season_id', activeSeasonData.id)
+          //   .eq('week_type', 'regular')
+          //   .eq('week_completed', true);
 
-          setTotalWeeksCount(totalWeeks || 0);
-          setCompletedWeeksCount(completedWeeks || 0);
+          // setTotalWeeksCount(totalWeeks || 0);
+          // setCompletedWeeksCount(completedWeeks || 0);
         }
 
         // Fetch team count
-        const { count: teamCountResult } = await supabase
-          .from('teams')
-          .select('*', { count: 'exact', head: true })
-          .eq('league_id', leagueId);
-        setTeamCount(teamCountResult || 0);
+        // const { count: teamCountResult } = await supabase
+        //   .from('teams')
+        //   .select('*', { count: 'exact', head: true })
+        //   .eq('league_id', leagueId);
+        // setTeamCount(teamCountResult || 0);
 
         // Fetch player count (through team_players join)
-        const { count: playerCountResult } = await supabase
-          .from('team_players')
-          .select('teams!inner(league_id)', { count: 'exact', head: true })
-          .eq('teams.league_id', leagueId);
-        setPlayerCount(playerCountResult || 0);
+        // const { count: playerCountResult } = await supabase
+        //   .from('team_players')
+        //   .select('teams!inner(league_id)', { count: 'exact', head: true })
+        //   .eq('teams.league_id', leagueId);
+        // setPlayerCount(playerCountResult || 0);
 
         // Check if schedule exists (schedule = matches have been generated for this league's season)
         // First get the season IDs for this league, then check if any matches exist
-        const { data: seasonData } = await supabase
-          .from('seasons')
-          .select('id')
-          .eq('league_id', leagueId);
+        // const { data: seasonData } = await supabase
+        //   .from('seasons')
+        //   .select('id')
+        //   .eq('league_id', leagueId);
 
-        if (seasonData && seasonData.length > 0) {
-          const seasonIds = seasonData.map(s => s.id);
-          const { count: matchesCountResult } = await supabase
-            .from('matches')
-            .select('*', { count: 'exact', head: true })
-            .in('season_id', seasonIds);
-          setScheduleExists((matchesCountResult || 0) > 0);
-        } else {
-          setScheduleExists(false);
-        }
+        // if (seasonData && seasonData.length > 0) {
+        //   const seasonIds = seasonData.map(s => s.id);
+        //   const { count: matchesCountResult } = await supabase
+        //     .from('matches')
+        //     .select('*', { count: 'exact', head: true })
+        //     .in('season_id', seasonIds);
+        //   setScheduleExists((matchesCountResult || 0) > 0);
+        // } else {
+        //   setScheduleExists(false);
+        // }
       } catch (err) {
         console.error('Error fetching league:', err);
         setError('Failed to load league details');
@@ -151,38 +150,38 @@ export const LeagueDetail: React.FC = () => {
    * - If active season exists: Show weeks completed / total weeks
    * - Otherwise: Show setup progress (0-100% based on setup tasks)
    */
-  const calculateProgress = (): number => {
-    // If there's an active season, show season progress
-    if (activeSeason && totalWeeksCount > 0) {
-      return Math.round((completedWeeksCount / totalWeeksCount) * 100);
-    }
+  // const calculateProgress = (): number => {
+  //   // If there's an active season, show season progress
+  //   if (activeSeason && totalWeeksCount > 0) {
+  //     return Math.round((completedWeeksCount / totalWeeksCount) * 100);
+  //   }
 
-    // Otherwise show setup progress
-    let progress = 0;
-    if (seasonCount > 0) progress += 20; // Season created
-    if (teamCount > 0) progress += 20; // Teams added
-    if (playerCount > 0) progress += 20; // Players enrolled
-    if (scheduleExists) progress += 20; // Schedule generated
-    // Final step is "ready to start" which happens when all above are done
-    if (seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists) {
-      progress += 20; // All done!
-    }
-    return progress;
-  };
+  //   // Otherwise show setup progress
+  //   let progress = 0;
+  //   if (seasonCount > 0) progress += 20; // Season created
+  //   if (teamCount > 0) progress += 20; // Teams added
+  //   if (playerCount > 0) progress += 20; // Players enrolled
+  //   if (scheduleExists) progress += 20; // Schedule generated
+  //   // Final step is "ready to start" which happens when all above are done
+  //   if (seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists) {
+  //     progress += 20; // All done!
+  //   }
+  //   return progress;
+  // };
 
   /**
    * Check if league setup is complete (all required steps done)
    */
-  const isSetupComplete = (): boolean => {
-    return seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists;
-  };
+  // const isSetupComplete = (): boolean => {
+  //   return seasonCount > 0 && teamCount > 0 && playerCount > 0 && scheduleExists;
+  // };
 
   /**
    * Check if league is currently in an active season
    */
-  const isInSession = (): boolean => {
-    return activeSeason !== null;
-  };
+  // const isInSession = (): boolean => {
+  //   return activeSeason !== null;
+  // };
 
   /**
    * Generate display name for league using helper function
@@ -302,3 +301,5 @@ export const LeagueDetail: React.FC = () => {
     </div>
   );
 };
+
+export default LeagueDetail;

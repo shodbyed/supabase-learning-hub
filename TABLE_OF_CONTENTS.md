@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-22 (refactored 3v3 handicap chart from database to hard-coded utility)
+> **Last Updated**: 2025-11-24 (added OrganizationPreferencesCard.tsx component)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -37,7 +37,7 @@
 | File | Purpose | Status |
 |------|---------|--------|
 | `MVP_FEATURE_LIST.md` | Minimum viable product feature list | **Active - MVP tracker** |
-| `3x3SCORING-PLAN.md` | 3v3 scoring system specification | **Active - Pages 1 & 2 built, Page 3 pending** |
+| `LIST_FOR_JACK.md` | Design and styling tasks for Jack | **Active - UI/UX improvements** |
 
 ### Reference Documentation Folder
 
@@ -348,7 +348,6 @@
 - `ScheduleView.tsx` - Schedule view
 - `SeasonScheduleManager.tsx` - Season schedule manager
 - `SeasonSchedulePage.tsx` - Season schedule page
-- `SeasonSchedulePage.refactored.tsx` - ⚠️ **REFACTOR IN PROGRESS**
 
 **Team & Venue Management**
 - `TeamManagement.tsx` - Team management interface
@@ -505,15 +504,18 @@ Reusable wizard/form step components
 - `AnnouncementModal.tsx` - Announcement modal
 - `MessageSettingsModal.tsx` - Settings modal
 - `BlockedUsersModal.tsx` - Blocked users modal
-- `BlockedUsersModal.REFACTORED.tsx` - ⚠️ **REFACTOR IN PROGRESS**
 - `UserListItem.tsx` - User list item
 
 #### Operator Components (`/components/operator/`)
 - `ActiveLeagues.tsx` - Active leagues overview (uses LeagueStatusCard)
+- `ContactInfoCard.tsx` - Organization contact info editor (email/phone with visibility)
 - `DashboardCard.tsx` - Dashboard card wrapper
 - `LeagueOverviewCard.tsx` - League overview
 - `LeagueProgressBar.tsx` - League progress bar component (used by LeagueStatusCard)
 - `LeagueStatusCard.tsx` - **UNIFIED league status component** - Single source of truth for league/season status, progress, and next actions (used on both Dashboard and League Detail pages)
+- `OrganizationBasicInfoCard.tsx` - Organization name and mailing address editor
+- `OrganizationPreferencesCard.tsx` - Organization-level preferences editor (handicap, format, rules defaults)
+- `PaymentMethodCard.tsx` - Payment method card (Stripe integration placeholder)
 - `QuickStats.tsx` - Quick statistics
 - `ScheduleCard.tsx` - Schedule card
 - `SeasonStatusCard.tsx` - Season status
@@ -849,8 +851,6 @@ Supabase local configuration
 | File | Status | Action |
 |------|--------|--------|
 | `operator/LeagueCreationWizard.old.tsx` | Old version | Verify not referenced, then delete |
-| `operator/SeasonSchedulePage.refactored.tsx` | Refactor in progress | Complete refactor and delete original OR delete this |
-| `components/messages/BlockedUsersModal.REFACTORED.tsx` | Refactor in progress | Complete refactor and delete original OR delete this |
 | `cUsersshodbpersonalsupabase-learning-hubsrcutilsscheduleGenerator.ts` | Corrupt file path? | **DELETE** |
 
 ### 🟠 Organizational Issues

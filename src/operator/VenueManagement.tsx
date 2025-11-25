@@ -5,10 +5,10 @@
  * Simple test page for venue creation functionality.
  */
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { VenueCard } from '@/components/operator/VenueCard';
+import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useOperatorId, useVenuesByOperator } from '@/api/hooks';
 import type { Venue } from '@/types/venue';
@@ -20,7 +20,6 @@ import type { Venue } from '@/types/venue';
  * Lists all venues for the operator with ability to add new ones.
  */
 export const VenueManagement: React.FC = () => {
-  const navigate = useNavigate();
   const { data: operator, isLoading: operatorLoading } = useOperatorId();
   const operatorId = operator?.id;
 
@@ -61,31 +60,19 @@ export const VenueManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/operator-dashboard')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manage Venues</h1>
-              <p className="text-gray-600 mt-1">
-                Add and manage venues where your leagues play
-              </p>
-            </div>
-            <Button onClick={() => setShowModal(true)}>
-              <Plus className="h-5 w-5 mr-2" />
-              Add Venue
-            </Button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/operator-settings"
+        backLabel="Back to Settings"
+        title="Manage Venues"
+        subtitle="Add and manage venues where your leagues play"
+      >
+        <Button onClick={() => setShowModal(true)} className="mt-4">
+          <Plus className="h-5 w-5 mr-2" />
+          Add Venue
+        </Button>
+      </PageHeader>
+      <div className="container mx-auto px-4 max-w-7xl py-8">
 
         {/* Venues List */}
         {venues.length === 0 ? (
@@ -127,3 +114,5 @@ export const VenueManagement: React.FC = () => {
     </div>
   );
 };
+
+export default VenueManagement;

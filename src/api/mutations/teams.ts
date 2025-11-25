@@ -107,6 +107,7 @@ export async function createTeam(params: CreateTeamParams): Promise<Team> {
     member_id: memberId,
     season_id: params.seasonId,
     is_captain: memberId === params.captainId,
+    skill_level: null, // Skill level will be set later by team captain
   }));
 
   const { error: rosterError } = await supabase
@@ -232,6 +233,7 @@ export async function updateTeam(params: UpdateTeamParams): Promise<Team> {
       member_id: memberId,
       season_id: params.seasonId,
       is_captain: memberId === params.captainId,
+      skill_level: null, // Skill level will be set later by team captain
     }));
 
     const { error: insertError } = await supabase

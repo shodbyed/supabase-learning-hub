@@ -12,11 +12,9 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { MatchEndVerification } from '@/components/scoring/MatchEndVerification';
 import { InfoButton } from '@/components/InfoButton';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { HandicapThresholds } from '@/types';
 
 interface FiveVFiveScoreboardProps {
@@ -55,7 +53,11 @@ interface FiveVFiveScoreboardProps {
   /** Function to get player display name by ID */
   getPlayerDisplayName: (playerId: string) => string;
   /** Function to get player stats (wins/losses) by position - for double duty tracking */
-  getPlayerStats: (playerId: string, position: number, playerIsHomeTeam: boolean) => { wins: number; losses: number };
+  getPlayerStats: (
+    playerId: string,
+    position: number,
+    playerIsHomeTeam: boolean
+  ) => { wins: number; losses: number };
 }
 
 /**
@@ -140,7 +142,8 @@ export function FiveVFiveScoreboard({
           </div>
           <InfoButton title="Player Stats" className="mx-2">
             <p className="text-sm">
-              Click either team name to view individual player stats for all players in the lineup. Click again to close.
+              Click either team name to view individual player stats for all
+              players in the lineup. Click again to close.
             </p>
           </InfoButton>
           <div className="flex-1 text-center text-xs font-semibold text-green-900">
@@ -215,56 +218,130 @@ export function FiveVFiveScoreboard({
                       {/* Header */}
                       <div className="font-semibold text-gray-600">HC</div>
                       <div className="font-semibold text-gray-600">Player</div>
-                      <div className="font-semibold text-gray-600 text-center">W</div>
-                      <div className="font-semibold text-gray-600 text-center">L</div>
+                      <div className="font-semibold text-gray-600 text-center">
+                        W
+                      </div>
+                      <div className="font-semibold text-gray-600 text-center">
+                        L
+                      </div>
 
                       {/* Player 1 */}
                       {homeLineup.player1_id && (
                         <>
-                          <div className="text-gray-700">{homeLineup.player1_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player1_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id, 1, true).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player1_id, 1, true).losses}</div>
+                          <div className="text-gray-700">
+                            {homeLineup.player1_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(homeLineup.player1_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player1_id, 1, true)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player1_id, 1, true)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 2 */}
                       {homeLineup.player2_id && (
                         <>
-                          <div className="text-gray-700">{homeLineup.player2_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player2_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id, 2, true).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player2_id, 2, true).losses}</div>
+                          <div className="text-gray-700">
+                            {homeLineup.player2_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(homeLineup.player2_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player2_id, 2, true)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player2_id, 2, true)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 3 */}
                       {homeLineup.player3_id && (
                         <>
-                          <div className="text-gray-700">{homeLineup.player3_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player3_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id, 3, true).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player3_id, 3, true).losses}</div>
+                          <div className="text-gray-700">
+                            {homeLineup.player3_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(homeLineup.player3_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player3_id, 3, true)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player3_id, 3, true)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 4 */}
                       {homeLineup.player4_id && (
                         <>
-                          <div className="text-gray-700">{homeLineup.player4_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player4_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id, 4, true).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player4_id, 4, true).losses}</div>
+                          <div className="text-gray-700">
+                            {homeLineup.player4_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(homeLineup.player4_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player4_id, 4, true)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player4_id, 4, true)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 5 */}
                       {homeLineup.player5_id && (
                         <>
-                          <div className="text-gray-700">{homeLineup.player5_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(homeLineup.player5_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id, 5, true).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(homeLineup.player5_id, 5, true).losses}</div>
+                          <div className="text-gray-700">
+                            {homeLineup.player5_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(homeLineup.player5_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player5_id, 5, true)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(homeLineup.player5_id, 5, true)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
                     </div>
@@ -339,56 +416,130 @@ export function FiveVFiveScoreboard({
                       {/* Header */}
                       <div className="font-semibold text-gray-600">HC</div>
                       <div className="font-semibold text-gray-600">Player</div>
-                      <div className="font-semibold text-gray-600 text-center">W</div>
-                      <div className="font-semibold text-gray-600 text-center">L</div>
+                      <div className="font-semibold text-gray-600 text-center">
+                        W
+                      </div>
+                      <div className="font-semibold text-gray-600 text-center">
+                        L
+                      </div>
 
                       {/* Player 1 */}
                       {awayLineup.player1_id && (
                         <>
-                          <div className="text-gray-700">{awayLineup.player1_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player1_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id, 1, false).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player1_id, 1, false).losses}</div>
+                          <div className="text-gray-700">
+                            {awayLineup.player1_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(awayLineup.player1_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player1_id, 1, false)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player1_id, 1, false)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 2 */}
                       {awayLineup.player2_id && (
                         <>
-                          <div className="text-gray-700">{awayLineup.player2_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player2_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id, 2, false).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player2_id, 2, false).losses}</div>
+                          <div className="text-gray-700">
+                            {awayLineup.player2_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(awayLineup.player2_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player2_id, 2, false)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player2_id, 2, false)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 3 */}
                       {awayLineup.player3_id && (
                         <>
-                          <div className="text-gray-700">{awayLineup.player3_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player3_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id, 3, false).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player3_id, 3, false).losses}</div>
+                          <div className="text-gray-700">
+                            {awayLineup.player3_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(awayLineup.player3_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player3_id, 3, false)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player3_id, 3, false)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 4 */}
                       {awayLineup.player4_id && (
                         <>
-                          <div className="text-gray-700">{awayLineup.player4_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player4_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id, 4, false).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player4_id, 4, false).losses}</div>
+                          <div className="text-gray-700">
+                            {awayLineup.player4_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(awayLineup.player4_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player4_id, 4, false)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player4_id, 4, false)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
 
                       {/* Player 5 */}
                       {awayLineup.player5_id && (
                         <>
-                          <div className="text-gray-700">{awayLineup.player5_handicap}</div>
-                          <div className="text-gray-900">{getPlayerDisplayName(awayLineup.player5_id)}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id, 5, false).wins}</div>
-                          <div className="text-center text-gray-900">{getPlayerStats(awayLineup.player5_id, 5, false).losses}</div>
+                          <div className="text-gray-700">
+                            {awayLineup.player5_handicap}
+                          </div>
+                          <div className="text-gray-900">
+                            {getPlayerDisplayName(awayLineup.player5_id)}
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player5_id, 5, false)
+                                .wins
+                            }
+                          </div>
+                          <div className="text-center text-gray-900">
+                            {
+                              getPlayerStats(awayLineup.player5_id, 5, false)
+                                .losses
+                            }
+                          </div>
                         </>
                       )}
                     </div>

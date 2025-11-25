@@ -170,11 +170,9 @@ export const LeagueOperatorApplication: React.FC = () => {
    */
   const handleSubmit = async () => {
     if (!member) {
-      console.error('❌ Cannot submit: No member profile found');
+      console.error('Cannot submit: No member profile found');
       return;
     }
-
-    console.group('🎯 LEAGUE OPERATOR APPLICATION - DATABASE OPERATIONS');
 
     // Generate mock payment data for testing
     const mockPayment = generateMockPaymentData();
@@ -212,26 +210,16 @@ export const LeagueOperatorApplication: React.FC = () => {
       payment_verified: mockPayment.payment_verified,
     };
 
-    console.group('📋 Step 1: INSERT INTO league_operators');
-    console.log('Data to insert:', insertData);
-
-    const { data: operatorData, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('league_operators')
       .insert([insertData])
       .select();
 
     if (insertError) {
-      console.error('❌ Failed to create operator profile:', insertError);
-      console.groupEnd();
-      console.groupEnd();
+      console.error('Failed to create operator profile:', insertError);
       alert(`Failed to create operator profile: ${insertError.message}`);
       return;
     }
-
-    console.log('✅ Operator profile created:', operatorData);
-    console.groupEnd();
-
-    console.group('🔄 Step 2: UPDATE members SET role = \'league_operator\'');
 
     const { error: updateError } = await supabase
       .from('members')
@@ -239,17 +227,11 @@ export const LeagueOperatorApplication: React.FC = () => {
       .eq('id', member.id);
 
     if (updateError) {
-      console.error('❌ Failed to update member role:', updateError);
-      console.groupEnd();
-      console.groupEnd();
+      console.error('Failed to update member role:', updateError);
       alert(`Failed to update member role: ${updateError.message}`);
       return;
     }
 
-    console.log('✅ Member role updated to league_operator');
-    console.groupEnd();
-
-    console.group('🔄 Step 3: Refresh user profile to reflect new role');
     // Refresh the user profile context so the new role is immediately available
     // This prevents the user from seeing stale data on the next page
     refreshProfile();
@@ -257,19 +239,13 @@ export const LeagueOperatorApplication: React.FC = () => {
     // Wait a moment for the profile to refresh before navigating
     // This ensures role-based UI elements work immediately on the welcome page
     await new Promise(resolve => setTimeout(resolve, 500));
-    console.log('✅ User profile refreshed with new role');
-    console.groupEnd();
-
-    console.log('🎉 SUCCESS! League operator application complete!');
-    console.groupEnd();
 
     // Clear saved progress since form is submitted
     try {
       localStorage.removeItem('leagueOperatorApplication');
       localStorage.removeItem('leagueOperatorApplication_currentStep');
-      console.log('✅ Cleared localStorage progress data');
     } catch (error) {
-      console.warn('⚠️ Failed to clear saved progress:', error);
+      console.warn('Failed to clear saved progress:', error);
     }
 
     // Navigate to congratulations page for new league operators

@@ -32,7 +32,7 @@ import { useCurrentMember } from '@/api/hooks/useCurrentMember';
  * Only shows data from completed matches in the season.
  */
 export function Standings() {
-  const { seasonId } = useParams<{ seasonId: string; leagueId: string }>();
+  const { seasonId, leagueId } = useParams<{ seasonId: string; leagueId: string }>();
   const navigate = useNavigate();
 
   // Fetch standings data

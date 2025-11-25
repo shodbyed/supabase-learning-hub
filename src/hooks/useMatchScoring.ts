@@ -8,6 +8,7 @@
  */
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { calculateTeamHandicap } from '@/utils/handicapCalculations';
+import { shouldGoldenBreakCount } from '@/utils/goldenBreakRules';
 import { getPlayerNicknameById } from '@/types/member';
 import { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from '@/types';
 import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
@@ -21,6 +22,7 @@ import type {
   ConfirmationQueueItem,
   MatchType,
 } from '@/types';
+import type { GameType } from '@/types/league';
 
 interface UseMatchScoringOptions {
   matchId: string | undefined | null;
@@ -130,8 +132,12 @@ export function useMatchScoring({
   const awayLineup = lineupsData?.awayLineup || null;
   const userTeamId = userTeamData?.team_id || null;
   const isHomeTeam = userTeamData?.isHomeTeam ?? null; // Use ?? instead of || to preserve false
-  const goldenBreakCountsAsWin = matchData?.league.golden_break_counts_as_win || false;
-  const gameType = matchData?.league.game_type || '8-ball';
+  const gameType = (matchData?.league.game_type || 'eight_ball') as GameType;
+
+  // Determine if golden break counts based on preference and game type (BCA Standard rules)
+  const goldenBreakCountsAsWin = useMemo(() => {
+    return shouldGoldenBreakCount(gameType, matchData?.league.golden_break_counts_as_win);
+  }, [gameType, matchData?.league.golden_break_counts_as_win]);
 
   // Transform players array to Map for O(1) lookups (needs useMemo - expensive transformation)
   const players = useMemo(() => {

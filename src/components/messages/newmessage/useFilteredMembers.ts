@@ -10,13 +10,7 @@
 
 import { useMemo } from 'react';
 import { useAllMembers, useBlockedUsers } from '@/api/hooks';
-
-interface Member {
-  id: string;
-  first_name: string;
-  last_name: string;
-  system_player_number: number;
-}
+import type { MemberForMessaging } from '@/types';
 
 export function useFilteredMembers(currentUserId: string, searchQuery: string) {
   // Fetch all members (excluding current user) with TanStack Query
@@ -28,7 +22,7 @@ export function useFilteredMembers(currentUserId: string, searchQuery: string) {
 
   // Filter out blocked users
   const members = useMemo(() => {
-    return allMembers.filter((member: Member) => !blockedUserIds.includes(member.id));
+    return allMembers.filter((member: MemberForMessaging) => !blockedUserIds.includes(member.id));
   }, [allMembers, blockedUserIds]);
 
   // Filter by search query
@@ -38,7 +32,7 @@ export function useFilteredMembers(currentUserId: string, searchQuery: string) {
     const query = searchQuery.toLowerCase();
     const cleanQuery = query.replace(/^p-?/, ''); // Remove 'p' or 'p-' prefix
 
-    return members.filter((member: Member) => {
+    return members.filter((member: MemberForMessaging) => {
       const fullName = `${member.first_name} ${member.last_name}`.toLowerCase();
       const playerNumber = member.system_player_number.toString().padStart(5, '0');
 
