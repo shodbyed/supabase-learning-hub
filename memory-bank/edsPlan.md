@@ -45,3 +45,10 @@ Separate Create/Update Logic - Better testability
    SecurityDisclaimerModal - Info modal
 
 may need adjusting for other modals.
+
+8. Build warnings - large chunk sizes
+   - ScheduleReviewTable chunk: 1.3MB (includes date-fns library)
+   - Main index chunk: 1.0MB
+   - Dynamic import warnings for supabaseClient.ts and handicapCalculations.ts
+   - Consider: manual chunking, lazy loading more components, or tree-shaking date-fns imports
+   - NOT blocking deployment, but affects initial load performance

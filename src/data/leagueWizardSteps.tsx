@@ -107,7 +107,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.startDate,
       setValue: (value: string) => {
         updateFormData('startDate', value);
-        console.log('📝 LEAGUE CREATION: Start date selected:', value);
 
         if (value) {
           const date = parseLocalDate(value);
@@ -129,9 +128,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           updateFormData('season', season);
           updateFormData('year', year);
           updateFormData('endDate', formatLocalDate(endDate));
-
-          console.log('✅ CALCULATED: Day =', dayOfWeek, '| Season =', season, '| Year =', year);
-          console.log('📅 CALCULATED: End date =', formatLocalDate(endDate));
         }
       },
       infoTitle: startDateInfo.title,
@@ -155,11 +151,9 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => seasonLengthChoice,
       setValue: (value: string) => {
         setSeasonLengthChoice(value);
-        console.log('📝 SEASON LENGTH: Choice =', value);
 
         if (value !== 'custom') {
           updateFormData('seasonLength', parseInt(value));
-          console.log('✅ SEASON LENGTH: Set to', value, 'weeks');
 
           // Recalculate end date if start date exists
           if (formData.startDate) {
@@ -167,7 +161,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + (parseInt(value) * 7));
             updateFormData('endDate', formatLocalDate(endDate));
-            console.log('📅 UPDATED: End date =', formatLocalDate(endDate));
           }
         }
       },
@@ -195,7 +188,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         const weeks = parseInt(value);
         if (!isNaN(weeks)) {
           updateFormData('seasonLength', weeks);
-          console.log('✅ CUSTOM SEASON LENGTH: Set to', weeks, 'weeks');
 
           // Recalculate end date if start date exists
           if (formData.startDate) {
@@ -203,7 +195,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + (weeks * 7));
             updateFormData('endDate', formatLocalDate(endDate));
-            console.log('📅 UPDATED: End date =', formatLocalDate(endDate));
           }
         }
       },
@@ -297,16 +288,11 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           if (foundOption) {
             updateFormData('bcaNationalsStart', foundOption.startDate);
             updateFormData('bcaNationalsEnd', foundOption.endDate);
-            console.log('✅ SELECTED: Using community-verified dates:', foundOption);
           }
         } else if (value === 'ignore') {
           // User chose to ignore tournament dates
           updateFormData('bcaNationalsStart', '');
           updateFormData('bcaNationalsEnd', '');
-          console.log('🚫 CHOICE: Operator chose to ignore BCA tournament scheduling');
-        } else if (value === 'custom') {
-          // User wants to enter custom dates - will be handled in next step
-          console.log('✏️ CHOICE: Operator will enter custom tournament dates');
         }
       },
       infoTitle: tournamentSchedulingInfo.title,
@@ -342,26 +328,9 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         const [startDate, endDate] = value.split('|');
         if (startDate) {
           updateFormData('bcaNationalsStart', startDate);
-          console.log('📝 CUSTOM BCA DATE: User entered start date:', startDate);
         }
         if (endDate) {
           updateFormData('bcaNationalsEnd', endDate);
-          console.log('📝 CUSTOM BCA DATE: User entered end date:', endDate);
-          if (startDate && endDate) {
-            console.log('🔄 DATABASE OPERATION: Saving custom BCA tournament dates for voting');
-            console.log('📊 New entry structure:', {
-              table: 'tournament_dates',
-              data: {
-                organization: 'BCA',
-                tournament_type: 'nationals',
-                year: new Date().getFullYear(),
-                start_date: startDate,
-                end_date: endDate,
-                vote_count: 1,
-                created_at: new Date().toISOString()
-              }
-            });
-          }
         }
       },
       infoTitle: tournamentSchedulingInfo.title,
@@ -464,10 +433,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         // Automatically set handicap system based on team format
         if (value === '5_man') {
           updateFormData('handicapSystem', 'custom_5man');
-          console.log('✅ AUTO-SET: 5-man format → Custom handicap system');
         } else if (value === '8_man') {
           updateFormData('handicapSystem', 'bca_standard');
-          console.log('✅ AUTO-SET: 8-man format → BCA standard handicap system');
         }
       },
       infoTitle: teamFormatComparisonInfo.title,

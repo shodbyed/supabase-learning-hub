@@ -5,15 +5,16 @@
  * Operators can add or remove blackout weeks for future dates only.
  * Past weeks (already played) cannot be modified.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
-import { WeekOffReasonModal } from '@/components/modals/WeekOffReasonModal';
 import { InfoButton } from '@/components/InfoButton';
+
+const WeekOffReasonModal = lazy(() => import('@/components/modals/WeekOffReasonModal').then(m => ({ default: m.WeekOffReasonModal })));
 import type { WeekEntry, ChampionshipEvent } from '@/types/season';
 import type { League } from '@/types/league';
 import { formatLocalDate, parseLocalDate } from '@/utils/formatters';
@@ -505,14 +506,16 @@ export const SeasonScheduleManager: React.FC = () => {
         </div>
 
         {/* Week-Off Reason Modal */}
-        <WeekOffReasonModal
-          isOpen={showWeekOffModal}
-          onCancel={() => {
-            setShowWeekOffModal(false);
-            setSelectedWeekIndex(null);
-          }}
-          onConfirm={addBlackoutWeek}
-        />
+        <Suspense fallback={null}>
+          <WeekOffReasonModal
+            isOpen={showWeekOffModal}
+            onCancel={() => {
+              setShowWeekOffModal(false);
+              setSelectedWeekIndex(null);
+            }}
+            onConfirm={addBlackoutWeek}
+          />
+        </Suspense>
       </div>
     </div>
   );

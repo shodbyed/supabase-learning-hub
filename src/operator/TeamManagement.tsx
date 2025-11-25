@@ -97,7 +97,6 @@ export const TeamManagement: React.FC = () => {
         if (deleteError) throw deleteError;
 
         setLeagueVenues([]);
-        console.log('✅ All venues unassigned');
       } else {
         // Assign all venues
         const unassignedVenues = venues.filter(venue => !isVenueAssigned(venue.id));
@@ -117,7 +116,6 @@ export const TeamManagement: React.FC = () => {
         if (insertError) throw insertError;
 
         setLeagueVenues(prev => [...prev, ...insertedData]);
-        console.log(`✅ ${unassignedVenues.length} venues assigned`);
       }
 
       // Invalidate TanStack Query cache to refetch updated data
@@ -164,7 +162,6 @@ export const TeamManagement: React.FC = () => {
 
         // Update local state
         setLeagueVenues(prev => prev.filter(lv => lv.venue_id !== venue.id));
-        console.log('✅ Venue unassigned:', venue.name);
       } else {
         // Assign: Insert into league_venues with all tables available by default
         const { data: newLeagueVenue, error: insertError } = await supabase
@@ -182,7 +179,6 @@ export const TeamManagement: React.FC = () => {
 
         // Update local state
         setLeagueVenues(prev => [...prev, newLeagueVenue]);
-        console.log('✅ Venue assigned:', venue.name);
       }
 
       // Invalidate TanStack Query cache to refetch updated data
@@ -262,16 +258,8 @@ export const TeamManagement: React.FC = () => {
 
       if (leagueVenuesError) throw leagueVenuesError;
 
-      console.log('📥 Importing from previous season:', {
-        teams: prevTeams?.length || 0,
-        rosters: prevRosters?.length || 0,
-        leagueVenues: prevLeagueVenues?.length || 0,
-        previousSeasonId,
-        currentSeasonId: seasonId
-      });
-
       // Prepare new teams data
-      const newTeamsData = prevTeams?.map(team => ({
+      prevTeams?.map(team => ({
         season_id: seasonId,
         league_id: leagueId,
         captain_id: team.captain_id,
@@ -281,7 +269,7 @@ export const TeamManagement: React.FC = () => {
       })) || [];
 
       // Prepare league venues (if not already assigned)
-      const venueImportData = prevLeagueVenues?.filter(lv =>
+      prevLeagueVenues?.filter(lv =>
         !leagueVenues.some(existing => existing.venue_id === lv.venue_id)
       ).map(lv => ({
         league_id: leagueId,
@@ -290,9 +278,6 @@ export const TeamManagement: React.FC = () => {
         available_regulation_tables: lv.available_regulation_tables,
         available_total_tables: lv.available_total_tables,
       })) || [];
-
-      console.log('🎱 Teams to import:', JSON.stringify(newTeamsData, null, 2));
-      console.log('🏢 Venues to import:', JSON.stringify(venueImportData, null, 2));
 
       // Create mapping of old team IDs to prepare roster data
       const rostersByOldTeamId: Record<string, typeof prevRosters> = {};
@@ -304,7 +289,7 @@ export const TeamManagement: React.FC = () => {
       });
 
       // Prepare roster data (will need to map to new team IDs after creation)
-      const rosterImportData = prevTeams?.map((oldTeam, index) => {
+      prevTeams?.map((oldTeam, index) => {
         const oldRosters = rostersByOldTeamId[oldTeam.id] || [];
         return {
           teamIndex: index,
@@ -316,18 +301,15 @@ export const TeamManagement: React.FC = () => {
         };
       }) || [];
 
-      console.log('👥 Rosters to import:', JSON.stringify(rosterImportData, null, 2));
-
       // Simulate success
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      console.log('✅ Teams imported successfully (simulated)');
       alert(`Successfully imported ${prevTeams?.length || 0} teams from last season!`);
 
       // Refresh the page data (in real implementation, this would refetch from DB)
       // For now, just show success message
     } catch (err) {
-      console.error('❌ Error importing teams:', err);
+      console.error('Error importing teams:', err);
       alert(err instanceof Error ? err.message : 'Failed to import teams');
     } finally {
       setImportingTeams(false);
@@ -360,12 +342,10 @@ export const TeamManagement: React.FC = () => {
 
       if (deleteError) throw deleteError;
 
-      console.log('✅ Team deleted successfully');
-
       // Refresh teams list using hook function
       await refreshTeams();
     } catch (err) {
-      console.error('❌ Error deleting team:', err);
+      console.error('Error deleting team:', err);
       alert(err instanceof Error ? err.message : 'Failed to delete team');
     } finally {
       setShowDeleteConfirm(false);
