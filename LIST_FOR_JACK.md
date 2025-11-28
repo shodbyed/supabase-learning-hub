@@ -61,6 +61,21 @@
   - Prevent any content cutoff regardless of screen size
 - **File**: `/src/components/InfoButton.tsx`
 
+## 8. Add RLS Policies Before Production
+- **CRITICAL**: Database currently has NO Row Level Security policies enabled
+- **Risk**: Any authenticated user can access/modify any data
+- **Tables affected**:
+  - `organizations` - No RLS policies
+  - `organization_staff` - No RLS policies
+  - All other tables need review
+- **Action needed**:
+  - Add RLS policies to `organizations` table (staff can only see their orgs)
+  - Add RLS policies to `organization_staff` table (staff management permissions)
+  - Review all existing tables for proper RLS implementation
+  - Test RLS policies thoroughly before production deployment
+- **Status**: RLS intentionally disabled during development/testing
+- **Priority**: MUST be completed before any production deployment
+
 ---
 
-*Last Updated: 2025-11-25*
+*Last Updated: 2025-11-28*

@@ -118,7 +118,7 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
   }
 
   const insertData: VenueInsertData = {
-    created_by_operator_id: params.operatorId,
+    created_by_organization_id: params.operatorId,
     name: params.name.trim(),
     street_address: params.street_address.trim(),
     city: params.city.trim(),

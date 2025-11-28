@@ -5,16 +5,18 @@
 import React from 'react';
 import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
+import { useOrganizations } from '@/api/hooks/useOrganizations';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, MessageSquare, Trophy, Settings } from 'lucide-react';
+import { Users, MessageSquare, Trophy, Building2 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { user } = useUser();
   const { member, loading } = useUserProfile();
+  const { organizations, loading: orgsLoading } = useOrganizations(member?.id);
 
-  if (loading) {
+  if (loading || orgsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-600">Loading your dashboard...</p>
@@ -96,19 +98,26 @@ export const Dashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* League Operator Section */}
-        {(member.role === 'league_operator' || member.role === 'developer') && (
+        {/* League Operator Section - Multi-Org */}
+        {(member.role === 'league_operator' || member.role === 'developer') && organizations.length > 0 && (
           <Card className="border-2 border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="text-lg">League Operator Tools</CardTitle>
+              <CardTitle className="text-lg">Your Organizations</CardTitle>
             </CardHeader>
-            <CardContent>
-              <Link to="/operator-dashboard">
-                <Button className="w-full">
-                  <Settings className="h-4 w-4 mr-2" />
-                  League Admin Dashboard
-                </Button>
-              </Link>
+            <CardContent className="space-y-3">
+              {organizations.map((org) => (
+                <Link key={org.id} to={`/operator-dashboard/${org.id}`}>
+                  <Button variant="outline" className="w-full justify-between hover:bg-blue-100">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      <span className="font-medium">{org.organization_name}</span>
+                    </div>
+                    <span className="text-xs px-2 py-1 bg-blue-100 rounded">
+                      {org.position === 'owner' ? 'Owner' : 'Admin'}
+                    </span>
+                  </Button>
+                </Link>
+              ))}
             </CardContent>
           </Card>
         )}

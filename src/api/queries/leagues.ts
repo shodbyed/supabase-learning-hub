@@ -50,7 +50,7 @@ export async function getLeaguesByOperator(operatorId: string): Promise<League[]
   const { data, error } = await supabase
     .from('leagues')
     .select('*')
-    .eq('operator_id', operatorId)
+    .eq('organization_id', operatorId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -78,7 +78,7 @@ export async function getLeagueCount(operatorId: string): Promise<number> {
   const { count, error } = await supabase
     .from('leagues')
     .select('*', { count: 'exact', head: true })
-    .eq('operator_id', operatorId);
+    .eq('organization_id', operatorId);
 
   if (error) {
     throw new Error(`Failed to fetch league count: ${error.message}`);
@@ -296,10 +296,10 @@ export async function getLeagueBySeasonId(seasonId: string): Promise<League> {
  * }
  */
 export async function getOperatorProfanityFilter(leagueId: string): Promise<boolean> {
-  // Fetch league to get operator_id
+  // Fetch league to get organization_id
   const { data: league, error: leagueError } = await supabase
     .from('leagues')
-    .select('operator_id')
+    .select('organization_id')
     .eq('id', leagueId)
     .single();
 
@@ -307,16 +307,16 @@ export async function getOperatorProfanityFilter(leagueId: string): Promise<bool
     throw new Error(`Failed to fetch league: ${leagueError?.message || 'League not found'}`);
   }
 
-  // Fetch operator's profanity filter setting
-  const { data: operator, error: operatorError } = await supabase
-    .from('league_operators')
+  // Fetch organization's profanity filter setting
+  const { data: organization, error: organizationError } = await supabase
+    .from('organizations')
     .select('profanity_filter_enabled')
-    .eq('id', league.operator_id)
+    .eq('id', league.organization_id)
     .single();
 
-  if (operatorError || !operator) {
-    throw new Error(`Failed to fetch operator: ${operatorError?.message || 'Operator not found'}`);
+  if (organizationError || !organization) {
+    throw new Error(`Failed to fetch organization: ${organizationError?.message || 'Organization not found'}`);
   }
 
-  return operator.profanity_filter_enabled || false;
+  return organization.profanity_filter_enabled || false;
 }

@@ -10,7 +10,7 @@
  */
 export interface Venue {
   id: string;
-  created_by_operator_id: string | null; // Nullable: persists even if original operator deleted
+  created_by_organization_id: string | null; // Nullable: persists even if original organization deleted
   venue_owner_id: string | null;
 
   // Required fields

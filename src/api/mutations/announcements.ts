@@ -166,16 +166,16 @@ export async function createOrganizationAnnouncement(
     throw new Error('Announcement message cannot exceed 2000 characters');
   }
 
-  // Get operator/organization name
-  const { data: operator, error: opError } = await supabase
-    .from('league_operators')
+  // Get organization name
+  const { data: organization, error: orgError } = await supabase
+    .from('organizations')
     .select('id, organization_name')
     .eq('id', operatorId)
     .single();
 
-  if (opError || !operator) {
-    console.error('Error fetching operator:', opError);
-    throw new Error(`Operator not found: ${opError?.message || 'Unknown error'}`);
+  if (orgError || !organization) {
+    console.error('Error fetching organization:', orgError);
+    throw new Error(`Organization not found: ${orgError?.message || 'Unknown error'}`);
   }
 
   // Get all members in any active season operated by this operator
@@ -202,7 +202,7 @@ export async function createOrganizationAnnouncement(
     'create_organization_announcement_conversation',
     {
       p_organization_id: operatorId,
-      p_title: `${operator.organization_name} Announcements`,
+      p_title: `${organization.organization_name} Announcements`,
       p_member_ids: memberIds,
     }
   );

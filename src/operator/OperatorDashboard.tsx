@@ -3,8 +3,8 @@
  * Main dashboard for league operators with access to all operator-specific features
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useUserProfile, useOperatorIdValue } from '@/api/hooks';
+import { Link, useParams } from 'react-router-dom';
+import { useUserProfile, useOrganization } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
 import { QuickStatsCard } from '@/components/operator/QuickStatsCard';
@@ -31,18 +31,27 @@ import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
  * This affects the league list display - stale cache shows old data.
  */
 export const OperatorDashboard: React.FC = () => {
+  const { orgId } = useParams<{ orgId: string }>();
   const { member } = useUserProfile();
   const { count: pendingReportsCount } = usePendingReportsCount();
 
-  // Fetch operator ID
-  const operatorId = useOperatorIdValue();
+  // Fetch organization data
+  const { organization, loading: orgLoading } = useOrganization(orgId!);
+
+  if (orgLoading || !organization) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p>Loading organization...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
         backTo="/dashboard"
         backLabel="Back to Player Dashboard"
-        title="League Operator Dashboard"
+        title={`${organization.organization_name} Dashboard`}
         subtitle={`Welcome back, ${member?.first_name}! Manage your leagues and grow the pool community.`}
       />
       <div className="container mx-auto px-4 max-w-7xl py-8">
@@ -79,7 +88,7 @@ export const OperatorDashboard: React.FC = () => {
 
           {/* Row 2 - Active Leagues (2 cols) and Sidebar (1 col) */}
           <div className="lg:col-span-2">
-            <ActiveLeagues operatorId={operatorId} />
+            <ActiveLeagues operatorId={organization.id} />
           </div>
 
           <div className="space-y-6">
@@ -93,7 +102,7 @@ export const OperatorDashboard: React.FC = () => {
             />
 
             {/* Quick Stats */}
-            <QuickStatsCard operatorId={operatorId} />
+            <QuickStatsCard operatorId={organization.id} />
 
             {/* Recent Activity */}
             <Card>

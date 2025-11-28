@@ -121,6 +121,13 @@ export {
   useOperatorProfile,
 } from './useOperatorProfile';
 
+// Organization queries
+export {
+  useOrganizations,
+  useOrganization,
+  useOrganizationPosition,
+} from './useOrganizations';
+
 // Preferences queries
 export {
   useOrganizationPreferences,

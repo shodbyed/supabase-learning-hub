@@ -29,7 +29,7 @@ export async function getVenuesByOperator(operatorId: string): Promise<Venue[]> 
   const { data, error } = await supabase
     .from('venues')
     .select('*')
-    .eq('created_by_operator_id', operatorId)
+    .eq('created_by_organization_id', operatorId)
     .eq('is_active', true)
     .order('name', { ascending: true });
 

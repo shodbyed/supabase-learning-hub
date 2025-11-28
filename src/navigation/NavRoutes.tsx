@@ -92,7 +92,7 @@ const memberRoutes = [
 // Protected routes - require league_operator role
 const operatorRoutes = [
   { path: '/operator-welcome', element: <OperatorWelcome /> },
-  { path: '/operator-dashboard', element: <OperatorDashboard /> },
+  { path: '/operator-dashboard/:orgId', element: <OperatorDashboard /> },
   { path: '/operator-reports', element: <ReportsManagement /> },
   { path: '/manage-players', element: <PlayerManagement /> },
   { path: '/create-league', element: <LeagueCreationWizard /> },

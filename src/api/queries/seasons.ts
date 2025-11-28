@@ -229,7 +229,7 @@ export async function getChampionshipPreferences(
   const { data: preferences, error } = await supabase
     .from('operator_blackout_preferences')
     .select('*, championship_date_options(*)')
-    .eq('operator_id', operatorId)
+    .eq('organization_id', operatorId)
     .eq('preference_type', 'championship');
 
   if (error) {
