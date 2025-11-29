@@ -7,7 +7,7 @@
 import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
-import { useOperatorIdValue, useUpdateLeagueDayOfWeek, useCreateSeason } from '@/api/hooks';
+import { useUpdateLeagueDayOfWeek, useCreateSeason } from '@/api/hooks';
 import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { getChampionshipPreferences } from '@/api/queries/seasons';
@@ -44,7 +44,6 @@ export const SeasonCreationWizard: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const operatorId = useOperatorIdValue();
   const updateLeagueDayMutation = useUpdateLeagueDayOfWeek();
 
   // TanStack Query mutation for season creation
@@ -52,6 +51,9 @@ export const SeasonCreationWizard: React.FC = () => {
 
   // Centralized state management with useReducer
   const [state, dispatch] = useReducer(wizardReducer, createInitialState(leagueId));
+
+  // Get organization ID from the league (available after league is loaded)
+  const organizationId = state.league?.organization_id || null;
 
   /**
    * Callback to handle schedule updates from ScheduleReview component
@@ -104,7 +106,7 @@ export const SeasonCreationWizard: React.FC = () => {
         dispatch({ type: 'SET_APA_DATE_OPTIONS', payload: apaDates });
 
         // Fetch operator's saved championship preferences to skip those steps in wizard
-        const prefs = operatorId ? await getChampionshipPreferences(operatorId) : [];
+        const prefs = organizationId ? await getChampionshipPreferences(organizationId) : [];
         dispatch({ type: 'SET_SAVED_CHAMPIONSHIP_PREFERENCES', payload: prefs });
 
         // Fetch all existing seasons for this league
@@ -156,7 +158,7 @@ export const SeasonCreationWizard: React.FC = () => {
     };
 
     fetchData();
-  }, [leagueId, searchParams, operatorId]);
+  }, [leagueId, searchParams, organizationId]);
 
   /**
    * Load existing season data into wizard when editing
@@ -225,7 +227,7 @@ export const SeasonCreationWizard: React.FC = () => {
     league: state.league,
     leagueId,
     loading: state.loading,
-    operatorId,
+    organizationId,
     existingSeasons: state.existingSeasons,
     bcaDateOptions: state.bcaDateOptions,
     apaDateOptions: state.apaDateOptions,
@@ -390,7 +392,7 @@ export const SeasonCreationWizard: React.FC = () => {
     choice: string,
     championshipId?: string
   ) => {
-    if (!operatorId) {
+    if (!organizationId) {
       console.warn('⚠️ No operator ID available - skipping preference save');
       return;
     }
@@ -400,7 +402,7 @@ export const SeasonCreationWizard: React.FC = () => {
       await supabase
         .from('operator_blackout_preferences')
         .delete()
-        .eq('organization_id', operatorId)
+        .eq('organization_id', organizationId)
         .eq('preference_type', 'championship')
         .eq('championship_id', championshipId || null);
 
@@ -420,7 +422,7 @@ export const SeasonCreationWizard: React.FC = () => {
           await supabase
             .from('operator_blackout_preferences')
             .insert({
-              organization_id: operatorId,
+              organization_id: organizationId,
               preference_type: 'championship',
               preference_action: 'ignore',
               championship_id: futureChampionships[0].id,
@@ -472,7 +474,7 @@ export const SeasonCreationWizard: React.FC = () => {
         startDate: formData.startDate,
         seasonLength: parseInt(formData.seasonLength),
         schedule: state.schedule,
-        operatorId,
+        organizationId,
         bcaChoice: formData.bcaChoice,
         bcaStartDate: formData.bcaStartDate,
         bcaEndDate: formData.bcaEndDate,

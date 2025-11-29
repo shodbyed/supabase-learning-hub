@@ -132,7 +132,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
             league!
           </p>
           <Button asChild>
-            <Link to="/create-league">Create Your First League</Link>
+            <Link to={`/create-league/${operatorId}`}>Create Your First League</Link>
           </Button>
         </div>
       </div>

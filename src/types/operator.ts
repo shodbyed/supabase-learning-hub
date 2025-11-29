@@ -1,7 +1,15 @@
 /**
- * @fileoverview League Operator Type Definitions (Simplified)
+ * @fileoverview League Operator Type Definitions (Legacy)
  * TypeScript interfaces for league operator profiles and related data
- * Updated: 2025-01-04 - Removed use_profile_* flags, simplified structure
+ *
+ * NOTE: The league_operators table has been replaced by:
+ * - organizations table (org details)
+ * - organization_staff table (multi-staff support)
+ *
+ * These types are kept for backward compatibility during migration.
+ * New code should use Organization type from @/api/queries/organizations
+ *
+ * Updated: 2025-11-29 - Marked as legacy, use Organization types instead
  */
 
 /**
@@ -16,8 +24,12 @@ export type ContactVisibility =
   | 'anyone';             // Publicly visible (league directory, search, etc.)
 
 /**
- * League Operator Profile
- * Maps to league_operators table in database
+ * League Operator Profile (Legacy Type)
+ *
+ * @deprecated Use Organization type from @/api/queries/organizations instead
+ * This type is kept for backward compatibility during migration.
+ *
+ * Maps to organizations table in database (previously league_operators)
  * Stores operator business information and contact details
  */
 export interface LeagueOperator {
@@ -110,8 +122,10 @@ export interface ResolvedOperatorContact {
 }
 
 /**
- * Database Insert Data for League Operator
- * Prepared data ready for INSERT into league_operators table
+ * Database Insert Data for League Operator (Legacy Type)
+ *
+ * @deprecated Use Organization type from @/api/queries/organizations instead
+ * Prepared data ready for INSERT into organizations table (previously league_operators)
  */
 export interface LeagueOperatorInsertData {
   member_id: string;
@@ -153,7 +167,7 @@ export interface LeagueOperatorInsertData {
 export interface OperatorBlackoutPreference {
   // Identity
   id: string;
-  operator_id: string;  // References league_operators.id
+  operator_id: string;  // References organizations.id (previously league_operators.id)
 
   // Preference Type
   preference_type: 'holiday' | 'championship' | 'custom';

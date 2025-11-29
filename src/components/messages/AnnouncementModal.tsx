@@ -135,18 +135,19 @@ export function AnnouncementModal({
 
       // Fetch organization targets (if user has operator access)
       if (canAccessOperatorFeatures) {
-        const { data: operatorData } = await supabase
-          .from('league_operators')
-          .select('id, organization_name')
+        const { data: staffData } = await supabase
+          .from('organization_staff')
+          .select('organization_id, organizations!inner(id, organization_name)')
           .eq('member_id', currentUserId)
+          .order('added_at', { ascending: true })
+          .limit(1)
           .maybeSingle();
 
-        if (operatorData && operatorData.organization_name) {
-          // Use the operator's ID as the organization identifier
-          // Since there's no separate organizations table, we use the operator record
+        if (staffData && staffData.organizations) {
+          const org = staffData.organizations as any;
           allTargets.push({
-            id: operatorData.id, // Use operator ID as unique identifier
-            name: `${operatorData.organization_name} (Organization)`,
+            id: org.id,
+            name: `${org.organization_name} (Organization)`,
             type: 'organization',
           });
         }

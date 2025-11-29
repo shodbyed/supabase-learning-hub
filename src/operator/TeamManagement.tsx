@@ -13,7 +13,7 @@ import { supabase } from '@/supabaseClient';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
-import { useOperatorId } from '@/api/hooks';
+// Organization ID will come from the league data
 import { useTeamManagement } from '@/hooks/useTeamManagement';
 import { queryKeys } from '@/api/queryKeys';
 import { VenueLimitModal } from './VenueLimitModal';
@@ -38,10 +38,9 @@ export const TeamManagement: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: operator, isLoading: operatorLoading } = useOperatorId();
-  const operatorId = operator?.id;
 
   // Use custom hook for all data fetching
+  // NOTE: organizationId will be fetched from the league inside useTeamManagement
   const {
     league,
     venues,
@@ -54,7 +53,10 @@ export const TeamManagement: React.FC = () => {
     error,
     refreshTeams,
     setLeagueVenues,
-  } = useTeamManagement(operatorId || null, leagueId);
+  } = useTeamManagement(null, leagueId);
+
+  // Get organization ID from the league once it's loaded
+  const organizationId = league?.organization_id || null;
 
   // UI state
   const [assigningVenue, setAssigningVenue] = useState<string | null>(null);

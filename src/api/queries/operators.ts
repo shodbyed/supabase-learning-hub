@@ -4,55 +4,61 @@
  * Pure data fetching functions for operator-related queries.
  * These functions return plain data and throw errors (no loading states).
  * Used by TanStack Query hooks for caching and state management.
+ *
+ * NOTE: These functions now query the organizations and organization_staff tables
+ * instead of the deprecated league_operators table.
  */
 
 import { supabase } from '@/supabaseClient';
-import type { LeagueOperator } from '@/types/operator';
+import type { Organization } from './organizations';
 
 /**
  * Fetch operator profile by member ID
  *
- * Gets the league operator record for a given member.
- * Returns null if member is not an operator.
+ * Gets the organization record for a given member (via organization_staff).
+ * Returns the first organization if member is staff for multiple organizations.
+ * Returns null if member is not staff for any organization.
  *
  * @param memberId - Member's primary key ID
- * @returns Operator profile or null if not an operator
+ * @returns Organization record or null if not an operator
  * @throws Error if database query fails
  *
  * @example
- * const operator = await getOperatorProfileByMemberId('member-uuid');
- * if (operator) {
- *   console.log(`Operator: ${operator.organization_name}`);
+ * const org = await getOperatorProfileByMemberId('member-uuid');
+ * if (org) {
+ *   console.log(`Organization: ${org.organization_name}`);
  * }
  */
 export async function getOperatorProfileByMemberId(
   memberId: string
-): Promise<LeagueOperator | null> {
-  const { data, error } = await supabase
-    .from('league_operators')
-    .select('*')
+): Promise<Organization | null> {
+  const { data, error} = await supabase
+    .from('organization_staff')
+    .select('organizations (*)')
     .eq('member_id', memberId)
+    .order('added_at', { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   if (error) {
     throw new Error(`Failed to fetch operator profile: ${error.message}`);
   }
 
-  return data;
+  return data ? (data.organizations as Organization) : null;
 }
 
 /**
- * Fetch all league operators
+ * Fetch all league operators (organizations with owner info)
  *
- * Gets all league operator records with their member information.
+ * Gets all organization records with their owner member information.
  * Used by developers for impersonation/testing purposes.
  *
- * @returns List of all league operators with member details
+ * @returns List of all organizations with owner details
  * @throws Error if database query fails
  *
  * @example
  * const operators = await getAllLeagueOperators();
- * console.log(`Found ${operators.length} operators`);
+ * console.log(`Found ${operators.length} organizations`);
  */
 export async function getAllLeagueOperators(): Promise<Array<{
   id: string;
@@ -62,28 +68,31 @@ export async function getAllLeagueOperators(): Promise<Array<{
   last_name: string;
 }>> {
   const { data, error } = await supabase
-    .from('league_operators')
+    .from('organization_staff')
     .select(`
-      id,
-      organization_name,
       member_id,
+      organizations!inner (
+        id,
+        organization_name
+      ),
       members!inner (
         first_name,
         last_name
       )
     `)
-    .order('organization_name');
+    .eq('position', 'owner')
+    .order('organizations(organization_name)');
 
   if (error) {
     throw new Error(`Failed to fetch league operators: ${error.message}`);
   }
 
-  // Flatten the nested member data
-  return (data || []).map((op: any) => ({
-    id: op.id,
-    organization_name: op.organization_name,
-    member_id: op.member_id,
-    first_name: op.members.first_name,
-    last_name: op.members.last_name,
+  // Flatten the nested data
+  return (data || []).map((staff: any) => ({
+    id: staff.organizations.id,
+    organization_name: staff.organizations.organization_name,
+    member_id: staff.member_id,
+    first_name: staff.members.first_name,
+    last_name: staff.members.last_name,
   }));
 }

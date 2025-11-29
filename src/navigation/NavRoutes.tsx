@@ -95,7 +95,7 @@ const operatorRoutes = [
   { path: '/operator-dashboard/:orgId', element: <OperatorDashboard /> },
   { path: '/operator-reports', element: <ReportsManagement /> },
   { path: '/manage-players/:orgId', element: <PlayerManagement /> },
-  { path: '/create-league', element: <LeagueCreationWizard /> },
+  { path: '/create-league/:orgId', element: <LeagueCreationWizard /> },
   { path: '/operator-settings/:orgId', element: <OrganizationSettings /> },
   { path: '/league-rules/:orgId', element: <LeagueRules /> },
   { path: '/league/:leagueId', element: <LeagueDetail /> },

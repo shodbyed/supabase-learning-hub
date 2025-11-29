@@ -313,7 +313,7 @@ export async function getReportDetails(reportId: string) {
         system_player_number,
         email
       ),
-      assigned_operator:league_operators(
+      assigned_operator:organizations(
         id,
         organization_name
       )
