@@ -3,7 +3,7 @@
  * Displays operator's active leagues with progress tracking
  */
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useLeaguesWithProgress } from '@/api/hooks';
 import type { League } from '@/types/league';
@@ -27,8 +27,12 @@ interface ActiveLeaguesProps {
  * - Empty state for no leagues
  */
 export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
+  const navigate = useNavigate();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedLeague, setSelectedLeague] = useState<{ id: string; name: string } | null>(null);
+  const [selectedLeague, setSelectedLeague] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Fetch leagues with progress data using TanStack Query
   const {
@@ -53,7 +57,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
       dayOfWeek: league.day_of_week,
       division: league.division,
       season,
-      year
+      year,
     });
   };
 
@@ -82,7 +86,9 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Active Leagues</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          Your Active Leagues
+        </h3>
         <div className="text-center py-12">
           <div className="text-4xl mb-4">⏳</div>
           <p className="text-gray-600">Loading your leagues...</p>
@@ -95,7 +101,9 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
   if (error) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Active Leagues</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          Your Active Leagues
+        </h3>
         <div className="text-center py-12">
           <div className="text-4xl mb-4">⚠️</div>
           <p className="text-red-600 mb-4">{error}</p>
@@ -111,12 +119,17 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
   if (leagues.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-6">Your Active Leagues</h3>
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          Your Active Leagues
+        </h3>
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🎱</div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No Active Leagues</h4>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">
+            No Active Leagues
+          </h4>
           <p className="text-gray-600 mb-6">
-            You haven't created any leagues yet. Start by creating your first league!
+            You haven't created any leagues yet. Start by creating your first
+            league!
           </p>
           <Button asChild>
             <Link to="/create-league">Create Your First League</Link>
@@ -130,9 +143,11 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
   return (
     <div className="lg:bg-white lg:rounded-xl lg:shadow-sm px-2">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-semibold text-gray-900">Your Active Leagues</h3>
-        <Button asChild size="sm">
-          <Link to="/create-league">Create New League</Link>
+        <h3 className="text-xl font-semibold text-gray-900">
+          Your Active Leagues
+        </h3>
+        <Button onClick={() => navigate('/create-league')}>
+          Create New League
         </Button>
       </div>
 
@@ -149,8 +164,13 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
                     {getLeagueName(league)}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    {league.team_format === '5_man' ? '5-Man Roster' : '8-Man Roster'} •
-                    Started {parseLocalDate(league.league_start_date).toLocaleDateString()}
+                    {league.team_format === '5_man'
+                      ? '5-Man Roster'
+                      : '8-Man Roster'}{' '}
+                    • Started{' '}
+                    {parseLocalDate(
+                      league.league_start_date
+                    ).toLocaleDateString()}
                   </p>
                 </Link>
                 <Button

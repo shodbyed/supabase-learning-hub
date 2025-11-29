@@ -6,7 +6,7 @@
  * Accessible to both operators and players.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Calendar, MapPin, Trash2 } from 'lucide-react';
@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
+import { useIsOperator, useSeasonById, useSeasonSchedule } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
 
 interface SeasonWeek {
@@ -103,15 +104,21 @@ export const SeasonSchedulePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromPlayer = searchParams.get('from') === 'player';
+  const isOperator = useIsOperator();
 
-  const [schedule, setSchedule] = useState<WeekSchedule[]>([]);
-  const [seasonName, setSeasonName] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch season data with TanStack Query
+  const { data: season, isLoading: seasonLoading } = useSeasonById(seasonId);
+
+  // Fetch schedule data with TanStack Query
+  const { data: schedule = [], isLoading: scheduleLoading } = useSeasonSchedule(seasonId);
+
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
-  const [isOperator, setIsOperator] = useState(false);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
+
+  const loading = seasonLoading || scheduleLoading;
+  const seasonName = season?.season_name || `Season ${season?.season_length || 0} Weeks`;
+  const seasonStatus = season?.status || '';
 
   /**
    * Handle accepting the schedule
@@ -168,151 +175,11 @@ export const SeasonSchedulePage: React.FC = () => {
     }
   };
 
-  /**
-   * Check if current user is an operator for this league
-   */
-  useEffect(() => {
-    const checkOperatorStatus = async () => {
-      if (!leagueId) return;
-
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setIsOperator(false);
-          return;
-        }
-
-        // Check if user is operator for this league
-        const { data, error } = await supabase
-          .from('leagues')
-          .select(`
-            organization_id,
-            organizations!inner(
-              organization_staff!inner(
-                member_id,
-                members!inner(
-                  user_id
-                )
-              )
-            )
-          `)
-          .eq('id', leagueId)
-          .eq('organizations.organization_staff.members.user_id', user.id)
-          .single();
-
-        setIsOperator(!!data && !error);
-      } catch (err) {
-        console.error('Error checking operator status:', err);
-        setIsOperator(false);
-      }
-    };
-
-    checkOperatorStatus();
-  }, [leagueId]);
-
-  /**
-   * Fetch schedule data
-   */
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      if (!seasonId || !leagueId) {
-        setError('Missing season or league ID');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Fetch season info
-        const { data: seasonData, error: seasonError } = await supabase
-          .from('seasons')
-          .select('id, start_date, end_date, season_length, season_name')
-          .eq('id', seasonId)
-          .single();
-
-        if (seasonError) throw seasonError;
-
-        setSeasonName(seasonData.season_name || `Season ${seasonData.season_length} Weeks`);
-
-        // Fetch all season weeks (all types: regular, blackout, playoffs, breaks)
-        const { data: weeksData, error: weeksError } = await supabase
-          .from('season_weeks')
-          .select('*')
-          .eq('season_id', seasonId)
-          .order('scheduled_date', { ascending: true });
-
-        if (weeksError) throw weeksError;
-
-        console.log('📅 Fetched weeks data:', weeksData.map(w => ({
-          week_name: w.week_name,
-          week_type: w.week_type,
-          scheduled_date: w.scheduled_date
-        })));
-
-        // Fetch all matches with team and venue details
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select(`
-            *,
-            home_team:teams!matches_home_team_id_fkey(id, team_name, captain_id),
-            away_team:teams!matches_away_team_id_fkey(id, team_name, captain_id),
-            scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, street_address, city, state)
-          `)
-          .eq('season_id', seasonId)
-          .order('match_number', { ascending: true });
-
-        if (matchesError) throw matchesError;
-
-        // Organize matches by week using season_week_id
-        const scheduleByWeek: WeekSchedule[] = weeksData.map(week => {
-          const weekMatches = matchesData.filter(
-            match => match.season_week_id === week.id
-          ) as MatchWithDetails[];
-
-          return { week, matches: weekMatches };
-        });
-
-        console.log('📊 Final schedule by week:', scheduleByWeek.map(s => ({
-          week_name: s.week.week_name,
-          week_type: s.week.week_type,
-          scheduled_date: s.week.scheduled_date,
-          matchCount: s.matches.length
-        })));
-
-        setSchedule(scheduleByWeek);
-      } catch (err) {
-        console.error('Error fetching schedule:', err);
-        setError('Failed to load schedule');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSchedule();
-  }, [seasonId, leagueId]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center text-gray-600">Loading schedule...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
-              <p className="text-gray-700 mb-4">{error}</p>
-              <Button onClick={() => navigate(`/league/${leagueId}`)}>
-                Back to League
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     );
@@ -326,7 +193,8 @@ export const SeasonSchedulePage: React.FC = () => {
         title="Season Schedule"
         subtitle={seasonName}
       >
-        {isOperator && !fromPlayer && schedule.length > 0 && (
+        {console.log('🎯 Button visibility check:', { isOperator, seasonStatus, scheduleLength: schedule.length })}
+        {isOperator && seasonStatus === 'upcoming' && schedule.length > 0 && (
           <div className="mt-2 flex gap-3">
             <Button
               variant="destructive"
