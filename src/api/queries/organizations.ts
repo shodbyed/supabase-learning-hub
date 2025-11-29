@@ -24,10 +24,10 @@ export interface Organization {
   organization_city: string;
   organization_state: string;
   organization_zip_code: string;
-  league_email: string;
-  email_visibility: 'public' | 'my_organization' | 'my_teams';
-  league_phone: string;
-  phone_visibility: 'public' | 'my_organization' | 'my_teams';
+  organization_email: string;
+  organization_email_visibility: 'public' | 'my_organization' | 'my_teams';
+  organization_phone: string;
+  organization_phone_visibility: 'public' | 'my_organization' | 'my_teams';
   stripe_customer_id: string;
   payment_method_id: string;
   card_last4: string;
