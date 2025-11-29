@@ -138,8 +138,6 @@ export const SeasonSchedulePage: React.FC = () => {
 
       if (updateError) throw updateError;
 
-      console.log('✅ Season activated successfully');
-
       // Navigate to league dashboard
       navigate(`/league/${leagueId}`);
     } catch (err) {
@@ -167,7 +165,6 @@ export const SeasonSchedulePage: React.FC = () => {
     const result = await clearSchedule(seasonId);
 
     if (result.success) {
-      console.log(`🗑️ Cleared ${result.matchesDeleted} matches`);
       navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
     } else {
       setError(result.error || 'Failed to clear schedule');
@@ -193,7 +190,6 @@ export const SeasonSchedulePage: React.FC = () => {
         title="Season Schedule"
         subtitle={seasonName}
       >
-        {console.log('🎯 Button visibility check:', { isOperator, seasonStatus, scheduleLength: schedule.length })}
         {isOperator && seasonStatus === 'upcoming' && schedule.length > 0 && (
           <div className="mt-2 flex gap-3">
             <Button
