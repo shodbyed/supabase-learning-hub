@@ -51,7 +51,7 @@ BEGIN
   SELECT COUNT(*)
   INTO venue_count
   FROM venues
-  WHERE created_by_organization_id = operator_id_param
+  WHERE organization_id = operator_id_param
     AND is_active = true;
 
   -- Count completed seasons

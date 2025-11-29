@@ -15,7 +15,7 @@ import type { Venue, VenueInsertData } from '@/types/venue';
  * Parameters for creating a venue
  */
 export interface CreateVenueParams {
-  operatorId: string;
+  organizationId: string;
   name: string;
   street_address: string;
   city: string;
@@ -76,7 +76,7 @@ export interface DeleteVenueParams {
  *
  * @example
  * const venue = await createVenue({
- *   operatorId: 'op-123',
+ *   organizationId: 'org-123',
  *   name: 'The Pool Hall',
  *   street_address: '123 Main St',
  *   city: 'Austin',
@@ -118,7 +118,7 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
   }
 
   const insertData: VenueInsertData = {
-    created_by_organization_id: params.operatorId,
+    organization_id: params.organizationId,
     name: params.name.trim(),
     street_address: params.street_address.trim(),
     city: params.city.trim(),

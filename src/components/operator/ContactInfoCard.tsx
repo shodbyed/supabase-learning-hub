@@ -15,10 +15,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/supabaseClient';
-import type { LeagueOperator, ContactVisibility } from '@/types/operator';
+import type { Organization } from '@/api/queries/organizations';
+
+// Contact visibility type from organizations table
+type ContactVisibility = 'public' | 'my_organization' | 'my_teams';
 
 interface ContactInfoCardProps {
-  operatorProfile: LeagueOperator;
+  organization: Organization;
   onUpdate: () => void;
 }
 
@@ -27,17 +30,15 @@ type EditingSection = 'email' | 'phone' | null;
 // Helper to get visibility label
 const getVisibilityLabel = (visibility: ContactVisibility): string => {
   const labels: Record<ContactVisibility, string> = {
-    in_app_only: 'In-app Only',
+    public: 'Public',
     my_organization: 'My Organization',
-    my_team_captains: 'Team Captains',
     my_teams: 'All Players',
-    anyone: 'Public',
   };
   return labels[visibility];
 };
 
 export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
-  operatorProfile,
+  organization,
   onUpdate,
 }) => {
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
@@ -45,17 +46,17 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [email, setEmail] = useState(operatorProfile.league_email);
-  const [emailVisibility, setEmailVisibility] = useState<ContactVisibility>(operatorProfile.email_visibility);
-  const [phone, setPhone] = useState(operatorProfile.league_phone);
-  const [phoneVisibility, setPhoneVisibility] = useState<ContactVisibility>(operatorProfile.phone_visibility);
+  const [email, setEmail] = useState(organization.organization_email);
+  const [emailVisibility, setEmailVisibility] = useState<ContactVisibility>(organization.organization_email_visibility);
+  const [phone, setPhone] = useState(organization.organization_phone);
+  const [phoneVisibility, setPhoneVisibility] = useState<ContactVisibility>(organization.organization_phone_visibility);
 
   const startEditingSection = (section: EditingSection) => {
     // Reset form to current values
-    setEmail(operatorProfile.league_email);
-    setEmailVisibility(operatorProfile.email_visibility);
-    setPhone(operatorProfile.league_phone);
-    setPhoneVisibility(operatorProfile.phone_visibility);
+    setEmail(organization.organization_email);
+    setEmailVisibility(organization.organization_email_visibility);
+    setPhone(organization.organization_phone);
+    setPhoneVisibility(organization.organization_phone_visibility);
     setError(null);
     setEditingSection(section);
   };
@@ -83,12 +84,12 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
 
     try {
       const { error: updateError } = await supabase
-        .from('league_operators')
+        .from('organizations')
         .update({
-          league_email: email.trim(),
-          email_visibility: emailVisibility,
+          organization_email: email.trim(),
+          organization_email_visibility: emailVisibility,
         })
-        .eq('id', operatorProfile.id);
+        .eq('id', organization.id);
 
       if (updateError) throw updateError;
 
@@ -113,12 +114,12 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
 
     try {
       const { error: updateError } = await supabase
-        .from('league_operators')
+        .from('organizations')
         .update({
-          league_phone: phone.trim(),
-          phone_visibility: phoneVisibility,
+          organization_phone: phone.trim(),
+          organization_phone_visibility: phoneVisibility,
         })
-        .eq('id', operatorProfile.id);
+        .eq('id', organization.id);
 
       if (updateError) throw updateError;
 
@@ -178,11 +179,9 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="in_app_only">In-app Only</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
                     <SelectItem value="my_organization">My Organization</SelectItem>
-                    <SelectItem value="my_team_captains">Team Captains</SelectItem>
                     <SelectItem value="my_teams">All Players</SelectItem>
-                    <SelectItem value="anyone">Public</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -197,9 +196,9 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
             </div>
           ) : (
             <div className="text-gray-900">
-              <p>{operatorProfile.league_email}</p>
+              <p>{organization.organization_email}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Visible to: {getVisibilityLabel(operatorProfile.email_visibility)}
+                Visible to: {getVisibilityLabel(organization.organization_email_visibility)}
               </p>
             </div>
           )}
@@ -239,11 +238,9 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="in_app_only">In-app Only</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
                     <SelectItem value="my_organization">My Organization</SelectItem>
-                    <SelectItem value="my_team_captains">Team Captains</SelectItem>
                     <SelectItem value="my_teams">All Players</SelectItem>
-                    <SelectItem value="anyone">Public</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -258,9 +255,9 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
             </div>
           ) : (
             <div className="text-gray-900">
-              <p>{operatorProfile.league_phone}</p>
+              <p>{organization.organization_phone}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Visible to: {getVisibilityLabel(operatorProfile.phone_visibility)}
+                Visible to: {getVisibilityLabel(organization.organization_phone_visibility)}
               </p>
             </div>
           )}

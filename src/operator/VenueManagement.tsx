@@ -6,25 +6,25 @@
  */
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { VenueCard } from '@/components/operator/VenueCard';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
-import { useOperatorId, useVenuesByOperator } from '@/api/hooks';
+import { useVenuesByOrganization } from '@/api/hooks';
 import type { Venue } from '@/types/venue';
 
 /**
  * VenueManagement Component
  *
  * Test page for venue CRUD operations.
- * Lists all venues for the operator with ability to add new ones.
+ * Lists all venues for the organization with ability to add new ones.
  */
 export const VenueManagement: React.FC = () => {
-  const { data: operator, isLoading: operatorLoading } = useOperatorId();
-  const operatorId = operator?.id;
+  const { orgId } = useParams<{ orgId: string }>();
 
   // Fetch venues using TanStack Query hook
-  const { data: venues = [], isLoading: venuesLoading, refetch } = useVenuesByOperator(operatorId);
+  const { data: venues = [], isLoading: venuesLoading, refetch } = useVenuesByOrganization(orgId!);
 
   const [showModal, setShowModal] = useState(false);
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null);
@@ -47,7 +47,7 @@ export const VenueManagement: React.FC = () => {
     setShowModal(true);
   };
 
-  const loading = operatorLoading || venuesLoading;
+  const loading = venuesLoading;
 
   if (loading) {
     return (
@@ -62,7 +62,7 @@ export const VenueManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-settings"
+        backTo={`/operator-settings/${orgId}`}
         backLabel="Back to Settings"
         title="Manage Venues"
         subtitle="Add and manage venues where your leagues play"
@@ -99,9 +99,9 @@ export const VenueManagement: React.FC = () => {
         )}
 
         {/* Venue Creation/Edit Modal */}
-        {showModal && operatorId && (
+        {showModal && orgId && (
           <VenueCreationModal
-            operatorId={operatorId}
+            organizationId={orgId}
             onSuccess={handleVenueCreated}
             onCancel={() => {
               setShowModal(false);

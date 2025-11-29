@@ -93,13 +93,14 @@ export const OperatorDashboard: React.FC = () => {
           </div>
 
           <div className="space-y-6">
+            {/* Organization Settings */}
             <DashboardCard
               icon={<Settings className="h-6 w-6" />}
               iconColor="text-indigo-600"
               title="Organization Settings"
               description="Edit your contact info and address"
               buttonText="Manage Organization"
-              linkTo="/operator-settings"
+              linkTo={`/operator-settings/${orgId}`}
             />
 
             {/* Quick Stats */}

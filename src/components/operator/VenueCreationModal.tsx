@@ -17,8 +17,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
 interface VenueCreationModalProps {
-  /** Operator ID who is creating the venue */
-  operatorId: string;
+  /** Organization ID who is creating the venue */
+  organizationId: string;
   /** Called when venue is successfully created or updated */
   onSuccess: (venue: Venue) => void;
   /** Called when user cancels or closes modal */
@@ -37,7 +37,7 @@ interface VenueCreationModalProps {
  * Optional fields (contacts, website, hours) can be added later via editing.
  */
 export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
-  operatorId,
+  organizationId,
   onSuccess,
   onCancel,
   existingVenue
@@ -127,7 +127,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
       } else {
         // INSERT new venue
         const venue = await createVenueMutation.mutateAsync({
-          operatorId,
+          organizationId,
           name: formData.name.trim(),
           street_address: formData.street_address.trim(),
           city: formData.city.trim(),

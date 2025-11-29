@@ -5,6 +5,7 @@
  * Future: Will include optional house rules management.
  */
 import { ExternalLink } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import { PageHeader } from '@/components/PageHeader';
 
 /**
@@ -14,10 +15,12 @@ import { PageHeader } from '@/components/PageHeader';
  * to configure optional house rules for their leagues
  */
 export const LeagueRules: React.FC = () => {
+  const { orgId } = useParams<{ orgId: string }>();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-settings"
+        backTo={`/operator-settings/${orgId}`}
         backLabel="Back to Settings"
         title="League Rules"
         subtitle="Official BCA rules and optional house rules"

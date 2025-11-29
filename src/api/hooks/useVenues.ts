@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
 import {
   getVenuesByOperator,
+  getVenuesByOrganization,
   getVenueById,
   getLeagueVenues,
   getLeagueVenuesWithDetails,
@@ -24,27 +25,35 @@ import {
 import { STALE_TIME } from '../client';
 
 /**
- * Hook to fetch all active venues for an operator
+ * Hook to fetch all active venues for an organization
  *
- * Gets venues created by the operator that are currently active.
+ * Gets venues created by the organization that are currently active.
  * Ordered alphabetically by name.
  * Cached for 15 minutes (venues don't change frequently).
  *
- * @param operatorId - Operator's primary key ID
+ * @param organizationId - Organization's primary key ID
  * @returns TanStack Query result with array of venues
  *
  * @example
- * const { data: venues = [], isLoading } = useVenuesByOperator(operatorId);
+ * const { data: venues = [], isLoading } = useVenuesByOrganization(orgId);
  * return venues.map(venue => <VenueCard key={venue.id} venue={venue} />);
  */
-export function useVenuesByOperator(operatorId: string | null | undefined) {
+export function useVenuesByOrganization(organizationId: string | null | undefined) {
   return useQuery({
-    queryKey: queryKeys.venues.byOperator(operatorId || ''),
-    queryFn: () => getVenuesByOperator(operatorId!),
-    enabled: !!operatorId,
+    queryKey: queryKeys.venues.byOrganization(organizationId || ''),
+    queryFn: () => getVenuesByOrganization(organizationId!),
+    enabled: !!organizationId,
     staleTime: STALE_TIME.LEAGUES, // 15 minutes
     retry: 1,
   });
+}
+
+/**
+ * @deprecated Use useVenuesByOrganization instead
+ * Hook to fetch all active venues for an operator
+ */
+export function useVenuesByOperator(operatorId: string | null | undefined) {
+  return useVenuesByOrganization(operatorId);
 }
 
 /**

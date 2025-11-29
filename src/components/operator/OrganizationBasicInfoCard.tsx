@@ -11,17 +11,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/supabaseClient';
-import type { LeagueOperator } from '@/types/operator';
+import type { Organization } from '@/api/queries/organizations';
 
 interface OrganizationBasicInfoCardProps {
-  operatorProfile: LeagueOperator;
+  organization: Organization;
   onUpdate: () => void;
 }
 
 type EditingSection = 'name' | 'address' | null;
 
 export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps> = ({
-  operatorProfile,
+  organization,
   onUpdate,
 }) => {
   const [editingSection, setEditingSection] = useState<EditingSection>(null);
@@ -29,19 +29,19 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [organizationName, setOrganizationName] = useState(operatorProfile.organization_name);
-  const [address, setAddress] = useState(operatorProfile.organization_address);
-  const [city, setCity] = useState(operatorProfile.organization_city);
-  const [state, setState] = useState(operatorProfile.organization_state);
-  const [zipCode, setZipCode] = useState(operatorProfile.organization_zip_code);
+  const [organizationName, setOrganizationName] = useState(organization.organization_name);
+  const [address, setAddress] = useState(organization.organization_address);
+  const [city, setCity] = useState(organization.organization_city);
+  const [state, setState] = useState(organization.organization_state);
+  const [zipCode, setZipCode] = useState(organization.organization_zip_code);
 
   const startEditingSection = (section: EditingSection) => {
     // Reset form to current values
-    setOrganizationName(operatorProfile.organization_name);
-    setAddress(operatorProfile.organization_address);
-    setCity(operatorProfile.organization_city);
-    setState(operatorProfile.organization_state);
-    setZipCode(operatorProfile.organization_zip_code);
+    setOrganizationName(organization.organization_name);
+    setAddress(organization.organization_address);
+    setCity(organization.organization_city);
+    setState(organization.organization_state);
+    setZipCode(organization.organization_zip_code);
     setError(null);
     setEditingSection(section);
   };
@@ -62,9 +62,9 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
 
     try {
       const { error: updateError } = await supabase
-        .from('league_operators')
+        .from('organizations')
         .update({ organization_name: organizationName.trim() })
-        .eq('id', operatorProfile.id);
+        .eq('id', organization.id);
 
       if (updateError) throw updateError;
 
@@ -89,14 +89,14 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
 
     try {
       const { error: updateError } = await supabase
-        .from('league_operators')
+        .from('organizations')
         .update({
           organization_address: address.trim(),
           organization_city: city.trim(),
-          organization_state: state.trim(),
+          organization_state: state.trim().toUpperCase(),
           organization_zip_code: zipCode.trim(),
         })
-        .eq('id', operatorProfile.id);
+        .eq('id', organization.id);
 
       if (updateError) throw updateError;
 
@@ -154,7 +154,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
               </div>
             </div>
           ) : (
-            <p className="text-gray-900">{operatorProfile.organization_name}</p>
+            <p className="text-gray-900">{organization.organization_name}</p>
           )}
         </div>
 
@@ -226,10 +226,10 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
             </div>
           ) : (
             <div className="text-gray-900">
-              <p>{operatorProfile.organization_address}</p>
+              <p>{organization.organization_address}</p>
               <p>
-                {operatorProfile.organization_city}, {operatorProfile.organization_state}{' '}
-                {operatorProfile.organization_zip_code}
+                {organization.organization_city}, {organization.organization_state}{' '}
+                {organization.organization_zip_code}
               </p>
             </div>
           )}

@@ -37,7 +37,7 @@ import type { HandicapVariant, TeamFormat } from '@/types/league';
 import { SYSTEM_DEFAULTS } from '@/types/preferences';
 
 interface OrganizationPreferencesCardProps {
-  operatorId: string;
+  organizationId: string;
   onUpdate?: () => void;
 }
 
@@ -46,7 +46,7 @@ interface OrganizationPreferencesCardProps {
  * Allows operators to set default preferences for all their leagues
  */
 export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardProps> = ({
-  operatorId,
+  organizationId,
   onUpdate,
 }) => {
   const [preferences, setPreferences] = useState<OrganizationPreferences | null>(null);
@@ -65,7 +65,7 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
   // Fetch organization preferences on mount
   useEffect(() => {
     fetchPreferences();
-  }, [operatorId]);
+  }, [organizationId]);
 
   const fetchPreferences = async () => {
     setLoading(true);
@@ -75,12 +75,33 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
       .from('preferences')
       .select('*')
       .eq('entity_type', 'organization')
-      .eq('entity_id', operatorId)
+      .eq('entity_id', organizationId)
       .single();
 
     if (fetchError) {
-      setError('Failed to load preferences');
-      console.error('Error fetching preferences:', fetchError);
+      // If no preference record exists, create one with default values
+      if (fetchError.code === 'PGRST116') {
+        const { data: newPrefs, error: insertError } = await supabase
+          .from('preferences')
+          .insert({
+            entity_type: 'organization',
+            entity_id: organizationId,
+            // All preference fields default to NULL (will use system defaults)
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          setError('Failed to create preferences record');
+          console.error('Error creating preferences:', insertError);
+        } else if (newPrefs) {
+          setPreferences(newPrefs as OrganizationPreferences);
+          syncLocalState(newPrefs as OrganizationPreferences);
+        }
+      } else {
+        setError('Failed to load preferences');
+        console.error('Error fetching preferences:', fetchError);
+      }
     } else if (data) {
       setPreferences(data as OrganizationPreferences);
       syncLocalState(data as OrganizationPreferences);

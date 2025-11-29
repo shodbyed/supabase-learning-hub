@@ -34,7 +34,7 @@ import {
  * const handleSubmit = async () => {
  *   try {
  *     const venue = await createVenueMutation.mutateAsync({
- *       operatorId: 'op-123',
+ *       organizationId: 'org-123',
  *       name: 'The Pool Hall',
  *       street_address: '123 Main St',
  *       city: 'Austin',
@@ -56,9 +56,9 @@ export function useCreateVenue() {
   return useMutation({
     mutationFn: createVenue,
     onSuccess: (newVenue, variables) => {
-      // Invalidate venues list for this operator
+      // Invalidate venues list for this organization
       queryClient.invalidateQueries({
-        queryKey: queryKeys.venues.byOperator(variables.operatorId),
+        queryKey: queryKeys.venues.byOrganization(variables.organizationId),
       });
 
       // Optionally set the new venue in cache

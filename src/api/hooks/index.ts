@@ -182,6 +182,7 @@ export {
 // Venue queries
 export {
   useVenuesByOperator,
+  useVenuesByOrganization,
   useVenueById,
   useLeagueVenues,
   useLeagueVenuesWithDetails,
