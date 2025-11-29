@@ -234,7 +234,7 @@ export const LeagueDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-dashboard"
+        backTo={`/operator-dashboard/${league.organization_id}`}
         backLabel="Back to Dashboard"
         title={getLeagueName(league)}
       >

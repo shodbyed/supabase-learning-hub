@@ -23,11 +23,11 @@ export async function fetchOperatorPlayerCount(
   operatorId: string,
   activeOnly: boolean = false
 ): Promise<number> {
-  // Get all teams from operator's leagues
+  // Get all teams from organization's leagues
   let teamsQuery = supabase
     .from('teams')
-    .select('id, league:leagues!inner(operator_id), season:seasons!inner(status)')
-    .eq('league.operator_id', operatorId);
+    .select('id, league:leagues!inner(organization_id), season:seasons!inner(status)')
+    .eq('league.organization_id', operatorId);
 
   // Filter by active/upcoming seasons if activeOnly
   if (activeOnly) {
@@ -82,7 +82,7 @@ export async function fetchOperatorPlayers(
   operatorId: string,
   activeOnly: boolean = false
 ) {
-  // Get all unique member IDs from teams in operator's leagues
+  // Get all unique member IDs from teams in organization's leagues
   let teamPlayersQuery = supabase
     .from('team_players')
     .select(`
@@ -90,14 +90,14 @@ export async function fetchOperatorPlayers(
       status,
       team:teams!inner(
         league:leagues!inner(
-          operator_id
+          organization_id
         ),
         season:seasons!inner(
           status
         )
       )
     `)
-    .eq('team.league.operator_id', operatorId);
+    .eq('team.league.organization_id', operatorId);
 
   // Filter by active status if activeOnly
   if (activeOnly) {
@@ -203,7 +203,7 @@ export async function fetchPlayerDetails(
     return { data: null, error: playerError };
   }
 
-  // Fetch all leagues player is in (from operator's leagues)
+  // Fetch all leagues player is in (from organization's leagues)
   const { data: teamPlayers, error: teamPlayersError } = await supabase
     .from('team_players')
     .select(`
@@ -216,7 +216,7 @@ export async function fetchPlayerDetails(
           day_of_week,
           division,
           team_format,
-          operator_id
+          organization_id
         ),
         season:seasons!inner(
           id,
@@ -226,7 +226,7 @@ export async function fetchPlayerDetails(
       )
     `)
     .eq('member_id', playerId)
-    .eq('team.league.operator_id', operatorId);
+    .eq('team.league.organization_id', operatorId);
 
   if (teamPlayersError) {
     return { data: null, error: teamPlayersError };

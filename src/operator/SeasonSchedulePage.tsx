@@ -186,16 +186,18 @@ export const SeasonSchedulePage: React.FC = () => {
         const { data, error } = await supabase
           .from('leagues')
           .select(`
-            operator_id,
-            league_operators!inner(
-              member_id,
-              members!inner(
-                user_id
+            organization_id,
+            organizations!inner(
+              organization_staff!inner(
+                member_id,
+                members!inner(
+                  user_id
+                )
               )
             )
           `)
           .eq('id', leagueId)
-          .eq('league_operators.members.user_id', user.id)
+          .eq('organizations.organization_staff.members.user_id', user.id)
           .single();
 
         setIsOperator(!!data && !error);
@@ -319,8 +321,8 @@ export const SeasonSchedulePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo={isOperator && !fromPlayer ? `/league/${leagueId}` : '/my-teams'}
-        backLabel={isOperator && !fromPlayer ? 'Back to League' : 'Back to My Teams'}
+        backTo={-1}
+        backLabel="Back"
         title="Season Schedule"
         subtitle={seasonName}
       >

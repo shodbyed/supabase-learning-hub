@@ -164,7 +164,7 @@ export function useChampionshipDateEditor(
         const { error: prefError } = await supabase
           .from('operator_blackout_preferences')
           .insert({
-            operator_id: operatorId,
+            organization_id: operatorId,
             preference_type: 'championship',
             preference_action: 'blackout',
             championship_id: newChampionship.id,

@@ -130,7 +130,7 @@ export const OrganizationSettings: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-dashboard"
+        backTo={`/operator-dashboard/${operatorProfile.id}`}
         backLabel="Back to Dashboard"
         title="Organization Settings"
         subtitle="Manage your organization information and league rules"

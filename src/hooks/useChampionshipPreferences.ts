@@ -63,7 +63,7 @@ export function useChampionshipPreferences(
       const { data: preferences, error: prefError } = await supabase
         .from('operator_blackout_preferences')
         .select('*')
-        .eq('operator_id', operatorId)
+        .eq('organization_id', operatorId)
         .eq('preference_type', 'championship');
 
       if (prefError) throw prefError;

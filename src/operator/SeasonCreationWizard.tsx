@@ -400,7 +400,7 @@ export const SeasonCreationWizard: React.FC = () => {
       await supabase
         .from('operator_blackout_preferences')
         .delete()
-        .eq('operator_id', operatorId)
+        .eq('organization_id', operatorId)
         .eq('preference_type', 'championship')
         .eq('championship_id', championshipId || null);
 
@@ -420,7 +420,7 @@ export const SeasonCreationWizard: React.FC = () => {
           await supabase
             .from('operator_blackout_preferences')
             .insert({
-              operator_id: operatorId,
+              organization_id: operatorId,
               preference_type: 'championship',
               preference_action: 'ignore',
               championship_id: futureChampionships[0].id,
@@ -436,7 +436,7 @@ export const SeasonCreationWizard: React.FC = () => {
         await supabase
           .from('operator_blackout_preferences')
           .insert({
-            operator_id: operatorId,
+            organization_id: operatorId,
             preference_type: 'championship',
             preference_action: 'blackout',
             championship_id: championshipId,

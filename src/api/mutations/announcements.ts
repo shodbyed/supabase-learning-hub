@@ -178,12 +178,12 @@ export async function createOrganizationAnnouncement(
     throw new Error(`Organization not found: ${orgError?.message || 'Unknown error'}`);
   }
 
-  // Get all members in any active season operated by this operator
+  // Get all members in any active season operated by this organization
   const { data: teamPlayers, error: playersError } = await supabase
     .from('team_players')
-    .select('member_id, teams!inner(id, season_id, seasons!inner(id, status, league_id, leagues!inner(id, operator_id)))')
+    .select('member_id, teams!inner(id, season_id, seasons!inner(id, status, league_id, leagues!inner(id, organization_id)))')
     .eq('teams.seasons.status', 'active')
-    .eq('teams.seasons.leagues.operator_id', operatorId);
+    .eq('teams.seasons.leagues.organization_id', operatorId);
 
   if (playersError) {
     console.error('Error fetching team players:', playersError);
