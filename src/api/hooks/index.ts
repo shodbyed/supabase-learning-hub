@@ -128,6 +128,17 @@ export {
   useOrganizationPosition,
 } from './useOrganizations';
 
+// Organization staff queries
+export {
+  useOrganizationStaff,
+} from './useOrganizationStaff';
+
+// Organization staff mutations
+export {
+  useAddOrganizationStaff,
+  useRemoveOrganizationStaff,
+} from './useOrganizationStaffMutations';
+
 // Preferences queries
 export {
   useOrganizationPreferences,

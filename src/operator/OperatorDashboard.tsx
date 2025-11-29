@@ -8,9 +8,10 @@ import { useUserProfile, useOrganization } from '@/api/hooks';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { ActiveLeagues } from '@/components/operator/ActiveLeagues';
 import { QuickStatsCard } from '@/components/operator/QuickStatsCard';
+import { OrganizationStaffCard } from '@/components/operator/OrganizationStaffCard';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Users, Settings, TrendingUp, BookOpen, Video, MessageCircle, Phone, Flag } from 'lucide-react';
+import { MessageSquare, Users, Settings, BookOpen, Video, MessageCircle, Phone, Flag } from 'lucide-react';
 import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
 
 /**
@@ -104,20 +105,11 @@ export const OperatorDashboard: React.FC = () => {
             {/* Quick Stats */}
             <QuickStatsCard operatorId={organization.id} />
 
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-6">
-                  <TrendingUp className="h-12 w-12 mx-auto text-gray-400 mb-2" />
-                  <p className="text-gray-600 text-sm">
-                    Activity will appear here once you start managing leagues
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Organization Staff */}
+            <OrganizationStaffCard
+              organizationId={organization.id}
+              currentMemberId={member?.id || ''}
+            />
 
             {/* Help & Resources */}
             <Card className="bg-blue-50 border-blue-200">
