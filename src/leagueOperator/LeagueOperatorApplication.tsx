@@ -163,10 +163,11 @@ export const LeagueOperatorApplication: React.FC = () => {
 
   /**
    * Handle form submission (when user clicks Continue on last question)
-   * 1. Logs all data for database operations
-   * 2. Upgrades user role from 'player' to 'league_operator'
-   * 3. Clears form state
-   * 4. Redirects to congratulations page
+   * 1. Creates organization record
+   * 2. Creates organization_staff record (owner position)
+   * 3. Upgrades user role from 'player' to 'league_operator'
+   * 4. Clears form state
+   * 5. Redirects to congratulations page
    */
   const handleSubmit = async () => {
     if (!member) {
@@ -177,50 +178,45 @@ export const LeagueOperatorApplication: React.FC = () => {
     // Generate mock payment data for testing
     const mockPayment = generateMockPaymentData();
 
-    // Prepare data for database insertion
-    const insertData: LeagueOperatorInsertData = {
-      member_id: member.id,
-      organization_name: state.leagueName,
+    // Step 1: Create organization
+    const { data: organization, error: orgError } = await supabase
+      .from('organizations')
+      .insert({
+        name: state.leagueName,
+        created_by: member.id,
 
-      // Address - copy from member profile (admin-only data)
-      organization_address: state.useProfileAddress ? member.address : state.organizationAddress || '',
-      organization_city: state.useProfileAddress ? member.city : state.organizationCity || '',
-      organization_state: state.useProfileAddress ? member.state : state.organizationState || '',
-      organization_zip_code: state.useProfileAddress ? member.zip_code : state.organizationZipCode || '',
+        // Address - copy from member profile or custom
+        address: state.useProfileAddress ? member.address : state.organizationAddress || '',
+        city: state.useProfileAddress ? member.city : state.organizationCity || '',
+        state: state.useProfileAddress ? member.state : state.organizationState || '',
+        zip_code: state.useProfileAddress ? member.zip_code : state.organizationZipCode || '',
 
-      // Contact disclaimer
-      contact_disclaimer_acknowledged: state.contactDisclaimerAcknowledged || false,
+        // Contact information
+        email: state.useProfileEmail ? member.email : state.leagueEmail || '',
+        phone: state.useProfilePhone ? member.phone : state.leaguePhone || '',
 
-      // Email - pre-filled from profile but stored separately
-      league_email: state.useProfileEmail ? member.email : state.leagueEmail || '',
-      email_visibility: state.emailVisibility || 'in_app_only',
+        // Payment - use mock data for testing
+        stripe_customer_id: mockPayment.stripe_customer_id,
+        payment_method_id: mockPayment.payment_method_id,
+        card_last4: mockPayment.card_last4,
+        card_brand: mockPayment.card_brand,
+        expiry_month: mockPayment.expiry_month,
+        expiry_year: mockPayment.expiry_year,
+        billing_zip: mockPayment.billing_zip,
+      })
+      .select()
+      .single();
 
-      // Phone - pre-filled from profile but stored separately
-      league_phone: state.useProfilePhone ? member.phone : state.leaguePhone || '',
-      phone_visibility: state.phoneVisibility || 'in_app_only',
-
-      // Payment - use mock data for testing
-      stripe_customer_id: mockPayment.stripe_customer_id,
-      payment_method_id: mockPayment.payment_method_id,
-      card_last4: mockPayment.card_last4,
-      card_brand: mockPayment.card_brand,
-      expiry_month: mockPayment.expiry_month,
-      expiry_year: mockPayment.expiry_year,
-      billing_zip: mockPayment.billing_zip,
-      payment_verified: mockPayment.payment_verified,
-    };
-
-    const { error: insertError } = await supabase
-      .from('league_operators')
-      .insert([insertData])
-      .select();
-
-    if (insertError) {
-      console.error('Failed to create operator profile:', insertError);
-      alert(`Failed to create operator profile: ${insertError.message}`);
+    if (orgError || !organization) {
+      console.error('Failed to create organization:', orgError);
+      alert(`Failed to create organization: ${orgError?.message || 'Unknown error'}`);
       return;
     }
 
+    // Step 2: Organization_staff record is automatically created by database trigger
+    // (create_owner_staff_trigger adds the creator as owner)
+
+    // Step 3: Update member role to league_operator
     const { error: updateError } = await supabase
       .from('members')
       .update({ role: 'league_operator' })
@@ -233,11 +229,9 @@ export const LeagueOperatorApplication: React.FC = () => {
     }
 
     // Refresh the user profile context so the new role is immediately available
-    // This prevents the user from seeing stale data on the next page
     refreshProfile();
 
     // Wait a moment for the profile to refresh before navigating
-    // This ensures role-based UI elements work immediately on the welcome page
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Clear saved progress since form is submitted

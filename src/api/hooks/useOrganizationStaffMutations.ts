@@ -54,6 +54,7 @@ export function useAddOrganizationStaff() {
  * const removeStaff = useRemoveOrganizationStaff();
  * await removeStaff.mutateAsync({
  *   staffId: 'staff-record-id',
+ *   memberId: 'member-id',
  *   organizationId: 'org-id'
  * });
  */
@@ -61,8 +62,8 @@ export function useRemoveOrganizationStaff() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (params: { staffId: string; organizationId: string }) =>
-      removeOrganizationStaff(params.staffId),
+    mutationFn: (params: { staffId: string; memberId: string; organizationId: string }) =>
+      removeOrganizationStaff(params.staffId, params.memberId),
     onSuccess: (_, variables) => {
       // Invalidate staff list for this organization
       queryClient.invalidateQueries({

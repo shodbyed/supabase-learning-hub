@@ -19,6 +19,10 @@ export {
   useMemberProfanitySettings,
 } from './useCurrentMember';
 
+// Member search hooks
+export { useMemberSearch } from './useMemberSearch';
+export type { MemberSearchFilter } from '../queries/memberSearch';
+
 export {
   useUserProfile,
   useIsOperator,

@@ -9,6 +9,7 @@ import { useOrganizations } from '@/api/hooks/useOrganizations';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 import { Users, MessageSquare, Trophy, Building2 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -34,15 +35,12 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Mobile First */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="px-4 py-3">
-          <div className="text-4xl font-semibold text-gray-900">
-            Welcome, {member.first_name}!
-          </div>
-          <p className="text-xs text-gray-600">{user?.email}</p>
-        </div>
-      </header>
+      <PageHeader
+        backTo="/"
+        backLabel="Home"
+        title={`Welcome, ${member.first_name}!`}
+        subtitle={user?.email}
+      />
 
       {/* Main Content - Mobile First */}
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">

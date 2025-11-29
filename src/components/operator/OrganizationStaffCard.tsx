@@ -8,10 +8,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MemberCombobox } from '@/components/MemberCombobox';
-import { UserPlus } from 'lucide-react';
-import { useOrganizationStaff, useAllMembers, useAddOrganizationStaff } from '@/api/hooks';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MemberSearchCombobox } from '@/components/MemberSearchCombobox';
+import { UserPlus, X } from 'lucide-react';
+import { useOrganizationStaff, useAddOrganizationStaff, useRemoveOrganizationStaff, useUserProfile } from '@/api/hooks';
 
 interface OrganizationStaffCardProps {
   /** Organization ID to fetch staff for */
@@ -33,12 +33,13 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
   const [showAddStaff, setShowAddStaff] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState('');
 
-  // Fetch staff and members
+  // Fetch staff and user profile
   const { data: staff = [], isLoading: staffLoading } = useOrganizationStaff(organizationId);
-  const { data: allMembers = [] } = useAllMembers();
+  const { member } = useUserProfile();
 
-  // Add staff mutation
+  // Add/remove staff mutations
   const addStaffMutation = useAddOrganizationStaff();
+  const removeStaffMutation = useRemoveOrganizationStaff();
 
   const handleAddStaff = async () => {
     if (!selectedMemberId || !currentMemberId) return;
@@ -54,6 +55,18 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
       setSelectedMemberId('');
     } catch (err) {
       console.error('Failed to add staff:', err);
+    }
+  };
+
+  const handleRemoveStaff = async (staffId: string, memberId: string) => {
+    try {
+      await removeStaffMutation.mutateAsync({
+        staffId,
+        memberId,
+        organizationId,
+      });
+    } catch (err) {
+      console.error('Failed to remove staff:', err);
     }
   };
 
@@ -90,6 +103,16 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
                       {staffMember.position.replace('_', ' ')}
                     </p>
                   </div>
+                  {staffMember.position !== 'owner' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveStaff(staffMember.id, staffMember.member_id)}
+                      disabled={removeStaffMutation.isPending}
+                    >
+                      <X className="h-4 w-4 text-gray-600" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -102,15 +125,20 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Staff Member</DialogTitle>
+            <DialogDescription>
+              Search for a member to add them as an admin to your organization.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <MemberCombobox
-              members={allMembers}
+            <MemberSearchCombobox
               value={selectedMemberId}
               onValueChange={setSelectedMemberId}
               placeholder="Search for member..."
               label="Select Member"
               excludeIds={staff.map((s) => s.member_id)}
+              organizationId={organizationId}
+              userState={member?.state || null}
+              defaultFilter="state"
             />
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowAddStaff(false)}>

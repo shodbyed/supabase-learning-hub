@@ -56,12 +56,19 @@ export async function getOrganizationStaff(
       )
     `)
     .eq('organization_id', organizationId)
-    .order('position', { ascending: true }) // owner, admin, league_rep
     .order('added_at', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to fetch organization staff: ${error.message}`);
   }
 
-  return data as OrganizationStaffMember[];
+  // Sort by position (owner first, then admin, then league_rep), then by added_at
+  const positionOrder: Record<string, number> = { owner: 1, admin: 2, league_rep: 3 };
+  const sorted = (data as OrganizationStaffMember[]).sort((a, b) => {
+    const positionDiff = positionOrder[a.position] - positionOrder[b.position];
+    if (positionDiff !== 0) return positionDiff;
+    return new Date(a.added_at).getTime() - new Date(b.added_at).getTime();
+  });
+
+  return sorted;
 }
