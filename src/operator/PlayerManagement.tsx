@@ -10,10 +10,11 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MemberCombobox } from '@/components/MemberCombobox';
+import { PlayerCombobox } from '@/components/PlayerCombobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,12 +23,10 @@ import { InfoButton } from '@/components/InfoButton';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { Users, DollarSign } from 'lucide-react';
-import { useOperatorIdValue } from '@/api/hooks';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
 import {
   fetchOperatorPlayerCount,
-  fetchOperatorPlayers,
   fetchPlayerDetails,
   updatePlayerStartingHandicaps,
   markMembershipPaid,
@@ -41,7 +40,7 @@ import {
  * Displays player count, selection dropdown, and detailed player information.
  */
 export const PlayerManagement: React.FC = () => {
-  const realOperatorId = useOperatorIdValue();
+  const { orgId } = useParams<{ orgId: string }>();
   const isDeveloper = useIsDeveloper();
   const queryClient = useQueryClient();
 
@@ -49,13 +48,12 @@ export const PlayerManagement: React.FC = () => {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string>('');
   const [handicap3v3, setHandicap3v3] = useState<string>('0');
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
-  const [showActiveOnly, setShowActiveOnly] = useState<boolean>(false);
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
   const [showMembershipConfirm, setShowMembershipConfirm] = useState<boolean>(false);
   const [showReverseMembershipConfirm, setShowReverseMembershipConfirm] = useState<boolean>(false);
 
-  // Use impersonated operator ID if developer has selected one, otherwise use their real ID
-  const operatorId = impersonatedOperatorId || realOperatorId;
+  // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
+  const operatorId = impersonatedOperatorId || orgId;
 
   // Fetch all league operators (for developer impersonation)
   const { data: allOperators } = useQuery({
@@ -64,19 +62,14 @@ export const PlayerManagement: React.FC = () => {
     enabled: isDeveloper,
   });
 
-  // Fetch player count
+  // Fetch player count - still needed for display
   const { data: playerCount = 0 } = useQuery({
-    queryKey: ['operatorPlayerCount', operatorId, showActiveOnly],
-    queryFn: () => fetchOperatorPlayerCount(operatorId!, showActiveOnly),
+    queryKey: ['operatorPlayerCount', operatorId, false],
+    queryFn: () => fetchOperatorPlayerCount(operatorId!, false),
     enabled: !!operatorId,
   });
 
-  // Fetch all players for dropdown
-  const { data: playersData } = useQuery({
-    queryKey: ['operatorPlayers', operatorId, showActiveOnly],
-    queryFn: () => fetchOperatorPlayers(operatorId!, showActiveOnly),
-    enabled: !!operatorId,
-  });
+  // PlayerCombobox now handles player fetching internally based on filter selection
 
   // Fetch selected player details
   const { data: playerDetailsData, isLoading: isLoadingDetails } = useQuery({
@@ -220,8 +213,6 @@ export const PlayerManagement: React.FC = () => {
 
   const membershipAction = getMembershipAction();
 
-  const players = playersData?.data || [];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
@@ -266,34 +257,15 @@ export const PlayerManagement: React.FC = () => {
             <div className="flex flex-col md:flex-row gap-6">
               {/* Player Count */}
               <div className="flex flex-col gap-3">
-                {/* Filter Toggle */}
-                <div className="flex gap-2">
-                  <Button
-                    variant={!showActiveOnly ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setShowActiveOnly(false)}
-                  >
-                    All
-                  </Button>
-                  <Button
-                    variant={showActiveOnly ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setShowActiveOnly(true)}
-                  >
-                    Active Only
-                  </Button>
-                </div>
-
                 {/* Player Count Display */}
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-green-100 rounded-lg">
                     <Users className="h-8 w-8 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">
-                      {showActiveOnly ? 'Active Players' : 'Total Players'}
-                    </p>
+                    <p className="text-sm text-gray-600">Total Players</p>
                     <p className="text-3xl font-bold">{playerCount}</p>
+                    <p className="text-xs text-gray-500 mt-1">Use filters in dropdown to refine search</p>
                   </div>
                 </div>
               </div>
@@ -301,8 +273,9 @@ export const PlayerManagement: React.FC = () => {
               {/* Player Selection */}
               <div className="flex-1 flex flex-col justify-center">
                 <Label htmlFor="player-select" className="mb-2">Select Player</Label>
-                <MemberCombobox
-                  members={players}
+                <PlayerCombobox
+                  filters={{ myOrg: operatorId, active: operatorId }}
+                  defaultFilter="myOrg"
                   value={selectedPlayerId}
                   onValueChange={setSelectedPlayerId}
                   placeholder="Search for a player..."

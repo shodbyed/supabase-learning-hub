@@ -74,7 +74,7 @@ export const OperatorDashboard: React.FC = () => {
             title="Manage Players"
             description="View registrations and player stats"
             buttonText="View Players"
-            linkTo="/manage-players"
+            linkTo={`/manage-players/${organization.id}`}
           />
 
           <DashboardCard
