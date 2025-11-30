@@ -248,4 +248,27 @@ export {
 // Member mutations
 export {
   useUpdateProfanityFilter,
+  useCreateMember,
+  useDeleteMember,
 } from './useMemberMutations';
+
+// Championship date mutations
+export {
+  useCreateChampionshipDate,
+  useUpdateChampionshipDate,
+  useDeleteChampionshipDate,
+} from './useChampionshipDateMutations';
+
+// Operator blackout preference mutations
+export {
+  useCreateOperatorBlackoutPreference,
+  useUpdateOperatorBlackoutPreference,
+  useDeleteOperatorBlackoutPreference,
+} from './useOperatorBlackoutPreferenceMutations';
+
+// Preference mutations (organization and league preferences)
+export {
+  useCreatePreference,
+  useUpdatePreference,
+  useDeletePreference,
+} from './usePreferenceMutations';

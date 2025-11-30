@@ -31,6 +31,8 @@ import { FormatComparison } from '../info/FormatComparison';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import HandicapLookupTest from '../pages/HandicapLookupTest';
+import { DevOnly } from '../dev/DevOnly';
+import RLSTestPage from '../dev/RLSTestPage';
 
 // Lazy-loaded operator pages (only loaded when operator accesses them)
 const OperatorWelcome = lazy(() => import('../operator/OperatorWelcome'));
@@ -62,6 +64,11 @@ const publicRoutes = [
   { path: '/8-man-format-details', element: <EightManFormatDetails /> },
   { path: '/format-comparison', element: <FormatComparison /> },
   { path: '/test/handicap-lookup', element: <HandicapLookupTest /> },
+];
+
+// Development-only routes - only accessible when running in dev mode
+const devRoutes = [
+  { path: '/dev/rls-tests', element: <DevOnly><RLSTestPage /></DevOnly> },
 ];
 
 // Protected routes - require authentication only
@@ -115,6 +122,11 @@ const developerRoutes = [
 export const NavRoutes: React.FC = () => {
   return (
     <Routes>
+      {/* Development-only routes - only accessible in dev mode */}
+      {devRoutes.map(({ path, element }) => (
+        <Route key={path} path={path} element={element} />
+      ))}
+
       {/* Public routes */}
       {publicRoutes.map(({ path, element }) => (
         <Route key={path} path={path} element={element} />

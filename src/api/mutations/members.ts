@@ -1,7 +1,7 @@
 /**
  * @fileoverview Member Mutation Functions
  *
- * Write operations for member records (update profanity filter, etc.).
+ * Write operations for member records (create, update, delete).
  * These functions are used by TanStack Query useMutation hooks.
  *
  * @see api/hooks/useMemberMutations.ts - React hooks wrapper
@@ -9,6 +9,32 @@
 
 import { supabase } from '@/supabaseClient';
 import { isEighteenOrOlder } from '@/utils/formatters';
+
+/**
+ * Parameters for creating a member
+ */
+export interface CreateMemberParams {
+  first_name: string;
+  last_name: string;
+  phone: string;
+  email: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  date_of_birth: string;
+  system_player_number: number;
+  nickname?: string | null;
+  bca_member_number?: string | null;
+  membership_paid_date?: string | null;
+}
+
+/**
+ * Parameters for deleting a member
+ */
+export interface DeleteMemberParams {
+  memberId: string;
+}
 
 /**
  * Parameters for updating member profile
@@ -157,5 +183,94 @@ export async function updateProfanityFilter(
 
   if (updateError) {
     throw new Error(`Failed to update profanity filter: ${updateError.message}`);
+  }
+}
+
+/**
+ * Create a new member
+ *
+ * Inserts a new member record.
+ * Used for testing RLS INSERT policies.
+ *
+ * @param params - Member creation parameters
+ * @returns Created member record
+ * @throws Error if validation fails or database error occurs
+ *
+ * @example
+ * const member = await createMember({
+ *   first_name: 'John',
+ *   last_name: 'Doe',
+ *   phone: '555-0100',
+ *   email: 'john@example.com',
+ *   address: '123 Main St',
+ *   city: 'Austin',
+ *   state: 'TX',
+ *   zip_code: '78701',
+ *   date_of_birth: '1990-01-01',
+ *   system_player_number: 12345
+ * });
+ */
+export async function createMember(params: CreateMemberParams) {
+  // Validation
+  if (!params.first_name.trim()) {
+    throw new Error('First name is required');
+  }
+  if (!params.last_name.trim()) {
+    throw new Error('Last name is required');
+  }
+  if (!params.email.trim()) {
+    throw new Error('Email is required');
+  }
+  if (!params.phone.trim()) {
+    throw new Error('Phone is required');
+  }
+
+  const { data, error } = await supabase
+    .from('members')
+    .insert([{
+      first_name: params.first_name.trim(),
+      last_name: params.last_name.trim(),
+      phone: params.phone.trim(),
+      email: params.email.trim(),
+      address: params.address.trim(),
+      city: params.city.trim(),
+      state: params.state.trim().toUpperCase(),
+      zip_code: params.zip_code.trim(),
+      date_of_birth: params.date_of_birth,
+      system_player_number: params.system_player_number,
+      nickname: params.nickname?.trim() || null,
+      bca_member_number: params.bca_member_number?.trim() || null,
+      membership_paid_date: params.membership_paid_date || null,
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create member: ${error.message} (${error.code})`);
+  }
+
+  return data;
+}
+
+/**
+ * Delete a member
+ *
+ * Deletes a member record by ID.
+ * Used for cleaning up test data.
+ *
+ * @param params - Member deletion parameters
+ * @throws Error if database error occurs
+ *
+ * @example
+ * await deleteMember({ memberId: 'member-123' });
+ */
+export async function deleteMember(params: DeleteMemberParams): Promise<void> {
+  const { error } = await supabase
+    .from('members')
+    .delete()
+    .eq('id', params.memberId);
+
+  if (error) {
+    throw new Error(`Failed to delete member: ${error.message} (${error.code})`);
   }
 }
