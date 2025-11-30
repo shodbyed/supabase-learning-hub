@@ -171,7 +171,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
       clearFormData();
-      navigate('/operator-dashboard');
+      navigate(`/operator-dashboard/${orgId}`);
     }
   };
 
@@ -214,7 +214,7 @@ export const LeagueCreationWizard: React.FC = () => {
                 Create Season
               </Button>
               <Button
-                onClick={() => navigate('/operator-dashboard')}
+                onClick={() => navigate(`/operator-dashboard/${orgId}`)}
                 variant="outline"
                 className="w-full"
                 size="lg"

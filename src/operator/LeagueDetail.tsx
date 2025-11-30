@@ -220,7 +220,7 @@ export const LeagueDetail: React.FC = () => {
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'League not found'}</p>
             <button
-              onClick={() => navigate('/operator-dashboard')}
+              onClick={() => navigate(league?.organization_id ? `/operator-dashboard/${league.organization_id}` : '/operator-dashboard')}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg"
             >
               Back to Dashboard

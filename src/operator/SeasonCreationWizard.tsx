@@ -279,7 +279,7 @@ export const SeasonCreationWizard: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{state.error || 'League not found'}</p>
-            <Button onClick={() => navigate('/operator-dashboard')}>
+            <Button onClick={() => navigate(`/operator-dashboard/${organizationId}`)}>
               Back to Dashboard
             </Button>
           </div>
