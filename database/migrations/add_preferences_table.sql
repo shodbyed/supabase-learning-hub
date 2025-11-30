@@ -3,7 +3,7 @@
 -- Purpose: Single flexible table to store both organization defaults and league-specific overrides
 --
 -- Design Pattern:
--- - One row per organization (entity_type='organization', entity_id=operator_id)
+-- - One row per organization (entity_type='organization', entity_id=organization_id)
 -- - One row per league with custom settings (entity_type='league', entity_id=league_id)
 -- - Leagues inherit organization defaults for any NULL columns
 -- - System defaults used if both organization and league are NULL
@@ -48,7 +48,7 @@ CREATE INDEX idx_preferences_league ON preferences(entity_type, entity_id) WHERE
 -- Add comments
 COMMENT ON TABLE preferences IS 'Stores both organization-level defaults and league-level overrides. NULL values cascade to next level (league → organization → system default).';
 COMMENT ON COLUMN preferences.entity_type IS 'Type of entity: organization (defaults for all leagues) or league (overrides for specific league)';
-COMMENT ON COLUMN preferences.entity_id IS 'ID of the entity: operator_id for organization, league_id for league';
+COMMENT ON COLUMN preferences.entity_id IS 'ID of the entity: organization_id for organization, league_id for league';
 COMMENT ON COLUMN preferences.handicap_variant IS 'Player handicap calculation method. NULL = use next level default';
 COMMENT ON COLUMN preferences.team_handicap_variant IS 'Team bonus calculation method. NULL = use next level default';
 COMMENT ON COLUMN preferences.game_history_limit IS 'Number of recent games for handicap calculation. NULL = use next level default (system default: 200)';
@@ -67,13 +67,13 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trigger_create_org_preferences
-  AFTER INSERT ON league_operators
+  AFTER INSERT ON organizations
   FOR EACH ROW
   EXECUTE FUNCTION create_default_org_preferences();
 
--- Backfill organization preferences for existing operators
+-- Backfill organization preferences for existing organizations
 INSERT INTO preferences (entity_type, entity_id)
-SELECT 'organization', id FROM league_operators
+SELECT 'organization', id FROM organizations
 ON CONFLICT (entity_type, entity_id) DO NOTHING;
 
 -- Create trigger to automatically create league preferences when league is created
@@ -103,7 +103,7 @@ ON CONFLICT (entity_type, entity_id) DO NOTHING;
 CREATE OR REPLACE VIEW resolved_league_preferences AS
 SELECT
   l.id as league_id,
-  l.operator_id,
+  l.organization_id,
 
   -- Handicap settings with fallback chain: league → org → system default
   COALESCE(league_prefs.handicap_variant, org_prefs.handicap_variant, l.handicap_variant, 'standard') as handicap_variant,
@@ -119,7 +119,7 @@ SELECT
 FROM leagues l
 LEFT JOIN preferences org_prefs
   ON org_prefs.entity_type = 'organization'
-  AND org_prefs.entity_id = l.operator_id
+  AND org_prefs.entity_id = l.organization_id
 LEFT JOIN preferences league_prefs
   ON league_prefs.entity_type = 'league'
   AND league_prefs.entity_id = l.id;

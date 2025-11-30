@@ -89,39 +89,42 @@ export async function getMemberById(memberId: string): Promise<Member> {
 }
 
 /**
- * Fetch operator ID for a member
+ * Fetch organization ID for a member
  *
- * Looks up the league_operator record for a member to get their operator ID.
+ * Looks up the organization via organization_staff table for a member.
+ * Returns the first organization if member is staff for multiple.
  * Used across operator dashboard features.
  *
  * @param memberId - Member's primary key ID
- * @returns Object with operator ID
- * @throws Error if member is not an operator or database error
+ * @returns Object with organization ID
+ * @throws Error if member is not staff for any organization or database error
  *
  * @example
  * const { id } = await getOperatorId(memberId);
- * // Use operator ID for operator-specific queries
+ * // Use organization ID for operator-specific queries
  */
 export async function getOperatorId(memberId: string): Promise<{ id: string }> {
   const { data, error } = await supabase
-    .from('league_operators')
-    .select('id')
+    .from('organization_staff')
+    .select('organization_id')
     .eq('member_id', memberId)
+    .order('added_at', { ascending: true })
+    .limit(1)
     .single();
 
   if (error) throw error;
-  return data;
+  return { id: data.organization_id };
 }
 
 /**
- * Fetch operator ID by auth user ID (convenience function)
+ * Fetch organization ID by auth user ID (convenience function)
  *
- * Combines member lookup + operator lookup in one function.
+ * Combines member lookup + organization lookup in one function.
  * Useful when you only have the auth user ID.
  *
  * @param userId - Supabase auth user ID
- * @returns Object with operator ID
- * @throws Error if user is not a member, not an operator, or database error
+ * @returns Object with organization ID
+ * @throws Error if user is not a member, not staff for any organization, or database error
  *
  * @example
  * const { id } = await getOperatorIdByUserId(user.id);
@@ -130,17 +133,17 @@ export async function getOperatorIdByUserId(userId: string): Promise<{ id: strin
   // First get member ID
   const member = await getCurrentMember(userId);
 
-  // Then get operator ID
+  // Then get organization ID
   return getOperatorId(member.id);
 }
 
 /**
  * Check if member is a league operator
  *
- * Quick check to see if a member has an operator record.
+ * Quick check to see if a member has an organization staff record.
  *
  * @param memberId - Member's primary key ID
- * @returns True if member is an operator, false otherwise
+ * @returns True if member is an operator (org staff), false otherwise
  *
  * @example
  * if (await isOperator(memberId)) {
@@ -149,10 +152,11 @@ export async function getOperatorIdByUserId(userId: string): Promise<{ id: strin
  */
 export async function isOperator(memberId: string): Promise<boolean> {
   const { data, error } = await supabase
-    .from('league_operators')
+    .from('organization_staff')
     .select('id')
     .eq('member_id', memberId)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
   // If error code is PGRST116 (no rows), member is not an operator
   if (error?.code === 'PGRST116') return false;
@@ -160,7 +164,7 @@ export async function isOperator(memberId: string): Promise<boolean> {
   // Other errors should be thrown
   if (error) throw error;
 
-  // Has operator record
+  // Has organization staff record
   return !!data;
 }
 

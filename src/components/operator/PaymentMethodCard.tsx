@@ -10,17 +10,17 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import type { LeagueOperator } from '@/types/operator';
+import type { Organization } from '@/api/queries/organizations';
 
 interface PaymentMethodCardProps {
-  operatorProfile: LeagueOperator;
+  organization: Organization;
 }
 
 export const PaymentMethodCard: React.FC<PaymentMethodCardProps> = ({
-  operatorProfile,
+  organization,
 }) => {
   // Suppress unused variable warning - will be used when Stripe is implemented
-  void operatorProfile;
+  void organization;
 
   return (
     <Card>

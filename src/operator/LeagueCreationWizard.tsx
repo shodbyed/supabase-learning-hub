@@ -7,8 +7,9 @@
  * Season scheduling and team building moved to separate wizards.
  */
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useUserProfile, useCreateLeague, useOrganizationPreferences } from '@/api/hooks';
+import { useOrganization } from '@/api/hooks/useOrganizations';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
 import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
 import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
@@ -16,7 +17,7 @@ import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/supabaseClient';
+import { PageHeader } from '@/components/PageHeader';
 import type { GameType, DayOfWeek, TeamFormat } from '@/types/league';
 
 /**
@@ -32,50 +33,38 @@ import type { GameType, DayOfWeek, TeamFormat } from '@/types/league';
  */
 export const LeagueCreationWizard: React.FC = () => {
   const navigate = useNavigate();
+  const { orgId } = useParams<{ orgId: string }>();
   const { member } = useUserProfile();
-  const [operatorId, setOperatorId] = useState<string | null>(null);
   const [createdLeagueId, setCreatedLeagueId] = useState<string | null>(null);
 
+  // Fetch organization with TanStack Query (cached, reusable)
+  const { organization } = useOrganization(orgId);
+  const organizationId = orgId || null;
+
   // Fetch organization preferences with TanStack Query (cached, reusable)
-  const { data: orgPreferences } = useOrganizationPreferences(operatorId);
+  const { data: orgPreferences } = useOrganizationPreferences(organizationId);
 
   // Use TanStack Query mutation for league creation
   const createLeagueMutation = useCreateLeague();
   const isCreating = createLeagueMutation.isPending;
 
   /**
-   * Fetch operator ID and clear old form data on mount
-   * Organization preferences fetched via TanStack Query hook above
+   * Clear old form data on mount
+   * Organization fetched via TanStack Query hook above
    */
   useEffect(() => {
-    const fetchOperatorId = async () => {
-      if (!member) return;
-
-      const { data: operatorData, error: operatorError } = await supabase
-        .from('league_operators')
-        .select('id')
-        .eq('member_id', member.id)
-        .single();
-
-      if (operatorData && !operatorError) {
-        setOperatorId(operatorData.id);
-      }
-    };
-
-    fetchOperatorId();
-
     // Clear any previous wizard data when starting a new league creation
     // This prevents form fields from pre-filling with old data
     localStorage.removeItem('league-creation-wizard');
     localStorage.removeItem('league-wizard-step');
-  }, [member]);
+  }, []);
 
   /**
    * Handle form submission - create the league in database
    */
   const handleSubmit = async () => {
-    if (!operatorId) {
-      console.error('❌ No operator profile found');
+    if (!organizationId) {
+      console.error('❌ No organization found');
       return;
     }
 
@@ -94,7 +83,7 @@ export const LeagueCreationWizard: React.FC = () => {
 
       // Create league using TanStack Query mutation
       const newLeague = await createLeagueMutation.mutateAsync({
-        operatorId,
+        operatorId: organizationId,
         gameType,
         dayOfWeek,
         teamFormat: formData.teamFormat as TeamFormat,
@@ -109,7 +98,7 @@ export const LeagueCreationWizard: React.FC = () => {
 
       // Generate league names for display
       const leagueComponents = {
-        organizationName: 'Test Organization', // TODO: Get from operator profile
+        organizationName: organization?.organization_name || 'Organization',
         year: startDate.getFullYear(),
         season: getTimeOfYear(startDate),
         gameType: formData.gameType,
@@ -182,7 +171,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const handleCancel = () => {
     if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
       clearFormData();
-      navigate('/operator-dashboard');
+      navigate(`/operator-dashboard/${orgId}`);
     }
   };
 
@@ -225,7 +214,7 @@ export const LeagueCreationWizard: React.FC = () => {
                 Create Season
               </Button>
               <Button
-                onClick={() => navigate('/operator-dashboard')}
+                onClick={() => navigate(`/operator-dashboard/${orgId}`)}
                 variant="outline"
                 className="w-full"
                 size="lg"
@@ -240,24 +229,23 @@ export const LeagueCreationWizard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="flex justify-between items-center mb-4">
-            <div></div> {/* Spacer for centering */}
-            <h1 className="text-3xl font-bold text-gray-900">
-              Create New League
-            </h1>
-            <button
-              onClick={handleClearForm}
-              className="text-sm text-red-600 hover:text-red-800 underline"
-              title="Clear all form data and start over"
-            >
-              Clear Form
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo={`/operator-dashboard/${orgId}`}
+        backLabel="Back to Dashboard"
+        title="Create New League"
+        organizationId={orgId}
+      >
+        <button
+          onClick={handleClearForm}
+          className="text-sm text-red-600 hover:text-red-800 underline mt-2"
+          title="Clear all form data and start over"
+        >
+          Clear Form
+        </button>
+      </PageHeader>
+
+      <div className="container mx-auto px-4 max-w-4xl py-8">
 
         {/* Progress indicator */}
         <div className="mb-8 max-w-2xl mx-auto">

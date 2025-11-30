@@ -12,24 +12,24 @@ import { supabase } from '@/supabaseClient';
 import type { Venue, LeagueVenue } from '@/types/venue';
 
 /**
- * Fetch all active venues for an operator
+ * Fetch all active venues for an organization
  *
- * Gets venues created by the operator that are currently active.
+ * Gets venues created by the organization that are currently active.
  * Ordered alphabetically by name.
  *
- * @param operatorId - Operator's primary key ID
+ * @param organizationId - Organization's primary key ID
  * @returns Array of active venues
  * @throws Error if database query fails
  *
  * @example
- * const venues = await getVenuesByOperator('operator-uuid');
+ * const venues = await getVenuesByOrganization('org-uuid');
  * venues.forEach(venue => console.log(venue.name, venue.city));
  */
-export async function getVenuesByOperator(operatorId: string): Promise<Venue[]> {
+export async function getVenuesByOrganization(organizationId: string): Promise<Venue[]> {
   const { data, error } = await supabase
     .from('venues')
     .select('*')
-    .eq('created_by_operator_id', operatorId)
+    .eq('organization_id', organizationId)
     .eq('is_active', true)
     .order('name', { ascending: true });
 
@@ -38,6 +38,14 @@ export async function getVenuesByOperator(operatorId: string): Promise<Venue[]> 
   }
 
   return data || [];
+}
+
+/**
+ * @deprecated Use getVenuesByOrganization instead
+ * Fetch all active venues for an operator
+ */
+export async function getVenuesByOperator(operatorId: string): Promise<Venue[]> {
+  return getVenuesByOrganization(operatorId);
 }
 
 /**

@@ -92,19 +92,19 @@ const memberRoutes = [
 // Protected routes - require league_operator role
 const operatorRoutes = [
   { path: '/operator-welcome', element: <OperatorWelcome /> },
-  { path: '/operator-dashboard', element: <OperatorDashboard /> },
+  { path: '/operator-dashboard/:orgId', element: <OperatorDashboard /> },
   { path: '/operator-reports', element: <ReportsManagement /> },
-  { path: '/manage-players', element: <PlayerManagement /> },
-  { path: '/create-league', element: <LeagueCreationWizard /> },
-  { path: '/operator-settings', element: <OrganizationSettings /> },
-  { path: '/league-rules', element: <LeagueRules /> },
+  { path: '/manage-players/:orgId', element: <PlayerManagement /> },
+  { path: '/create-league/:orgId', element: <LeagueCreationWizard /> },
+  { path: '/operator-settings/:orgId', element: <OrganizationSettings /> },
+  { path: '/league-rules/:orgId', element: <LeagueRules /> },
   { path: '/league/:leagueId', element: <LeagueDetail /> },
   { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
   { path: '/league/:leagueId/season/:seasonId/manage-schedule', element: <SeasonScheduleManager /> },
   { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
   { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
   { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
-  { path: '/venues', element: <VenueManagement /> },
+  { path: '/venues/:orgId', element: <VenueManagement /> },
 ];
 
 // Protected routes - require developer role

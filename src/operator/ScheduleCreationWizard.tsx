@@ -40,6 +40,7 @@ export const ScheduleCreationWizard: React.FC<ScheduleCreationWizardProps> = ({ 
   useEffect(() => {
     if (!leagueId) {
       console.error('❌ No league ID provided to Schedule Creation Wizard');
+      // TODO: Get organizationId from league data and navigate to /operator-dashboard/${orgId}
       navigate('/operator-dashboard');
     }
   }, [leagueId, navigate]);
@@ -93,7 +94,7 @@ export const ScheduleCreationWizard: React.FC<ScheduleCreationWizardProps> = ({ 
 
             <div className="mt-8 flex gap-4">
               <button
-                onClick={() => navigate('/operator-dashboard')}
+                onClick={() => navigate('/operator-dashboard')} // TODO: Add orgId when wizard is implemented
                 className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
               >
                 Back to Dashboard

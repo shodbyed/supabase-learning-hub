@@ -173,7 +173,6 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
             <Button
               onClick={handleNext}
               disabled={!value.trim() || isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isSubmitting ? 'Submitting...' : isLastQuestion ? 'Continue' : 'Next'}
             </Button>

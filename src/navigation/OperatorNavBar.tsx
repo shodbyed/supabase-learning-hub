@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
 
+interface OperatorNavBarProps {
+  /** Organization ID for navigation links */
+  orgId: string;
+}
+
 /**
  * OperatorNavBar Component
  *
@@ -17,7 +22,7 @@ import { usePendingReportsCount } from '@/hooks/usePendingReportsCount';
  *
  * This allows operators to switch between their operator and player views
  */
-export const OperatorNavBar: React.FC = () => {
+export const OperatorNavBar: React.FC<OperatorNavBarProps> = ({ orgId }) => {
   const { count: pendingReportsCount } = usePendingReportsCount();
   return (
     <nav className="flex w-full py-2 border-b border-slate-300 px-6 justify-between items-center bg-blue-50">
@@ -25,7 +30,7 @@ export const OperatorNavBar: React.FC = () => {
       <ul className="flex gap-5 list-none m-0 p-0">
         <li>
           <NavLink
-            to="/operator-dashboard"
+            to={`/operator-dashboard/${orgId}`}
             className={({ isActive }) =>
               `text-blue-600 hover:underline ${isActive ? 'font-semibold' : ''}`
             }
@@ -35,7 +40,7 @@ export const OperatorNavBar: React.FC = () => {
         </li>
         <li>
           <NavLink
-            to="/create-league"
+            to={`/create-league/${orgId}`}
             className={({ isActive }) =>
               `text-blue-600 hover:underline ${isActive ? 'font-semibold' : ''}`
             }

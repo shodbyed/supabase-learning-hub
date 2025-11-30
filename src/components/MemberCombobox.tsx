@@ -114,6 +114,22 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
           </PopoverTrigger>
         <PopoverContent className="w-[400px] p-0" align="start">
           <Command shouldFilter={false}>
+            {/* Filter Chips */}
+            <div className="flex gap-1 p-2 border-b">
+              <button className="px-3 py-1 text-xs font-medium rounded-full bg-orange-500 text-white">
+                All
+              </button>
+              <button className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
+                My Org
+              </button>
+              <button className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
+                State
+              </button>
+              <button className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
+                Operators
+              </button>
+            </div>
+
             <CommandInput
               placeholder="Search members..."
               className="h-9"

@@ -199,8 +199,11 @@ export const queryKeys = {
     /** Venue by ID */
     detail: (id: string) => [...queryKeys.venues.all, id] as const,
 
-    /** Venues by operator */
-    byOperator: (operatorId: string) => [...queryKeys.venues.all, 'operator', operatorId] as const,
+    /** Venues by organization */
+    byOrganization: (organizationId: string) => [...queryKeys.venues.all, 'organization', organizationId] as const,
+
+    /** @deprecated Use byOrganization instead */
+    byOperator: (operatorId: string) => [...queryKeys.venues.all, 'organization', operatorId] as const,
   },
 
   /**

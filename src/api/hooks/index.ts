@@ -19,6 +19,10 @@ export {
   useMemberProfanitySettings,
 } from './useCurrentMember';
 
+// Member search hooks
+export { useMemberSearch } from './useMemberSearch';
+export type { MemberSearchFilter } from '../queries/memberSearch';
+
 export {
   useUserProfile,
   useIsOperator,
@@ -121,6 +125,24 @@ export {
   useOperatorProfile,
 } from './useOperatorProfile';
 
+// Organization queries
+export {
+  useOrganizations,
+  useOrganization,
+  useOrganizationPosition,
+} from './useOrganizations';
+
+// Organization staff queries
+export {
+  useOrganizationStaff,
+} from './useOrganizationStaff';
+
+// Organization staff mutations
+export {
+  useAddOrganizationStaff,
+  useRemoveOrganizationStaff,
+} from './useOrganizationStaffMutations';
+
 // Preferences queries
 export {
   useOrganizationPreferences,
@@ -160,6 +182,7 @@ export {
 // Venue queries
 export {
   useVenuesByOperator,
+  useVenuesByOrganization,
   useVenueById,
   useLeagueVenues,
   useLeagueVenuesWithDetails,

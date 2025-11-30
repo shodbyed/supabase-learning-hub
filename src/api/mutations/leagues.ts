@@ -61,7 +61,7 @@ export interface UpdateLeagueDayParams {
  */
 export async function createLeague(params: CreateLeagueParams): Promise<League> {
   const insertData: LeagueInsertData = {
-    operator_id: params.operatorId,
+    organization_id: params.operatorId,
     game_type: params.gameType,
     day_of_week: params.dayOfWeek,
     team_format: params.teamFormat,

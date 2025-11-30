@@ -5,11 +5,13 @@
  * - Back navigation link
  * - Page title
  * - Optional subtitle
+ * - Organization context (for operator pages)
  * - Sticky positioning
  */
 
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Building2 } from 'lucide-react';
+import { useOrganization } from '@/api/hooks/useOrganizations';
 
 interface PageHeaderProps {
   /** Path to navigate back to (use with Link) */
@@ -23,6 +25,8 @@ interface PageHeaderProps {
   title: string;
   /** Optional subtitle below title */
   subtitle?: string;
+  /** Optional organization ID to display organization context */
+  organizationId?: string;
   /** Optional children to render below title/subtitle (e.g., action buttons) */
   children?: React.ReactNode;
 }
@@ -30,7 +34,7 @@ interface PageHeaderProps {
 /**
  * Reusable page header component
  *
- * Provides consistent sticky header with back navigation
+ * Provides consistent sticky header with back navigation and optional organization context
  *
  * @example
  * <PageHeader
@@ -38,9 +42,12 @@ interface PageHeaderProps {
  *   backLabel="Back to My Teams"
  *   title="Team Schedule"
  *   subtitle="Mondays"
+ *   organizationId="org-uuid" // Shows org name badge
  * />
  */
-export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, title, subtitle, children }: PageHeaderProps) {
+export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, title, subtitle, organizationId, children }: PageHeaderProps) {
+  const { organization } = useOrganization(organizationId);
+
   return (
     <header className="bg-white border-b sticky top-0 z-10">
       <div className="px-4 py-3">
@@ -59,6 +66,14 @@ export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, t
               {backLabel}
             </Link>
           ) : null
+        )}
+        {organization && (
+          <div className="flex items-center gap-2 mb-2">
+            <Building2 className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-600">
+              {organization.organization_name}
+            </span>
+          </div>
         )}
         <div className="text-2xl lg:text-4xl font-semibold text-gray-900">{title}</div>
         {subtitle && (

@@ -58,8 +58,8 @@ CREATE POLICY "Operators can view own league season weeks"
     EXISTS (
       SELECT 1 FROM seasons
       JOIN leagues ON seasons.league_id = leagues.id
-      JOIN league_operators ON leagues.operator_id = league_operators.id
-      JOIN members ON league_operators.member_id = members.id
+      JOIN organization_staff ON leagues.organization_id = organization_staff.organization_id
+      JOIN members ON organization_staff.member_id = members.id
       WHERE seasons.id = season_id
       AND members.user_id = auth.uid()
     )
@@ -72,8 +72,8 @@ CREATE POLICY "Operators can create season weeks for own leagues"
     EXISTS (
       SELECT 1 FROM seasons
       JOIN leagues ON seasons.league_id = leagues.id
-      JOIN league_operators ON leagues.operator_id = league_operators.id
-      JOIN members ON league_operators.member_id = members.id
+      JOIN organization_staff ON leagues.organization_id = organization_staff.organization_id
+      JOIN members ON organization_staff.member_id = members.id
       WHERE seasons.id = season_id
       AND members.user_id = auth.uid()
     )
@@ -86,8 +86,8 @@ CREATE POLICY "Operators can update own league season weeks"
     EXISTS (
       SELECT 1 FROM seasons
       JOIN leagues ON seasons.league_id = leagues.id
-      JOIN league_operators ON leagues.operator_id = league_operators.id
-      JOIN members ON league_operators.member_id = members.id
+      JOIN organization_staff ON leagues.organization_id = organization_staff.organization_id
+      JOIN members ON organization_staff.member_id = members.id
       WHERE seasons.id = season_id
       AND members.user_id = auth.uid()
     )
@@ -100,8 +100,8 @@ CREATE POLICY "Operators can delete own league season weeks"
     EXISTS (
       SELECT 1 FROM seasons
       JOIN leagues ON seasons.league_id = leagues.id
-      JOIN league_operators ON leagues.operator_id = league_operators.id
-      JOIN members ON league_operators.member_id = members.id
+      JOIN organization_staff ON leagues.organization_id = organization_staff.organization_id
+      JOIN members ON organization_staff.member_id = members.id
       WHERE seasons.id = season_id
       AND members.user_id = auth.uid()
     )

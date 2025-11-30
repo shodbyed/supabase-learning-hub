@@ -77,14 +77,14 @@ export type HandicapVariant = 'standard' | 'reduced' | 'none';
  */
 export interface League {
   id: string;
-  operator_id: string;
+  organization_id: string;
   game_type: GameType;
   day_of_week: DayOfWeek;
   division: string | null;
   team_format: TeamFormat;
   handicap_variant: HandicapVariant; // Main handicap control (affects both player and team handicaps)
-  team_handicap_variant: HandicapVariant | null; // Optional override for team bonus only (null = use operator default, then handicap_variant)
-  game_history_limit: number | null; // Optional override for handicap calculation history (null = use operator default of 200)
+  team_handicap_variant: HandicapVariant | null; // Optional override for team bonus only (null = use organization default, then handicap_variant)
+  game_history_limit: number | null; // Optional override for handicap calculation history (null = use organization default of 200)
   golden_break_counts_as_win: boolean;
   league_start_date: string; // ISO date string
   created_at: string;

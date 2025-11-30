@@ -166,24 +166,24 @@ export async function createOrganizationAnnouncement(
     throw new Error('Announcement message cannot exceed 2000 characters');
   }
 
-  // Get operator/organization name
-  const { data: operator, error: opError } = await supabase
-    .from('league_operators')
+  // Get organization name
+  const { data: organization, error: orgError } = await supabase
+    .from('organizations')
     .select('id, organization_name')
     .eq('id', operatorId)
     .single();
 
-  if (opError || !operator) {
-    console.error('Error fetching operator:', opError);
-    throw new Error(`Operator not found: ${opError?.message || 'Unknown error'}`);
+  if (orgError || !organization) {
+    console.error('Error fetching organization:', orgError);
+    throw new Error(`Organization not found: ${orgError?.message || 'Unknown error'}`);
   }
 
-  // Get all members in any active season operated by this operator
+  // Get all members in any active season operated by this organization
   const { data: teamPlayers, error: playersError } = await supabase
     .from('team_players')
-    .select('member_id, teams!inner(id, season_id, seasons!inner(id, status, league_id, leagues!inner(id, operator_id)))')
+    .select('member_id, teams!inner(id, season_id, seasons!inner(id, status, league_id, leagues!inner(id, organization_id)))')
     .eq('teams.seasons.status', 'active')
-    .eq('teams.seasons.leagues.operator_id', operatorId);
+    .eq('teams.seasons.leagues.organization_id', operatorId);
 
   if (playersError) {
     console.error('Error fetching team players:', playersError);
@@ -202,7 +202,7 @@ export async function createOrganizationAnnouncement(
     'create_organization_announcement_conversation',
     {
       p_organization_id: operatorId,
-      p_title: `${operator.organization_name} Announcements`,
+      p_title: `${organization.organization_name} Announcements`,
       p_member_ids: memberIds,
     }
   );

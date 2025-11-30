@@ -114,7 +114,6 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
           <Button
             onClick={onNext}
             disabled={!canProceed || isSubmitting}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
           >
             {isSubmitting ? 'Creating League...' : isLastQuestion ? 'Create League' : 'Continue'}
           </Button>

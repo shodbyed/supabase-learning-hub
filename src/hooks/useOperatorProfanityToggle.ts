@@ -1,12 +1,12 @@
 /**
- * @fileoverview Operator Profanity Filter Toggle Hook
+ * @fileoverview Organization Profanity Filter Toggle Hook
  *
  * Manages profanity filter toggle state and database updates for organization settings.
- * Extracts toggle logic from OrganizationSettings component.
+ * Uses TanStack Query mutation for database operations.
  */
 
 import { useState } from 'react';
-import { supabase } from '@/supabaseClient';
+import { useUpdateOrganizationProfanityFilter } from '@/api/hooks/useOrganizationMutations';
 
 interface UseOperatorProfanityToggleReturn {
   /** Toggle profanity filter on/off */
@@ -18,51 +18,48 @@ interface UseOperatorProfanityToggleReturn {
 }
 
 /**
- * Hook to manage profanity filter toggle for an operator
+ * Hook to manage profanity filter toggle for an organization
  *
  * Handles:
  * - Toggling filter on/off
- * - Saving to database
+ * - Saving to database via TanStack Query mutation
  * - Success message display
  *
- * @param operatorId - Operator's primary key ID
+ * @param organizationId - Organization's primary key ID
  * @param currentEnabled - Current profanity filter enabled state
  * @param onToggleSuccess - Callback when toggle succeeds with new value
  * @returns Toggle function and state
  *
  * @example
  * const { toggleFilter, isSaving, success } = useOperatorProfanityToggle(
- *   operatorId,
+ *   organizationId,
  *   profanityFilterEnabled,
  *   (newValue) => setProfanityFilterEnabled(newValue)
  * );
  */
 export function useOperatorProfanityToggle(
-  operatorId: string | null,
+  organizationId: string | null,
   currentEnabled: boolean,
   onToggleSuccess: (newValue: boolean) => void
 ): UseOperatorProfanityToggleReturn {
-  const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const updateFilterMutation = useUpdateOrganizationProfanityFilter();
 
   /**
    * Toggle profanity filter and save to database
    */
   const toggleFilter = async () => {
-    if (!operatorId) return;
+    if (!organizationId) return;
 
-    setIsSaving(true);
     setSuccess(false);
 
     const newValue = !currentEnabled;
 
     try {
-      const { error } = await supabase
-        .from('league_operators')
-        .update({ profanity_filter_enabled: newValue })
-        .eq('id', operatorId);
-
-      if (error) throw error;
+      await updateFilterMutation.mutateAsync({
+        organizationId,
+        enabled: newValue,
+      });
 
       // Update parent component state via callback
       onToggleSuccess(newValue);
@@ -73,14 +70,12 @@ export function useOperatorProfanityToggle(
     } catch (err) {
       console.error('Failed to update profanity filter:', err);
       alert('Failed to update profanity filter. Please try again.');
-    } finally {
-      setIsSaving(false);
     }
   };
 
   return {
     toggleFilter,
-    isSaving,
+    isSaving: updateFilterMutation.isPending,
     success,
   };
 }

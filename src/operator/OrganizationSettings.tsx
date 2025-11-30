@@ -6,7 +6,9 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUserProfile, useOperatorProfile } from '@/api/hooks';
+import { useOrganization } from '@/api/hooks';
+import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { InfoButton } from '@/components/InfoButton';
 import { PageHeader } from '@/components/PageHeader';
@@ -29,29 +31,34 @@ import { OrganizationPreferencesCard } from '@/components/operator/OrganizationP
  */
 export const OrganizationSettings: React.FC = () => {
   const navigate = useNavigate();
-  const { member } = useUserProfile();
+  const { orgId } = useParams<{ orgId: string }>();
+  const queryClient = useQueryClient();
 
-  // Operator profile (TanStack Query)
+  // Fetch organization data
   const {
-    data: operatorProfile,
-    isLoading: loading,
+    organization,
+    loading,
     error: queryError,
-    refetch: refetchOperatorProfile,
-  } = useOperatorProfile(member?.id);
+  } = useOrganization(orgId!);
 
-  // Profanity filter state (still need this for toggle component)
+  // Function to refetch organization data
+  const refetchOrganization = () => {
+    queryClient.invalidateQueries({ queryKey: ['organization', orgId] });
+  };
+
+  // Profanity filter state
   const [profanityFilterEnabled, setProfanityFilterEnabled] = useState(false);
 
-  // Sync profanity filter state when operator profile loads
+  // Sync profanity filter state when organization loads
   useEffect(() => {
-    if (operatorProfile) {
-      setProfanityFilterEnabled(operatorProfile.profanity_filter_enabled || false);
+    if (organization) {
+      setProfanityFilterEnabled(organization.profanity_filter_enabled || false);
     }
-  }, [operatorProfile]);
+  }, [organization]);
 
   // Profanity filter toggle hook
   const { toggleFilter, isSaving: isSavingFilter, success: filterSuccess } = useOperatorProfanityToggle(
-    operatorProfile?.id || null,
+    organization?.id || null,
     profanityFilterEnabled,
     setProfanityFilterEnabled
   );
@@ -61,11 +68,11 @@ export const OrganizationSettings: React.FC = () => {
     bcaPreference,
     apaPreference,
     refetchPreferences,
-  } = useChampionshipPreferences(operatorProfile?.id);
+  } = useChampionshipPreferences(organization?.id);
 
   // Championship date editor hooks (replaces all the duplicate edit state and functions)
-  const bcaEditor = useChampionshipDateEditor('BCA', bcaPreference, operatorProfile?.id, refetchPreferences);
-  const apaEditor = useChampionshipDateEditor('APA', apaPreference, operatorProfile?.id, refetchPreferences);
+  const bcaEditor = useChampionshipDateEditor('BCA', bcaPreference, organization?.id, refetchPreferences);
+  const apaEditor = useChampionshipDateEditor('APA', apaPreference, organization?.id, refetchPreferences);
 
   // Convert query error to string
   const error = queryError ? (queryError as Error).message : null;
@@ -106,17 +113,17 @@ export const OrganizationSettings: React.FC = () => {
   }
 
   // Error state
-  if (error || !operatorProfile) {
+  if (error || !organization) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">
-              {error || 'No operator profile found. Please complete the operator application first.'}
+              {error || 'Organization not found.'}
             </p>
             <button
-              onClick={() => navigate('/operator-dashboard')}
+              onClick={() => navigate('/dashboard')}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg"
             >
               Back to Dashboard
@@ -130,7 +137,7 @@ export const OrganizationSettings: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo="/operator-dashboard"
+        backTo={`/operator-dashboard/${organization.id}`}
         backLabel="Back to Dashboard"
         title="Organization Settings"
         subtitle="Manage your organization information and league rules"
@@ -150,25 +157,25 @@ export const OrganizationSettings: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-6">
           {/* Organization Basic Info Card */}
           <OrganizationBasicInfoCard
-            operatorProfile={operatorProfile}
-            onUpdate={() => refetchOperatorProfile()}
+            organization={organization}
+            onUpdate={() => refetchOrganization()}
           />
 
           {/* Contact Info Card */}
           <ContactInfoCard
-            operatorProfile={operatorProfile}
-            onUpdate={() => refetchOperatorProfile()}
+            organization={organization}
+            onUpdate={() => refetchOrganization()}
           />
 
           {/* Payment Method Card */}
           <PaymentMethodCard
-            operatorProfile={operatorProfile}
+            organization={organization}
           />
 
           {/* Organization Preferences Card */}
           <OrganizationPreferencesCard
-            operatorId={operatorProfile.id}
-            onUpdate={() => refetchOperatorProfile()}
+            organizationId={organization.id}
+            onUpdate={() => refetchOrganization()}
           />
 
           {/* League Rules Card */}
@@ -178,7 +185,7 @@ export const OrganizationSettings: React.FC = () => {
             title="League Rules"
             description="Access official BCA rules and manage optional house rules for your leagues"
             buttonText="View Rules"
-            linkTo="/league-rules"
+            linkTo={`/league-rules/${organization.id}`}
           />
 
           {/* Venue Management Card */}
@@ -188,7 +195,7 @@ export const OrganizationSettings: React.FC = () => {
             title="Venue Management"
             description="Add and manage venues where your leagues play"
             buttonText="Manage Venues"
-            linkTo="/venues"
+            linkTo={`/venues/${organization.id}`}
           />
 
           {/* Profanity Filter Card */}

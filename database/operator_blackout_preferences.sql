@@ -40,8 +40,8 @@ CREATE TABLE operator_blackout_preferences (
   -- Primary identification
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
-  -- Which operator owns this preference
-  operator_id UUID NOT NULL REFERENCES league_operators(id) ON DELETE CASCADE,
+  -- Which organization owns this preference
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
   -- What type of preference is this
   preference_type preference_type NOT NULL,
@@ -88,9 +88,9 @@ CREATE TABLE operator_blackout_preferences (
 -- CREATE INDEXES
 -- =====================================================
 
--- Index for querying by operator
-CREATE INDEX idx_operator_blackout_preferences_operator_id
-ON operator_blackout_preferences(operator_id);
+-- Index for querying by organization
+CREATE INDEX idx_operator_blackout_preferences_organization_id
+ON operator_blackout_preferences(organization_id);
 
 -- Index for filtering by type and action
 CREATE INDEX idx_operator_blackout_preferences_type_action
@@ -124,45 +124,45 @@ CREATE TRIGGER operator_blackout_preferences_updated_at_trigger
 
 ALTER TABLE operator_blackout_preferences ENABLE ROW LEVEL SECURITY;
 
--- Operators can view their own preferences
+-- Operators can view their own organization's preferences
 CREATE POLICY "Operators can view their own preferences"
   ON operator_blackout_preferences FOR SELECT
   USING (
-    operator_id IN (
-      SELECT id FROM league_operators WHERE member_id IN (
+    organization_id IN (
+      SELECT organization_id FROM organization_staff WHERE member_id IN (
         SELECT id FROM members WHERE user_id = auth.uid()
       )
     )
   );
 
--- Operators can insert their own preferences
+-- Operators can insert preferences for their organizations
 CREATE POLICY "Operators can insert their own preferences"
   ON operator_blackout_preferences FOR INSERT
   WITH CHECK (
-    operator_id IN (
-      SELECT id FROM league_operators WHERE member_id IN (
+    organization_id IN (
+      SELECT organization_id FROM organization_staff WHERE member_id IN (
         SELECT id FROM members WHERE user_id = auth.uid()
       )
     )
   );
 
--- Operators can update their own preferences
+-- Operators can update their organization's preferences
 CREATE POLICY "Operators can update their own preferences"
   ON operator_blackout_preferences FOR UPDATE
   USING (
-    operator_id IN (
-      SELECT id FROM league_operators WHERE member_id IN (
+    organization_id IN (
+      SELECT organization_id FROM organization_staff WHERE member_id IN (
         SELECT id FROM members WHERE user_id = auth.uid()
       )
     )
   );
 
--- Operators can delete their own preferences
+-- Operators can delete their organization's preferences
 CREATE POLICY "Operators can delete their own preferences"
   ON operator_blackout_preferences FOR DELETE
   USING (
-    operator_id IN (
-      SELECT id FROM league_operators WHERE member_id IN (
+    organization_id IN (
+      SELECT organization_id FROM organization_staff WHERE member_id IN (
         SELECT id FROM members WHERE user_id = auth.uid()
       )
     )

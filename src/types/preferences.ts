@@ -19,7 +19,7 @@ export type PreferenceEntityType = 'organization' | 'league';
 export interface Preferences {
   id: string;
   entity_type: PreferenceEntityType;
-  entity_id: string; // operator_id for organization, league_id for league
+  entity_id: string; // organization_id for organization, league_id for league
 
   // Handicap Settings (NULL = use next level default)
   handicap_variant: HandicapVariant | null;
@@ -69,7 +69,7 @@ export type PreferencesUpdateData = Partial<Omit<Preferences,
  */
 export type OrganizationPreferences = Preferences & {
   entity_type: 'organization';
-  entity_id: string; // operator_id
+  entity_id: string; // organization_id
 };
 
 /**
@@ -90,7 +90,7 @@ export type LeaguePreferences = Preferences & {
  */
 export interface ResolvedLeaguePreferences {
   league_id: string;
-  operator_id: string;
+  organization_id: string;
 
   // All fields are non-nullable - fallback chain guarantees a value
   handicap_variant: HandicapVariant;
