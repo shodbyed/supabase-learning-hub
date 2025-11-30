@@ -52,7 +52,6 @@ export const TeamManagement: React.FC = () => {
     loading,
     error,
     refreshTeams,
-    setLeagueVenues,
   } = useTeamManagement(null, leagueId);
 
   // Get organization ID from the league once it's loaded
@@ -97,8 +96,6 @@ export const TeamManagement: React.FC = () => {
           .eq('league_id', leagueId);
 
         if (deleteError) throw deleteError;
-
-        setLeagueVenues([]);
       } else {
         // Assign all venues
         const unassignedVenues = venues.filter(venue => !isVenueAssigned(venue.id));
@@ -116,11 +113,9 @@ export const TeamManagement: React.FC = () => {
           .select();
 
         if (insertError) throw insertError;
-
-        setLeagueVenues(prev => [...prev, ...insertedData]);
       }
 
-      // Invalidate TanStack Query cache to refetch updated data
+      // Invalidate TanStack Query cache to automatically refetch updated data
       await queryClient.invalidateQueries({
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
@@ -161,9 +156,6 @@ export const TeamManagement: React.FC = () => {
           .eq('id', leagueVenue.id);
 
         if (deleteError) throw deleteError;
-
-        // Update local state
-        setLeagueVenues(prev => prev.filter(lv => lv.venue_id !== venue.id));
       } else {
         // Assign: Insert into league_venues with all tables available by default
         const { data: newLeagueVenue, error: insertError } = await supabase
@@ -178,12 +170,9 @@ export const TeamManagement: React.FC = () => {
           .single();
 
         if (insertError) throw insertError;
-
-        // Update local state
-        setLeagueVenues(prev => [...prev, newLeagueVenue]);
       }
 
-      // Invalidate TanStack Query cache to refetch updated data
+      // Invalidate TanStack Query cache to automatically refetch updated data
       await queryClient.invalidateQueries({
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
@@ -208,10 +197,11 @@ export const TeamManagement: React.FC = () => {
   /**
    * Handle successful limit update
    */
-  const handleLimitUpdateSuccess = (updatedLeagueVenue: LeagueVenue) => {
-    setLeagueVenues(prev =>
-      prev.map(lv => lv.id === updatedLeagueVenue.id ? updatedLeagueVenue : lv)
-    );
+  const handleLimitUpdateSuccess = async (updatedLeagueVenue: LeagueVenue) => {
+    // Invalidate cache to refetch updated venue data
+    await queryClient.invalidateQueries({
+      queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
+    });
     setLimitModalVenue(null);
   };
 
@@ -389,7 +379,7 @@ export const TeamManagement: React.FC = () => {
     window.location.reload(); // Simple refresh for now
   };
 
-  const isLoading = operatorLoading || loading;
+  const isLoading = loading;
 
   if (isLoading) {
     return (
@@ -520,7 +510,12 @@ export const TeamManagement: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold text-gray-900">League Venues</h2>
                 {venues.length > 0 && (
-                  <Button size="sm" variant="outline" onClick={() => setShowVenueCreation(true)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowVenueCreation(true)}
+                    disabled={!organizationId}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     New
                   </Button>
@@ -549,7 +544,11 @@ export const TeamManagement: React.FC = () => {
             {venues.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-sm text-gray-600 mb-3">No venues yet</p>
-                <Button size="sm" onClick={() => setShowVenueCreation(true)}>
+                <Button
+                  size="sm"
+                  onClick={() => setShowVenueCreation(true)}
+                  disabled={!organizationId}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Venue
                 </Button>
@@ -724,9 +723,9 @@ export const TeamManagement: React.FC = () => {
         )}
 
         {/* Venue Creation Modal */}
-        {showVenueCreation && operatorId && (
+        {showVenueCreation && organizationId && (
           <VenueCreationModal
-            operatorId={operatorId}
+            organizationId={organizationId}
             onSuccess={handleVenueCreated}
             onCancel={() => setShowVenueCreation(false)}
           />

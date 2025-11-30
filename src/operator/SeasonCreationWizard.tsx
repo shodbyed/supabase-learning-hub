@@ -398,13 +398,21 @@ export const SeasonCreationWizard: React.FC = () => {
     }
 
     try {
-      // Delete any existing preference for this organization
-      await supabase
+      // Delete any existing preference for this organization and championship type
+      const deleteQuery = supabase
         .from('operator_blackout_preferences')
         .delete()
         .eq('organization_id', organizationId)
-        .eq('preference_type', 'championship')
-        .eq('championship_id', championshipId || null);
+        .eq('preference_type', 'championship');
+
+      // Add championship_id filter - use .is() for null, .eq() for values
+      if (championshipId) {
+        deleteQuery.eq('championship_id', championshipId);
+      } else {
+        deleteQuery.is('championship_id', null);
+      }
+
+      await deleteQuery;
 
       // Determine what to save based on choice
       if (choice === 'ignore' || choice === 'skip') {
@@ -438,7 +446,7 @@ export const SeasonCreationWizard: React.FC = () => {
         await supabase
           .from('operator_blackout_preferences')
           .insert({
-            organization_id: operatorId,
+            organization_id: organizationId,
             preference_type: 'championship',
             preference_action: 'blackout',
             championship_id: championshipId,

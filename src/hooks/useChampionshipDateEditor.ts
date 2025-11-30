@@ -132,6 +132,8 @@ export function useChampionshipDateEditor(
     setIsSaving(true);
 
     try {
+      const currentYear = new Date().getFullYear();
+
       if (preference?.championship) {
         // Update existing championship_date_options record
         const { error } = await supabase
@@ -144,34 +146,80 @@ export function useChampionshipDateEditor(
 
         if (error) throw error;
       } else {
-        // Create new championship_date_options record
-        const currentYear = new Date().getFullYear();
-        const { data: newChampionship, error: champError } = await supabase
+        // Check if a championship record already exists for this org/year
+        const { data: existingChamp } = await supabase
           .from('championship_date_options')
-          .insert({
-            organization,
-            year: currentYear,
-            start_date: startDate,
-            end_date: endDate,
-            dev_verified: false,
-          })
-          .select()
-          .single();
+          .select('id')
+          .eq('organization', organization)
+          .eq('year', currentYear)
+          .maybeSingle();
 
-        if (champError) throw champError;
+        let championshipId: string;
 
-        // Create the preference record linking to this championship
-        const { error: prefError } = await supabase
+        if (existingChamp) {
+          // Update existing record
+          const { error } = await supabase
+            .from('championship_date_options')
+            .update({
+              start_date: startDate,
+              end_date: endDate,
+            })
+            .eq('id', existingChamp.id);
+
+          if (error) throw error;
+          championshipId = existingChamp.id;
+        } else {
+          // Create new championship_date_options record
+          const { data: newChampionship, error: champError } = await supabase
+            .from('championship_date_options')
+            .insert({
+              organization,
+              year: currentYear,
+              start_date: startDate,
+              end_date: endDate,
+              dev_verified: false,
+            })
+            .select()
+            .single();
+
+          if (champError) throw champError;
+          championshipId = newChampionship.id;
+        }
+
+        // Check if preference record already exists
+        const { data: existingPref } = await supabase
           .from('operator_blackout_preferences')
-          .insert({
-            organization_id: operatorId,
-            preference_type: 'championship',
-            preference_action: 'blackout',
-            championship_id: newChampionship.id,
-            auto_apply: false,
-          });
+          .select('id')
+          .eq('organization_id', operatorId)
+          .eq('preference_type', 'championship')
+          .eq('championship_id', championshipId)
+          .maybeSingle();
 
-        if (prefError) throw prefError;
+        if (existingPref) {
+          // Update existing preference
+          const { error: prefError } = await supabase
+            .from('operator_blackout_preferences')
+            .update({
+              preference_action: 'blackout',
+              auto_apply: false,
+            })
+            .eq('id', existingPref.id);
+
+          if (prefError) throw prefError;
+        } else {
+          // Create new preference record
+          const { error: prefError } = await supabase
+            .from('operator_blackout_preferences')
+            .insert({
+              organization_id: operatorId,
+              preference_type: 'championship',
+              preference_action: 'blackout',
+              championship_id: championshipId,
+              auto_apply: false,
+            });
+
+          if (prefError) throw prefError;
+        }
       }
 
       console.log(`✅ ${organization} dates saved successfully`);

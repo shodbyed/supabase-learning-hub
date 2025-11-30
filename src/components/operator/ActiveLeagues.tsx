@@ -146,7 +146,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
         <h3 className="text-xl font-semibold text-gray-900">
           Your Active Leagues
         </h3>
-        <Button onClick={() => navigate('/create-league')}>
+        <Button onClick={() => navigate(`/create-league/${operatorId}`)}>
           Create New League
         </Button>
       </div>

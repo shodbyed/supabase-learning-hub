@@ -50,12 +50,15 @@ export function useTeamManagement(
     error: leagueError,
   } = useLeagueById(leagueId);
 
-  // Fetch operator's venues
+  // Get organization ID from league (for fetching venues)
+  const organizationId = leagueData?.organization_id || operatorId;
+
+  // Fetch organization's venues
   const {
     data: venuesData = [],
     isLoading: venuesLoading,
     error: venuesError,
-  } = useVenuesByOperator(operatorId);
+  } = useVenuesByOperator(organizationId);
 
   // Fetch league's assigned venues
   const {
@@ -97,7 +100,6 @@ export function useTeamManagement(
   // ============================================================================
 
   const [teams, setTeams] = useState<TeamWithQueryDetails[]>([]);
-  const [leagueVenues, setLeagueVenues] = useState<LeagueVenue[]>([]);
   const [teamsLoading, setTeamsLoading] = useState(true);
 
   // ============================================================================
@@ -106,6 +108,7 @@ export function useTeamManagement(
 
   const league = leagueData || null;
   const venues = venuesData;
+  const leagueVenues = leagueVenuesData; // Use TanStack Query data directly
   const members = membersData;
   // Use most recent season for team management (can be upcoming, active, or completed)
   const seasonId = mostRecentSeasonData?.id || null;
@@ -158,12 +161,6 @@ export function useTeamManagement(
     fetchTeams();
   }, [leagueId, mostRecentSeasonData, previousSeasonData]);
 
-  // Sync leagueVenues state with TanStack Query data
-  // TODO: Remove this - component should use TanStack Query mutations
-  useEffect(() => {
-    setLeagueVenues(leagueVenuesData);
-  }, [leagueVenuesData]);
-
   /**
    * Refresh teams list (useful after create/update/delete)
    */
@@ -192,8 +189,7 @@ export function useTeamManagement(
     loading,
     error,
     refreshTeams,
-    // TODO: Remove these setters - should use TanStack Query mutations/invalidations instead
-    setLeagueVenues,
+    // TODO: Remove this setter - should use TanStack Query mutations/invalidations instead
     setTeams,
   };
 }
