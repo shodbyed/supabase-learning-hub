@@ -20,8 +20,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { InfoButton } from '@/components/InfoButton';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Users, DollarSign } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
@@ -50,8 +50,7 @@ export const PlayerManagement: React.FC = () => {
   const [handicap3v3, setHandicap3v3] = useState<string>('0');
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
-  const [showMembershipConfirm, setShowMembershipConfirm] = useState<boolean>(false);
-  const [showReverseMembershipConfirm, setShowReverseMembershipConfirm] = useState<boolean>(false);
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
   const operatorId = impersonatedOperatorId || orgId;
@@ -166,25 +165,35 @@ export const PlayerManagement: React.FC = () => {
   };
 
   // Handle marking membership as paid
-  const handleMarkMembershipPaid = () => {
+  const handleMarkMembershipPaid = async () => {
     if (!selectedPlayerId || !playerDetails) return;
-    setShowMembershipConfirm(true);
-  };
 
-  const confirmMarkMembershipPaid = () => {
-    setShowMembershipConfirm(false);
-    markMembershipPaidMutation.mutate(selectedPlayerId);
+    const confirmed = await confirm({
+      title: 'Mark Membership as Paid',
+      message: `Confirm that ${playerDetails.first_name} ${playerDetails.last_name} has paid their membership fee for ${new Date().getFullYear()}. Their membership will be valid through December 31, ${new Date().getFullYear()}. Do not accept payments for ${new Date().getFullYear() + 1} until next calendar year.`,
+      confirmText: 'Confirm Payment',
+      confirmVariant: 'default',
+    });
+
+    if (confirmed) {
+      markMembershipPaidMutation.mutate(selectedPlayerId);
+    }
   };
 
   // Handle reversing membership
-  const handleReverseMembership = () => {
+  const handleReverseMembership = async () => {
     if (!playerDetails) return;
-    setShowReverseMembershipConfirm(true);
-  };
 
-  const confirmReverseMembership = () => {
-    setShowReverseMembershipConfirm(false);
-    reverseMembershipMutation.mutate(selectedPlayerId);
+    const confirmed = await confirm({
+      title: 'Reverse Membership Payment',
+      message: `Confirm that ${playerDetails.first_name} ${playerDetails.last_name} has not paid the membership fees for ${new Date().getFullYear()}. This will mark their membership as unpaid.`,
+      confirmText: 'Reverse Payment',
+      confirmVariant: 'destructive',
+    });
+
+    if (confirmed) {
+      reverseMembershipMutation.mutate(selectedPlayerId);
+    }
   };
 
   // Get membership action based on payment status
@@ -581,29 +590,7 @@ export const PlayerManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Membership Confirmation Dialog */}
-      {showMembershipConfirm && playerDetails && (
-        <ConfirmDialog
-          title="Mark Membership as Paid"
-          message={`Confirm that ${playerDetails.first_name} ${playerDetails.last_name} has paid their membership fee for ${new Date().getFullYear()}. Their membership will be valid through December 31, ${new Date().getFullYear()}. Do not accept payments for ${new Date().getFullYear() + 1} until next calendar year.`}
-          confirmText="Confirm Payment"
-          confirmVariant="default"
-          onConfirm={confirmMarkMembershipPaid}
-          onCancel={() => setShowMembershipConfirm(false)}
-        />
-      )}
-
-      {/* Reverse Membership Confirmation Dialog */}
-      {showReverseMembershipConfirm && playerDetails && (
-        <ConfirmDialog
-          title="Reverse Membership Payment"
-          message={`Confirm that ${playerDetails.first_name} ${playerDetails.last_name} has not paid the membership fees for ${new Date().getFullYear()}. This will mark their membership as unpaid.`}
-          confirmText="Reverse Payment"
-          confirmVariant="destructive"
-          onConfirm={confirmReverseMembership}
-          onCancel={() => setShowReverseMembershipConfirm(false)}
-        />
-      )}
+      {ConfirmDialogComponent}
     </div>
   );
 };

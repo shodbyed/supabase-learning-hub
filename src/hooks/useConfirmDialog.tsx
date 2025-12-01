@@ -3,6 +3,7 @@
  *
  * A reusable hook that provides a promise-based confirmation dialog.
  * Works like window.confirm() but with a styled modal dialog.
+ * Uses shadcn AlertDialog component for consistent UI and accessibility.
  *
  * Usage:
  * const { confirm, ConfirmDialogComponent } = useConfirmDialog();
@@ -20,7 +21,18 @@
  * {ConfirmDialogComponent}
  */
 import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface ConfirmOptions {
   /** Dialog title */
@@ -45,6 +57,8 @@ interface ConfirmState extends ConfirmOptions {
  *
  * Provides a promise-based confirmation dialog that can be awaited.
  * Returns the confirm function and the dialog component to render.
+ * Uses shadcn AlertDialog for proper accessibility (keyboard navigation,
+ * focus trapping, screen reader support).
  *
  * @example
  * function MyComponent() {
@@ -116,29 +130,34 @@ export function useConfirmDialog() {
 
   /**
    * The dialog component to render in your JSX
+   * Uses shadcn AlertDialog for consistent styling and accessibility
    */
-  const ConfirmDialogComponent = state.isOpen ? (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={handleCancel}
-    >
-      <div
-        className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-bold text-gray-900 mb-3">{state.title}</h3>
-        <p className="text-gray-600 mb-6 whitespace-pre-line">{state.message}</p>
-        <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={handleCancel}>
+  const ConfirmDialogComponent = (
+    <AlertDialog open={state.isOpen} onOpenChange={(open) => !open && handleCancel()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{state.title}</AlertDialogTitle>
+          <AlertDialogDescription className="whitespace-pre-line">
+            {state.message}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleCancel}>
             {state.cancelText}
-          </Button>
-          <Button variant={state.confirmVariant} onClick={handleConfirm}>
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            className={cn(
+              state.confirmVariant === 'destructive' &&
+                buttonVariants({ variant: 'destructive' })
+            )}
+          >
             {state.confirmText}
-          </Button>
-        </div>
-      </div>
-    </div>
-  ) : null;
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 
   return {
     confirm,

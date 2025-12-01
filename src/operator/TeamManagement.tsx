@@ -22,7 +22,6 @@ import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { InfoButton } from '@/components/InfoButton';
 import { TeamCard } from '@/components/TeamCard';
 import { VenueListItem } from '@/components/VenueListItem';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AllPlayersRosterCard } from '@/components/AllPlayersRosterCard';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
@@ -68,8 +67,6 @@ export const TeamManagement: React.FC = () => {
   const [showTeamEditor, setShowTeamEditor] = useState(false);
   const [editingTeam, setEditingTeam] = useState<TeamWithQueryDetails | null>(null);
   const [importingTeams, setImportingTeams] = useState(false);
-  const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showVenueCreation, setShowVenueCreation] = useState(false);
 
@@ -326,15 +323,22 @@ export const TeamManagement: React.FC = () => {
   /**
    * Handle team deletion
    */
-  const handleDeleteTeam = async () => {
-    if (!deletingTeamId) return;
+  const handleDeleteTeam = async (teamId: string) => {
+    const confirmed = await confirm({
+      title: 'Delete Team?',
+      message: 'Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone.',
+      confirmText: 'Delete Team',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
 
     try {
       // Delete team (cascade will delete team_players)
       const { error: deleteError } = await supabase
         .from('teams')
         .delete()
-        .eq('id', deletingTeamId);
+        .eq('id', teamId);
 
       if (deleteError) throw deleteError;
 
@@ -343,9 +347,6 @@ export const TeamManagement: React.FC = () => {
     } catch (err) {
       logger.error('Error deleting team', { error: err instanceof Error ? err.message : String(err) });
       toast.error(err instanceof Error ? err.message : 'Failed to delete team');
-    } finally {
-      setShowDeleteConfirm(false);
-      setDeletingTeamId(null);
     }
   };
 
@@ -645,10 +646,7 @@ export const TeamManagement: React.FC = () => {
                         setEditingTeam(team);
                         setShowTeamEditor(true);
                       }}
-                      onDelete={() => {
-                        setDeletingTeamId(team.id);
-                        setShowDeleteConfirm(true);
-                      }}
+                      onDelete={() => handleDeleteTeam(team.id)}
                     />
                   ))}
                 </div>
@@ -708,20 +706,6 @@ export const TeamManagement: React.FC = () => {
             onCancel={() => {
               setShowTeamEditor(false);
               setEditingTeam(null);
-            }}
-          />
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <ConfirmDialog
-            title="Delete Team?"
-            message="Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone."
-            confirmText="Delete Team"
-            onConfirm={handleDeleteTeam}
-            onCancel={() => {
-              setShowDeleteConfirm(false);
-              setDeletingTeamId(null);
             }}
           />
         )}
