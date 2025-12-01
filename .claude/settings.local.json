@@ -44,7 +44,13 @@
       "Bash(docker volume inspect:*)",
       "Bash(supabase db dump:*)",
       "Bash(supabase stop:*)",
-      "Bash(supabase start:*)"
+      "Bash(supabase start:*)",
+      "Bash(curl 'http://127.0.0.1:54321/rest/v1/venues?name=eq.Test%20Without%20Prefer%20Header&select=*' )",
+      "Bash(curl -X POST 'http://127.0.0.1:54321/rest/v1/venues' )",
+      "Bash(curl 'http://127.0.0.1:54321/rest/v1/venues?name=eq.Curl%20Test%203&select=*' )",
+      "Bash(pnpm tsx:*)",
+      "Bash(cat:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []

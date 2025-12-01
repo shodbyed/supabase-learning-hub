@@ -15,7 +15,13 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
-import { updateProfanityFilter, updateMemberNickname, updateMemberProfile } from '../mutations/members';
+import {
+  updateProfanityFilter,
+  updateMemberNickname,
+  updateMemberProfile,
+  createMember,
+  deleteMember
+} from '../mutations/members';
 
 /**
  * Hook to update member's profile information
@@ -111,6 +117,71 @@ export function useUpdateProfanityFilter() {
       // Invalidate profanity settings cache for this user
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.members.byUser(variables.userId), 'profanitySettings'],
+      });
+    },
+  });
+}
+
+/**
+ * Hook to create a new member
+ *
+ * Used for testing RLS INSERT policies.
+ * Automatically invalidates member queries on success.
+ *
+ * @returns TanStack Mutation object with mutate/mutateAsync functions
+ *
+ * @example
+ * const createMemberMutation = useCreateMember();
+ *
+ * const member = await createMemberMutation.mutateAsync({
+ *   first_name: 'John',
+ *   last_name: 'Doe',
+ *   phone: '555-0100',
+ *   email: 'john@example.com',
+ *   address: '123 Main St',
+ *   city: 'Austin',
+ *   state: 'TX',
+ *   zip_code: '78701',
+ *   date_of_birth: '1990-01-01',
+ *   system_player_number: 12345
+ * });
+ */
+export function useCreateMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createMember,
+    onSuccess: () => {
+      // Invalidate all member queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.members.all,
+      });
+    },
+  });
+}
+
+/**
+ * Hook to delete a member
+ *
+ * Used for cleaning up test data.
+ * Automatically invalidates member queries on success.
+ *
+ * @returns TanStack Mutation object with mutate/mutateAsync functions
+ *
+ * @example
+ * const deleteMemberMutation = useDeleteMember();
+ *
+ * await deleteMemberMutation.mutateAsync({ memberId: 'member-123' });
+ */
+export function useDeleteMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteMember,
+    onSuccess: () => {
+      // Invalidate all member queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.members.all,
       });
     },
   });
