@@ -76,6 +76,17 @@
 - **Status**: RLS intentionally disabled during development/testing
 - **Priority**: MUST be completed before any production deployment
 
+## 9. Remove .env from Git History
+- **Issue**: `.env` file was previously committed to git before being added to `.gitignore`
+- **Risk**: Secrets remain in git history even after adding to `.gitignore`
+- **Action needed**:
+  ```bash
+  git rm --cached .env
+  git commit -m "Remove .env from tracking"
+  ```
+- **Note**: This removes the file from git without deleting it locally
+- **Priority**: Should be done before pushing to any public/shared repository
+
 ---
 
-*Last Updated: 2025-11-28*
+*Last Updated: 2025-12-01*
