@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Team format types
@@ -61,7 +62,7 @@ export async function getTeamHandicapBonus(
       .eq('status', 'completed');
 
     if (error) {
-      console.error('Error fetching matches for team handicap:', error);
+      logger.error('Error fetching matches for team handicap', { error: error.message });
       return 0; // Return 0 on error (neutral handicap)
     }
 
@@ -97,7 +98,7 @@ export async function getTeamHandicapBonus(
     //   bonus = floor(-4 / 2) = -2
     //   Home team gets -2 team handicap penalty
   } catch (error) {
-    console.error('Exception in getTeamHandicapBonus:', error);
+    logger.error('Exception in getTeamHandicapBonus', { error: error instanceof Error ? error.message : String(error) });
     return 0; // Return 0 on exception (neutral handicap)
   }
 }

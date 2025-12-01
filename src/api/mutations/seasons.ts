@@ -19,6 +19,7 @@ import { generateSeasonName, calculateEndDate, formatDateForDB } from '@/types/s
 import { formatDayOfWeek, formatGameType, type League } from '@/types/league';
 import { parseLocalDate } from '@/utils/formatters';
 import { submitChampionshipDates } from '@/utils/tournamentUtils';
+import { logger } from '@/utils/logger';
 
 /**
  * Parameters for creating a new season
@@ -89,13 +90,11 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
   // Submit BCA championship dates if custom
   let bcaSavedId: string | undefined;
   if (params.bcaChoice === 'custom' && params.bcaStartDate && params.bcaEndDate) {
-    console.log('🏆 Submitting BCA championship dates:', params.bcaStartDate, 'to', params.bcaEndDate);
     const bcaResult = await submitChampionshipDates('BCA', params.bcaStartDate, params.bcaEndDate);
     if (bcaResult) {
-      console.log('✅ BCA championship dates saved successfully:', bcaResult);
       bcaSavedId = bcaResult.id;
     } else {
-      console.error('❌ Failed to save BCA championship dates');
+      logger.error('Failed to save BCA championship dates');
     }
   }
 
@@ -109,13 +108,11 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
   // Submit APA championship dates if custom
   let apaSavedId: string | undefined;
   if (params.apaChoice === 'custom' && params.apaStartDate && params.apaEndDate) {
-    console.log('🏆 Submitting APA championship dates:', params.apaStartDate, 'to', params.apaEndDate);
     const apaResult = await submitChampionshipDates('APA', params.apaStartDate, params.apaEndDate);
     if (apaResult) {
-      console.log('✅ APA championship dates saved successfully:', apaResult);
       apaSavedId = apaResult.id;
     } else {
-      console.error('❌ Failed to save APA championship dates');
+      logger.error('Failed to save APA championship dates');
     }
   }
 
@@ -148,8 +145,6 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
     status: 'upcoming',
   };
 
-  console.log('🔄 Creating season:', insertData);
-
   let createdSeasonId: string | null = null;
 
   try {
@@ -165,7 +160,6 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
     }
 
     createdSeasonId = newSeason.id;
-    console.log('✅ Season created:', createdSeasonId);
 
     // Step 2: Prepare week records
     const allWeeks = params.schedule.map(week => {
@@ -189,8 +183,6 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
       };
     });
 
-    console.log('🔄 Inserting', allWeeks.length, 'weeks into season_weeks table');
-
     // Step 3: Batch insert all weeks
     const { error: weeksError } = await supabase
       .from('season_weeks')
@@ -200,15 +192,11 @@ export async function createSeason(params: CreateSeasonParams): Promise<Season> 
       throw new Error(`Failed to insert season weeks: ${weeksError.message}`);
     }
 
-    console.log('✅ Season schedule saved:', allWeeks.length, 'weeks');
-
     return newSeason;
   } catch (error) {
     // Rollback: Delete the season if weeks insertion failed
     if (createdSeasonId) {
-      console.log('🔄 Rolling back - deleting season:', createdSeasonId);
       await supabase.from('seasons').delete().eq('id', createdSeasonId);
-      console.log('✅ Rollback complete - season deleted');
     }
     throw error;
   }
@@ -280,8 +268,6 @@ export async function activateSeason(params: ActivateSeasonParams): Promise<Seas
   if (activateError) {
     throw new Error(`Failed to activate season: ${activateError.message}`);
   }
-
-  console.log('✅ Season activated:', params.seasonId);
 
   return activatedSeason;
 }

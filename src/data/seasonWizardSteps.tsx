@@ -88,7 +88,6 @@ export function getSeasonWizardSteps(
       // update it with the default. This handles the case where the component rendered
       // before league data loaded, so localStorage was initialized with empty string.
       if (defaultStartDate && !parsedData.startDate && !hasExistingSeasons) {
-        console.log('📅 Updating blank startDate with default:', defaultStartDate);
         parsedData.startDate = defaultStartDate;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(parsedData));
       }
@@ -113,7 +112,6 @@ export function getSeasonWizardSteps(
 
     // Save defaults to localStorage immediately so they're available for auto-advance logic
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultData));
-    console.log('💾 Initialized form data with defaults:', defaultData);
 
     return defaultData;
   };
@@ -124,24 +122,6 @@ export function getSeasonWizardSteps(
     const newData = { ...formData, ...updates };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
     Object.assign(formData, newData);
-
-    // Log championship date changes for debugging
-    if ('bcaChoice' in updates || 'bcaStartDate' in updates || 'bcaEndDate' in updates) {
-      console.log('💾 BCA championship data updated:', {
-        bcaChoice: newData.bcaChoice,
-        bcaStartDate: newData.bcaStartDate,
-        bcaEndDate: newData.bcaEndDate,
-        bcaIgnored: newData.bcaIgnored
-      });
-    }
-    if ('apaChoice' in updates || 'apaStartDate' in updates || 'apaEndDate' in updates) {
-      console.log('💾 APA championship data updated:', {
-        apaChoice: newData.apaChoice,
-        apaStartDate: newData.apaStartDate,
-        apaEndDate: newData.apaEndDate,
-        apaIgnored: newData.apaIgnored
-      });
-    }
   };
 
   /**
@@ -331,19 +311,16 @@ export function getSeasonWizardSteps(
       type: 'date',
       getValue: () => formData.startDate,
       setValue: (value: string) => {
-        console.log('📅 Start date setValue called with:', value, { hasExistingSeasons, defaultStartDate });
         // If first season and date changes, check if we need to warn
         if (!hasExistingSeasons && defaultStartDate && onDayOfWeekChange && value !== defaultStartDate) {
           // Use timezone-safe day calculation
           const newDayOfWeek = getDayOfWeekName(value);
 
-          console.log('⚠️ Day of week changed - showing modal instead of saving');
           // Only trigger callback if date is different from default
           onDayOfWeekChange(newDayOfWeek, value);
           // Don't save yet - wait for user confirmation
           return;
         }
-        console.log('💾 Saving start date to localStorage:', value);
         saveData({ startDate: value });
       },
       infoTitle: 'Season Start Date',
@@ -460,5 +437,4 @@ export function clearSeasonCreationData(leagueId: string): void {
   localStorage.removeItem(`season-wizard-step-${leagueId}`);
   localStorage.removeItem('season-schedule-review');
   localStorage.removeItem('season-blackout-weeks');
-  console.log('🧹 Cleared all season creation data from localStorage');
 }

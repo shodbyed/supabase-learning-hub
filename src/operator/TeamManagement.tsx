@@ -22,10 +22,12 @@ import { VenueCreationModal } from '@/components/operator/VenueCreationModal';
 import { InfoButton } from '@/components/InfoButton';
 import { TeamCard } from '@/components/TeamCard';
 import { VenueListItem } from '@/components/VenueListItem';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AllPlayersRosterCard } from '@/components/AllPlayersRosterCard';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * TeamManagement Component
@@ -38,6 +40,7 @@ export const TeamManagement: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Use custom hook for all data fetching
   // NOTE: organizationId will be fetched from the league inside useTeamManagement
@@ -64,8 +67,6 @@ export const TeamManagement: React.FC = () => {
   const [showTeamEditor, setShowTeamEditor] = useState(false);
   const [editingTeam, setEditingTeam] = useState<TeamWithQueryDetails | null>(null);
   const [importingTeams, setImportingTeams] = useState(false);
-  const [deletingTeamId, setDeletingTeamId] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showVenueCreation, setShowVenueCreation] = useState(false);
 
@@ -107,7 +108,7 @@ export const TeamManagement: React.FC = () => {
           available_regulation_tables: venue.regulation_tables,
         }));
 
-        const { data: insertedData, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('league_venues')
           .insert(newLeagueVenues)
           .select();
@@ -120,8 +121,8 @@ export const TeamManagement: React.FC = () => {
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
     } catch (err) {
-      console.error('Error selecting all venues:', err);
-      alert('Failed to update venues. Please try again.');
+      logger.error('Error selecting all venues', { error: err instanceof Error ? err.message : String(err) });
+      toast.error('Failed to update venues. Please try again.');
     } finally {
       setSelectingAll(false);
     }
@@ -158,7 +159,7 @@ export const TeamManagement: React.FC = () => {
         if (deleteError) throw deleteError;
       } else {
         // Assign: Insert into league_venues with all tables available by default
-        const { data: newLeagueVenue, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('league_venues')
           .insert([{
             league_id: leagueId,
@@ -177,8 +178,8 @@ export const TeamManagement: React.FC = () => {
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
     } catch (err: any) {
-      console.error('Error toggling venue:', err);
-      alert(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
+      logger.error('Error toggling venue', { error: err instanceof Error ? err.message : String(err) });
+      toast.error(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
     } finally {
       setAssigningVenue(null);
     }
@@ -197,11 +198,13 @@ export const TeamManagement: React.FC = () => {
   /**
    * Handle successful limit update
    */
-  const handleLimitUpdateSuccess = async (updatedLeagueVenue: LeagueVenue) => {
+  const handleLimitUpdateSuccess = async (_updatedLeagueVenue: LeagueVenue) => {
     // Invalidate cache to refetch updated venue data
-    await queryClient.invalidateQueries({
-      queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
-    });
+    if (leagueId) {
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
+      });
+    }
     setLimitModalVenue(null);
   };
 
@@ -212,14 +215,12 @@ export const TeamManagement: React.FC = () => {
   const handleImportTeams = async () => {
     if (!previousSeasonId || !seasonId || !leagueId) return;
 
-    const confirmImport = window.confirm(
-      'Import teams from last season? This will copy:\n' +
-      '• All team names and captains\n' +
-      '• Home venue assignments\n' +
-      '• Full rosters\n' +
-      '• League venue assignments\n\n' +
-      'Continue?'
-    );
+    const confirmImport = await confirm({
+      title: 'Import Teams?',
+      message: 'Import teams from last season? This will copy:\n• All team names and captains\n• Home venue assignments\n• Full rosters\n• League venue assignments',
+      confirmText: 'Import',
+      confirmVariant: 'default',
+    });
 
     if (!confirmImport) return;
 
@@ -296,13 +297,13 @@ export const TeamManagement: React.FC = () => {
       // Simulate success
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      alert(`Successfully imported ${prevTeams?.length || 0} teams from last season!`);
+      toast.success(`Successfully imported ${prevTeams?.length || 0} teams from last season!`);
 
       // Refresh the page data (in real implementation, this would refetch from DB)
       // For now, just show success message
     } catch (err) {
-      console.error('Error importing teams:', err);
-      alert(err instanceof Error ? err.message : 'Failed to import teams');
+      logger.error('Error importing teams', { error: err instanceof Error ? err.message : String(err) });
+      toast.error(err instanceof Error ? err.message : 'Failed to import teams');
     } finally {
       setImportingTeams(false);
     }
@@ -322,26 +323,30 @@ export const TeamManagement: React.FC = () => {
   /**
    * Handle team deletion
    */
-  const handleDeleteTeam = async () => {
-    if (!deletingTeamId) return;
+  const handleDeleteTeam = async (teamId: string) => {
+    const confirmed = await confirm({
+      title: 'Delete Team?',
+      message: 'Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone.',
+      confirmText: 'Delete Team',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
 
     try {
       // Delete team (cascade will delete team_players)
       const { error: deleteError } = await supabase
         .from('teams')
         .delete()
-        .eq('id', deletingTeamId);
+        .eq('id', teamId);
 
       if (deleteError) throw deleteError;
 
       // Refresh teams list using hook function
       await refreshTeams();
     } catch (err) {
-      console.error('Error deleting team:', err);
-      alert(err instanceof Error ? err.message : 'Failed to delete team');
-    } finally {
-      setShowDeleteConfirm(false);
-      setDeletingTeamId(null);
+      logger.error('Error deleting team', { error: err instanceof Error ? err.message : String(err) });
+      toast.error(err instanceof Error ? err.message : 'Failed to delete team');
     }
   };
 
@@ -641,10 +646,7 @@ export const TeamManagement: React.FC = () => {
                         setEditingTeam(team);
                         setShowTeamEditor(true);
                       }}
-                      onDelete={() => {
-                        setDeletingTeamId(team.id);
-                        setShowDeleteConfirm(true);
-                      }}
+                      onDelete={() => handleDeleteTeam(team.id)}
                     />
                   ))}
                 </div>
@@ -708,20 +710,6 @@ export const TeamManagement: React.FC = () => {
           />
         )}
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <ConfirmDialog
-            title="Delete Team?"
-            message="Are you sure you want to delete this team? This will also remove all roster players. This action cannot be undone."
-            confirmText="Delete Team"
-            onConfirm={handleDeleteTeam}
-            onCancel={() => {
-              setShowDeleteConfirm(false);
-              setDeletingTeamId(null);
-            }}
-          />
-        )}
-
         {/* Venue Creation Modal */}
         {showVenueCreation && organizationId && (
           <VenueCreationModal
@@ -730,6 +718,7 @@ export const TeamManagement: React.FC = () => {
             onCancel={() => setShowVenueCreation(false)}
           />
         )}
+        {ConfirmDialogComponent}
       </div>
     </div>
   );

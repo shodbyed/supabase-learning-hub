@@ -50,7 +50,11 @@
       "Bash(curl 'http://127.0.0.1:54321/rest/v1/venues?name=eq.Curl%20Test%203&select=*' )",
       "Bash(pnpm tsx:*)",
       "Bash(cat:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(echo \"=== console.warn (KEEP) ===\" grep -r \"console\\.warn\" --include=\"*.ts\" --include=\"*.tsx\" src/)",
+      "Bash(echo \"=== console.log (REVIEW) ===\" grep -r \"console\\.log\" --include=\"*.ts\" --include=\"*.tsx\" src/)",
+      "Bash(pnpm list:*)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []

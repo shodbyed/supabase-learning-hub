@@ -44,7 +44,7 @@ export async function getOperatorProfileByMemberId(
     throw new Error(`Failed to fetch operator profile: ${error.message}`);
   }
 
-  return data ? (data.organizations as Organization) : null;
+  return data ? (data.organizations as unknown as Organization) : null;
 }
 
 /**

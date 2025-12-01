@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertTriangle, XCircle, Info } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 interface DeleteLeagueModalProps {
   /** Whether modal is open */
@@ -123,7 +124,7 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
           hasCompletedSeasons,
         });
       } catch (err) {
-        console.error('Error fetching league stats:', err);
+        logger.error('Error fetching league stats', { error: err instanceof Error ? err.message : String(err) });
         setError('Failed to load league information');
       } finally {
         setLoading(false);
@@ -149,10 +150,9 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
 
       if (deleteError) throw deleteError;
 
-      console.log('✅ League deleted successfully');
       onSuccess();
     } catch (err) {
-      console.error('❌ Error deleting league:', err);
+      logger.error('Error deleting league', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to delete league');
     } finally {
       setDeleting(false);

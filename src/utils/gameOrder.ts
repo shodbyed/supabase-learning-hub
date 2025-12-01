@@ -8,6 +8,8 @@
  * Reference: 3x3SCORING-PLAN.md Game Order Table (lines 129-150)
  */
 
+import { logger } from '@/utils/logger';
+
 export interface GameMatchup {
   gameNumber: number;
   homePlayerPosition: 1 | 2 | 3; // P1, P2, or P3
@@ -169,7 +171,10 @@ export function verifyGameOrder(): boolean {
   const generated = generateGameOrder(3);
 
   if (generated.length !== GAME_ORDER_3V3.length) {
-    console.error('Length mismatch:', generated.length, 'vs', GAME_ORDER_3V3.length);
+    logger.error('Game order length mismatch', {
+      generated: generated.length,
+      expected: GAME_ORDER_3V3.length
+    });
     return false;
   }
 
@@ -184,7 +189,11 @@ export function verifyGameOrder(): boolean {
       gen.homeAction !== ref.homeAction ||
       gen.awayAction !== ref.awayAction
     ) {
-      console.error('Mismatch at game', i + 1, ':', gen, 'vs', ref);
+      logger.error('Game order mismatch', {
+        gameNumber: i + 1,
+        generated: gen,
+        expected: ref
+      });
       return false;
     }
   }

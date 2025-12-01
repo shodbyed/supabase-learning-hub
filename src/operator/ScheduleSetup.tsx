@@ -15,6 +15,7 @@ import { Shuffle, Lock } from 'lucide-react';
 import { assignRandomPositions, generateSchedule, clearSchedule } from '@/utils/scheduleGenerator';
 import { hasMatchupTable } from '@/utils/matchupTables';
 import type { TeamWithQueryDetails } from '@/types/team';
+import { logger } from '@/utils/logger';
 
 interface ScheduleSetupProps {
   /** Season ID to generate schedule for */
@@ -102,7 +103,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
           setPositionsLocked(true);
         }
       } catch (err) {
-        console.error('Error checking match status:', err);
+        logger.error('Error checking match status', { error: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }
@@ -194,7 +195,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
       // No existing schedule - generate normally
       await performScheduleGeneration();
     } catch (err) {
-      console.error('Error generating schedule:', err);
+      logger.error('Error generating schedule', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to generate schedule');
       setGenerating(false);
     }
@@ -219,10 +220,9 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
         return;
       }
 
-      console.log(`✅ Generated ${result.matchesCreated} matches`);
       onSuccess();
     } catch (err) {
-      console.error('Error generating schedule:', err);
+      logger.error('Error generating schedule', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to generate schedule');
     } finally {
       setGenerating(false);
@@ -247,12 +247,10 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
         return;
       }
 
-      console.log(`🗑️ Cleared ${clearResult.matchesDeleted} existing matches`);
-
       // Generate new schedule
       await performScheduleGeneration();
     } catch (err) {
-      console.error('Error replacing schedule:', err);
+      logger.error('Error replacing schedule', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to replace schedule');
       setGenerating(false);
     }

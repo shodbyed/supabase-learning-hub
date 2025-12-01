@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/supabaseClient';
 import type { OperatorBlackoutPreference } from '@/types/operator';
 import type { ChampionshipDateOption } from '@/utils/tournamentUtils';
+import { logger } from '@/utils/logger';
 
 export interface ChampionshipPreference {
   preference: OperatorBlackoutPreference | null;
@@ -91,7 +92,7 @@ export function useChampionshipPreferences(
         }
       }
     } catch (err) {
-      console.error('Failed to fetch championship preferences:', err);
+      logger.error('Failed to fetch championship preferences', { error: err instanceof Error ? err.message : String(err) });
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,8 @@
 import { useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import type { ChampionshipPreference } from './useChampionshipPreferences';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseChampionshipDateEditorReturn {
   /** Is currently in edit mode? */
@@ -106,11 +108,6 @@ export function useChampionshipDateEditor(
    */
   const saveDates = async () => {
     if (!operatorId || !startDate || !endDate) {
-      console.log(`${organization} save validation failed:`, {
-        operatorId: !!operatorId,
-        startDate,
-        endDate,
-      });
       return;
     }
 
@@ -119,15 +116,9 @@ export function useChampionshipDateEditor(
     const end = new Date(endDate);
 
     if (end <= start) {
-      alert('End date must be after start date');
+      toast.error('End date must be after start date');
       return;
     }
-
-    console.log(`Saving ${organization} dates:`, {
-      startDate,
-      endDate,
-      hasExisting: !!preference?.championship,
-    });
 
     setIsSaving(true);
 
@@ -222,12 +213,17 @@ export function useChampionshipDateEditor(
         }
       }
 
-      console.log(`✅ ${organization} dates saved successfully`);
       await onSaveSuccess();
       setIsEditing(false);
     } catch (err) {
-      console.error(`❌ Failed to save ${organization} dates:`, err);
-      alert(`Failed to save ${organization} dates. Check console for details.`);
+      logger.error('Failed to save championship dates', {
+        error: err instanceof Error ? err.message : String(err),
+        organization,
+        operatorId,
+        startDate,
+        endDate
+      });
+      toast.error(`Failed to save ${organization} dates. Check console for details.`);
     } finally {
       setIsSaving(false);
     }

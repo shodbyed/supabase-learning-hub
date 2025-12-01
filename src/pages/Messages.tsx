@@ -35,6 +35,8 @@ import {
   useCreateOrganizationAnnouncement,
 } from '@/api/hooks';
 import { cn } from '@/lib/utils';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 export function Messages() {
   const navigate = useNavigate();
@@ -105,12 +107,12 @@ export function Messages() {
       setShowAnnouncementModal(false);
 
       // Show success message
-      alert(
+      toast.success(
         `Announcement sent successfully to ${targets.length} target${targets.length > 1 ? 's' : ''}!`
       );
     } catch (error) {
-      console.error('Error creating announcement:', error);
-      alert(`Failed to send announcement. Please try again.`);
+      logger.error('Error creating announcement', { error: error instanceof Error ? error.message : String(error) });
+      toast.error(`Failed to send announcement. Please try again.`);
     }
   };
 
@@ -135,7 +137,7 @@ export function Messages() {
       } else {
         // Group conversation
         if (!groupName) {
-          console.error('Group name is required for group conversations');
+          logger.error('Group name is required for group conversations');
           return;
         }
 
@@ -156,8 +158,8 @@ export function Messages() {
         // Cache auto-refreshed by mutations - no need for refreshKey
       }
     } catch (error) {
-      console.error('Error creating conversation:', error);
-      alert('Failed to create conversation. Please try again.');
+      logger.error('Error creating conversation', { error: error instanceof Error ? error.message : String(error) });
+      toast.error('Failed to create conversation. Please try again.');
     }
   };
 

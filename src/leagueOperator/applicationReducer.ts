@@ -2,6 +2,7 @@
  * @fileoverview Application Reducer
  * State management logic for league operator application form
  */
+import { logger } from '@/utils/logger';
 import type {
   LeagueOperatorApplication as ApplicationData
 } from '../schemas/leagueOperatorSchema';
@@ -55,7 +56,7 @@ export const loadApplicationState = (): ApplicationData => {
       return { ...defaultInitialState, ...parsed };
     }
   } catch (error) {
-    console.warn('Failed to load saved application state:', error);
+    logger.warn('Failed to load saved application state', { error });
   }
   return defaultInitialState;
 };
@@ -67,7 +68,7 @@ export const saveApplicationState = (state: ApplicationData): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
-    console.warn('Failed to save application state:', error);
+    logger.warn('Failed to save application state', { error });
   }
 };
 
@@ -78,7 +79,7 @@ export const clearApplicationState = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.warn('Failed to clear saved application state:', error);
+    logger.warn('Failed to clear saved application state', { error });
   }
 };
 

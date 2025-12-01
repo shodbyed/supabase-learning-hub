@@ -3,11 +3,11 @@
  * Custom hook for managing profile edit forms with validation and state
  */
 import { useState } from 'react';
-import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
 import { useUpdateMemberProfile } from '@/api/hooks/useMemberMutations';
 import { personalInfoSchema, contactInfoSchema, addressSchema } from './validationSchemas';
 import { capitalizeWords, formatPhoneNumber } from '../utils/formatters';
+import { logger } from '@/utils/logger';
 import type {
   AddressFormData,
   PersonalFormData,
@@ -26,7 +26,6 @@ import type {
  * - Error state management
  */
 export const useProfileForm = () => {
-  const { user } = useUser();
   const { member } = useUserProfile();
   const updateProfileMutation = useUpdateMemberProfile();
 
@@ -91,8 +90,7 @@ export const useProfileForm = () => {
     formData: T,
     currentMemberData: any,
     formatFn: (data: any) => any,
-    changeDetectionFn: (formatted: any, current: any) => string[],
-    formType: string
+    changeDetectionFn: (formatted: any, current: any) => string[]
   ) => {
     // Validate form data
     const validation = schema.safeParse(formData);
@@ -112,17 +110,6 @@ export const useProfileForm = () => {
 
     // Detect changes
     const changes = changeDetectionFn(formattedData, currentMemberData);
-
-    // Log update request
-    console.log(`=== ${formType.toUpperCase()} UPDATE REQUEST ===`);
-    console.log('Member ID:', member?.id);
-    console.log('User ID:', user?.id);
-    console.log('Validation Result: PASSED');
-    console.log('Changes Made:', changes);
-    console.log('Raw Form Data:', formData);
-    console.log('Validated Data:', validation.data);
-    console.log('Formatted Data for Database:', formattedData);
-    console.log('===============================');
 
     return { success: true, changes, formattedData };
   };
@@ -175,8 +162,7 @@ export const useProfileForm = () => {
           if (formatted.state !== current.state) changes.push(`State: "${current.state}" → "${formatted.state}"`);
           if (formatted.zip_code !== current.zip_code) changes.push(`Zip Code: "${current.zip_code}" → "${formatted.zip_code}"`);
           return changes;
-        },
-        'ADDRESS'
+        }
       );
 
       if (!result.success) {
@@ -195,7 +181,7 @@ export const useProfileForm = () => {
         setAddressForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Address Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update address:', error);
+        logger.error('Failed to update address', { error: error.message || String(error) });
         setAddressForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update address' }
@@ -256,8 +242,7 @@ export const useProfileForm = () => {
           if (formatted.nickname !== current.nickname) changes.push(`Nickname: "${current.nickname || 'None'}" → "${formatted.nickname || 'None'}"`);
           if (formatted.date_of_birth !== current.date_of_birth) changes.push(`Date of Birth: "${current.date_of_birth}" → "${formatted.date_of_birth}"`);
           return changes;
-        },
-        'PERSONAL INFO'
+        }
       );
 
       if (!result.success) {
@@ -275,7 +260,7 @@ export const useProfileForm = () => {
         setPersonalForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Personal Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update personal info:', error);
+        logger.error('Failed to update personal info', { error: error.message || String(error) });
         setPersonalForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update personal information' }
@@ -330,8 +315,7 @@ export const useProfileForm = () => {
           if (formatted.email !== current.email) changes.push(`Email: "${current.email}" → "${formatted.email}"`);
           if (formatted.phone !== current.phone) changes.push(`Phone: "${current.phone}" → "${formatted.phone}"`);
           return changes;
-        },
-        'CONTACT INFO'
+        }
       );
 
       if (!result.success) {
@@ -349,7 +333,7 @@ export const useProfileForm = () => {
         setContactForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Contact Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update contact info:', error);
+        logger.error('Failed to update contact info', { error: error.message || String(error) });
         setContactForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update contact information' }

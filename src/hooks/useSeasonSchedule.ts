@@ -39,7 +39,7 @@ export function useSeasonSchedule(
 
   const loading = scheduleLoading || seasonLoading;
   const error = scheduleError ? 'Failed to load schedule' : null;
-  const seasonName = `Season ${season?.regular_weeks || 0} Weeks`;
+  const seasonName = season?.season_name || `Season ${season?.season_length || 0} Weeks`;
 
   return { schedule, seasonName, loading, error, refetch };
 }

@@ -15,15 +15,15 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { MatchEndVerification } from '@/components/scoring/MatchEndVerification';
 import { InfoButton } from '@/components/InfoButton';
-import type { HandicapThresholds } from '@/types';
+import type { HandicapThresholds, MatchWithLeagueSettings, Lineup } from '@/types';
 
 interface FiveVFiveScoreboardProps {
   /** Match data with team info */
-  match: any;
+  match: MatchWithLeagueSettings;
   /** Home team lineup */
-  homeLineup: any;
+  homeLineup: Lineup;
   /** Away team lineup */
-  awayLineup: any;
+  awayLineup: Lineup;
   /** Home team handicap thresholds */
   homeThresholds: HandicapThresholds;
   /** Away team handicap thresholds */

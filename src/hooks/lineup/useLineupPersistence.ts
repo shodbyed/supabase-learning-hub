@@ -10,6 +10,8 @@
 
 import { supabase } from '@/supabaseClient';
 import { useUpdateMatch, useUpdateMatchLineup } from '@/api/hooks';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface LineupPersistenceParams {
   matchId: string | undefined;
@@ -70,19 +72,19 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const handleLockLineup = async () => {
     if (!isComplete) {
-      alert('Please select all 3 players before locking your lineup');
+      toast.error('Please select all 3 players before locking your lineup');
       return;
     }
 
     if (hasDuplicates) {
-      alert(
+      toast.error(
         'Two or more players in your lineup have the same nickname. Please have at least one of them go to their profile page to change their nickname so they will be identifiable during scoring.'
       );
       return;
     }
 
     if (!matchId || !userTeamId) {
-      alert('Error: Missing match or team information');
+      toast.error('Error: Missing match or team information');
       return;
     }
 
@@ -160,12 +162,19 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
           updates: matchUpdateData,
         });
       } catch (matchUpdateError: any) {
-        console.error('Error updating match with lineup ID:', matchUpdateError);
+        logger.error('Error updating match with lineup ID', {
+          error: matchUpdateError instanceof Error ? matchUpdateError.message : String(matchUpdateError),
+          matchId
+        });
         // Don't throw - lineup is still locked, just log the error
       }
     } catch (err: any) {
-      console.error('Error saving lineup:', err);
-      alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
+      logger.error('Error saving lineup', {
+        error: err instanceof Error ? err.message : String(err),
+        matchId,
+        lineupId
+      });
+      toast.error(`Failed to save lineup: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -177,7 +186,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const handleUnlockLineup = async () => {
     if (!lineupId || !matchId) {
-      alert('Error: No lineup to unlock');
+      toast.error('Error: No lineup to unlock');
       return;
     }
 
@@ -200,7 +209,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       // Find duplicates (player appearing in 2+ positions) and remove ALL occurrences
       for (const [, positions] of playerIdCounts.entries()) {
         if (positions.length > 1) {
-          console.log(`🔄 Found duplicate player at positions: ${positions.join(', ')} - removing both`);
           // Set both positions to null (ID) and 0 (handicap - can't be null due to DB constraint)
           positions.forEach((pos) => {
             updates[`player${pos}_id`] = null;
@@ -221,11 +229,13 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       if (refetchLineups) {
         refetchLineups();
       }
-
-      console.log('Lineup unlocked successfully');
     } catch (err: any) {
-      console.error('Error unlocking lineup:', err);
-      alert('Failed to unlock lineup. Please try again.');
+      logger.error('Error unlocking lineup', {
+        error: err instanceof Error ? err.message : String(err),
+        lineupId,
+        matchId
+      });
+      toast.error('Failed to unlock lineup. Please try again.');
     }
   };
 
@@ -235,7 +245,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const autoSaveLineup = async () => {
     if (!lineupId || !matchId) {
-      console.log('⏭️ Skipping auto-save: no lineup ID yet');
       return;
     }
 
@@ -256,9 +265,12 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         matchId,
       });
 
-      console.log('💾 Lineup auto-saved');
     } catch (err: any) {
-      console.error('Auto-save error:', err);
+      logger.error('Auto-save error', {
+        error: err instanceof Error ? err.message : String(err),
+        matchId,
+        lineupId
+      });
       // Don't alert user - auto-save failures shouldn't be intrusive
     }
   };

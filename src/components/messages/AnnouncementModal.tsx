@@ -18,6 +18,8 @@ import { Megaphone, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface AnnouncementTarget {
   id: string;
@@ -49,7 +51,6 @@ export function AnnouncementModal({
   // Fetch announcement targets (leagues and organizations)
   useEffect(() => {
     async function fetchAnnouncementTargets() {
-      console.log('Fetching announcement targets for user:', currentUserId);
       const allTargets: AnnouncementTarget[] = [];
 
       // Get teams where user is captain
@@ -59,10 +60,8 @@ export function AnnouncementModal({
         .eq('member_id', currentUserId)
         .eq('is_captain', true);
 
-      console.log('Captain teams query result:', { data: captainTeams, error: teamsError });
-
       if (teamsError) {
-        console.error('Error fetching captain leagues:', teamsError);
+        logger.error('Error fetching captain leagues', { error: teamsError.message });
         setLoading(false);
         return;
       }
@@ -80,8 +79,6 @@ export function AnnouncementModal({
         }
       });
 
-      console.log('League-season pairs:', Array.from(leagueSeasonPairs.values()));
-
       // Fetch league targets
       const leaguePromises = Array.from(leagueSeasonPairs.values()).map(async ({ leagueId, seasonId }) => {
         // Fetch league data
@@ -92,7 +89,7 @@ export function AnnouncementModal({
           .single();
 
         if (leagueError) {
-          console.error('Error fetching league:', leagueError);
+          logger.error('Error fetching league', { error: leagueError.message });
           return null;
         }
 
@@ -104,7 +101,7 @@ export function AnnouncementModal({
           .single();
 
         if (seasonError) {
-          console.error('Error fetching season:', seasonError);
+          logger.error('Error fetching season', { error: seasonError.message });
           return null;
         }
 
@@ -153,7 +150,6 @@ export function AnnouncementModal({
         }
       }
 
-      console.log('Final targets list:', allTargets);
       setTargets(allTargets);
       setLoading(false);
     }
@@ -171,12 +167,12 @@ export function AnnouncementModal({
 
   const handleCreate = () => {
     if (selectedTargetIds.length === 0) {
-      alert('Please select at least one target');
+      toast.error('Please select at least one target');
       return;
     }
 
     if (!announcementText.trim()) {
-      alert('Please enter an announcement message');
+      toast.error('Please enter an announcement message');
       return;
     }
 

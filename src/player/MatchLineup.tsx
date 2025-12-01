@@ -47,6 +47,7 @@ import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
 import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
 import { shouldUseTeamBonus } from '@/utils/calculateHandicapThresholds';
+import { logger } from '@/utils/logger';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -425,8 +426,6 @@ export function MatchLineup() {
   const handleOpponentSubChoice = (playerId: string, handicap: number, subPosition: number) => {
     if (!opponentLineup?.id || !matchId) return;
 
-    console.log('🎯 Opponent sub choice:', { playerId, handicap, subPosition });
-
     // Update opponent's lineup - replace SUB with chosen player
     updateLineupMutation.mutate({
       lineupId: opponentLineup.id,
@@ -437,15 +436,12 @@ export function MatchLineup() {
       matchId,
     }, {
       onSuccess: async () => {
-        console.log('✅ Opponent lineup updated with double duty player');
         // Manually refetch lineups to ensure UI updates immediately
-        console.log('🔄 Refetching lineups...');
-        const result = await lineupsQuery.refetch();
-        console.log('🔄 Refetch result:', result);
+        await lineupsQuery.refetch();
         setShowOpponentSubModal(false);
       },
       onError: (error) => {
-        console.error('❌ Failed to update opponent lineup:', error);
+        logger.error('Failed to update opponent lineup', { error: error instanceof Error ? error.message : String(error) });
       },
     });
   };
@@ -460,8 +456,6 @@ export function MatchLineup() {
     // Get the NEW player's handicap (respects test mode and test handicap overrides)
     const handicap = handicaps.getPlayerHandicap(playerId);
 
-    console.log('🎯 Calculated handicap:', handicap, 'for player:', playerId);
-
     const updatePayload = {
       lineupId: lineup.lineupId,
       updates: {
@@ -471,15 +465,11 @@ export function MatchLineup() {
       matchId,
     };
 
-    console.log('💾 Sending update to database:', updatePayload);
-
     // Update database
     updateLineupMutation.mutate(updatePayload, {
-      onSuccess: (data) => {
-        console.log('✅ Database update successful:', data);
-      },
+      onSuccess: () => {},
       onError: (error) => {
-        console.error('❌ Database update failed:', error);
+        logger.error('Database update failed', { error: error instanceof Error ? error.message : String(error) });
       },
     });
   };

@@ -6,6 +6,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 // import { OperatorNavBar } from './navigation/OperatorNavBar';
 import { NavRoutes } from './navigation/NavRoutes';
 import { UserProvider } from './context/UserProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from './components/ui/sonner';
 
 
@@ -39,20 +40,22 @@ import { Toaster } from './components/ui/sonner';
 
 const App: React.FC = () => {
   return (
-    <div
-      style={{ minHeight: '100vh', minWidth: '100vw' }}
-      className="full-screen"
-    >
-      <UserProvider>
-        <Router>
-          {/*
-          <NavigationWrapper />
-          */}
-          <NavRoutes />
-        </Router>
-      </UserProvider>
-      <Toaster position="top-right" />
-    </div>
+    <ErrorBoundary>
+      <div
+        style={{ minHeight: '100vh', minWidth: '100vw' }}
+        className="full-screen"
+      >
+        <UserProvider>
+          <Router>
+            {/*
+            <NavigationWrapper />
+            */}
+            <NavRoutes />
+          </Router>
+        </UserProvider>
+        <Toaster position="top-right" />
+      </div>
+    </ErrorBoundary>
   );
 };
 

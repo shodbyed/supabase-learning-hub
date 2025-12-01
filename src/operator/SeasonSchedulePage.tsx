@@ -13,24 +13,12 @@ import { Calendar, MapPin, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
 import { useIsOperator, useSeasonById, useSeasonSchedule } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
-
-interface SeasonWeek {
-  id: string;
-  scheduled_date: string;
-  week_name: string;
-  week_type: string;
-  week_completed: boolean;
-}
-
-interface WeekSchedule {
-  week: SeasonWeek;
-  matches: MatchWithDetails[];
-}
+import { logger } from '@/utils/logger';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * Calculate table numbers per venue within a week
@@ -102,9 +90,9 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
 export const SeasonSchedulePage: React.FC = () => {
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const fromPlayer = searchParams.get('from') === 'player';
+  const [_searchParams] = useSearchParams();
   const isOperator = useIsOperator();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Fetch season data with TanStack Query
   const { data: season, isLoading: seasonLoading } = useSeasonById(seasonId);
@@ -114,7 +102,7 @@ export const SeasonSchedulePage: React.FC = () => {
 
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
-  const [showAcceptDialog, setShowAcceptDialog] = useState(false);
+  const [_error, setError] = useState<string | null>(null);
 
   const loading = seasonLoading || scheduleLoading;
   const seasonName = season?.season_name || `Season ${season?.season_length || 0} Weeks`;
@@ -126,6 +114,15 @@ export const SeasonSchedulePage: React.FC = () => {
    */
   const handleAcceptSchedule = async () => {
     if (!seasonId || !leagueId) return;
+
+    const confirmed = await confirm({
+      title: 'Accept Schedule?',
+      message: 'Accept this schedule and activate the season? You can still make changes later if needed.',
+      confirmText: 'Accept & Activate',
+      confirmVariant: 'default',
+    });
+
+    if (!confirmed) return;
 
     setAccepting(true);
 
@@ -141,11 +138,10 @@ export const SeasonSchedulePage: React.FC = () => {
       // Navigate to league dashboard
       navigate(`/league/${leagueId}`);
     } catch (err) {
-      console.error('❌ Error activating season:', err);
+      logger.error('Error activating season', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to activate season');
     } finally {
       setAccepting(false);
-      setShowAcceptDialog(false);
     }
   };
 
@@ -156,9 +152,13 @@ export const SeasonSchedulePage: React.FC = () => {
   const handleClearSchedule = async () => {
     if (!seasonId) return;
 
-    const confirmed = window.confirm(
-      'Are you sure you want to delete all matches and regenerate the schedule? This cannot be undone.'
-    );
+    const confirmed = await confirm({
+      title: 'Delete Schedule?',
+      message: 'Are you sure you want to delete all matches and regenerate the schedule? This cannot be undone.',
+      confirmText: 'Delete All',
+      confirmVariant: 'destructive',
+    });
+
     if (!confirmed) return;
 
     setClearing(true);
@@ -185,7 +185,7 @@ export const SeasonSchedulePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo={-1}
+        backTo={`/league/${leagueId}`}
         backLabel="Back"
         title="Season Schedule"
         subtitle={seasonName}
@@ -201,7 +201,7 @@ export const SeasonSchedulePage: React.FC = () => {
               {clearing ? 'Clearing...' : 'Clear Schedule'}
             </Button>
             <Button
-              onClick={() => setShowAcceptDialog(true)}
+              onClick={handleAcceptSchedule}
               disabled={accepting || clearing}
             >
               {accepting ? 'Accepting...' : 'Accept Schedule & Complete Setup'}
@@ -339,18 +339,7 @@ export const SeasonSchedulePage: React.FC = () => {
         )}
       </div>
 
-      {/* Accept Schedule Confirmation Dialog */}
-      {showAcceptDialog && (
-        <ConfirmDialog
-          title="Accept Schedule?"
-          message="Accept this schedule and activate the season? You can still make changes later if needed."
-          confirmText="Accept & Activate"
-          cancelText="Cancel"
-          confirmVariant="default"
-          onConfirm={handleAcceptSchedule}
-          onCancel={() => setShowAcceptDialog(false)}
-        />
-      )}
+      {ConfirmDialogComponent}
     </div>
   );
 };

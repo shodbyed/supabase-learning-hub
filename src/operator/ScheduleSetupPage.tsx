@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { ScheduleSetup } from './ScheduleSetup';
 import { fetchTeamsWithDetails } from '@/api/hooks';
 import type { TeamWithQueryDetails } from '@/types/team';
+import { logger } from '@/utils/logger';
 
 /**
  * ScheduleSetupPage Component
@@ -55,7 +56,7 @@ export const ScheduleSetupPage: React.FC = () => {
 
         setTeams(seasonTeams);
       } catch (err) {
-        console.error('Error fetching teams:', err);
+        logger.error('Error fetching teams', { error: err instanceof Error ? err.message : String(err) });
         setError('Failed to load teams');
       } finally {
         setLoading(false);
@@ -69,7 +70,6 @@ export const ScheduleSetupPage: React.FC = () => {
    * Handle successful schedule generation
    */
   const handleSuccess = () => {
-    console.log('✅ Schedule generated successfully');
     // Navigate to schedule view page
     navigate(`/league/${leagueId}/season/${seasonId}/schedule`);
   };

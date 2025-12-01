@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Parameters for creating a league announcement
@@ -74,7 +75,7 @@ export async function createLeagueAnnouncement(
     .maybeSingle();
 
   if (seasonError) {
-    console.error('Error fetching active season:', seasonError);
+    logger.error('Error fetching active season', { error: seasonError.message });
     throw new Error(`Failed to fetch active season: ${seasonError.message}`);
   }
 
@@ -92,7 +93,7 @@ export async function createLeagueAnnouncement(
     .eq('teams.season_id', seasonId);
 
   if (playersError) {
-    console.error('Error fetching team players:', playersError);
+    logger.error('Error fetching team players', { error: playersError.message });
     throw new Error(`Failed to fetch team players: ${playersError.message}`);
   }
 
@@ -114,7 +115,7 @@ export async function createLeagueAnnouncement(
   );
 
   if (convError || !conversationId) {
-    console.error('Error creating announcement conversation:', convError);
+    logger.error('Error creating announcement conversation', { error: convError?.message || 'Unknown error' });
     throw new Error(`Failed to create announcement conversation: ${convError?.message || 'Unknown error'}`);
   }
 
@@ -128,7 +129,7 @@ export async function createLeagueAnnouncement(
     });
 
   if (messageError) {
-    console.error('Error sending announcement message:', messageError);
+    logger.error('Error sending announcement message', { error: messageError.message });
     throw new Error(`Failed to send announcement message: ${messageError.message}`);
   }
 
@@ -174,7 +175,7 @@ export async function createOrganizationAnnouncement(
     .single();
 
   if (orgError || !organization) {
-    console.error('Error fetching organization:', orgError);
+    logger.error('Error fetching organization', { error: orgError.message });
     throw new Error(`Organization not found: ${orgError?.message || 'Unknown error'}`);
   }
 
@@ -186,7 +187,7 @@ export async function createOrganizationAnnouncement(
     .eq('teams.seasons.leagues.organization_id', operatorId);
 
   if (playersError) {
-    console.error('Error fetching team players:', playersError);
+    logger.error('Error fetching team players', { error: playersError.message });
     throw new Error(`Failed to fetch team players: ${playersError.message}`);
   }
 
@@ -208,7 +209,7 @@ export async function createOrganizationAnnouncement(
   );
 
   if (convError || !conversationId) {
-    console.error('Error creating organization announcement conversation:', convError);
+    logger.error('Error creating organization announcement conversation', { error: convError?.message || 'Unknown error' });
     throw new Error(`Failed to create announcement conversation: ${convError?.message || 'Unknown error'}`);
   }
 
@@ -222,7 +223,7 @@ export async function createOrganizationAnnouncement(
     });
 
   if (messageError) {
-    console.error('Error sending announcement message:', messageError);
+    logger.error('Error sending announcement message', { error: messageError.message });
     throw new Error(`Failed to send announcement message: ${messageError.message}`);
   }
 

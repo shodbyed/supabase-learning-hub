@@ -19,6 +19,7 @@ import { useMatchLineups, useMatchGames, useMatchWithLeagueSettings } from '@/ap
 import { useCreateMatchGames, useUpdateMatchGame, useUpdateMatch } from '@/api/hooks/useMatchMutations';
 import { useUpdateMatchLineup } from '@/api/hooks';
 import { calculatePoints, calculateBCAPoints } from '@/types/match';
+import { logger } from '@/utils/logger';
 
 interface MatchEndVerificationProps {
   /** Match ID */
@@ -281,7 +282,7 @@ export function MatchEndVerification({
                 const game = tiebreakerGames.find(g => g.game_number === gameNumber);
 
                 if (!game) {
-                  console.error(`Tiebreaker game ${gameNumber} not found`);
+                  logger.error('Tiebreaker game not found', { gameNumber });
                   continue;
                 }
 
@@ -410,7 +411,7 @@ export function MatchEndVerification({
           navigate('/dashboard');
         }
       } catch (error) {
-        console.error('Failed to complete match:', error);
+        logger.error('Failed to complete match', { error: error instanceof Error ? error.message : String(error) });
         setIsCompleting(false);
         // Stay on page to allow retry
       }

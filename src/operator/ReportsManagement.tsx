@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, Clock, CheckCircle, XCircle, ArrowUp } from 'lucide-react';
 import { AlertDialog } from '@/components/AlertDialog';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 interface Report {
   id: string;
@@ -80,7 +80,7 @@ export function ReportsManagement() {
 
   // Dialog states
   const [alertDialog, setAlertDialog] = useState<{ show: boolean; title: string; message: string; type: 'success' | 'error' | 'warning' | 'info' } | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{ show: boolean; title: string; message: string; onConfirm: () => void } | null>(null);
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   /**
    * Load pending reports on mount
@@ -162,25 +162,26 @@ export function ReportsManagement() {
   const handleEscalate = async () => {
     if (!selectedReport) return;
 
-    setConfirmDialog({
-      show: true,
+    const confirmed = await confirm({
       title: 'Escalate Report?',
       message: 'Escalate this report to a developer? Use this for serious issues that require developer attention.',
-      onConfirm: async () => {
-        const { error } = await escalateReport(selectedReport.report.id);
-        if (!error) {
-          setAlertDialog({
-            show: true,
-            title: 'Success',
-            message: 'Report escalated to developer successfully',
-            type: 'success'
-          });
-          setSelectedReport(null);
-          loadReports();
-        }
-        setConfirmDialog(null);
-      }
+      confirmText: 'Escalate',
+      confirmVariant: 'destructive',
     });
+
+    if (confirmed) {
+      const { error } = await escalateReport(selectedReport.report.id);
+      if (!error) {
+        setAlertDialog({
+          show: true,
+          title: 'Success',
+          message: 'Report escalated to developer successfully',
+          type: 'success'
+        });
+        setSelectedReport(null);
+        loadReports();
+      }
+    }
   };
 
   /**
@@ -189,25 +190,26 @@ export function ReportsManagement() {
   const handleResolve = async () => {
     if (!selectedReport) return;
 
-    setConfirmDialog({
-      show: true,
+    const confirmed = await confirm({
       title: 'Resolve Report?',
       message: 'Mark this report as resolved?',
-      onConfirm: async () => {
-        const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
-        if (!error) {
-          setAlertDialog({
-            show: true,
-            title: 'Success',
-            message: 'Report marked as resolved',
-            type: 'success'
-          });
-          setSelectedReport(null);
-          loadReports();
-        }
-        setConfirmDialog(null);
-      }
+      confirmText: 'Resolve',
+      confirmVariant: 'default',
     });
+
+    if (confirmed) {
+      const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
+      if (!error) {
+        setAlertDialog({
+          show: true,
+          title: 'Success',
+          message: 'Report marked as resolved',
+          type: 'success'
+        });
+        setSelectedReport(null);
+        loadReports();
+      }
+    }
   };
 
   /**
@@ -216,25 +218,26 @@ export function ReportsManagement() {
   const handleDismiss = async () => {
     if (!selectedReport) return;
 
-    setConfirmDialog({
-      show: true,
+    const confirmed = await confirm({
       title: 'Dismiss Report?',
       message: 'Dismiss this report? This indicates the report was reviewed but no action is needed.',
-      onConfirm: async () => {
-        const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
-        if (!error) {
-          setAlertDialog({
-            show: true,
-            title: 'Success',
-            message: 'Report dismissed',
-            type: 'success'
-          });
-          setSelectedReport(null);
-          loadReports();
-        }
-        setConfirmDialog(null);
-      }
+      confirmText: 'Dismiss',
+      confirmVariant: 'default',
     });
+
+    if (confirmed) {
+      const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
+      if (!error) {
+        setAlertDialog({
+          show: true,
+          title: 'Success',
+          message: 'Report dismissed',
+          type: 'success'
+        });
+        setSelectedReport(null);
+        loadReports();
+      }
+    }
   };
 
   /**
@@ -522,18 +525,7 @@ export function ReportsManagement() {
         />
       )}
 
-      {/* Confirm Dialog (actions requiring confirmation) */}
-      {confirmDialog?.show && (
-        <ConfirmDialog
-          title={confirmDialog.title}
-          message={confirmDialog.message}
-          confirmText="Confirm"
-          cancelText="Cancel"
-          confirmVariant="default"
-          onConfirm={confirmDialog.onConfirm}
-          onCancel={() => setConfirmDialog(null)}
-        />
-      )}
+      {ConfirmDialogComponent}
     </div>
   );
 }

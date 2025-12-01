@@ -112,26 +112,21 @@ export function useScheduleGeneration(params: UseScheduleGenerationParams) {
     if (isScheduleReviewStep) {
       // Prevent infinite loop - only generate schedule once per step
       if (scheduleGeneratedForStep.current === currentStep) {
-        console.log('⏸️ Schedule already generated for step', currentStep, '- skipping');
         return;
       }
 
-      console.log('🔄 Generating schedule for step', currentStep);
       scheduleGeneratedForStep.current = currentStep;
 
       // Get form data from localStorage
       const stored = localStorage.getItem(`season-creation-${leagueId}`);
       if (!stored) {
-        console.log('⚠️ No localStorage data found for schedule generation');
         return;
       }
 
       const formData: SeasonFormData = JSON.parse(stored);
-      console.log('📋 Form data for schedule generation:', formData);
 
       // Check if we have a saved complete schedule (from Continue Setup)
       const savedSchedule = localStorage.getItem('season-schedule-review');
-      const savedBlackouts = localStorage.getItem('season-blackout-weeks');
 
       const startDate = parseLocalDate(formData.startDate);
       const seasonLength = parseInt(formData.seasonLength);
@@ -141,11 +136,9 @@ export function useScheduleGeneration(params: UseScheduleGenerationParams) {
 
       if (savedSchedule) {
         // Load saved schedule (from Continue Setup)
-        console.log('📂 Loading saved schedule from localStorage');
         initialSchedule = JSON.parse(savedSchedule);
       } else {
         // Generate fresh schedule
-        console.log('🔄 Generating new schedule');
         initialSchedule = generateSchedule(
           startDate,
           leagueDayOfWeek,
@@ -178,10 +171,6 @@ export function useScheduleGeneration(params: UseScheduleGenerationParams) {
             apaShouldBeIncluded = !apaPref.ignored;
           }
 
-          console.log('📋 Championship preference check:', {
-            bca: bcaPref ? `${bcaPref.ignored ? 'ignore' : 'blackout'} (${bcaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-            apa: apaPref ? `${apaPref.ignored ? 'ignore' : 'blackout'} (${apaShouldBeIncluded ? 'included' : 'ignored'})` : 'no preference',
-          });
         }
 
         // Build championship event objects for conflict detection
@@ -218,14 +207,6 @@ export function useScheduleGeneration(params: UseScheduleGenerationParams) {
         // Set championship data based on what was actually included in conflict detection
         onBcaChampionshipUpdate(bcaChampionshipEvent);
         onApaChampionshipUpdate(apaChampionshipEvent);
-
-        console.log('📅 Schedule loaded with conflicts:', {
-          source: savedSchedule ? 'localStorage' : 'generated',
-          weekCount: scheduleWithConflicts.length,
-          hasBlackouts: savedBlackouts ? 'yes' : 'no',
-          bcaIncluded: !!bcaChampionshipEvent,
-          apaIncluded: !!apaChampionshipEvent,
-        });
       });
     }
   }, [

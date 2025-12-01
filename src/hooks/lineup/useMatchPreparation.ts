@@ -12,6 +12,8 @@ import { supabase } from '@/supabaseClient';
 import { useUpdateMatch } from '@/api/hooks';
 import { calculateHandicapThresholds } from '@/utils/calculateHandicapThresholds';
 import { generateGameOrder } from '@/utils/gameOrder';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 export function usePreparationStatus() {
   const [isPreparingMatch, setIsPreparingMatch] = useState(false);
@@ -83,7 +85,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           // STEP 1: Verify both lineups are actually locked with FRESH data
           setPreparationMessage?.('Verifying lineups are locked...');
           if (!refetchLineups) {
-            console.error('refetchLineups not available');
+            logger.error('refetchLineups not available', { matchId });
             setIsPreparingMatch?.(false);
             matchPreparedRef.current = false;
             return;
@@ -107,7 +109,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           }
 
           if (!bothLineupsLocked) {
-            console.error('Timeout: Both lineups not locked');
+            logger.error('Timeout: Both lineups not locked', { matchId });
             setIsPreparingMatch?.(false);
             matchPreparedRef.current = false;
             return;
@@ -150,7 +152,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           // STEP 1: Verify both lineups are actually locked with FRESH data
           setPreparationMessage?.('Verifying lineups are locked...');
           if (!refetchLineups) {
-            console.error('refetchLineups not available');
+            logger.error('refetchLineups not available', { matchId });
             setIsPreparingMatch?.(false);
             matchPreparedRef.current = false;
             return;
@@ -174,7 +176,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           }
 
           if (!bothLineupsLocked) {
-            console.error('Timeout: Both lineups not locked');
+            logger.error('Timeout: Both lineups not locked', { matchId });
             setIsPreparingMatch?.(false);
             matchPreparedRef.current = false;
             return;
@@ -183,7 +185,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           // STEP 2: Check if this is tiebreaker or regular mode with FRESH data
           setPreparationMessage?.('Checking match type...');
           if (!refetchGames) {
-            console.error('refetchGames not available');
+            logger.error('refetchGames not available', { matchId });
             setIsPreparingMatch?.(false);
             matchPreparedRef.current = false;
             return;
@@ -294,9 +296,13 @@ export function useMatchPreparation(params: MatchPreparationParams) {
           setIsPreparingMatch?.(false);
           navigate(`/match/${matchId}/score`);
         } catch (error: any) {
-          console.error('Error preparing match:', error);
+          logger.error('Error preparing match', {
+            error: error instanceof Error ? error.message : String(error),
+            matchId,
+            isHomeTeam
+          });
           setIsPreparingMatch?.(false);
-          alert(`Failed to prepare match: ${error.message}`);
+          toast.error(`Failed to prepare match: ${error.message}`);
           matchPreparedRef.current = false;
         }
       };

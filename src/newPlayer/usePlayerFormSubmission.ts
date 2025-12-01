@@ -4,6 +4,7 @@ import { generateNickname } from '../utils/nicknameGenerator';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../context/useUser';
 import type { FormState } from './types';
+import { logger } from '@/utils/logger';
 
 interface UsePlayerFormSubmissionProps {
   state: FormState;
@@ -84,17 +85,13 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
 
       if (insertError) {
         // Handle database errors
-        console.error('Database error:', insertError);
+        logger.error('Database error', { error: insertError.message });
         onError({ general: `Failed to save application: ${insertError.message}` });
         return;
       }
 
-      console.log('✅ Member record created successfully');
-
       // Success! Clear errors
       onSuccess();
-
-      console.log('🔄 Navigating to dashboard...');
 
       // Force a full page reload to dashboard
       // This ensures UserProvider refetches the session and the new member record is loaded
@@ -103,7 +100,7 @@ export const usePlayerFormSubmission = ({ state, onError, onSuccess, onLoading }
 
     } catch (error) {
       // Handle unexpected errors
-      console.error('Unexpected error:', error);
+      logger.error('Unexpected error', { error: error instanceof Error ? error.message : String(error) });
       onError({ general: 'An unexpected error occurred. Please try again.' });
     } finally {
       // Stop loading state

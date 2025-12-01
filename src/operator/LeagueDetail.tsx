@@ -13,6 +13,7 @@ import { buildLeagueTitle, getTimeOfYear } from '@/utils/leagueUtils';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
 import { LeagueStatusCard } from '@/components/operator/LeagueStatusCard';
+import { logger } from '@/utils/logger';
 import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
@@ -135,7 +136,7 @@ export const LeagueDetail: React.FC = () => {
         //   setScheduleExists(false);
         // }
       } catch (err) {
-        console.error('Error fetching league:', err);
+        logger.error('Error fetching league', { error: err instanceof Error ? err.message : String(err) });
         setError('Failed to load league details');
       } finally {
         setLoading(false);

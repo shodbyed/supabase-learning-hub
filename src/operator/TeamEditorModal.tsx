@@ -24,6 +24,7 @@ import { containsProfanity } from '@/utils/profanityFilter';
 import type { PartialMember } from '@/types/member';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamFormat } from '@/types/league';
+import { logger } from '@/utils/logger';
 
 interface TeamEditorModalProps {
   /** League ID for the team */
@@ -220,7 +221,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           isCaptainVariant,
         });
 
-        console.log('✅ Team updated successfully');
       } else {
         // CREATE new team
         await createTeamMutation.mutateAsync({
@@ -233,12 +233,11 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           rosterPlayerIds: rosterPlayers,
         });
 
-        console.log('✅ Team created successfully');
       }
 
       onSuccess();
     } catch (err) {
-      console.error('❌ Error saving team:', err);
+      logger.error('Error saving team', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to save team');
     }
   };

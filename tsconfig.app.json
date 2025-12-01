@@ -29,5 +29,5 @@
     }
   },
   "include": ["src"],
-  "exclude": ["reference-code"]
+  "exclude": ["reference-code", "src/__tests__", "src/test", "**/*.test.ts", "**/*.test.tsx"]
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { UserContext } from './UserContext';
+import { logger } from '@/utils/logger';
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -18,7 +19,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           error,
         } = await supabase.auth.getSession();
         if (error) {
-          console.error('Error checking session:', error.message);
+          logger.error('Error checking session', { error: error.message });
         } else if (session) {
           setIsLoggedIn(true);
           setUser(session.user);
@@ -27,7 +28,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(null);
         }
       } catch (error) {
-        console.error('Error in checkUserSession:', error);
+        logger.error('Error in checkUserSession', { error: error instanceof Error ? error.message : String(error) });
       } finally {
         setLoading(false); // Always stop loading after check
       }

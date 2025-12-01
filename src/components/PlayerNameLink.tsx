@@ -23,6 +23,8 @@ import { cn } from '@/lib/utils';
 import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked } from '@/api/hooks';
 import { ReportUserModal } from '@/components/ReportUserModal';
 import { ConfirmDialog } from '@/components/shared';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface CustomAction {
   label: string;
@@ -84,14 +86,13 @@ export function PlayerNameLink({
 
     // Default: Create/open DM with this player
     if (!memberId) {
-      console.error('Current user member ID not found');
+      logger.error('Current user member ID not found');
       setOpen(false);
       return;
     }
 
     // Don't allow messaging yourself
     if (memberId === playerId) {
-      console.log('Cannot message yourself');
       setOpen(false);
       return;
     }
@@ -109,7 +110,7 @@ export function PlayerNameLink({
 
       setOpen(false);
     } catch (error) {
-      console.error('Error creating/opening conversation:', error);
+      logger.error('Error creating/opening conversation', { error: error instanceof Error ? error.message : String(error) });
       setOpen(false);
     }
   };
@@ -133,14 +134,13 @@ export function PlayerNameLink({
     }
 
     if (!memberId) {
-      console.error('Current user member ID not found');
+      logger.error('Current user member ID not found');
       setOpen(false);
       return;
     }
 
     // Don't allow blocking yourself
     if (memberId === playerId) {
-      console.log('Cannot block yourself');
       setOpen(false);
       return;
     }
@@ -163,10 +163,10 @@ export function PlayerNameLink({
         blockedUserId: playerId,
       });
 
-      alert(`${playerName} has been blocked. You won't see messages from them.`);
+      toast.success(`${playerName} has been blocked. You won't see messages from them.`);
     } catch (error) {
-      console.error('Error blocking user:', error);
-      alert('Failed to block user. Please try again.');
+      logger.error('Error blocking user', { error: error instanceof Error ? error.message : String(error) });
+      toast.error('Failed to block user. Please try again.');
     }
   };
 
@@ -179,10 +179,10 @@ export function PlayerNameLink({
         blockedUserId: playerId,
       });
 
-      alert(`${playerName} has been unblocked.`);
+      toast.success(`${playerName} has been unblocked.`);
     } catch (error) {
-      console.error('Error unblocking user:', error);
-      alert('Failed to unblock user. Please try again.');
+      logger.error('Error unblocking user', { error: error instanceof Error ? error.message : String(error) });
+      toast.error('Failed to unblock user. Please try again.');
     }
   };
 

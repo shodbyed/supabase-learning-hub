@@ -20,6 +20,8 @@ import { UserListItem } from './UserListItem';
 import { useBlockedUsers } from '@/api/hooks';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 import type { MemberForMessaging } from '@/types';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface NewMessageModalProps {
   onClose: () => void;
@@ -56,7 +58,7 @@ export function NewMessageModal({
         .order('last_name', { ascending: true });
 
       if (error) {
-        console.error('Error fetching members:', error);
+        logger.error('Error fetching members', { error: error.message });
         setLoading(false);
         return;
       }
@@ -97,7 +99,7 @@ export function NewMessageModal({
     } else {
       // Group conversation - group name required
       if (!groupName.trim()) {
-        alert('Please enter a group name');
+        toast.error('Please enter a group name');
         return;
       }
       onCreateConversation(selectedUserIds, groupName);

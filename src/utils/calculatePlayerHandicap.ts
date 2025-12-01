@@ -19,6 +19,7 @@
 
 import { fetchPlayerGameHistory } from '@/api/queries/matchGames';
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Team format types
@@ -99,7 +100,7 @@ export async function calculatePlayerHandicap(
         .single();
 
       if (error) {
-        console.error('Error fetching player starting handicap:', error);
+        logger.error('Error fetching player starting handicap', { error: error.message });
         return teamFormat === '5_man' ? 0 : 40;
       }
 
@@ -128,7 +129,7 @@ export async function calculatePlayerHandicap(
       return convertTo5v5Percentage(winPercentage, handicapVariant);
     }
   } catch (error) {
-    console.error('Error calculating player handicap:', error);
+    logger.error('Error calculating player handicap', { error: error instanceof Error ? error.message : String(error) });
     return teamFormat === '5_man' ? 0 : 40;
   }
 }

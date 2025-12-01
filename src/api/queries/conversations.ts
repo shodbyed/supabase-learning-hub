@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Conversation type information
@@ -114,7 +115,7 @@ export async function isUserBlocked(userId: string, otherUserId: string): Promis
     .maybeSingle();
 
   if (error) {
-    console.error('Error checking if user is blocked:', error);
+    logger.error('Error checking if user is blocked', { error: error.message });
     throw new Error(`Failed to check if user is blocked: ${error.message}`);
   }
 
@@ -149,7 +150,7 @@ export async function getOtherParticipantId(
     .is('left_at', null);
 
   if (error) {
-    console.error('Error fetching conversation participants:', error);
+    logger.error('Error fetching conversation participants', { error: error.message });
     throw new Error(`Failed to fetch conversation participants: ${error.message}`);
   }
 
@@ -208,7 +209,7 @@ export async function getConversationParticipants(
     .is('left_at', null);
 
   if (error) {
-    console.error('Error loading participants:', error);
+    logger.error('Error loading participants', { error: error.message });
     throw new Error(`Failed to fetch conversation participants: ${error.message}`);
   }
 

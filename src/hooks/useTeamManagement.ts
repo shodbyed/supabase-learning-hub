@@ -16,7 +16,8 @@ import {
   useMostRecentSeason,
   usePreviousCompletedSeason,
 } from '@/api/hooks';
-import type { LeagueVenue } from '@/types/venue';
+import { logger } from '@/utils/logger';
+import type { LeagueVenue as _LeagueVenue } from '@/types/venue';
 import type { UseTeamManagementReturn } from '@/types';
 import type { TeamWithQueryDetails } from '@/types/team';
 
@@ -152,7 +153,10 @@ export function useTeamManagement(
         setTeams(teamsData || []);
 
       } catch (err) {
-        console.error('Error fetching teams:', err);
+        logger.error('Error fetching teams', {
+          error: err instanceof Error ? err.message : String(err),
+          leagueId
+        });
       } finally {
         setTeamsLoading(false);
       }
@@ -172,9 +176,11 @@ export function useTeamManagement(
 
       if (teamsError) throw teamsError;
       setTeams(teamsData || []);
-      console.log('✅ Teams list refreshed');
     } catch (err) {
-      console.error('Error refreshing teams:', err);
+      logger.error('Error refreshing teams', {
+        error: err instanceof Error ? err.message : String(err),
+        leagueId
+      });
     }
   };
 

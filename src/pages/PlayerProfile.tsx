@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, Users } from 'lucide-react';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
+import { logger } from '@/utils/logger';
 
 interface PlayerData {
   id: string;
@@ -72,7 +73,7 @@ export function PlayerProfile() {
         .single();
 
       if (playerError || !playerData) {
-        console.error('Error fetching player:', playerError);
+        logger.error('Error fetching player', { error: playerError?.message });
         setError('Unable to load player profile');
         setLoading(false);
         return;
@@ -105,7 +106,7 @@ export function PlayerProfile() {
         .eq('teams.seasons.status', 'active');
 
       if (teamsError) {
-        console.error('Error fetching teams:', teamsError);
+        logger.error('Error fetching teams', { error: teamsError.message });
         // Don't fail completely if teams don't load
       } else {
         // Transform the data to match our interface

@@ -100,7 +100,6 @@ export async function updateMatch(params: UpdateMatchParams): Promise<Match> {
 
   // If SELECT is blocked by RLS (406 error or PGRST116), try update without SELECT
   if (error?.code === 'PGRST116' || error?.code === '406' || error?.message?.includes('406') || error?.message?.includes('Not Acceptable')) {
-    console.log('⚠️ RLS blocking SELECT, trying update without SELECT');
     const { error: updateError } = await supabase
       .from('matches')
       .update(updates)
@@ -110,14 +109,12 @@ export async function updateMatch(params: UpdateMatchParams): Promise<Match> {
       throw new Error(`Failed to update match: ${updateError.message}`);
     }
 
-    console.log('✅ Match updated successfully (without SELECT due to RLS)');
     // Return a partial match object (real-time will trigger refetch)
     return { id: matchId, ...updates } as Match;
   }
 
   // Other errors
   if (error) {
-    console.error('❌ Match update error:', error);
     throw new Error(`Failed to update match: ${error.message}`);
   }
 

@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/logger';
 
 interface ScheduleCardProps {
   /** League ID to fetch schedule for */
@@ -78,17 +79,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
         if (allWeeksError) throw allWeeksError;
 
         if (allWeeksData) {
-          console.log('📅 ALL SEASON WEEKS:', allWeeksData);
-          console.log('📊 Week Type Breakdown:', {
-            regular: allWeeksData.filter(w => w.week_type === 'regular').length,
-            blackout: allWeeksData.filter(w => w.week_type === 'blackout').length,
-            playoffs: allWeeksData.filter(w => w.week_type === 'playoffs').length,
-            season_end_break: allWeeksData.filter(w => w.week_type === 'season_end_break').length,
-            total: allWeeksData.length
-          });
-        }
-
-        // Get all weeks to calculate completion based on match status
+          // Get all weeks to calculate completion based on match status
         const { data: allWeeks } = await supabase
           .from('season_weeks')
           .select('id, week_name, scheduled_date, week_type')
@@ -200,8 +191,9 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
         if (playoffsData) {
           setPlayoffsDate(playoffsData.scheduled_date);
         }
+        }
       } catch (err) {
-        console.error('Error checking schedule status:', err);
+        logger.error('Error checking schedule status', { error: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }

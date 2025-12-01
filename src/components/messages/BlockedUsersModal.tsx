@@ -16,6 +16,9 @@ import { UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 import { useBlockedUsersDetails, useUnblockUser } from '@/api/hooks';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface BlockedUser {
   blocked_id: string;
@@ -91,11 +94,16 @@ export function BlockedUsersModal({
   const { data: blockedUsersData = [], isLoading: loading } = useBlockedUsersDetails(currentUserId);
   const blockedUsers = blockedUsersData as any as BlockedUser[];
   const unblockMutation = useUnblockUser();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   const handleUnblock = async (blockedUserId: string) => {
-    if (!confirm('Are you sure you want to unblock this user? They will be able to message you again.')) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Unblock User?',
+      message: 'Are you sure you want to unblock this user? They will be able to message you again.',
+      confirmText: 'Unblock',
+      confirmVariant: 'default',
+    });
+    if (!confirmed) return;
 
     unblockMutation.mutate(
       {
@@ -108,8 +116,8 @@ export function BlockedUsersModal({
           onUnblocked?.();
         },
         onError: (error) => {
-          console.error('Error unblocking user:', error);
-          alert('Failed to unblock user. Please try again.');
+          logger.error('Error unblocking user', { error: error instanceof Error ? error.message : String(error) });
+          toast.error('Failed to unblock user. Please try again.');
         },
       }
     );
@@ -150,6 +158,8 @@ export function BlockedUsersModal({
           Close
         </Button>
       </Modal.Footer>
+
+      {ConfirmDialogComponent}
     </Modal>
   );
 }

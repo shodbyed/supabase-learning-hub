@@ -8,6 +8,8 @@
  * Tiebreakers always use 3 positions regardless of the original match format.
  */
 
+import { logger } from '@/utils/logger';
+
 interface TiebreakerLineupParams {
   /** All match games */
   allGames: any[];
@@ -102,7 +104,11 @@ export function useTiebreakerLineup(
       (g) => g.game_number === gameNumber && g.is_tiebreaker
     );
     if (!game) {
-      console.error(`Tiebreaker game ${gameNumber} not found`);
+      logger.error('Tiebreaker game not found', {
+        gameNumber,
+        matchId,
+        position
+      });
       return;
     }
 

@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/popover';
 import type { PartialMember } from '@/types/member';
 import { getPlayerDisplayName } from '@/types/member';
+import { logger } from '@/utils/logger';
 
 interface MemberComboboxProps {
   /** List of members to choose from (only needs id, name, player number) */
@@ -67,7 +68,7 @@ export const MemberCombobox: React.FC<MemberComboboxProps> = ({
 
   // Debug logging
   if (open && members.length === 0) {
-    console.warn('MemberCombobox opened but no members available');
+    logger.warn('MemberCombobox opened but no members available');
   }
 
   // Filter out excluded IDs (players on other teams), then filter by search and sort

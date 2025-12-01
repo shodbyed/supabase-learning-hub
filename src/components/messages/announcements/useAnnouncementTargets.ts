@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 export interface AnnouncementTarget {
   id: string;
@@ -35,7 +36,7 @@ export function useAnnouncementTargets(
         .eq('is_captain', true);
 
       if (teamsError) {
-        console.error('Error fetching captain leagues:', teamsError);
+        logger.error('Error fetching captain leagues', { error: teamsError.message });
         setLoading(false);
         return;
       }
@@ -64,7 +65,7 @@ export function useAnnouncementTargets(
             .single();
 
           if (leagueError) {
-            console.error('Error fetching league:', leagueError);
+            logger.error('Error fetching league', { error: leagueError.message });
             return null;
           }
 
@@ -76,7 +77,7 @@ export function useAnnouncementTargets(
             .single();
 
           if (seasonError) {
-            console.error('Error fetching season:', seasonError);
+            logger.error('Error fetching season', { error: seasonError.message });
             return null;
           }
 

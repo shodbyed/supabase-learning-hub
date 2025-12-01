@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface ScoringModalProps {
   isOpen: boolean;
@@ -51,7 +52,7 @@ export function ScoringModal({
   const handleConfirm = () => {
     // Check mutual exclusivity
     if (breakAndRun && goldenBreak) {
-      alert('A game cannot have both Break & Run and Golden Break.');
+      toast.error('A game cannot have both Break & Run and Golden Break.');
       return;
     }
 

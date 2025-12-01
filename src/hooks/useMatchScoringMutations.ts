@@ -16,6 +16,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import type { Lineup, MatchGame } from '@/types/match';
 import { queryKeys } from '@/api/queryKeys';
+import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseMatchScoringMutationsParams {
   /** Current match data */
@@ -128,9 +130,6 @@ export function useMatchScoringMutations({
 
         if (alreadyConfirmedByMe) {
           // This team already confirmed, waiting for opponent - don't allow re-clicking
-          console.log(
-            'You already confirmed this game. Waiting for opponent to confirm.'
-          );
           return;
         }
       }
@@ -141,7 +140,7 @@ export function useMatchScoringMutations({
         existingGame.confirmed_by_away
       ) {
         // Game already confirmed by both teams, don't allow changes
-        alert(
+        toast.error(
           'This game has already been confirmed by both teams. Use the Edit button to change it.'
         );
         return;
@@ -218,8 +217,8 @@ export function useMatchScoringMutations({
           }
         }, 500);
       } catch (err: any) {
-        console.error('Error confirming game:', err);
-        alert(`Failed to confirm game: ${err.message}`);
+        logger.error('Error confirming game', { error: err instanceof Error ? err.message : String(err) });
+        toast.error(`Failed to confirm game: ${err.message}`);
       }
     },
     [match, userTeamId, gameResults, queryClient]
@@ -269,10 +268,9 @@ export function useMatchScoringMutations({
         }
 
         // Game results will be automatically refreshed by real-time subscription
-        console.log('Game denied and reset to unscored');
       } catch (err: any) {
-        console.error('Error denying game:', err);
-        alert(`Failed to deny game: ${err.message}`);
+        logger.error('Error denying game', { error: err instanceof Error ? err.message : String(err) });
+        toast.error(`Failed to deny game: ${err.message}`);
       }
     },
     [match, gameResults]
@@ -304,14 +302,14 @@ export function useMatchScoringMutations({
 
         // Check for mutual exclusivity of B&R and golden break
         if (breakAndRun && goldenBreak) {
-          alert('A game cannot have both Break & Run and Golden Break.');
+          toast.error('A game cannot have both Break & Run and Golden Break.');
           return;
         }
 
         // Get the existing game record from the database
         const existingGame = gameResults.get(scoringGame.gameNumber);
         if (!existingGame) {
-          alert('Game not found');
+          toast.error('Game not found');
           return;
         }
 
@@ -339,9 +337,6 @@ export function useMatchScoringMutations({
         };
 
         // Check if game already exists (using same game we fetched earlier)
-        console.log('Saving game score:', gameData);
-        console.log('Existing game:', existingGame);
-
         if (existingGame) {
           // Update existing game
           const updateData = {
@@ -357,43 +352,24 @@ export function useMatchScoringMutations({
               : existingGame.confirmed_by_away,
           };
 
-          console.log('Updating game with:', updateData);
-          console.log('Updating game ID:', existingGame.id);
-          console.log('Update data types:', {
-            winner_team_id: typeof updateData.winner_team_id,
-            winner_player_id: typeof updateData.winner_player_id,
-            break_and_run: typeof updateData.break_and_run,
-            golden_break: typeof updateData.golden_break,
-            confirmed_by_home: typeof updateData.confirmed_by_home,
-            confirmed_by_away: typeof updateData.confirmed_by_away,
-          });
-
-          const { data, error, count } = await supabase
+          const { data, error } = await supabase
             .from('match_games')
             .update(updateData)
             .eq('id', existingGame.id)
             .select();
 
-          console.log('Update result - data:', data);
-          console.log('Update result - count:', count);
-          console.log('Update result - error:', error);
-
           if (error) {
-            console.error('Update error:', error);
+            logger.error('Update error', { error: error.message });
             throw error;
           }
 
           if (!data || data.length === 0) {
-            console.error(
-              'No rows updated - possible RLS policy blocking update'
-            );
-            alert(
+            logger.error('No rows updated - possible RLS policy blocking update');
+            toast.error(
               'Failed to update game. You may not have permission to score for this team.'
             );
             return;
           }
-
-          console.log('Game updated successfully');
         } else {
           // Insert new game (includes game_type from league)
           const { error } = await supabase.from('match_games').insert(gameData);
@@ -406,8 +382,8 @@ export function useMatchScoringMutations({
         // Close modal and reset state
         onSuccess();
       } catch (err: any) {
-        console.error('Error saving game score:', err);
-        alert(`Failed to save game score: ${err.message}`);
+        logger.error('Error saving game score', { error: err instanceof Error ? err.message : String(err) });
+        toast.error(`Failed to save game score: ${err.message}`);
       }
     },
     [match, homeLineup, awayLineup, userTeamId, gameResults]
