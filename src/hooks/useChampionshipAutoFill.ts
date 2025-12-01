@@ -108,7 +108,6 @@ export function useChampionshipAutoFill(params: UseChampionshipAutoFillParams) {
         // Auto-populate localStorage with saved preference
         const STORAGE_KEY = `season-creation-${leagueId}`;
         const stored = localStorage.getItem(STORAGE_KEY);
-        console.log(`📦 Current localStorage for ${organization}:`, stored);
 
         const formData: SeasonFormData = stored ? JSON.parse(stored) : {
           startDate: '',
@@ -137,12 +136,10 @@ export function useChampionshipAutoFill(params: UseChampionshipAutoFillParams) {
         }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-        console.log(`✅ Auto-populated ${organization} preference from saved settings`);
 
         // Auto-advance to next step
         const nextStep = currentStep + 1;
         onStepChange(nextStep);
-        console.log(`⏭️ Auto-advancing from ${organization} step to step ${nextStep}`);
       }
     }
   }, [

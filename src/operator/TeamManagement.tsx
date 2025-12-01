@@ -107,7 +107,7 @@ export const TeamManagement: React.FC = () => {
           available_regulation_tables: venue.regulation_tables,
         }));
 
-        const { data: insertedData, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('league_venues')
           .insert(newLeagueVenues)
           .select();
@@ -158,7 +158,7 @@ export const TeamManagement: React.FC = () => {
         if (deleteError) throw deleteError;
       } else {
         // Assign: Insert into league_venues with all tables available by default
-        const { data: newLeagueVenue, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('league_venues')
           .insert([{
             league_id: leagueId,
@@ -197,11 +197,13 @@ export const TeamManagement: React.FC = () => {
   /**
    * Handle successful limit update
    */
-  const handleLimitUpdateSuccess = async (updatedLeagueVenue: LeagueVenue) => {
+  const handleLimitUpdateSuccess = async (_updatedLeagueVenue: LeagueVenue) => {
     // Invalidate cache to refetch updated venue data
-    await queryClient.invalidateQueries({
-      queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
-    });
+    if (leagueId) {
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
+      });
+    }
     setLimitModalVenue(null);
   };
 

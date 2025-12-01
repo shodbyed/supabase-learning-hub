@@ -200,7 +200,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       // Find duplicates (player appearing in 2+ positions) and remove ALL occurrences
       for (const [, positions] of playerIdCounts.entries()) {
         if (positions.length > 1) {
-          console.log(`🔄 Found duplicate player at positions: ${positions.join(', ')} - removing both`);
           // Set both positions to null (ID) and 0 (handicap - can't be null due to DB constraint)
           positions.forEach((pos) => {
             updates[`player${pos}_id`] = null;
@@ -221,8 +220,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       if (refetchLineups) {
         refetchLineups();
       }
-
-      console.log('Lineup unlocked successfully');
     } catch (err: any) {
       console.error('Error unlocking lineup:', err);
       alert('Failed to unlock lineup. Please try again.');
@@ -235,7 +232,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const autoSaveLineup = async () => {
     if (!lineupId || !matchId) {
-      console.log('⏭️ Skipping auto-save: no lineup ID yet');
       return;
     }
 
@@ -256,7 +252,6 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         matchId,
       });
 
-      console.log('💾 Lineup auto-saved');
     } catch (err: any) {
       console.error('Auto-save error:', err);
       // Don't alert user - auto-save failures shouldn't be intrusive

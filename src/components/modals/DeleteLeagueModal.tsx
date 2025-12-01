@@ -149,7 +149,6 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
 
       if (deleteError) throw deleteError;
 
-      console.log('✅ League deleted successfully');
       onSuccess();
     } catch (err) {
       console.error('❌ Error deleting league:', err);

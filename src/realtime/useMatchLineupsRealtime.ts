@@ -60,8 +60,6 @@ export function useMatchLineupsRealtime(
   useEffect(() => {
     if (!matchId) return;
 
-    console.log('🔌 Setting up real-time subscription for match lineups:', matchId);
-
     const channel = supabase
       .channel(`match_lineups_${matchId}`)
       // Watch match_lineups table for lineup changes
@@ -73,8 +71,7 @@ export function useMatchLineupsRealtime(
           table: 'match_lineups',
           filter: `match_id=eq.${matchId}`,
         },
-        (payload) => {
-          console.log('📨 Real-time lineup update received:', payload);
+        () => {
           // Trigger TanStack Query refetch for lineups
           onLineupUpdateRef.current();
         }
@@ -88,18 +85,14 @@ export function useMatchLineupsRealtime(
           table: 'matches',
           filter: `id=eq.${matchId}`,
         },
-        (payload) => {
-          console.log('📨 Real-time match update received:', payload);
+        () => {
           // Trigger TanStack Query refetch for match
           onMatchUpdateRef.current();
         }
       )
-      .subscribe((status) => {
-        console.log('📡 Real-time subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('🔌 Cleaning up real-time subscription for match lineups:', matchId);
       supabase.removeChannel(channel);
     };
   }, [matchId]); // Only re-subscribe when matchId changes

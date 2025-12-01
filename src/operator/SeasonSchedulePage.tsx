@@ -19,19 +19,6 @@ import { clearSchedule } from '@/utils/scheduleGenerator';
 import { useIsOperator, useSeasonById, useSeasonSchedule } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
 
-interface SeasonWeek {
-  id: string;
-  scheduled_date: string;
-  week_name: string;
-  week_type: string;
-  week_completed: boolean;
-}
-
-interface WeekSchedule {
-  week: SeasonWeek;
-  matches: MatchWithDetails[];
-}
-
 /**
  * Calculate table numbers per venue within a week
  * Returns a map of match ID to table number
@@ -102,8 +89,7 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
 export const SeasonSchedulePage: React.FC = () => {
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const fromPlayer = searchParams.get('from') === 'player';
+  const [_searchParams] = useSearchParams();
   const isOperator = useIsOperator();
 
   // Fetch season data with TanStack Query
@@ -115,6 +101,7 @@ export const SeasonSchedulePage: React.FC = () => {
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
+  const [_error, setError] = useState<string | null>(null);
 
   const loading = seasonLoading || scheduleLoading;
   const seasonName = season?.season_name || `Season ${season?.season_length || 0} Weeks`;
@@ -185,7 +172,7 @@ export const SeasonSchedulePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
-        backTo={-1}
+        backTo={`/league/${leagueId}`}
         backLabel="Back"
         title="Season Schedule"
         subtitle={seasonName}

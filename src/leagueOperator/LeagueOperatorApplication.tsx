@@ -28,8 +28,8 @@ import { useApplicationForm } from './useApplicationForm';
 import { useUserProfile } from '@/api/hooks';
 import { supabase } from '../supabaseClient';
 import { generateMockPaymentData } from '@/types/operator';
-import type { LeagueOperatorInsertData } from '@/types/operator';
 import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
+import { logger } from '@/utils/logger';
 
 /**
  * League Operator Application Form Component
@@ -171,7 +171,7 @@ export const LeagueOperatorApplication: React.FC = () => {
    */
   const handleSubmit = async () => {
     if (!member) {
-      console.error('Cannot submit: No member profile found');
+      logger.error('Cannot submit: No member profile found');
       return;
     }
 
@@ -208,7 +208,7 @@ export const LeagueOperatorApplication: React.FC = () => {
       .single();
 
     if (orgError || !organization) {
-      console.error('Failed to create organization:', orgError);
+      logger.error('Failed to create organization', { error: orgError?.message || 'Unknown error' });
       alert(`Failed to create organization: ${orgError?.message || 'Unknown error'}`);
       return;
     }
@@ -223,7 +223,7 @@ export const LeagueOperatorApplication: React.FC = () => {
       .eq('id', member.id);
 
     if (updateError) {
-      console.error('Failed to update member role:', updateError);
+      logger.error('Failed to update member role', { error: updateError.message });
       alert(`Failed to update member role: ${updateError.message}`);
       return;
     }
@@ -239,7 +239,7 @@ export const LeagueOperatorApplication: React.FC = () => {
       localStorage.removeItem('leagueOperatorApplication');
       localStorage.removeItem('leagueOperatorApplication_currentStep');
     } catch (error) {
-      console.warn('Failed to clear saved progress:', error);
+      logger.warn('Failed to clear saved progress', { error: error instanceof Error ? error.message : String(error) });
     }
 
     // Navigate to congratulations page for new league operators

@@ -100,8 +100,6 @@ export function useMatchGamesRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
-          console.log('Real-time game update received:', payload);
-
           // Trigger TanStack Query refetch
           onUpdate();
 
@@ -130,7 +128,6 @@ export function useMatchGamesRealtime(
               }
 
               // This is from opponent - show the confirmation modal
-              console.log('Opponent vacate request detected. Showing confirmation modal.');
               if (updatedGame.winner_player_id) {
                 const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                 addToConfirmationQueue({
@@ -156,12 +153,10 @@ export function useMatchGamesRealtime(
               if (needMyConfirmation) {
                 // If auto-confirm is enabled, automatically confirm without showing modal
                 if (autoConfirm && confirmOpponentScore) {
-                  console.log('Auto-confirming game', updatedGame.game_number);
                   confirmOpponentScore(updatedGame.game_number);
                   return;
                 }
 
-                console.log('Opponent scored game', updatedGame.game_number, 'adding to confirmation queue');
                 const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                 addToConfirmationQueue({
                   gameNumber: updatedGame.game_number,

@@ -12,6 +12,7 @@
  */
 
 import type { Lineup } from '@/types';
+import { logger } from '@/utils/logger';
 
 export type HandicapVariant = 'standard' | 'reduced' | 'none';
 
@@ -85,7 +86,7 @@ export async function calculatePlayerHandicap(
 
   // This wrapper is deprecated and cannot provide required game_type parameter
   // Return 0 to avoid errors - calling code must be updated
-  console.warn(
+  logger.warn(
     'calculatePlayerHandicap wrapper is deprecated. Update to use @/utils/calculatePlayerHandicap directly with game_type parameter.'
   );
   return 0;
@@ -179,7 +180,7 @@ export async function calculateTeamHandicap(
     .eq('status', 'completed');
 
   if (homeError) {
-    console.error('Error fetching home team matches:', homeError);
+    logger.error('Error fetching home team matches', { error: homeError.message });
     return 0;
   }
 
@@ -195,7 +196,7 @@ export async function calculateTeamHandicap(
     .eq('status', 'completed');
 
   if (awayError) {
-    console.error('Error fetching away team matches:', awayError);
+    logger.error('Error fetching away team matches', { error: awayError.message });
     return 0;
   }
 

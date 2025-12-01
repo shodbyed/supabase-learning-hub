@@ -11,14 +11,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUserProfile, useCreateLeague, useOrganizationPreferences } from '@/api/hooks';
 import { useOrganization } from '@/api/hooks/useOrganizations';
 import { useLeagueWizard } from '../hooks/useLeagueWizard';
-import { generateAllLeagueNames, getTimeOfYear } from '@/utils/leagueUtils';
-import { parseLocalDate, getDayOfWeekName } from '@/utils/formatters';
+import { getDayOfWeekName } from '@/utils/formatters';
 import { WizardProgress } from '@/components/forms/WizardProgress';
 import { LeaguePreview } from '@/components/forms/LeaguePreview';
 import { WizardStepRenderer } from '@/components/forms/WizardStepRenderer';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import type { GameType, DayOfWeek, TeamFormat } from '@/types/league';
+import { logger } from '@/utils/logger';
 
 /**
  * League Creation Wizard Component
@@ -38,7 +38,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const [createdLeagueId, setCreatedLeagueId] = useState<string | null>(null);
 
   // Fetch organization with TanStack Query (cached, reusable)
-  const { organization } = useOrganization(orgId);
+  useOrganization(orgId);
   const organizationId = orgId || null;
 
   // Fetch organization preferences with TanStack Query (cached, reusable)
@@ -64,22 +64,17 @@ export const LeagueCreationWizard: React.FC = () => {
    */
   const handleSubmit = async () => {
     if (!organizationId) {
-      console.error('❌ No organization found');
+      logger.error('No organization found for league creation');
       return;
     }
 
     try {
-      console.group('🏆 LEAGUE CREATION - DATABASE OPERATIONS');
-
       // Convert formData to database format
-      const startDate = parseLocalDate(formData.startDate);
       const dayOfWeekName = getDayOfWeekName(formData.startDate);
       const dayOfWeek = dayOfWeekName.toLowerCase() as DayOfWeek;
 
       // formData.gameType is already in database format (eight_ball, nine_ball, ten_ball)
       const gameType = formData.gameType as GameType;
-
-      console.log('📋 Creating league with TanStack Query mutation');
 
       // Create league using TanStack Query mutation
       const newLeague = await createLeagueMutation.mutateAsync({
@@ -93,29 +88,6 @@ export const LeagueCreationWizard: React.FC = () => {
         division: formData.qualifier || null,
       });
 
-      console.log('✅ League created successfully!');
-      console.log('📊 New league:', newLeague);
-
-      // Generate league names for display
-      const leagueComponents = {
-        organizationName: organization?.organization_name || 'Organization',
-        year: startDate.getFullYear(),
-        season: getTimeOfYear(startDate),
-        gameType: formData.gameType,
-        dayOfWeek: dayOfWeekName,
-        qualifier: formData.qualifier
-      };
-      const allNames = generateAllLeagueNames(leagueComponents);
-
-      console.group('📛 FORMATTED LEAGUE NAMES (for display)');
-      console.log('Systematic Name:', allNames.systematicName);
-      console.log('Player-Friendly Name:', allNames.playerFriendlyName);
-      console.log('Operator Management Name:', allNames.operatorName);
-      console.log('Full Display Name:', allNames.fullDisplayName);
-      console.groupEnd();
-
-      console.groupEnd();
-
       // Clear localStorage after successful creation
       clearFormData();
 
@@ -123,7 +95,7 @@ export const LeagueCreationWizard: React.FC = () => {
       setCreatedLeagueId(newLeague.id);
 
     } catch (error) {
-      console.error('❌ Failed to create league:', error);
+      logger.error('Failed to create league', { error: error instanceof Error ? error.message : String(error) });
       // TODO: Show error message to user
     }
   };

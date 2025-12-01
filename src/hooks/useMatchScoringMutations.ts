@@ -128,9 +128,6 @@ export function useMatchScoringMutations({
 
         if (alreadyConfirmedByMe) {
           // This team already confirmed, waiting for opponent - don't allow re-clicking
-          console.log(
-            'You already confirmed this game. Waiting for opponent to confirm.'
-          );
           return;
         }
       }
@@ -269,7 +266,6 @@ export function useMatchScoringMutations({
         }
 
         // Game results will be automatically refreshed by real-time subscription
-        console.log('Game denied and reset to unscored');
       } catch (err: any) {
         console.error('Error denying game:', err);
         alert(`Failed to deny game: ${err.message}`);
@@ -339,9 +335,6 @@ export function useMatchScoringMutations({
         };
 
         // Check if game already exists (using same game we fetched earlier)
-        console.log('Saving game score:', gameData);
-        console.log('Existing game:', existingGame);
-
         if (existingGame) {
           // Update existing game
           const updateData = {
@@ -357,26 +350,11 @@ export function useMatchScoringMutations({
               : existingGame.confirmed_by_away,
           };
 
-          console.log('Updating game with:', updateData);
-          console.log('Updating game ID:', existingGame.id);
-          console.log('Update data types:', {
-            winner_team_id: typeof updateData.winner_team_id,
-            winner_player_id: typeof updateData.winner_player_id,
-            break_and_run: typeof updateData.break_and_run,
-            golden_break: typeof updateData.golden_break,
-            confirmed_by_home: typeof updateData.confirmed_by_home,
-            confirmed_by_away: typeof updateData.confirmed_by_away,
-          });
-
-          const { data, error, count } = await supabase
+          const { data, error } = await supabase
             .from('match_games')
             .update(updateData)
             .eq('id', existingGame.id)
             .select();
-
-          console.log('Update result - data:', data);
-          console.log('Update result - count:', count);
-          console.log('Update result - error:', error);
 
           if (error) {
             console.error('Update error:', error);
@@ -392,8 +370,6 @@ export function useMatchScoringMutations({
             );
             return;
           }
-
-          console.log('Game updated successfully');
         } else {
           // Insert new game (includes game_type from league)
           const { error } = await supabase.from('match_games').insert(gameData);

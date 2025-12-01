@@ -5,6 +5,7 @@
  * Accounts for the fact that tournament websites update their URLs after each year's event.
  */
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Championship date option from database
@@ -110,7 +111,7 @@ export const fetchChampionshipDateOptions = async (
     .order('vote_count', { ascending: false }); // Then highest votes
 
   if (error) {
-    console.error('Error fetching championship dates:', error);
+    logger.error('Error fetching championship dates', { error: error.message });
     return [];
   }
 
@@ -146,7 +147,7 @@ export const submitChampionshipDates = async (
 
   if (fetchError && fetchError.code !== 'PGRST116') {
     // PGRST116 = no rows found, which is fine
-    console.error('Error checking existing championship dates:', fetchError);
+    logger.error('Error checking existing championship dates', { error: fetchError.message });
     return null;
   }
 
@@ -160,11 +161,10 @@ export const submitChampionshipDates = async (
       .single();
 
     if (updateError) {
-      console.error('Error updating championship date vote count:', updateError);
+      logger.error('Error updating championship date vote count', { error: updateError.message });
       return null;
     }
 
-    console.log(`✅ Incremented vote count for ${organization} championship dates:`, updated);
     return updated;
   } else {
     // New dates - create new entry
@@ -182,11 +182,10 @@ export const submitChampionshipDates = async (
       .single();
 
     if (insertError) {
-      console.error('Error inserting new championship dates:', insertError);
+      logger.error('Error inserting new championship dates', { error: insertError.message });
       return null;
     }
 
-    console.log(`✅ Created new ${organization} championship date option:`, created);
     return created;
   }
 };

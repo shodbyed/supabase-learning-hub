@@ -199,11 +199,8 @@ export function useMatchScoring({
    * Prevents duplicates by checking if game is already in queue
    */
   const addToConfirmationQueue = useCallback((confirmation: ConfirmationQueueItem) => {
-    console.log('addToConfirmationQueue called for game', confirmation.gameNumber, 'isVacateRequest:', confirmation.isVacateRequest);
-
     // If this is a vacate request and I initiated it, don't add to queue
     if (confirmation.isVacateRequest && myVacateRequests.current.has(confirmation.gameNumber)) {
-      console.log('✓ Skipping queue add - I initiated this vacate request for game', confirmation.gameNumber);
       return;
     }
 
@@ -211,11 +208,9 @@ export function useMatchScoring({
     setConfirmationQueue(prev => {
       const alreadyInQueue = prev.some(item => item.gameNumber === confirmation.gameNumber);
       if (alreadyInQueue) {
-        console.log('Game', confirmation.gameNumber, 'already in queue, skipping');
         return prev;
       }
 
-      console.log('Adding game', confirmation.gameNumber, 'to confirmation queue');
       return [...prev, confirmation];
     });
   }, []);
@@ -290,8 +285,6 @@ export function useMatchScoring({
           matchData.league.team_handicap_variant
         );
         setHomeTeamHandicap(calculatedTeamHandicap);
-
-        console.log('Team handicap:', calculatedTeamHandicap);
       } catch (err: any) {
         console.error('Error calculating team handicap:', err);
       }
@@ -306,7 +299,6 @@ export function useMatchScoring({
    */
   useEffect(() => {
     if (matchId && matchData?.home_team_id && matchData?.away_team_id) {
-      console.log('🔄 Refetching lineups with fresh data on score page mount');
       refetchLineups();
     }
   }, [matchId, matchData?.home_team_id, matchData?.away_team_id, refetchLineups]);

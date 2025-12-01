@@ -316,16 +316,6 @@ export async function generateSchedule({
       };
     }
 
-    // Log success details
-    console.log(`✅ Generated ${matches.length} matches for season ${seasonId}`);
-    console.log(`📊 Schedule Details:`, {
-      teamCount: teams.length,
-      weeksInSeason: seasonWeeks.length,
-      matchupCycleLength: matchupTable.length,
-      matchesPerWeek: matchupTable[0]?.length || 0,
-      totalMatches: matches.length,
-    });
-
     return {
       success: true,
       matchesCreated: matches.length,
@@ -370,8 +360,6 @@ export async function clearSchedule(seasonId: string): Promise<{
       .eq('season_id', seasonId);
 
     if (deleteError) throw deleteError;
-
-    console.log(`🗑️ Deleted ${matchCount} matches for season ${seasonId}`);
 
     return {
       success: true,

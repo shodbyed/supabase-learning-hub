@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Report categories with user-friendly labels
@@ -61,7 +62,7 @@ export async function createUserReport(
     .single();
 
   if (error) {
-    console.error('Error creating report:', error);
+    logger.error('Error creating report', { error: error.message });
     return { data: null, error };
   }
 
@@ -134,7 +135,7 @@ export async function getMyReports(userId: string) {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching user reports:', error);
+    logger.error('Error fetching user reports', { error: error.message });
     return { data: null, error };
   }
 
@@ -177,7 +178,7 @@ export async function getPendingReportsForOperator() {
     .order('created_at', { ascending: true }); // Oldest first
 
   if (error) {
-    console.error('Error fetching pending reports:', error);
+    logger.error('Error fetching pending reports', { error: error.message });
     return { data: null, error };
   }
 
@@ -203,7 +204,7 @@ export async function updateReportStatus(
     .eq('id', reportId);
 
   if (error) {
-    console.error('Error updating report status:', error);
+    logger.error('Error updating report status', { error: error.message });
     return { error };
   }
 
@@ -246,7 +247,7 @@ export async function takeReportAction(
     });
 
   if (actionError) {
-    console.error('Error recording report action:', actionError);
+    logger.error('Error recording report action', { error: actionError.message });
     return { error: actionError };
   }
 
@@ -278,7 +279,7 @@ export async function escalateReport(reportId: string) {
     .eq('id', reportId);
 
   if (error) {
-    console.error('Error escalating report:', error);
+    logger.error('Error escalating report', { error: error.message });
     return { error };
   }
 
@@ -322,7 +323,7 @@ export async function getReportDetails(reportId: string) {
     .single();
 
   if (reportError) {
-    console.error('Error fetching report details:', reportError);
+    logger.error('Error fetching report details', { error: reportError.message });
     return { data: null, error: reportError };
   }
 
@@ -340,7 +341,7 @@ export async function getReportDetails(reportId: string) {
     .order('created_at', { ascending: true });
 
   if (updatesError) {
-    console.error('Error fetching report updates:', updatesError);
+    logger.error('Error fetching report updates', { error: updatesError.message });
   }
 
   // Get actions taken
@@ -357,7 +358,7 @@ export async function getReportDetails(reportId: string) {
     .order('created_at', { ascending: true });
 
   if (actionsError) {
-    console.error('Error fetching report actions:', actionsError);
+    logger.error('Error fetching report actions', { error: actionsError.message });
   }
 
   return {

@@ -5,6 +5,7 @@
  * just extracted into a reusable hook.
  */
 import { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 /**
  * Simple localStorage hook that saves state to localStorage
@@ -23,7 +24,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.log(`Error reading localStorage key "${key}":`, error);
+      logger.warn('Failed to read localStorage', { key, error: String(error) });
       return initialValue;
     }
   });

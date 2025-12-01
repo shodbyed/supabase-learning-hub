@@ -11,22 +11,9 @@
 import { supabase } from '@/supabaseClient';
 import type { ChampionshipPreference } from '@/data/seasonWizardSteps';
 
-/**
- * Season data structure
- * Represents a pool league season with schedule and status
- */
-export interface Season {
-  id: string;
-  league_id: string;
-  season_number: number;
-  start_date: string;
-  end_date: string;
-  regular_weeks: number;
-  status: 'upcoming' | 'active' | 'completed';
-  playoff_format?: string;
-  created_at: string;
-  updated_at: string;
-}
+// Use the canonical Season type from types/season.ts
+import type { Season } from '@/types/season';
+export type { Season };
 
 /**
  * Fetch all seasons for a league

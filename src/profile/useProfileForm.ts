@@ -3,7 +3,6 @@
  * Custom hook for managing profile edit forms with validation and state
  */
 import { useState } from 'react';
-import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
 import { useUpdateMemberProfile } from '@/api/hooks/useMemberMutations';
 import { personalInfoSchema, contactInfoSchema, addressSchema } from './validationSchemas';
@@ -26,7 +25,6 @@ import type {
  * - Error state management
  */
 export const useProfileForm = () => {
-  const { user } = useUser();
   const { member } = useUserProfile();
   const updateProfileMutation = useUpdateMemberProfile();
 
@@ -91,8 +89,7 @@ export const useProfileForm = () => {
     formData: T,
     currentMemberData: any,
     formatFn: (data: any) => any,
-    changeDetectionFn: (formatted: any, current: any) => string[],
-    formType: string
+    changeDetectionFn: (formatted: any, current: any) => string[]
   ) => {
     // Validate form data
     const validation = schema.safeParse(formData);
@@ -112,17 +109,6 @@ export const useProfileForm = () => {
 
     // Detect changes
     const changes = changeDetectionFn(formattedData, currentMemberData);
-
-    // Log update request
-    console.log(`=== ${formType.toUpperCase()} UPDATE REQUEST ===`);
-    console.log('Member ID:', member?.id);
-    console.log('User ID:', user?.id);
-    console.log('Validation Result: PASSED');
-    console.log('Changes Made:', changes);
-    console.log('Raw Form Data:', formData);
-    console.log('Validated Data:', validation.data);
-    console.log('Formatted Data for Database:', formattedData);
-    console.log('===============================');
 
     return { success: true, changes, formattedData };
   };
@@ -175,8 +161,7 @@ export const useProfileForm = () => {
           if (formatted.state !== current.state) changes.push(`State: "${current.state}" → "${formatted.state}"`);
           if (formatted.zip_code !== current.zip_code) changes.push(`Zip Code: "${current.zip_code}" → "${formatted.zip_code}"`);
           return changes;
-        },
-        'ADDRESS'
+        }
       );
 
       if (!result.success) {
@@ -256,8 +241,7 @@ export const useProfileForm = () => {
           if (formatted.nickname !== current.nickname) changes.push(`Nickname: "${current.nickname || 'None'}" → "${formatted.nickname || 'None'}"`);
           if (formatted.date_of_birth !== current.date_of_birth) changes.push(`Date of Birth: "${current.date_of_birth}" → "${formatted.date_of_birth}"`);
           return changes;
-        },
-        'PERSONAL INFO'
+        }
       );
 
       if (!result.success) {
@@ -330,8 +314,7 @@ export const useProfileForm = () => {
           if (formatted.email !== current.email) changes.push(`Email: "${current.email}" → "${formatted.email}"`);
           if (formatted.phone !== current.phone) changes.push(`Phone: "${current.phone}" → "${formatted.phone}"`);
           return changes;
-        },
-        'CONTACT INFO'
+        }
       );
 
       if (!result.success) {

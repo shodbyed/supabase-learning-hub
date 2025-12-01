@@ -106,11 +106,6 @@ export function useChampionshipDateEditor(
    */
   const saveDates = async () => {
     if (!operatorId || !startDate || !endDate) {
-      console.log(`${organization} save validation failed:`, {
-        operatorId: !!operatorId,
-        startDate,
-        endDate,
-      });
       return;
     }
 
@@ -122,12 +117,6 @@ export function useChampionshipDateEditor(
       alert('End date must be after start date');
       return;
     }
-
-    console.log(`Saving ${organization} dates:`, {
-      startDate,
-      endDate,
-      hasExisting: !!preference?.championship,
-    });
 
     setIsSaving(true);
 
@@ -222,7 +211,6 @@ export function useChampionshipDateEditor(
         }
       }
 
-      console.log(`✅ ${organization} dates saved successfully`);
       await onSaveSuccess();
       setIsEditing(false);
     } catch (err) {

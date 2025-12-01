@@ -120,8 +120,6 @@ export function useMatchRealtime(
   useEffect(() => {
     if (!matchId) return;
 
-    console.log('🔌 Setting up unified real-time subscription for match:', matchId);
-
     const channel = supabase
       .channel(`match_${matchId}`)
 
@@ -134,8 +132,7 @@ export function useMatchRealtime(
           table: 'matches',
           filter: `id=eq.${matchId}`,
         },
-        (payload) => {
-          console.log('📨 Real-time match update:', payload);
+        () => {
           onMatchUpdateRef.current?.();
         }
       )
@@ -149,8 +146,7 @@ export function useMatchRealtime(
           table: 'match_lineups',
           filter: `match_id=eq.${matchId}`,
         },
-        (payload) => {
-          console.log('📨 Real-time lineup update:', payload);
+        () => {
           onLineupUpdateRef.current?.();
         }
       )
@@ -165,8 +161,6 @@ export function useMatchRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
-          console.log('📨 Real-time game update:', payload);
-
           // Always refetch games
           onGamesUpdateRef.current?.();
 
@@ -204,7 +198,6 @@ export function useMatchRealtime(
               }
 
               // This is from opponent - show the confirmation modal
-              console.log('Opponent vacate request detected. Showing confirmation modal.');
               if (updatedGame.winner_player_id) {
                 const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                 addToConfirmationQueue({
@@ -229,12 +222,10 @@ export function useMatchRealtime(
               if (needMyConfirmation) {
                 // If auto-confirm is enabled, automatically confirm without showing modal
                 if (autoConfirm && confirmOpponentScore) {
-                  console.log('Auto-confirming game', updatedGame.game_number);
                   confirmOpponentScore(updatedGame.game_number);
                   return;
                 }
 
-                console.log('Opponent scored game', updatedGame.game_number, 'adding to confirmation queue');
                 const winnerName = getPlayerNicknameById(updatedGame.winner_player_id, players);
                 addToConfirmationQueue({
                   gameNumber: updatedGame.game_number,
@@ -248,12 +239,9 @@ export function useMatchRealtime(
           }
         }
       )
-      .subscribe((status) => {
-        console.log('📡 Unified real-time subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
-      console.log('🔌 Cleaning up unified real-time subscription:', matchId);
       supabase.removeChannel(channel);
     };
   }, [matchId, gameUpdateOptions]);

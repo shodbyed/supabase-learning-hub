@@ -121,7 +121,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.gameType,
       setValue: (value: string) => {
         updateFormData('gameType', value);
-        console.log('📝 LEAGUE CREATION: Game type selected:', value);
       },
       infoTitle: gameFormatInfo.title,
       infoContent: gameFormatInfo.content
@@ -138,7 +137,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.startDate,
       setValue: (value: string) => {
         updateFormData('startDate', value);
-        console.log('📝 LEAGUE CREATION: Start date selected:', value);
 
         if (value) {
           // Parse date correctly to avoid timezone issues
@@ -160,8 +158,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
           updateFormData('dayOfWeek', dayOfWeek);
           updateFormData('season', season);
           updateFormData('year', calculatedYear);
-
-          console.log('✅ CALCULATED: Day =', dayOfWeek, '| Season =', season, '| Year =', calculatedYear);
         }
       },
       infoTitle: startDateInfo.title,
@@ -178,7 +174,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.qualifier,
       setValue: (value: string) => {
         updateFormData('qualifier', value.trim());
-        console.log('📝 LEAGUE CREATION: Division =', value.trim() || '(none)');
       },
       infoTitle: leagueQualifierInfo.title,
       infoContent: leagueQualifierInfo.content,
@@ -239,7 +234,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         const [teamFormat, handicapSystem] = value.split('|');
         updateFormData('teamFormat', teamFormat as '5_man' | '8_man');
         updateFormData('handicapSystem', handicapSystem as 'custom_5man' | 'bca_standard');
-        console.log('📝 LEAGUE CREATION: Team format =', teamFormat, '| Handicap =', handicapSystem);
       },
       infoTitle: teamFormatComparisonInfo.title,
       infoContent: teamFormatComparisonInfo.content,

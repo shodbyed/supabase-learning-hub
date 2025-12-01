@@ -105,7 +105,6 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
 
       if (updateError) throw updateError;
 
-      console.log('✅ Venue limits updated:', updatedLeagueVenue);
       onSuccess(updatedLeagueVenue);
     } catch (err) {
       console.error('❌ Error updating venue limits:', err);

@@ -16,7 +16,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '../queryKeys';
 import {
-  getVenuesByOperator,
   getVenuesByOrganization,
   getVenueById,
   getLeagueVenues,

@@ -222,12 +222,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
           conflicts: [],
         }));
 
-      console.log('📋 Extracted blackout weeks (excluding championships):', {
-        totalBlackouts: (seasonWeeks || []).filter(w => w.week_type === 'blackout').length,
-        nonChampionshipBlackouts: blackoutWeeks.length,
-        blackoutDates: blackoutWeeks.map(w => ({ date: w.date, name: w.weekName }))
-      });
-
       // Check for BCA championship in week names
       const bcaWeeks = (seasonWeeks || []).filter(w =>
         w.week_name?.toLowerCase().includes('bca') ||
@@ -297,13 +291,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
 
       localStorage.setItem(`season-wizard-step-${league.id}`, startStep.toString());
 
-      console.log('📝 Loaded existing season data into wizard:', {
-        seasonFormData,
-        blackoutWeeks,
-        startStep,
-        hasSchedule
-      });
-
       // Navigate to wizard with seasonId for tracking
       navigate(`/league/${league.id}/create-season?seasonId=${currentSeason.id}`);
     } catch (err) {
@@ -348,8 +335,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
 
     setIsDeleting(true);
     try {
-      console.log('🗑️ Deleting season:', currentSeason.id);
-
       // Delete season (CASCADE will automatically delete related records)
       const { error } = await supabase
         .from('seasons')
@@ -357,8 +342,6 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
         .eq('id', currentSeason.id);
 
       if (error) throw error;
-
-      console.log('✅ Season deleted successfully');
 
       // Clear localStorage for this league
       localStorage.removeItem(`season-creation-${league.id}`);

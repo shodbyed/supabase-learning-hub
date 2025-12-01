@@ -219,7 +219,6 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
         return;
       }
 
-      console.log(`✅ Generated ${result.matchesCreated} matches`);
       onSuccess();
     } catch (err) {
       console.error('Error generating schedule:', err);
@@ -246,8 +245,6 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
         setGenerating(false);
         return;
       }
-
-      console.log(`🗑️ Cleared ${clearResult.matchesDeleted} existing matches`);
 
       // Generate new schedule
       await performScheduleGeneration();

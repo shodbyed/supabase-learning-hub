@@ -91,24 +91,11 @@ export const useTournamentSearch = () => {
    * @returns Promise<TournamentDateOption[]> Found tournament date options
    */
   const searchTournamentDates = async (params: TournamentSearchParams): Promise<TournamentDateOption[]> => {
-    const { organization, tournamentType, year = new Date().getFullYear() } = params;
+    const { organization, year = new Date().getFullYear() } = params;
 
-    console.log(`🔍 DATABASE OPERATION: Automatically searching for ${organization} ${tournamentType} dates`);
     setIsSearching(true);
 
     // Simulate the database query structure
-    const searchQuery = {
-      table: 'tournament_dates',
-      where: {
-        organization,
-        tournament_type: tournamentType,
-        year
-      },
-      select: ['start_date', 'end_date', 'vote_count', 'last_confirmed'],
-      orderBy: 'vote_count DESC'
-    };
-
-    console.log('📋 Query:', JSON.stringify(searchQuery, null, 2));
 
     // Simulate database delay
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -134,8 +121,6 @@ export const useTournamentSearch = () => {
         });
       }
     }
-
-    console.log(`✅ FOUND: ${foundOptions.length} ${organization} ${tournamentType} date options in database:`, foundOptions);
 
     setFoundDates(foundOptions);
     setIsSearching(false);

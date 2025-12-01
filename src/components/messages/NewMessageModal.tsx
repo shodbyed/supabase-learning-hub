@@ -20,6 +20,7 @@ import { UserListItem } from './UserListItem';
 import { useBlockedUsers } from '@/api/hooks';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 import type { MemberForMessaging } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface NewMessageModalProps {
   onClose: () => void;
@@ -56,7 +57,7 @@ export function NewMessageModal({
         .order('last_name', { ascending: true });
 
       if (error) {
-        console.error('Error fetching members:', error);
+        logger.error('Error fetching members', { error: error.message });
         setLoading(false);
         return;
       }

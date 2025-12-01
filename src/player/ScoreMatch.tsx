@@ -177,10 +177,6 @@ export function ScoreMatch() {
 
     // If changed from incomplete to complete, save thresholds to database
     if (!wasComplete && isComplete && matchId && homeThresholds && awayThresholds) {
-      console.log('Match just completed - saving thresholds to database', {
-        homeThresholds,
-        awayThresholds
-      });
       supabase
         .from('matches')
         .update({
@@ -193,8 +189,6 @@ export function ScoreMatch() {
         .then(({ error }) => {
           if (error) {
             console.error('Error saving thresholds:', error);
-          } else {
-            console.log('Thresholds saved successfully');
           }
         });
     }
@@ -206,10 +200,7 @@ export function ScoreMatch() {
       const tiebreakerGames = Array.from(gameResults.values()).filter(g => g.is_tiebreaker);
       const hasTiebreakerGames = tiebreakerGames.length > 0;
 
-      if (hasTiebreakerGames) {
-        console.log('Match transitioned to tiebreaker - keeping verification status');
-      } else {
-        console.log('Game vacated after completion - clearing verification status');
+      if (!hasTiebreakerGames) {
         supabase
           .from('matches')
           .update({
@@ -250,8 +241,6 @@ export function ScoreMatch() {
       const updateField = isTiebreakerMode
         ? (isHomeTeam ? 'home_tiebreaker_verified_by' : 'away_tiebreaker_verified_by')
         : (isHomeTeam ? 'home_team_verified_by' : 'away_team_verified_by');
-
-      console.log('Verifying with field:', updateField, 'isTiebreakerMode:', isTiebreakerMode);
 
       // Optimistically update the UI immediately
       const queryKey = [...queryKeys.matches.detail(matchId), 'leagueSettings'];
@@ -363,7 +352,6 @@ export function ScoreMatch() {
 
     if (!dataReady && waitingForPreparation && retryCount < MAX_RETRIES) {
       const timer = setTimeout(() => {
-        console.log(`Retrying data fetch (${retryCount + 1}/${MAX_RETRIES})...`);
         setRetryCount(prev => prev + 1);
         // Invalidate queries to force refetch
         queryClient.invalidateQueries({ queryKey: ['match', matchId] });
@@ -397,7 +385,6 @@ export function ScoreMatch() {
   if (error) {
     // If lineups aren't locked, redirect to lineup page instead of showing error
     if (error.includes('lineups must be locked')) {
-      console.log('🔄 Lineups not locked - redirecting to lineup page');
       navigate(`/match/${matchId}/lineup`);
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -720,12 +707,6 @@ export function ScoreMatch() {
           try {
             // Track that I initiated this vacate request (to suppress my own confirmation modal)
             myVacateRequests.current.add(gameNumber);
-            console.log(
-              'Added game',
-              gameNumber,
-              'to myVacateRequests. Set now contains:',
-              Array.from(myVacateRequests.current)
-            );
 
             // Vacate request: Set vacate_requested_by flag
             // This preserves original confirmations while indicating vacate request

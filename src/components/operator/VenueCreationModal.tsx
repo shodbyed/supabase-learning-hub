@@ -122,7 +122,6 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           regulation_tables: formData.regulation_tables,
         });
 
-        console.log('✅ Venue updated:', venue);
         onSuccess(venue);
       } else {
         // INSERT new venue
@@ -147,7 +146,6 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           notes: formData.notes?.trim() || undefined,
         });
 
-        console.log('✅ Venue created:', venue);
         onSuccess(venue);
       }
     } catch (err) {

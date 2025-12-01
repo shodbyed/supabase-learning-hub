@@ -161,12 +161,6 @@ export const SeasonScheduleManager: React.FC = () => {
           leagueDayOfWeek
         );
 
-        console.log('⚠️ Conflicts detected:', scheduleWithConflicts.filter(w => w.conflicts.length > 0).map(w => ({
-          weekName: w.weekName,
-          date: w.date,
-          conflicts: w.conflicts
-        })));
-
         setSchedule(scheduleWithConflicts);
         setOriginalSchedule(JSON.parse(JSON.stringify(scheduleWithConflicts))); // Deep clone for comparison
       } catch (err) {
@@ -311,8 +305,6 @@ export const SeasonScheduleManager: React.FC = () => {
       // Find all modified weeks
       const modifiedWeeks = schedule.filter(week => week.isModified);
 
-      console.log('💾 Saving changes for', modifiedWeeks.length, 'weeks');
-
       // Update each modified week
       for (const week of modifiedWeeks) {
         if (!week.dbId) continue; // Skip if no DB ID (shouldn't happen)
@@ -336,8 +328,6 @@ export const SeasonScheduleManager: React.FC = () => {
 
         if (updateError) throw updateError;
       }
-
-      console.log('✅ Changes saved successfully');
 
       // Update original schedule to match current (reset "modified" state)
       setOriginalSchedule(JSON.parse(JSON.stringify(schedule)));

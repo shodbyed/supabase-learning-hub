@@ -61,15 +61,6 @@ export const SeasonCreationWizard: React.FC = () => {
    * The dispatch function is stable, so this callback won't cause unnecessary re-renders
    */
   const handleScheduleChange = useCallback((newSchedule: WeekEntry[]) => {
-    console.log('📥 SeasonCreationWizard received schedule update from ScheduleReview:', {
-      weekCount: newSchedule.length,
-      byType: {
-        regular: newSchedule.filter(w => w.type === 'regular').length,
-        playoffs: newSchedule.filter(w => w.type === 'playoffs').length,
-        'week-off': newSchedule.filter(w => w.type === 'week-off').length,
-      },
-      weeks: newSchedule.map(w => ({ weekNumber: w.weekNumber, weekName: w.weekName, date: w.date, type: w.type }))
-    });
     dispatch({ type: 'SET_SCHEDULE', payload: newSchedule });
   }, [dispatch]);
 
@@ -123,7 +114,6 @@ export const SeasonCreationWizard: React.FC = () => {
 
         // If editing existing season, load season data and jump to schedule review
         if (seasonId) {
-          console.log('📝 Edit mode - loading season:', seasonId);
           dispatch({ type: 'SET_IS_EDITING_EXISTING_SEASON', payload: true });
 
           // Find the season we're editing from the existing seasons list
@@ -134,16 +124,13 @@ export const SeasonCreationWizard: React.FC = () => {
           }
 
           // Fetch season weeks
-          const { data: weeksData, error: weeksError } = await supabase
+          const { error: weeksError } = await supabase
             .from('season_weeks')
             .select('*')
             .eq('season_id', seasonId)
             .order('scheduled_date', { ascending: true });
 
           if (weeksError) throw weeksError;
-
-          console.log('✅ Loaded season data:', seasonData);
-          console.log('✅ Loaded season weeks:', weeksData);
 
           // TODO: Transform weeksData into the format expected by the wizard
           // For now, just jump to the schedule-review step
@@ -169,7 +156,6 @@ export const SeasonCreationWizard: React.FC = () => {
 
     // TODO: Load season data into localStorage to populate wizard fields
     // For now, user will start at step 0 and can navigate through all steps
-    console.log('📝 Edit mode: User can navigate through wizard steps to edit season');
   }, [state.league, leagueId, state.loading, state.isEditingExistingSeason]);
 
   // Calculate step data for hooks - safe to do before guards since we handle null cases
@@ -227,7 +213,7 @@ export const SeasonCreationWizard: React.FC = () => {
     league: state.league,
     leagueId,
     loading: state.loading,
-    organizationId,
+    operatorId: organizationId,
     existingSeasons: state.existingSeasons,
     bcaDateOptions: state.bcaDateOptions,
     apaDateOptions: state.apaDateOptions,
@@ -436,10 +422,8 @@ export const SeasonCreationWizard: React.FC = () => {
               championship_id: futureChampionships[0].id,
               auto_apply: false,
             });
-          console.log(`✅ Saved ${organization} preference: ignore (dates available)`);
         } else {
           // No dates available - don't save preference (NULL state)
-          console.log(`ℹ️ Skipping ${organization} preference save - no future dates available`);
         }
       } else if (championshipId) {
         // They selected a specific championship option or entered custom dates
@@ -452,7 +436,6 @@ export const SeasonCreationWizard: React.FC = () => {
             championship_id: championshipId,
             auto_apply: false,
           });
-        console.log(`✅ Saved ${organization} preference: blackout with ID ${championshipId}`);
       }
     } catch (err) {
       console.error(`❌ Error saving ${organization} preference:`, err);
@@ -482,7 +465,7 @@ export const SeasonCreationWizard: React.FC = () => {
         startDate: formData.startDate,
         seasonLength: parseInt(formData.seasonLength),
         schedule: state.schedule,
-        organizationId,
+        operatorId: organizationId,
         bcaChoice: formData.bcaChoice,
         bcaStartDate: formData.bcaStartDate,
         bcaEndDate: formData.bcaEndDate,
@@ -504,7 +487,6 @@ export const SeasonCreationWizard: React.FC = () => {
       // Navigate based on user's choice
       if (destination === 'teams' && seasonId) {
         // Navigate to team management page for the new season
-        console.log('🎯 Navigating to team management with seasonId:', seasonId);
         navigate(`/league/${leagueId}/manage-teams?seasonId=${seasonId}`);
       } else {
         // Navigate back to league detail page (dashboard view)

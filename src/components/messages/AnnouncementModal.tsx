@@ -49,7 +49,6 @@ export function AnnouncementModal({
   // Fetch announcement targets (leagues and organizations)
   useEffect(() => {
     async function fetchAnnouncementTargets() {
-      console.log('Fetching announcement targets for user:', currentUserId);
       const allTargets: AnnouncementTarget[] = [];
 
       // Get teams where user is captain
@@ -58,8 +57,6 @@ export function AnnouncementModal({
         .select('team_id, teams!inner(id, league_id, season_id)')
         .eq('member_id', currentUserId)
         .eq('is_captain', true);
-
-      console.log('Captain teams query result:', { data: captainTeams, error: teamsError });
 
       if (teamsError) {
         console.error('Error fetching captain leagues:', teamsError);
@@ -79,8 +76,6 @@ export function AnnouncementModal({
           leagueSeasonPairs.set(leagueId, { leagueId, seasonId });
         }
       });
-
-      console.log('League-season pairs:', Array.from(leagueSeasonPairs.values()));
 
       // Fetch league targets
       const leaguePromises = Array.from(leagueSeasonPairs.values()).map(async ({ leagueId, seasonId }) => {
@@ -153,7 +148,6 @@ export function AnnouncementModal({
         }
       }
 
-      console.log('Final targets list:', allTargets);
       setTargets(allTargets);
       setLoading(false);
     }

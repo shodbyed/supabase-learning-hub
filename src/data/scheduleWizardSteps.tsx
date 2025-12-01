@@ -197,10 +197,8 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
         if (value !== 'ignore' && value !== 'custom') {
           const selectedOption = findTournamentOption(value);
           if (selectedOption) {
-            console.log('🎯 AUTO-FILL: Selected tournament option:', selectedOption);
             updateFormData('bcaNationalsStart', selectedOption.startDate);
             updateFormData('bcaNationalsEnd', selectedOption.endDate);
-            console.log('✅ BCA dates auto-filled from verified entry');
           }
         }
 
@@ -256,7 +254,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.apaNationalsStart,
       setValue: (value: string) => {
         updateFormData('apaNationalsStart', value);
-        console.log('📝 APA NATIONALS: Start date set to', value);
       },
       validator: validateTournamentDate,
       infoTitle: apaNationalsInfo.title,
@@ -274,19 +271,6 @@ export const createWizardSteps = (params: WizardStepParams): WizardStep[] => {
       getValue: () => formData.apaNationalsEnd,
       setValue: (value: string) => {
         updateFormData('apaNationalsEnd', value);
-        console.log('📝 APA NATIONALS: End date set to', value);
-        console.log('🔄 DATABASE OPERATION: Saving APA tournament dates');
-        console.log('📊 Data structure:', {
-          table: 'tournament_dates',
-          data: {
-            organization: 'APA',
-            tournament_type: 'nationals',
-            year: new Date().getFullYear(),
-            start_date: formData.apaNationalsStart,
-            end_date: value,
-            created_at: new Date().toISOString(),
-          },
-        });
       },
       validator: validateTournamentDate,
       infoTitle: tournamentCalendarInfo.title,

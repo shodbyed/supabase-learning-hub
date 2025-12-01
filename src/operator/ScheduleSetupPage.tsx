@@ -69,7 +69,6 @@ export const ScheduleSetupPage: React.FC = () => {
    * Handle successful schedule generation
    */
   const handleSuccess = () => {
-    console.log('✅ Schedule generated successfully');
     // Navigate to schedule view page
     navigate(`/league/${leagueId}/season/${seasonId}/schedule`);
   };

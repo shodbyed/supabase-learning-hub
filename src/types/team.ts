@@ -170,8 +170,7 @@ export interface UseTeamManagementReturn {
   loading: boolean;
   error: string | null;
   refreshTeams: () => Promise<void>;
-  // TODO: Remove these setters - use TanStack Query mutations/invalidations instead
-  setLeagueVenues: React.Dispatch<React.SetStateAction<import('./venue').LeagueVenue[]>>;
+  // TODO: Remove this setter - use TanStack Query mutations/invalidations instead
   setTeams: React.Dispatch<React.SetStateAction<TeamWithQueryDetails[]>>;
 }
 

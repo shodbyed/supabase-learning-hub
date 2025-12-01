@@ -220,7 +220,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           isCaptainVariant,
         });
 
-        console.log('✅ Team updated successfully');
       } else {
         // CREATE new team
         await createTeamMutation.mutateAsync({
@@ -233,7 +232,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           rosterPlayerIds: rosterPlayers,
         });
 
-        console.log('✅ Team created successfully');
       }
 
       onSuccess();
