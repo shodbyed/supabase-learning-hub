@@ -1673,7 +1673,9 @@ CREATE TABLE IF NOT EXISTS "public"."members" (
     "membership_paid_date" "date",
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"(),
-    "profanity_filter_enabled" boolean DEFAULT false
+    "profanity_filter_enabled" boolean DEFAULT false,
+    "starting_handicap_3v3" numeric DEFAULT 0,
+    "starting_handicap_5v5" numeric DEFAULT 40
 );
 
 
@@ -1689,6 +1691,9 @@ COMMENT ON TABLE "public"."members" IS 'Player/member records. Includes two spec
 
 COMMENT ON COLUMN "public"."members"."profanity_filter_enabled" IS 'Personal profanity filter preference for message display. Forced ON for users under 18, optional for adults.';
 
+COMMENT ON COLUMN "public"."members"."starting_handicap_3v3" IS 'Starting handicap for 3v3 (5_man) format. Used when player has < 15 games in a league. Typically ranges from -2 to +2. Default: 0';
+
+COMMENT ON COLUMN "public"."members"."starting_handicap_5v5" IS 'Starting handicap for 5v5 (8_man) format. Used when player has < 15 games in a league. Typically ranges from 0-100 (percentage). Default: 40';
 
 
 CREATE SEQUENCE IF NOT EXISTS "public"."members_system_player_number_seq"
