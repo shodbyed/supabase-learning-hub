@@ -15,6 +15,7 @@ import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/ap
 import { useMembersByIds } from '@/api/hooks/useCurrentMember';
 import { useUserTeamInMatch } from '@/api/hooks/useTeams';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
+import { logger } from '@/utils/logger';
 import type {
   Player,
   HandicapThresholds,
@@ -286,7 +287,12 @@ export function useMatchScoring({
         );
         setHomeTeamHandicap(calculatedTeamHandicap);
       } catch (err: any) {
-        console.error('Error calculating team handicap:', err);
+        logger.error('Error calculating team handicap', {
+          error: err instanceof Error ? err.message : String(err),
+          matchId,
+          homeTeamId: matchData?.home_team_id,
+          awayTeamId: matchData?.away_team_id
+        });
       }
     }
 

@@ -24,6 +24,7 @@ import { useCreateTeam, useDeleteTeam } from '@/api/hooks/useTeamMutations';
 import { useCreateLeague, useDeleteLeague } from '@/api/hooks/useLeagueMutations';
 import { useCreatePreference, useDeletePreference } from '@/api/hooks/usePreferenceMutations';
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Test result structure showing INSERT/DELETE outcomes
@@ -284,7 +285,7 @@ export default function RLSTestPage() {
           await deleteChampionshipDate.mutateAsync({ championshipDateId: championshipId });
         }
       } catch (cleanupErr) {
-        console.error('Cleanup failed:', cleanupErr);
+        logger.error('Cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
       }
     }
 
@@ -382,7 +383,7 @@ export default function RLSTestPage() {
         try {
           await deleteTeam.mutateAsync({ teamId });
         } catch (cleanupErr) {
-          console.error('Cleanup failed:', cleanupErr);
+          logger.error('Cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
         }
       }
     }
@@ -465,7 +466,7 @@ export default function RLSTestPage() {
         try {
           await deleteLeague.mutateAsync({ leagueId });
         } catch (cleanupErr) {
-          console.error('Cleanup failed:', cleanupErr);
+          logger.error('Cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
         }
       }
     }
@@ -557,7 +558,7 @@ export default function RLSTestPage() {
         try {
           await deleteLeague.mutateAsync({ leagueId: testLeagueId });
         } catch (cleanupErr) {
-          console.error('League cleanup failed:', cleanupErr);
+          logger.error('League cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
         }
       }
     } catch (insertErr: any) {
@@ -570,7 +571,7 @@ export default function RLSTestPage() {
         try {
           await deletePreference.mutateAsync({ preferenceId });
         } catch (cleanupErr) {
-          console.error('Preference cleanup failed:', cleanupErr);
+          logger.error('Preference cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
         }
       }
 
@@ -578,7 +579,7 @@ export default function RLSTestPage() {
         try {
           await deleteLeague.mutateAsync({ leagueId: testLeagueId });
         } catch (cleanupErr) {
-          console.error('League cleanup failed:', cleanupErr);
+          logger.error('League cleanup failed', { error: cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr) });
         }
       }
     }

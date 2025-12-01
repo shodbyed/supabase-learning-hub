@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
+import { logger } from '@/utils/logger';
 
 interface SeasonsCardProps {
   /** League ID to fetch seasons for */
@@ -56,7 +57,7 @@ export const SeasonsCard: React.FC<SeasonsCardProps> = ({ leagueId, onCreateSeas
         if (error) throw error;
         setSeasons(data || []);
       } catch (err) {
-        console.error('Error fetching seasons:', err);
+        logger.error('Error fetching seasons', { error: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }

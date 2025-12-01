@@ -11,6 +11,7 @@ import { X, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import type { Venue, LeagueVenue } from '@/types/venue';
+import { logger } from '@/utils/logger';
 
 interface VenueLimitModalProps {
   /** The venue being configured */
@@ -107,7 +108,7 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
 
       onSuccess(updatedLeagueVenue);
     } catch (err) {
-      console.error('❌ Error updating venue limits:', err);
+      logger.error('Error updating venue limits', { error: err instanceof Error ? err.message : String(err) });
       setError(err instanceof Error ? err.message : 'Failed to update limits');
     } finally {
       setSaving(false);

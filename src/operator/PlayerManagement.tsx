@@ -25,6 +25,7 @@ import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { Users, DollarSign } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
+import { logger } from '@/utils/logger';
 import {
   fetchOperatorPlayerCount,
   fetchPlayerDetails,
@@ -94,7 +95,7 @@ export const PlayerManagement: React.FC = () => {
       setIsHandicapOpen(false);
     },
     onError: (error) => {
-      console.error('Error updating handicaps:', error);
+      logger.error('Error updating handicaps', { error: error instanceof Error ? error.message : String(error) });
       toast.error('Failed to update starting handicaps. Please try again.');
     },
   });
@@ -110,7 +111,7 @@ export const PlayerManagement: React.FC = () => {
       toast.success('Membership marked as paid!');
     },
     onError: (error) => {
-      console.error('Error marking membership as paid:', error);
+      logger.error('Error marking membership as paid', { error: error instanceof Error ? error.message : String(error) });
       toast.error('Failed to update membership status. Please try again.');
     },
   });
@@ -126,7 +127,7 @@ export const PlayerManagement: React.FC = () => {
       toast.success('Membership reversed!');
     },
     onError: (error) => {
-      console.error('Error reversing membership:', error);
+      logger.error('Error reversing membership', { error: error instanceof Error ? error.message : String(error) });
       toast.error('Failed to reverse membership. Please try again.');
     },
   });

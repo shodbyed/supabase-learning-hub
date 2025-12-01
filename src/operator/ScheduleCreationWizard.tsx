@@ -9,6 +9,7 @@
  */
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 
 interface ScheduleCreationWizardProps {
   leagueId?: string;
@@ -39,7 +40,7 @@ export const ScheduleCreationWizard: React.FC<ScheduleCreationWizardProps> = ({ 
 
   useEffect(() => {
     if (!leagueId) {
-      console.error('❌ No league ID provided to Schedule Creation Wizard');
+      logger.error('No league ID provided to Schedule Creation Wizard');
       // TODO: Get organizationId from league data and navigate to /operator-dashboard/${orgId}
       navigate('/operator-dashboard');
     }

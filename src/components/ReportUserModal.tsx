@@ -30,6 +30,7 @@ import { useMemberId, useCreateUserReport } from '@/api/hooks';
 import { REPORT_CATEGORIES } from '@/utils/reportingQueries';
 import type { ReportCategory } from '@/utils/reportingQueries';
 import { Modal } from '@/components/shared';
+import { logger } from '@/utils/logger';
 
 interface ReportUserModalProps {
   reportedUserId: string;
@@ -84,7 +85,7 @@ export function ReportUserModal({
           onClose();
         },
         onError: (error) => {
-          console.error('Failed to submit report:', error);
+          logger.error('Failed to submit report', { error: error instanceof Error ? error.message : String(error) });
           setError('Failed to submit report. Please try again.');
         },
       }

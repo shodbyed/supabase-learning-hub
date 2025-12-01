@@ -47,6 +47,7 @@ import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { Loader2 } from 'lucide-react';
 import { getPlayerCount } from '@/utils/lineup/getPlayerCount';
 import { shouldUseTeamBonus } from '@/utils/calculateHandicapThresholds';
+import { logger } from '@/utils/logger';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -440,7 +441,7 @@ export function MatchLineup() {
         setShowOpponentSubModal(false);
       },
       onError: (error) => {
-        console.error('❌ Failed to update opponent lineup:', error);
+        logger.error('Failed to update opponent lineup', { error: error instanceof Error ? error.message : String(error) });
       },
     });
   };
@@ -468,7 +469,7 @@ export function MatchLineup() {
     updateLineupMutation.mutate(updatePayload, {
       onSuccess: () => {},
       onError: (error) => {
-        console.error('❌ Database update failed:', error);
+        logger.error('Database update failed', { error: error instanceof Error ? error.message : String(error) });
       },
     });
   };

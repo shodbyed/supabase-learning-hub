@@ -18,6 +18,7 @@ import { parseLocalDate } from '@/utils/formatters';
 import { clearSchedule } from '@/utils/scheduleGenerator';
 import { useIsOperator, useSeasonById, useSeasonSchedule } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
+import { logger } from '@/utils/logger';
 
 /**
  * Calculate table numbers per venue within a week
@@ -128,7 +129,7 @@ export const SeasonSchedulePage: React.FC = () => {
       // Navigate to league dashboard
       navigate(`/league/${leagueId}`);
     } catch (err) {
-      console.error('❌ Error activating season:', err);
+      logger.error('Error activating season', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to activate season');
     } finally {
       setAccepting(false);

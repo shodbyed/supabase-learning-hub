@@ -15,6 +15,7 @@
 
 import { supabase } from '@/supabaseClient';
 import { getMatchupTable } from './matchupTables';
+import { logger } from '@/utils/logger';
 import type {
   MatchInsertData,
   TeamWithPosition,
@@ -132,9 +133,11 @@ function generateWeekMatches(
 
     // Skip if either position doesn't have a team (shouldn't happen with proper validation)
     if (!homeTeam || !awayTeam) {
-      console.warn(
-        `⚠️ Missing team for positions ${homePos} or ${awayPos} in week ${seasonWeekId}`
-      );
+      logger.warn('Missing team for positions in week', {
+        homePosition: homePos,
+        awayPosition: awayPos,
+        seasonWeekId
+      });
       continue;
     }
 
@@ -321,7 +324,7 @@ export async function generateSchedule({
       matchesCreated: matches.length,
     };
   } catch (error) {
-    console.error('❌ Error generating schedule:', error);
+    logger.error('Error generating schedule', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       matchesCreated: 0,
@@ -366,7 +369,7 @@ export async function clearSchedule(seasonId: string): Promise<{
       matchesDeleted: matchCount,
     };
   } catch (error) {
-    console.error('❌ Error clearing schedule:', error);
+    logger.error('Error clearing schedule', { error: error instanceof Error ? error.message : String(error) });
     return {
       success: false,
       matchesDeleted: 0,

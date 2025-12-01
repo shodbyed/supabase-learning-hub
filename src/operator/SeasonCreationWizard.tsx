@@ -12,6 +12,7 @@ import { useScheduleGeneration } from '@/hooks/useScheduleGeneration';
 import { useChampionshipAutoFill } from '@/hooks/useChampionshipAutoFill';
 import { getChampionshipPreferences } from '@/api/queries/seasons';
 import { wizardReducer, createInitialState } from './wizardReducer';
+import { logger } from '@/utils/logger';
 // import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -137,7 +138,7 @@ export const SeasonCreationWizard: React.FC = () => {
           // This will be improved later to properly load and display the existing season data
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
+        logger.error('Error fetching data', { error: err instanceof Error ? err.message : String(err) });
         dispatch({ type: 'SET_ERROR', payload: 'Failed to load league information' });
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
@@ -306,7 +307,7 @@ export const SeasonCreationWizard: React.FC = () => {
           dispatch({ type: 'SET_DAY_OF_WEEK_WARNING', payload: null });
         },
         onError: (err) => {
-          console.error('Error updating league day:', err);
+          logger.error('Error updating league day', { error: err instanceof Error ? err.message : String(err) });
           dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to update league day of week' });
         },
       }
@@ -379,7 +380,7 @@ export const SeasonCreationWizard: React.FC = () => {
     championshipId?: string
   ) => {
     if (!organizationId) {
-      console.warn('⚠️ No operator ID available - skipping preference save');
+      logger.warn('No operator ID available - skipping preference save');
       return;
     }
 
@@ -438,7 +439,7 @@ export const SeasonCreationWizard: React.FC = () => {
           });
       }
     } catch (err) {
-      console.error(`❌ Error saving ${organization} preference:`, err);
+      logger.error('Error saving preference', { organization, error: err instanceof Error ? err.message : String(err) });
       // Don't throw - preference saving is not critical to season creation
     }
   };
@@ -493,7 +494,7 @@ export const SeasonCreationWizard: React.FC = () => {
         navigate(`/league/${leagueId}`);
       }
     } catch (err) {
-      console.error('Error creating season:', err);
+      logger.error('Error creating season', { error: err instanceof Error ? err.message : String(err) });
       dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Failed to create season' });
     } finally {
       dispatch({ type: 'SET_IS_CREATING', payload: false });

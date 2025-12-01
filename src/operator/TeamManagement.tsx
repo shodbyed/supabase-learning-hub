@@ -26,6 +26,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { AllPlayersRosterCard } from '@/components/AllPlayersRosterCard';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
+import { logger } from '@/utils/logger';
 
 /**
  * TeamManagement Component
@@ -120,7 +121,7 @@ export const TeamManagement: React.FC = () => {
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
     } catch (err) {
-      console.error('Error selecting all venues:', err);
+      logger.error('Error selecting all venues', { error: err instanceof Error ? err.message : String(err) });
       alert('Failed to update venues. Please try again.');
     } finally {
       setSelectingAll(false);
@@ -177,7 +178,7 @@ export const TeamManagement: React.FC = () => {
         queryKey: [...queryKeys.leagues.detail(leagueId), 'venues']
       });
     } catch (err: any) {
-      console.error('Error toggling venue:', err);
+      logger.error('Error toggling venue', { error: err instanceof Error ? err.message : String(err) });
       alert(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
     } finally {
       setAssigningVenue(null);
@@ -303,7 +304,7 @@ export const TeamManagement: React.FC = () => {
       // Refresh the page data (in real implementation, this would refetch from DB)
       // For now, just show success message
     } catch (err) {
-      console.error('Error importing teams:', err);
+      logger.error('Error importing teams', { error: err instanceof Error ? err.message : String(err) });
       alert(err instanceof Error ? err.message : 'Failed to import teams');
     } finally {
       setImportingTeams(false);
@@ -339,7 +340,7 @@ export const TeamManagement: React.FC = () => {
       // Refresh teams list using hook function
       await refreshTeams();
     } catch (err) {
-      console.error('Error deleting team:', err);
+      logger.error('Error deleting team', { error: err instanceof Error ? err.message : String(err) });
       alert(err instanceof Error ? err.message : 'Failed to delete team');
     } finally {
       setShowDeleteConfirm(false);

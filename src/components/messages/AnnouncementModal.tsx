@@ -18,6 +18,7 @@ import { Megaphone, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
+import { logger } from '@/utils/logger';
 
 interface AnnouncementTarget {
   id: string;
@@ -59,7 +60,7 @@ export function AnnouncementModal({
         .eq('is_captain', true);
 
       if (teamsError) {
-        console.error('Error fetching captain leagues:', teamsError);
+        logger.error('Error fetching captain leagues', { error: teamsError.message });
         setLoading(false);
         return;
       }
@@ -87,7 +88,7 @@ export function AnnouncementModal({
           .single();
 
         if (leagueError) {
-          console.error('Error fetching league:', leagueError);
+          logger.error('Error fetching league', { error: leagueError.message });
           return null;
         }
 
@@ -99,7 +100,7 @@ export function AnnouncementModal({
           .single();
 
         if (seasonError) {
-          console.error('Error fetching season:', seasonError);
+          logger.error('Error fetching season', { error: seasonError.message });
           return null;
         }
 

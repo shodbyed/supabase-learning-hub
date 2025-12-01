@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { logger } from '@/utils/logger';
 
 // Special substitute member IDs
 const SUB_HOME_ID = '00000000-0000-0000-0000-000000000001';
@@ -110,8 +111,8 @@ export function LineupSelector({
 
         setTeamMembers(members);
       } catch (err) {
-        console.error('Error fetching team members:', err);
-      } finally {
+        logger.error('Error fetching team members', { error: err instanceof Error ? err.message : String(err) });
+      } finally{
         setLoading(false);
       }
     }

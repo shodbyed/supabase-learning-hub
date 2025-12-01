@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 interface UseChampionshipIgnoreToggleReturn {
   /**
@@ -45,7 +46,10 @@ export function useChampionshipIgnoreToggle(
 
   const toggleIgnore = async () => {
     if (!preferenceId || !currentAction) {
-      console.warn('Cannot toggle: missing preference ID or current action');
+      logger.warn('Cannot toggle championship ignore', {
+        hasPreferenceId: !!preferenceId,
+        hasCurrentAction: !!currentAction
+      });
       return;
     }
 
@@ -65,7 +69,12 @@ export function useChampionshipIgnoreToggle(
       // Refetch preferences to update UI
       await onToggleSuccess();
     } catch (err) {
-      console.error('Failed to toggle championship ignore preference:', err);
+      logger.error('Failed to toggle championship ignore preference', {
+        error: err instanceof Error ? err.message : String(err),
+        preferenceId,
+        currentAction,
+        newAction
+      });
     } finally {
       setIsToggling(false);
     }

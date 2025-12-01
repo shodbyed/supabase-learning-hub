@@ -16,6 +16,7 @@ import { UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 import { useBlockedUsersDetails, useUnblockUser } from '@/api/hooks';
+import { logger } from '@/utils/logger';
 
 interface BlockedUser {
   blocked_id: string;
@@ -108,7 +109,7 @@ export function BlockedUsersModal({
           onUnblocked?.();
         },
         onError: (error) => {
-          console.error('Error unblocking user:', error);
+          logger.error('Error unblocking user', { error: error instanceof Error ? error.message : String(error) });
           alert('Failed to unblock user. Please try again.');
         },
       }

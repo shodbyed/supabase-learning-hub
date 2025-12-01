@@ -10,6 +10,7 @@
 
 import { supabase } from '@/supabaseClient';
 import { useUpdateMatch, useUpdateMatchLineup } from '@/api/hooks';
+import { logger } from '@/utils/logger';
 
 interface LineupPersistenceParams {
   matchId: string | undefined;
@@ -160,11 +161,18 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
           updates: matchUpdateData,
         });
       } catch (matchUpdateError: any) {
-        console.error('Error updating match with lineup ID:', matchUpdateError);
+        logger.error('Error updating match with lineup ID', {
+          error: matchUpdateError instanceof Error ? matchUpdateError.message : String(matchUpdateError),
+          matchId
+        });
         // Don't throw - lineup is still locked, just log the error
       }
     } catch (err: any) {
-      console.error('Error saving lineup:', err);
+      logger.error('Error saving lineup', {
+        error: err instanceof Error ? err.message : String(err),
+        matchId,
+        lineupId
+      });
       alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
     }
   };
@@ -221,7 +229,11 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         refetchLineups();
       }
     } catch (err: any) {
-      console.error('Error unlocking lineup:', err);
+      logger.error('Error unlocking lineup', {
+        error: err instanceof Error ? err.message : String(err),
+        lineupId,
+        matchId
+      });
       alert('Failed to unlock lineup. Please try again.');
     }
   };
@@ -253,7 +265,11 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
       });
 
     } catch (err: any) {
-      console.error('Auto-save error:', err);
+      logger.error('Auto-save error', {
+        error: err instanceof Error ? err.message : String(err),
+        matchId,
+        lineupId
+      });
       // Don't alert user - auto-save failures shouldn't be intrusive
     }
   };

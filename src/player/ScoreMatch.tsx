@@ -39,6 +39,7 @@ import { TiebreakerScoreboard } from '@/components/scoring/TiebreakerScoreboard'
 import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
 import { calculateBCAPoints, getTeamStats, getPlayerStats as getPlayerStatsUtil } from '@/types';
+import { logger } from '@/utils/logger';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -188,7 +189,7 @@ export function ScoreMatch() {
         .eq('id', matchId)
         .then(({ error }) => {
           if (error) {
-            console.error('Error saving thresholds:', error);
+            logger.error('Error saving thresholds', { error: error.message });
           }
         });
     }
@@ -210,7 +211,7 @@ export function ScoreMatch() {
           .eq('id', matchId)
           .then(({ error }) => {
             if (error) {
-              console.error('Error clearing verification status:', error);
+              logger.error('Error clearing verification status', { error: error.message });
             }
           });
       }
@@ -264,7 +265,7 @@ export function ScoreMatch() {
       // Don't refetch - realtime subscription will handle it for all users
       // This prevents race condition where refetch gets stale data
     } catch (err: any) {
-      console.error('Error verifying scores:', err);
+      logger.error('Error verifying scores', { error: err instanceof Error ? err.message : String(err) });
       alert(`Failed to verify scores: ${err.message}`);
       // Rollback optimistic update on error
       queryClient.invalidateQueries({
@@ -722,7 +723,7 @@ export function ScoreMatch() {
             // Force refetch to update UI immediately (real-time subscription suppresses own updates)
             queryClient.invalidateQueries({ queryKey: queryKeys.matches.games(matchId || '') });
           } catch (err: any) {
-            console.error('Error requesting reset:', err);
+            logger.error('Error requesting reset', { error: err instanceof Error ? err.message : String(err) });
             alert(`Failed to request reset: ${err.message}`);
           }
         }}

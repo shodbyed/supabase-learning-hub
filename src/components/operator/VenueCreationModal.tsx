@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/logger';
 
 interface VenueCreationModalProps {
   /** Organization ID who is creating the venue */
@@ -149,7 +150,11 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
         onSuccess(venue);
       }
     } catch (err) {
-      console.error('❌ Error saving venue:', err);
+      logger.error('Error saving venue', {
+        error: err instanceof Error ? err.message : String(err),
+        isEditing,
+        organizationId
+      });
       setError(err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'create'} venue`);
     }
   };

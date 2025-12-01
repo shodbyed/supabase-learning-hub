@@ -8,6 +8,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { logger } from '@/utils/logger';
 
 /**
  * Parameters for creating or opening a DM conversation
@@ -74,7 +75,7 @@ export async function createOrOpenConversation(
   });
 
   if (error) {
-    console.error('Error creating/opening conversation:', error);
+    logger.error('Error creating/opening conversation', { error: error.message });
     throw new Error(`Failed to create/open conversation: ${error.message}`);
   }
 
@@ -122,7 +123,7 @@ export async function createGroupConversation(
   });
 
   if (error) {
-    console.error('Error creating group conversation:', error);
+    logger.error('Error creating group conversation', { error: error.message });
     throw new Error(`Failed to create group conversation: ${error.message}`);
   }
 
@@ -158,7 +159,7 @@ export async function leaveConversation(
     .eq('user_id', userId);
 
   if (error) {
-    console.error('Error leaving conversation:', error);
+    logger.error('Error leaving conversation', { error: error.message });
     throw new Error(`Failed to leave conversation: ${error.message}`);
   }
 }

@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import type { ChampionshipPreference } from './useChampionshipPreferences';
+import { logger } from '@/utils/logger';
 
 interface UseChampionshipDateEditorReturn {
   /** Is currently in edit mode? */
@@ -214,7 +215,13 @@ export function useChampionshipDateEditor(
       await onSaveSuccess();
       setIsEditing(false);
     } catch (err) {
-      console.error(`❌ Failed to save ${organization} dates:`, err);
+      logger.error('Failed to save championship dates', {
+        error: err instanceof Error ? err.message : String(err),
+        organization,
+        operatorId,
+        startDate,
+        endDate
+      });
       alert(`Failed to save ${organization} dates. Check console for details.`);
     } finally {
       setIsSaving(false);

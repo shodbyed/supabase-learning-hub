@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
 import { InfoButton } from '@/components/InfoButton';
+import { logger } from '@/utils/logger';
 
 const WeekOffReasonModal = lazy(() => import('@/components/modals/WeekOffReasonModal').then(m => ({ default: m.WeekOffReasonModal })));
 import type { WeekEntry, ChampionshipEvent } from '@/types/season';
@@ -164,7 +165,7 @@ export const SeasonScheduleManager: React.FC = () => {
         setSchedule(scheduleWithConflicts);
         setOriginalSchedule(JSON.parse(JSON.stringify(scheduleWithConflicts))); // Deep clone for comparison
       } catch (err) {
-        console.error('Error loading schedule:', err);
+        logger.error('Error loading schedule', { error: err instanceof Error ? err.message : String(err) });
         setError('Failed to load season schedule');
       } finally {
         setLoading(false);
@@ -335,7 +336,7 @@ export const SeasonScheduleManager: React.FC = () => {
       // Navigate back to league detail
       navigate(`/league/${leagueId}`);
     } catch (err) {
-      console.error('❌ Error saving changes:', err);
+      logger.error('Error saving schedule changes', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to save changes. Please try again.');
     } finally {
       setSaving(false);

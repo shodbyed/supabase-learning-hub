@@ -11,6 +11,7 @@ import { MatchCard } from '@/components/MatchCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import type { MatchWithDetails } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface ScheduleViewProps {
   /** Season ID to display schedule for */
@@ -104,7 +105,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
 
         setWeekGroups(sortedGroups);
       } catch (err) {
-        console.error('Error fetching schedule:', err);
+        logger.error('Error fetching schedule', { error: err instanceof Error ? err.message : String(err) });
         setError(err instanceof Error ? err.message : 'Failed to load schedule');
       } finally {
         setLoading(false);

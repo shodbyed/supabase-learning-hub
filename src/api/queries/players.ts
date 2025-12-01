@@ -8,6 +8,7 @@
 import { supabase } from '@/supabaseClient';
 import { fetchPlayerGameHistory } from './matchGames';
 import { calculatePlayerHandicap } from '@/utils/calculatePlayerHandicap';
+import { logger } from '@/utils/logger';
 
 /**
  * Fetch count of all players in operator's leagues
@@ -37,7 +38,7 @@ export async function fetchOperatorPlayerCount(
   const { data: teams, error: teamsError } = await teamsQuery;
 
   if (teamsError || !teams) {
-    console.error('Error fetching operator teams:', teamsError);
+    logger.error('Error fetching operator teams', { error: teamsError?.message || 'Unknown error' });
     return 0;
   }
 
@@ -61,7 +62,7 @@ export async function fetchOperatorPlayerCount(
   const { count, error } = await playersQuery;
 
   if (error) {
-    console.error('Error fetching operator player count:', error);
+    logger.error('Error fetching operator player count', { error: error.message });
     return 0;
   }
 

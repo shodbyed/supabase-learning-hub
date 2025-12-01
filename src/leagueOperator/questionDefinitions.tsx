@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PaymentCardForm } from '@/components/PaymentCardForm';
+import { logger } from '@/utils/logger';
 
 /**
  * Question configuration interface
@@ -630,7 +631,9 @@ export const getQuestionDefinitions = (
             });
           }}
           onVerificationError={(error) => {
-            console.error('Payment verification failed:', error);
+            logger.error('Payment verification failed', {
+              error: error
+            });
           }}
           showSuccess={state.paymentVerified}
           cardData={state.paymentVerified && state.paymentToken && state.cardLast4 && state.cardBrand && state.billingZip ? {

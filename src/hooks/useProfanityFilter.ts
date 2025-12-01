@@ -17,6 +17,7 @@ import { useMemo } from 'react';
 import { useUser } from '@/context/useUser';
 import { useMemberProfanitySettings } from '@/api/hooks';
 import { isEighteenOrOlder } from '@/utils/formatters';
+import { logger } from '@/utils/logger';
 
 interface ProfanityFilterState {
   shouldFilter: boolean;
@@ -36,7 +37,10 @@ export function useProfanityFilter(): ProfanityFilterState {
 
     // Error or no data
     if (error || !settings) {
-      console.error('Error fetching member profanity filter settings:', error);
+      logger.error('Error fetching member profanity filter settings', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: user?.id
+      });
       return { shouldFilter: false, canToggle: true, isLoading: false };
     }
 

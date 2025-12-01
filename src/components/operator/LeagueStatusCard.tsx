@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
 import { LeagueProgressBar } from './LeagueProgressBar';
 import type { League } from '@/types/league';
+import { logger } from '@/utils/logger';
 
 interface LeagueStatusCardProps {
   /** League to display status for */
@@ -151,7 +152,7 @@ export const LeagueStatusCard: React.FC<LeagueStatusCardProps> = ({
           setCompletedWeeksCount(0);
         }
       } catch (error) {
-        console.error('Error fetching league status:', error);
+        logger.error('Error fetching league status', { error: error instanceof Error ? error.message : String(error) });
       } finally {
         setLoading(false);
       }

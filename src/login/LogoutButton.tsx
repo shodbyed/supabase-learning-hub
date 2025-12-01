@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useUser } from '../context/useUser';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/logger';
 
 export const LogoutButton: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export const LogoutButton: React.FC = () => {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('Error logging out:', error.message);
+      logger.error('Error logging out', { error: error.message });
     } else {
       navigate('/'); // Redirect to home page
     }

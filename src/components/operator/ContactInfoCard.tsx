@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/supabaseClient';
 import type { Organization } from '@/api/queries/organizations';
+import { logger } from '@/utils/logger';
 
 // Contact visibility type from organizations table
 type ContactVisibility = 'public' | 'my_organization' | 'my_teams';
@@ -96,7 +97,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
       setEditingSection(null);
       onUpdate();
     } catch (err) {
-      console.error('Failed to update email:', err);
+      logger.error('Failed to update email', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to update email');
     } finally {
       setIsSaving(false);
@@ -126,7 +127,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
       setEditingSection(null);
       onUpdate();
     } catch (err) {
-      console.error('Failed to update phone:', err);
+      logger.error('Failed to update phone', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to update phone');
     } finally {
       setIsSaving(false);

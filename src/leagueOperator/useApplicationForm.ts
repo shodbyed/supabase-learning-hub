@@ -6,6 +6,7 @@ import { useReducer, useState } from 'react';
 import { applicationReducer, getInitialApplicationState } from './applicationReducer';
 import { getQuestionDefinitions } from './questionDefinitions';
 import { useUserProfile } from '@/api/hooks';
+import { logger } from '@/utils/logger';
 
 /**
  * Custom hook for managing league operator application form state
@@ -83,7 +84,7 @@ export const useApplicationForm = () => {
       try {
         localStorage.setItem('leagueOperatorApplication_currentStep', nextStep.toString());
       } catch (error) {
-        console.warn('Failed to save current step:', error);
+        logger.warn('Failed to save current step', { error, step: nextStep });
       }
       setCurrentInput(''); // Clear input for next question
       setError(''); // Clear any previous errors
@@ -101,7 +102,7 @@ export const useApplicationForm = () => {
       try {
         localStorage.setItem('leagueOperatorApplication_currentStep', prevStep.toString());
       } catch (error) {
-        console.warn('Failed to save current step:', error);
+        logger.warn('Failed to save current step', { error, step: prevStep });
       }
       setCurrentInput(''); // Clear input when going back
       setError(''); // Clear any errors

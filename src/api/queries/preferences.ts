@@ -7,6 +7,7 @@
 
 import { supabase } from '@/supabaseClient';
 import type { OrganizationPreferences, LeaguePreferences } from '@/types/preferences';
+import { logger } from '@/utils/logger';
 
 /**
  * Fetch organization preferences by operator ID
@@ -26,7 +27,7 @@ export async function getOrganizationPreferences(
     .single();
 
   if (error) {
-    console.error('Error fetching organization preferences:', error);
+    logger.error('Error fetching organization preferences', { error: error.message });
     throw new Error(`Failed to fetch organization preferences: ${error.message}`);
   }
 
@@ -55,7 +56,7 @@ export async function getLeaguePreferences(
     .single();
 
   if (error) {
-    console.error('Error fetching league preferences:', error);
+    logger.error('Error fetching league preferences', { error: error.message });
     throw new Error(`Failed to fetch league preferences: ${error.message}`);
   }
 

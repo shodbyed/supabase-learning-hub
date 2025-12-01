@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { supabase } from '@/supabaseClient';
 import type { Organization } from '@/api/queries/organizations';
+import { logger } from '@/utils/logger';
 
 interface OrganizationBasicInfoCardProps {
   organization: Organization;
@@ -71,7 +72,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
       setEditingSection(null);
       onUpdate();
     } catch (err) {
-      console.error('Failed to update organization name:', err);
+      logger.error('Failed to update organization name', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to update organization name');
     } finally {
       setIsSaving(false);
@@ -103,7 +104,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
       setEditingSection(null);
       onUpdate();
     } catch (err) {
-      console.error('Failed to update mailing address:', err);
+      logger.error('Failed to update mailing address', { error: err instanceof Error ? err.message : String(err) });
       setError('Failed to update mailing address');
     } finally {
       setIsSaving(false);

@@ -7,6 +7,7 @@ import { useUserProfile } from '@/api/hooks';
 import { useUpdateMemberProfile } from '@/api/hooks/useMemberMutations';
 import { personalInfoSchema, contactInfoSchema, addressSchema } from './validationSchemas';
 import { capitalizeWords, formatPhoneNumber } from '../utils/formatters';
+import { logger } from '@/utils/logger';
 import type {
   AddressFormData,
   PersonalFormData,
@@ -180,7 +181,7 @@ export const useProfileForm = () => {
         setAddressForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Address Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update address:', error);
+        logger.error('Failed to update address', { error: error.message || String(error) });
         setAddressForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update address' }
@@ -259,7 +260,7 @@ export const useProfileForm = () => {
         setPersonalForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Personal Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update personal info:', error);
+        logger.error('Failed to update personal info', { error: error.message || String(error) });
         setPersonalForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update personal information' }
@@ -332,7 +333,7 @@ export const useProfileForm = () => {
         setContactForm(prev => ({ ...prev, isEditing: false, errors: {} }));
         showSuccessMessage('Contact Information', result.changes || []);
       } catch (error: any) {
-        console.error('Failed to update contact info:', error);
+        logger.error('Failed to update contact info', { error: error.message || String(error) });
         setContactForm(prev => ({
           ...prev,
           errors: { _general: error.message || 'Failed to update contact information' }

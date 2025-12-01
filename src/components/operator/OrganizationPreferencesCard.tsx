@@ -35,6 +35,7 @@ import { supabase } from '@/supabaseClient';
 import type { OrganizationPreferences } from '@/types/preferences';
 import type { HandicapVariant, TeamFormat } from '@/types/league';
 import { SYSTEM_DEFAULTS } from '@/types/preferences';
+import { logger } from '@/utils/logger';
 
 interface OrganizationPreferencesCardProps {
   organizationId: string;
@@ -93,14 +94,14 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
 
         if (insertError) {
           setError('Failed to create preferences record');
-          console.error('Error creating preferences:', insertError);
+          logger.error('Error creating preferences', { error: insertError.message });
         } else if (newPrefs) {
           setPreferences(newPrefs as OrganizationPreferences);
           syncLocalState(newPrefs as OrganizationPreferences);
         }
       } else {
         setError('Failed to load preferences');
-        console.error('Error fetching preferences:', fetchError);
+        logger.error('Error fetching preferences', { error: fetchError.message });
       }
     } else if (data) {
       setPreferences(data as OrganizationPreferences);
@@ -154,7 +155,7 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
 
     if (updateError) {
       setError('Failed to update handicap settings');
-      console.error('Error updating preferences:', updateError);
+      logger.error('Error updating preferences', { error: updateError.message });
     } else {
       setEditingSection(null);
       await fetchPreferences();
@@ -181,7 +182,7 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
 
     if (updateError) {
       setError('Failed to update format settings');
-      console.error('Error updating preferences:', updateError);
+      logger.error('Error updating preferences', { error: updateError.message });
     } else {
       setEditingSection(null);
       await fetchPreferences();
@@ -208,7 +209,7 @@ export const OrganizationPreferencesCard: React.FC<OrganizationPreferencesCardPr
 
     if (updateError) {
       setError('Failed to update rules settings');
-      console.error('Error updating preferences:', updateError);
+      logger.error('Error updating preferences', { error: updateError.message });
     } else {
       setEditingSection(null);
       await fetchPreferences();

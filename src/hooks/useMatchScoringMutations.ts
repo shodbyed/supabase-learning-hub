@@ -16,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import type { Lineup, MatchGame } from '@/types/match';
 import { queryKeys } from '@/api/queryKeys';
+import { logger } from '@/utils/logger';
 
 interface UseMatchScoringMutationsParams {
   /** Current match data */
@@ -215,7 +216,7 @@ export function useMatchScoringMutations({
           }
         }, 500);
       } catch (err: any) {
-        console.error('Error confirming game:', err);
+        logger.error('Error confirming game', { error: err instanceof Error ? err.message : String(err) });
         alert(`Failed to confirm game: ${err.message}`);
       }
     },
@@ -267,7 +268,7 @@ export function useMatchScoringMutations({
 
         // Game results will be automatically refreshed by real-time subscription
       } catch (err: any) {
-        console.error('Error denying game:', err);
+        logger.error('Error denying game', { error: err instanceof Error ? err.message : String(err) });
         alert(`Failed to deny game: ${err.message}`);
       }
     },
@@ -357,14 +358,12 @@ export function useMatchScoringMutations({
             .select();
 
           if (error) {
-            console.error('Update error:', error);
+            logger.error('Update error', { error: error.message });
             throw error;
           }
 
           if (!data || data.length === 0) {
-            console.error(
-              'No rows updated - possible RLS policy blocking update'
-            );
+            logger.error('No rows updated - possible RLS policy blocking update');
             alert(
               'Failed to update game. You may not have permission to score for this team.'
             );
@@ -382,7 +381,7 @@ export function useMatchScoringMutations({
         // Close modal and reset state
         onSuccess();
       } catch (err: any) {
-        console.error('Error saving game score:', err);
+        logger.error('Error saving game score', { error: err instanceof Error ? err.message : String(err) });
         alert(`Failed to save game score: ${err.message}`);
       }
     },

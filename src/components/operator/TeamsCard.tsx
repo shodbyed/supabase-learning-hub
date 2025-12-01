@@ -8,6 +8,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { fetchTeamsWithDetails } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import type { TeamWithQueryDetails } from '@/types/team';
+import { logger } from '@/utils/logger';
 
 interface TeamsCardProps {
   /** League ID to fetch teams for */
@@ -41,7 +42,7 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
         if (error) throw error;
         setTeams(data || []);
       } catch (err) {
-        console.error('Error fetching teams:', err);
+        logger.error('Error fetching teams', { error: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }

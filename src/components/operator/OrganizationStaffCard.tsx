@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { MemberSearchCombobox } from '@/components/MemberSearchCombobox';
 import { UserPlus, X } from 'lucide-react';
 import { useOrganizationStaff, useAddOrganizationStaff, useRemoveOrganizationStaff, useUserProfile } from '@/api/hooks';
+import { logger } from '@/utils/logger';
 
 interface OrganizationStaffCardProps {
   /** Organization ID to fetch staff for */
@@ -54,7 +55,7 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
       setShowAddStaff(false);
       setSelectedMemberId('');
     } catch (err) {
-      console.error('Failed to add staff:', err);
+      logger.error('Failed to add staff', { error: err instanceof Error ? err.message : String(err) });
     }
   };
 
@@ -66,7 +67,7 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
         organizationId,
       });
     } catch (err) {
-      console.error('Failed to remove staff:', err);
+      logger.error('Failed to remove staff', { error: err instanceof Error ? err.message : String(err) });
     }
   };
 

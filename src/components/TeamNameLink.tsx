@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { PlayerNameLink } from './PlayerNameLink';
 import { formatPartialMemberNumber } from '@/types/member';
+import { logger } from '@/utils/logger';
 
 interface TeamNameLinkProps {
   teamId: string;
@@ -74,7 +75,7 @@ export function TeamNameLink({
         .order('is_captain', { ascending: false });
 
       if (error) {
-        console.error('Error fetching team roster:', error);
+        logger.error('Error fetching team roster', { error: error.message });
         setLoading(false);
         return;
       }

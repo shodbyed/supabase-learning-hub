@@ -8,6 +8,7 @@ import { supabase } from '@/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { DeleteSeasonModal } from '@/components/modals/DeleteSeasonModal';
 import type { League } from '@/types/league';
+import { logger } from '@/utils/logger';
 
 interface LeagueOverviewCardProps {
   /** League data to display */
@@ -103,7 +104,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
           setCurrentPlayWeek(completedWeeks ?? 0);
         }
       } catch (err) {
-        console.error('Error fetching current season:', err);
+        logger.error('Error fetching current season', { error: err instanceof Error ? err.message : String(err) });
       } finally {
         setLoading(false);
       }
@@ -294,7 +295,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       // Navigate to wizard with seasonId for tracking
       navigate(`/league/${league.id}/create-season?seasonId=${currentSeason.id}`);
     } catch (err) {
-      console.error('Error loading season data for Continue Setup:', err);
+      logger.error('Error loading season data for Continue Setup', { error: err instanceof Error ? err.message : String(err) });
       alert('Failed to load season data. Please try again.');
     }
   };
@@ -353,7 +354,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       setShowDeleteModal(false);
       window.location.reload();
     } catch (err) {
-      console.error('❌ Error deleting season:', err);
+      logger.error('Error deleting season', { error: err instanceof Error ? err.message : String(err) });
       alert('Failed to delete season. Please try again.');
     } finally {
       setIsDeleting(false);
