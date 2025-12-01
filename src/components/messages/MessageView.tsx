@@ -20,6 +20,7 @@ import { supabase } from '@/supabaseClient';
 import { LoadingState, EmptyState, ConfirmDialog } from '@/components/shared';
 import { MessageSquare } from 'lucide-react';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -128,7 +129,7 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       {
         onError: (error) => {
           logger.error('Error sending message', { error: error instanceof Error ? error.message : String(error) });
-          alert('Failed to send message. Please try again.');
+          toast.error('Failed to send message. Please try again.');
         },
       }
     );
@@ -154,7 +155,7 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       }
     } catch (error) {
       logger.error('Error leaving conversation', { error: error instanceof Error ? error.message : String(error) });
-      alert('Failed to leave conversation. Please try again.');
+      toast.error('Failed to leave conversation. Please try again.');
     }
   };
 
@@ -178,7 +179,7 @@ export function MessageView({ conversationId, currentUserId, onBack, onLeaveConv
       }
     } catch (error) {
       logger.error('Error blocking user', { error: error instanceof Error ? error.message : String(error) });
-      alert('Failed to block user. Please try again.');
+      toast.error('Failed to block user. Please try again.');
     }
   };
 

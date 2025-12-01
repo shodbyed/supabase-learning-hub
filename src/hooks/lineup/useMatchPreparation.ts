@@ -13,6 +13,7 @@ import { useUpdateMatch } from '@/api/hooks';
 import { calculateHandicapThresholds } from '@/utils/calculateHandicapThresholds';
 import { generateGameOrder } from '@/utils/gameOrder';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 export function usePreparationStatus() {
   const [isPreparingMatch, setIsPreparingMatch] = useState(false);
@@ -301,7 +302,7 @@ export function useMatchPreparation(params: MatchPreparationParams) {
             isHomeTeam
           });
           setIsPreparingMatch?.(false);
-          alert(`Failed to prepare match: ${error.message}`);
+          toast.error(`Failed to prepare match: ${error.message}`);
           matchPreparedRef.current = false;
         }
       };

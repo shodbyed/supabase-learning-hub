@@ -17,6 +17,7 @@ import { supabase } from '@/supabaseClient';
 import type { Lineup, MatchGame } from '@/types/match';
 import { queryKeys } from '@/api/queryKeys';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseMatchScoringMutationsParams {
   /** Current match data */
@@ -139,7 +140,7 @@ export function useMatchScoringMutations({
         existingGame.confirmed_by_away
       ) {
         // Game already confirmed by both teams, don't allow changes
-        alert(
+        toast.error(
           'This game has already been confirmed by both teams. Use the Edit button to change it.'
         );
         return;
@@ -217,7 +218,7 @@ export function useMatchScoringMutations({
         }, 500);
       } catch (err: any) {
         logger.error('Error confirming game', { error: err instanceof Error ? err.message : String(err) });
-        alert(`Failed to confirm game: ${err.message}`);
+        toast.error(`Failed to confirm game: ${err.message}`);
       }
     },
     [match, userTeamId, gameResults, queryClient]
@@ -269,7 +270,7 @@ export function useMatchScoringMutations({
         // Game results will be automatically refreshed by real-time subscription
       } catch (err: any) {
         logger.error('Error denying game', { error: err instanceof Error ? err.message : String(err) });
-        alert(`Failed to deny game: ${err.message}`);
+        toast.error(`Failed to deny game: ${err.message}`);
       }
     },
     [match, gameResults]
@@ -301,14 +302,14 @@ export function useMatchScoringMutations({
 
         // Check for mutual exclusivity of B&R and golden break
         if (breakAndRun && goldenBreak) {
-          alert('A game cannot have both Break & Run and Golden Break.');
+          toast.error('A game cannot have both Break & Run and Golden Break.');
           return;
         }
 
         // Get the existing game record from the database
         const existingGame = gameResults.get(scoringGame.gameNumber);
         if (!existingGame) {
-          alert('Game not found');
+          toast.error('Game not found');
           return;
         }
 
@@ -364,7 +365,7 @@ export function useMatchScoringMutations({
 
           if (!data || data.length === 0) {
             logger.error('No rows updated - possible RLS policy blocking update');
-            alert(
+            toast.error(
               'Failed to update game. You may not have permission to score for this team.'
             );
             return;
@@ -382,7 +383,7 @@ export function useMatchScoringMutations({
         onSuccess();
       } catch (err: any) {
         logger.error('Error saving game score', { error: err instanceof Error ? err.message : String(err) });
-        alert(`Failed to save game score: ${err.message}`);
+        toast.error(`Failed to save game score: ${err.message}`);
       }
     },
     [match, homeLineup, awayLineup, userTeamId, gameResults]

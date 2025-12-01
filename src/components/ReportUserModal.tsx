@@ -31,6 +31,7 @@ import { REPORT_CATEGORIES } from '@/utils/reportingQueries';
 import type { ReportCategory } from '@/utils/reportingQueries';
 import { Modal } from '@/components/shared';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface ReportUserModalProps {
   reportedUserId: string;
@@ -81,7 +82,7 @@ export function ReportUserModal({
       },
       {
         onSuccess: () => {
-          alert('Report submitted successfully. A league operator will review it shortly.');
+          toast.success('Report submitted successfully. A league operator will review it shortly.');
           onClose();
         },
         onError: (error) => {

@@ -40,6 +40,7 @@ import { GamesList } from '@/components/scoring/GamesList';
 import { queryKeys } from '@/api/queryKeys';
 import { calculateBCAPoints, getTeamStats, getPlayerStats as getPlayerStatsUtil } from '@/types';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 export function ScoreMatch() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -266,7 +267,7 @@ export function ScoreMatch() {
       // This prevents race condition where refetch gets stale data
     } catch (err: any) {
       logger.error('Error verifying scores', { error: err instanceof Error ? err.message : String(err) });
-      alert(`Failed to verify scores: ${err.message}`);
+      toast.error(`Failed to verify scores: ${err.message}`);
       // Rollback optimistic update on error
       queryClient.invalidateQueries({
         queryKey: [...queryKeys.matches.detail(matchId), 'leagueSettings'],
@@ -724,7 +725,7 @@ export function ScoreMatch() {
             queryClient.invalidateQueries({ queryKey: queryKeys.matches.games(matchId || '') });
           } catch (err: any) {
             logger.error('Error requesting reset', { error: err instanceof Error ? err.message : String(err) });
-            alert(`Failed to request reset: ${err.message}`);
+            toast.error(`Failed to request reset: ${err.message}`);
           }
         }}
         onClose={() => setEditingGame(null)}

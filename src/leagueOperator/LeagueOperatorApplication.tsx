@@ -30,6 +30,7 @@ import { supabase } from '../supabaseClient';
 import { generateMockPaymentData } from '@/types/operator';
 import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 /**
  * League Operator Application Form Component
@@ -209,7 +210,7 @@ export const LeagueOperatorApplication: React.FC = () => {
 
     if (orgError || !organization) {
       logger.error('Failed to create organization', { error: orgError?.message || 'Unknown error' });
-      alert(`Failed to create organization: ${orgError?.message || 'Unknown error'}`);
+      toast.error(`Failed to create organization: ${orgError?.message || 'Unknown error'}`);
       return;
     }
 
@@ -224,7 +225,7 @@ export const LeagueOperatorApplication: React.FC = () => {
 
     if (updateError) {
       logger.error('Failed to update member role', { error: updateError.message });
-      alert(`Failed to update member role: ${updateError.message}`);
+      toast.error(`Failed to update member role: ${updateError.message}`);
       return;
     }
 

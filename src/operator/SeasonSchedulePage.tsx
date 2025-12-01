@@ -19,6 +19,7 @@ import { clearSchedule } from '@/utils/scheduleGenerator';
 import { useIsOperator, useSeasonById, useSeasonSchedule } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
 import { logger } from '@/utils/logger';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * Calculate table numbers per venue within a week
@@ -92,6 +93,7 @@ export const SeasonSchedulePage: React.FC = () => {
   const navigate = useNavigate();
   const [_searchParams] = useSearchParams();
   const isOperator = useIsOperator();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Fetch season data with TanStack Query
   const { data: season, isLoading: seasonLoading } = useSeasonById(seasonId);
@@ -144,9 +146,13 @@ export const SeasonSchedulePage: React.FC = () => {
   const handleClearSchedule = async () => {
     if (!seasonId) return;
 
-    const confirmed = window.confirm(
-      'Are you sure you want to delete all matches and regenerate the schedule? This cannot be undone.'
-    );
+    const confirmed = await confirm({
+      title: 'Delete Schedule?',
+      message: 'Are you sure you want to delete all matches and regenerate the schedule? This cannot be undone.',
+      confirmText: 'Delete All',
+      confirmVariant: 'destructive',
+    });
+
     if (!confirmed) return;
 
     setClearing(true);
@@ -339,6 +345,7 @@ export const SeasonSchedulePage: React.FC = () => {
           onCancel={() => setShowAcceptDialog(false)}
         />
       )}
+      {ConfirmDialogComponent}
     </div>
   );
 };

@@ -10,6 +10,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface ScheduleCreationWizardProps {
   leagueId?: string;
@@ -102,7 +103,7 @@ export const ScheduleCreationWizard: React.FC<ScheduleCreationWizardProps> = ({ 
               </button>
               <button
                 onClick={() => {
-                  alert('Schedule wizard not yet implemented. Coming soon!');
+                  toast.info('Schedule wizard not yet implemented. Coming soon!');
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 disabled

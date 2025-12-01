@@ -31,6 +31,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
 import type { WeekEntry } from '@/types/season';
 import { formatDayOfWeek } from '@/types/league';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * Season Creation Wizard Component
@@ -46,6 +47,7 @@ export const SeasonCreationWizard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const updateLeagueDayMutation = useUpdateLeagueDayOfWeek();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // TanStack Query mutation for season creation
   const createSeasonMutation = useCreateSeason();
@@ -501,6 +503,22 @@ export const SeasonCreationWizard: React.FC = () => {
     }
   };
 
+  const handleClearForm = async () => {
+    const confirmed = await confirm({
+      title: 'Clear Form?',
+      message: 'Clear all form data and start over?',
+      confirmText: 'Clear',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    clearSeasonCreationData(leagueId);
+    localStorage.removeItem('season-schedule-review');
+    localStorage.removeItem('season-blackout-weeks');
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
@@ -508,14 +526,7 @@ export const SeasonCreationWizard: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              if (confirm('Clear all form data and start over?')) {
-                clearSeasonCreationData(leagueId);
-                localStorage.removeItem('season-schedule-review');
-                localStorage.removeItem('season-blackout-weeks');
-                window.location.reload();
-              }
-            }}
+            onClick={handleClearForm}
             className="text-red-600 hover:text-red-800"
           >
             Clear Form
@@ -738,6 +749,7 @@ export const SeasonCreationWizard: React.FC = () => {
             onCancel={handleCancelDayChange}
           />
         )}
+        {ConfirmDialogComponent}
       </div>
     </div>
   );

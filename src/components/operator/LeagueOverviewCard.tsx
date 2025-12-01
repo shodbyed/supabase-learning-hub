@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DeleteSeasonModal } from '@/components/modals/DeleteSeasonModal';
 import type { League } from '@/types/league';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface LeagueOverviewCardProps {
   /** League data to display */
@@ -296,7 +297,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       navigate(`/league/${league.id}/create-season?seasonId=${currentSeason.id}`);
     } catch (err) {
       logger.error('Error loading season data for Continue Setup', { error: err instanceof Error ? err.message : String(err) });
-      alert('Failed to load season data. Please try again.');
+      toast.error('Failed to load season data. Please try again.');
     }
   };
 
@@ -355,7 +356,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       window.location.reload();
     } catch (err) {
       logger.error('Error deleting season', { error: err instanceof Error ? err.message : String(err) });
-      alert('Failed to delete season. Please try again.');
+      toast.error('Failed to delete season. Please try again.');
     } finally {
       setIsDeleting(false);
     }

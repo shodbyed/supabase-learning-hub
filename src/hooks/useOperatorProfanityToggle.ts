@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { useUpdateOrganizationProfanityFilter } from '@/api/hooks/useOrganizationMutations';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseOperatorProfanityToggleReturn {
   /** Toggle profanity filter on/off */
@@ -74,7 +75,7 @@ export function useOperatorProfanityToggle(
         organizationId,
         newValue
       });
-      alert('Failed to update profanity filter. Please try again.');
+      toast.error('Failed to update profanity filter. Please try again.');
     }
   };
 

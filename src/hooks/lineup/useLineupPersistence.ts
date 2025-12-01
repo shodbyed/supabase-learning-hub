@@ -11,6 +11,7 @@
 import { supabase } from '@/supabaseClient';
 import { useUpdateMatch, useUpdateMatchLineup } from '@/api/hooks';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface LineupPersistenceParams {
   matchId: string | undefined;
@@ -71,19 +72,19 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const handleLockLineup = async () => {
     if (!isComplete) {
-      alert('Please select all 3 players before locking your lineup');
+      toast.error('Please select all 3 players before locking your lineup');
       return;
     }
 
     if (hasDuplicates) {
-      alert(
+      toast.error(
         'Two or more players in your lineup have the same nickname. Please have at least one of them go to their profile page to change their nickname so they will be identifiable during scoring.'
       );
       return;
     }
 
     if (!matchId || !userTeamId) {
-      alert('Error: Missing match or team information');
+      toast.error('Error: Missing match or team information');
       return;
     }
 
@@ -173,7 +174,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         matchId,
         lineupId
       });
-      alert(`Failed to save lineup: ${err.message || 'Unknown error'}`);
+      toast.error(`Failed to save lineup: ${err.message || 'Unknown error'}`);
     }
   };
 
@@ -185,7 +186,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
    */
   const handleUnlockLineup = async () => {
     if (!lineupId || !matchId) {
-      alert('Error: No lineup to unlock');
+      toast.error('Error: No lineup to unlock');
       return;
     }
 
@@ -234,7 +235,7 @@ export function useLineupPersistence(params: LineupPersistenceParams) {
         lineupId,
         matchId
       });
-      alert('Failed to unlock lineup. Please try again.');
+      toast.error('Failed to unlock lineup. Please try again.');
     }
   };
 

@@ -45,6 +45,8 @@ import {
   TabsTrigger
 } from '@/components/ui/tabs';
 import { AlertCircle, Clock, CheckCircle, XCircle, ArrowUp, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 interface Report {
   id: string;
@@ -78,6 +80,7 @@ interface ReportDetails {
 
 export function AdminReports() {
   const memberId = useMemberId();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
   const [allReports, setAllReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportDetails | null>(null);
@@ -191,7 +194,7 @@ export function AdminReports() {
     if (!selectedReport || !memberId) return;
 
     if (actionNotes.trim().length < 10) {
-      alert('Please provide detailed notes about this action (at least 10 characters)');
+      toast.error('Please provide detailed notes about this action (at least 10 characters)');
       return;
     }
 
@@ -204,7 +207,7 @@ export function AdminReports() {
     );
 
     if (!error) {
-      alert('Action recorded successfully');
+      toast.success('Action recorded successfully');
       setActionNotes('');
       setActionType('no_action');
       setSelectedReport(null);
@@ -218,13 +221,20 @@ export function AdminReports() {
   const handleResolve = async () => {
     if (!selectedReport) return;
 
-    if (confirm('Mark this report as resolved?')) {
-      const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
-      if (!error) {
-        alert('Report marked as resolved');
-        setSelectedReport(null);
-        loadAllReports();
-      }
+    const confirmed = await confirm({
+      title: 'Resolve Report?',
+      message: 'Mark this report as resolved?',
+      confirmText: 'Resolve',
+      confirmVariant: 'default',
+    });
+
+    if (!confirmed) return;
+
+    const { error } = await updateReportStatus(selectedReport.report.id, 'resolved');
+    if (!error) {
+      toast.success('Report marked as resolved');
+      setSelectedReport(null);
+      loadAllReports();
     }
   };
 
@@ -234,13 +244,20 @@ export function AdminReports() {
   const handleDismiss = async () => {
     if (!selectedReport) return;
 
-    if (confirm('Dismiss this report?')) {
-      const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
-      if (!error) {
-        alert('Report dismissed');
-        setSelectedReport(null);
-        loadAllReports();
-      }
+    const confirmed = await confirm({
+      title: 'Dismiss Report?',
+      message: 'Dismiss this report?',
+      confirmText: 'Dismiss',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    const { error } = await updateReportStatus(selectedReport.report.id, 'dismissed');
+    if (!error) {
+      toast.success('Report dismissed');
+      setSelectedReport(null);
+      loadAllReports();
     }
   };
 
@@ -575,6 +592,7 @@ export function AdminReports() {
           )}
         </div>
       </div>
+      {ConfirmDialogComponent}
     </div>
   );
 }

@@ -14,6 +14,8 @@ import { Save } from 'lucide-react';
 import { ScheduleReviewTable } from '@/components/season/ScheduleReviewTable';
 import { InfoButton } from '@/components/InfoButton';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const WeekOffReasonModal = lazy(() => import('@/components/modals/WeekOffReasonModal').then(m => ({ default: m.WeekOffReasonModal })));
 import type { WeekEntry, ChampionshipEvent } from '@/types/season';
@@ -45,6 +47,7 @@ interface SeasonData {
 export const SeasonScheduleManager: React.FC = () => {
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
   const navigate = useNavigate();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   const [league, setLeague] = useState<League | null>(null);
   const [season, setSeason] = useState<SeasonData | null>(null);
@@ -216,7 +219,7 @@ export const SeasonScheduleManager: React.FC = () => {
    */
   const handleToggleWeekOff = (index: number) => {
     if (!canEditWeek(index)) {
-      alert('Cannot edit past weeks or completed weeks');
+      toast.error('Cannot edit past weeks or completed weeks');
       return;
     }
 
@@ -346,9 +349,14 @@ export const SeasonScheduleManager: React.FC = () => {
   /**
    * Cancel and go back without saving
    */
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (hasChanges()) {
-      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      const confirmed = await confirm({
+        title: 'Unsaved Changes',
+        message: 'You have unsaved changes. Are you sure you want to leave?',
+        confirmText: 'Leave',
+        confirmVariant: 'destructive',
+      });
       if (!confirmed) return;
     }
     navigate(`/league/${leagueId}`);
@@ -507,6 +515,7 @@ export const SeasonScheduleManager: React.FC = () => {
             onConfirm={addBlackoutWeek}
           />
         </Suspense>
+        {ConfirmDialogComponent}
       </div>
     </div>
   );

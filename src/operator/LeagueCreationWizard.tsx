@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import type { GameType, DayOfWeek, TeamFormat } from '@/types/league';
 import { logger } from '@/utils/logger';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * League Creation Wizard Component
@@ -36,6 +37,7 @@ export const LeagueCreationWizard: React.FC = () => {
   const { orgId } = useParams<{ orgId: string }>();
   const { member } = useUserProfile();
   const [createdLeagueId, setCreatedLeagueId] = useState<string | null>(null);
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Fetch organization with TanStack Query (cached, reusable)
   useOrganization(orgId);
@@ -140,21 +142,35 @@ export const LeagueCreationWizard: React.FC = () => {
   /**
    * Cancel wizard and return to operator dashboard
    */
-  const handleCancel = () => {
-    if (window.confirm('Are you sure you want to cancel league creation? All progress will be lost.')) {
-      clearFormData();
-      navigate(`/operator-dashboard/${orgId}`);
-    }
+  const handleCancel = async () => {
+    const confirmed = await confirm({
+      title: 'Cancel Creation?',
+      message: 'Are you sure you want to cancel league creation? All progress will be lost.',
+      confirmText: 'Cancel Creation',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    clearFormData();
+    navigate(`/operator-dashboard/${orgId}`);
   };
 
   /**
    * Clear form data and restart wizard
    */
-  const handleClearForm = () => {
-    if (window.confirm('Are you sure you want to clear all form data and start over?')) {
-      clearFormData();
-      window.location.reload();
-    }
+  const handleClearForm = async () => {
+    const confirmed = await confirm({
+      title: 'Clear Form?',
+      message: 'Are you sure you want to clear all form data and start over?',
+      confirmText: 'Clear',
+      confirmVariant: 'destructive',
+    });
+
+    if (!confirmed) return;
+
+    clearFormData();
+    window.location.reload();
   };
 
   // Show success screen if league was created
@@ -249,6 +265,7 @@ export const LeagueCreationWizard: React.FC = () => {
 
         {/* League Preview */}
         <LeaguePreview formData={formData} />
+        {ConfirmDialogComponent}
       </div>
     </div>
   );

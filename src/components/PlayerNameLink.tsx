@@ -24,6 +24,7 @@ import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser,
 import { ReportUserModal } from '@/components/ReportUserModal';
 import { ConfirmDialog } from '@/components/shared';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface CustomAction {
   label: string;
@@ -162,10 +163,10 @@ export function PlayerNameLink({
         blockedUserId: playerId,
       });
 
-      alert(`${playerName} has been blocked. You won't see messages from them.`);
+      toast.success(`${playerName} has been blocked. You won't see messages from them.`);
     } catch (error) {
       logger.error('Error blocking user', { error: error instanceof Error ? error.message : String(error) });
-      alert('Failed to block user. Please try again.');
+      toast.error('Failed to block user. Please try again.');
     }
   };
 
@@ -178,10 +179,10 @@ export function PlayerNameLink({
         blockedUserId: playerId,
       });
 
-      alert(`${playerName} has been unblocked.`);
+      toast.success(`${playerName} has been unblocked.`);
     } catch (error) {
       logger.error('Error unblocking user', { error: error instanceof Error ? error.message : String(error) });
-      alert('Failed to unblock user. Please try again.');
+      toast.error('Failed to unblock user. Please try again.');
     }
   };
 

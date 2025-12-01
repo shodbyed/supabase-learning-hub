@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import type { ChampionshipPreference } from './useChampionshipPreferences';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseChampionshipDateEditorReturn {
   /** Is currently in edit mode? */
@@ -115,7 +116,7 @@ export function useChampionshipDateEditor(
     const end = new Date(endDate);
 
     if (end <= start) {
-      alert('End date must be after start date');
+      toast.error('End date must be after start date');
       return;
     }
 
@@ -222,7 +223,7 @@ export function useChampionshipDateEditor(
         startDate,
         endDate
       });
-      alert(`Failed to save ${organization} dates. Check console for details.`);
+      toast.error(`Failed to save ${organization} dates. Check console for details.`);
     } finally {
       setIsSaving(false);
     }

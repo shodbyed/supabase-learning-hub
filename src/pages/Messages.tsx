@@ -36,6 +36,7 @@ import {
 } from '@/api/hooks';
 import { cn } from '@/lib/utils';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 export function Messages() {
   const navigate = useNavigate();
@@ -106,12 +107,12 @@ export function Messages() {
       setShowAnnouncementModal(false);
 
       // Show success message
-      alert(
+      toast.success(
         `Announcement sent successfully to ${targets.length} target${targets.length > 1 ? 's' : ''}!`
       );
     } catch (error) {
       logger.error('Error creating announcement', { error: error instanceof Error ? error.message : String(error) });
-      alert(`Failed to send announcement. Please try again.`);
+      toast.error(`Failed to send announcement. Please try again.`);
     }
   };
 
@@ -158,7 +159,7 @@ export function Messages() {
       }
     } catch (error) {
       logger.error('Error creating conversation', { error: error instanceof Error ? error.message : String(error) });
-      alert('Failed to create conversation. Please try again.');
+      toast.error('Failed to create conversation. Please try again.');
     }
   };
 

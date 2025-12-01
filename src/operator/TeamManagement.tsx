@@ -27,6 +27,8 @@ import { AllPlayersRosterCard } from '@/components/AllPlayersRosterCard';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamWithQueryDetails } from '@/types/team';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /**
  * TeamManagement Component
@@ -39,6 +41,7 @@ export const TeamManagement: React.FC = () => {
   const { leagueId } = useParams<{ leagueId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Use custom hook for all data fetching
   // NOTE: organizationId will be fetched from the league inside useTeamManagement
@@ -122,7 +125,7 @@ export const TeamManagement: React.FC = () => {
       });
     } catch (err) {
       logger.error('Error selecting all venues', { error: err instanceof Error ? err.message : String(err) });
-      alert('Failed to update venues. Please try again.');
+      toast.error('Failed to update venues. Please try again.');
     } finally {
       setSelectingAll(false);
     }
@@ -179,7 +182,7 @@ export const TeamManagement: React.FC = () => {
       });
     } catch (err: any) {
       logger.error('Error toggling venue', { error: err instanceof Error ? err.message : String(err) });
-      alert(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
+      toast.error(`Failed to update venue assignment: ${err.message || 'Please try again.'}`);
     } finally {
       setAssigningVenue(null);
     }
@@ -215,14 +218,12 @@ export const TeamManagement: React.FC = () => {
   const handleImportTeams = async () => {
     if (!previousSeasonId || !seasonId || !leagueId) return;
 
-    const confirmImport = window.confirm(
-      'Import teams from last season? This will copy:\n' +
-      '• All team names and captains\n' +
-      '• Home venue assignments\n' +
-      '• Full rosters\n' +
-      '• League venue assignments\n\n' +
-      'Continue?'
-    );
+    const confirmImport = await confirm({
+      title: 'Import Teams?',
+      message: 'Import teams from last season? This will copy:\n• All team names and captains\n• Home venue assignments\n• Full rosters\n• League venue assignments',
+      confirmText: 'Import',
+      confirmVariant: 'default',
+    });
 
     if (!confirmImport) return;
 
@@ -299,13 +300,13 @@ export const TeamManagement: React.FC = () => {
       // Simulate success
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      alert(`Successfully imported ${prevTeams?.length || 0} teams from last season!`);
+      toast.success(`Successfully imported ${prevTeams?.length || 0} teams from last season!`);
 
       // Refresh the page data (in real implementation, this would refetch from DB)
       // For now, just show success message
     } catch (err) {
       logger.error('Error importing teams', { error: err instanceof Error ? err.message : String(err) });
-      alert(err instanceof Error ? err.message : 'Failed to import teams');
+      toast.error(err instanceof Error ? err.message : 'Failed to import teams');
     } finally {
       setImportingTeams(false);
     }
@@ -341,7 +342,7 @@ export const TeamManagement: React.FC = () => {
       await refreshTeams();
     } catch (err) {
       logger.error('Error deleting team', { error: err instanceof Error ? err.message : String(err) });
-      alert(err instanceof Error ? err.message : 'Failed to delete team');
+      toast.error(err instanceof Error ? err.message : 'Failed to delete team');
     } finally {
       setShowDeleteConfirm(false);
       setDeletingTeamId(null);
@@ -733,6 +734,7 @@ export const TeamManagement: React.FC = () => {
             onCancel={() => setShowVenueCreation(false)}
           />
         )}
+        {ConfirmDialogComponent}
       </div>
     </div>
   );

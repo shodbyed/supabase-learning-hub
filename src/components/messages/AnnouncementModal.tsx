@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/supabaseClient';
 import { Modal, LoadingState, EmptyState } from '@/components/shared';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface AnnouncementTarget {
   id: string;
@@ -166,12 +167,12 @@ export function AnnouncementModal({
 
   const handleCreate = () => {
     if (selectedTargetIds.length === 0) {
-      alert('Please select at least one target');
+      toast.error('Please select at least one target');
       return;
     }
 
     if (!announcementText.trim()) {
-      alert('Please enter an announcement message');
+      toast.error('Please enter an announcement message');
       return;
     }
 
