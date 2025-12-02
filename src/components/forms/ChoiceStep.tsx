@@ -27,6 +27,7 @@ interface ChoiceStepProps {
   infoContent?: React.ReactNode;
   additionalContent?: React.ReactNode;
   error?: string;
+  isSubmitting?: boolean;
 }
 
 /**
@@ -52,7 +53,8 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
   infoTitle,
   infoContent,
   additionalContent,
-  error
+  error,
+  isSubmitting
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
@@ -124,10 +126,10 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
 
             <Button
               onClick={onNext}
-              disabled={!selectedValue}
+              disabled={!selectedValue || isSubmitting}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isLastQuestion ? 'Continue' : 'Next'}
+              {isSubmitting ? 'Submitting...' : isLastQuestion ? 'Submit Application' : 'Next'}
             </Button>
           </div>
         </div>
