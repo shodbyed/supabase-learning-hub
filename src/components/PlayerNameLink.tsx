@@ -13,18 +13,21 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { User, MessageSquare, Flag, Ban } from 'lucide-react';
+import { User, MessageSquare, Flag, Ban, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked } from '@/api/hooks';
+import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked, useUserProfile } from '@/api/hooks';
 import { ReportUserModal } from '@/components/ReportUserModal';
 import { ConfirmDialog } from '@/components/shared';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
+import { supabase } from '@/supabaseClient';
+import { markMembershipPaid, updateMembershipPaidDate } from '@/api/queries/players';
 
 interface CustomAction {
   label: string;
@@ -53,16 +56,66 @@ export function PlayerNameLink({
   customActions = [],
 }: PlayerNameLinkProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const memberId = useMemberId();
+  const { canAccessLeagueOperatorFeatures } = useUserProfile();
+  const isOperator = canAccessLeagueOperatorFeatures();
+
   const [open, setOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+  const [showReversePaymentConfirm, setShowReversePaymentConfirm] = useState(false);
 
   // TanStack Query hooks
   const createOrOpenConversationMutation = useCreateOrOpenConversation();
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
+
+  // Fetch player's membership status (only when popover is open and user is operator)
+  const { data: playerMembership } = useQuery({
+    queryKey: ['playerMembership', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('members')
+        .select('membership_paid_date')
+        .eq('id', playerId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && isOperator && !!playerId,
+    staleTime: 30000, // 30 seconds
+  });
+
+  // Mark membership as paid mutation
+  const markPaidMutation = useMutation({
+    mutationFn: (id: string) => markMembershipPaid(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['playerMembership', playerId] });
+      queryClient.invalidateQueries({ queryKey: ['playerDetails'] });
+      toast.success(`${playerName}'s membership marked as paid!`);
+    },
+    onError: (error) => {
+      logger.error('Error marking membership as paid', { error: error instanceof Error ? error.message : String(error) });
+      toast.error('Failed to update membership status. Please try again.');
+    },
+  });
+
+  // Reverse membership mutation
+  const reverseMembershipMutation = useMutation({
+    mutationFn: (id: string) => updateMembershipPaidDate(id, null),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['playerMembership', playerId] });
+      queryClient.invalidateQueries({ queryKey: ['playerDetails'] });
+      toast.success(`${playerName}'s membership reversed!`);
+    },
+    onError: (error) => {
+      logger.error('Error reversing membership', { error: error instanceof Error ? error.message : String(error) });
+      toast.error('Failed to reverse membership. Please try again.');
+    },
+  });
 
   // Check if user is blocked (only fetch when popover is open)
   // Note: We can't conditionally enable this hook based on `open` state because hooks can't be conditional.
@@ -186,6 +239,32 @@ export function PlayerNameLink({
     }
   };
 
+  // Handle membership payment click (operators only)
+  const handleMembershipAction = () => {
+    if (!isOperator) return;
+
+    const hasPaid = !!playerMembership?.membership_paid_date;
+    if (hasPaid) {
+      setShowReversePaymentConfirm(true);
+    } else {
+      setShowPaymentConfirm(true);
+    }
+    setOpen(false);
+  };
+
+  // Confirm payment received
+  const handlePaymentConfirm = () => {
+    markPaidMutation.mutate(playerId);
+  };
+
+  // Confirm reverse payment
+  const handleReversePaymentConfirm = () => {
+    reverseMembershipMutation.mutate(playerId);
+  };
+
+  // Determine if membership action should be shown and what label to use
+  const hasMembershipPaid = !!playerMembership?.membership_paid_date;
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -238,6 +317,23 @@ export function PlayerNameLink({
               <Ban className="h-4 w-4" />
               <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
             </button>
+
+            {/* Membership Payment (Operators Only) */}
+            {isOperator && (
+              <>
+                <div className="border-t" />
+                <button
+                  onClick={handleMembershipAction}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left",
+                    hasMembershipPaid ? "text-red-600" : "text-green-600"
+                  )}
+                >
+                  <DollarSign className="h-4 w-4" />
+                  <span>{hasMembershipPaid ? 'Reverse Membership' : 'Received Membership Fee'}</span>
+                </button>
+              </>
+            )}
 
             {/* Custom Actions */}
             {customActions.length > 0 && (
@@ -293,6 +389,30 @@ export function PlayerNameLink({
         cancelLabel="Cancel"
         onConfirm={handleUnblockConfirm}
         variant="default"
+      />
+
+      {/* Mark Membership Paid Confirmation */}
+      <ConfirmDialog
+        open={showPaymentConfirm}
+        onOpenChange={setShowPaymentConfirm}
+        title="Mark Membership as Paid"
+        description={`Confirm that ${playerName} has paid their membership fee for ${new Date().getFullYear()}. Their membership will be valid through December 31, ${new Date().getFullYear()}. Do not accept payments for ${new Date().getFullYear() + 1} until next calendar year.`}
+        confirmLabel="Confirm Payment"
+        cancelLabel="Cancel"
+        onConfirm={handlePaymentConfirm}
+        variant="default"
+      />
+
+      {/* Reverse Membership Confirmation */}
+      <ConfirmDialog
+        open={showReversePaymentConfirm}
+        onOpenChange={setShowReversePaymentConfirm}
+        title="Reverse Membership Payment"
+        description={`Confirm that ${playerName} has not paid the membership fees for ${new Date().getFullYear()}. This will mark their membership as unpaid.`}
+        confirmLabel="Reverse Payment"
+        cancelLabel="Cancel"
+        onConfirm={handleReversePaymentConfirm}
+        variant="destructive"
       />
     </>
   );

@@ -26,6 +26,7 @@ import { PersonalInfoSection } from './PersonalInfoSection';
 import { ContactInfoSection } from './ContactInfoSection';
 import { AddressSection } from './AddressSection';
 import { PrivacySettingsSection } from './PrivacySettingsSection';
+import { PageHeader } from '@/components/PageHeader';
 
 /**
  * Member Profile Page Component
@@ -94,18 +95,15 @@ export const Profile: React.FC = () => {
   const duesStatusStyling = getDuesStatusStyling(membershipStatus.status);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Member Profile
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Manage your personal information and account details
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Dashboard"
+        title="Player Settings"
+        subtitle="Manage your personal information and account details"
+      />
 
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Success Message */}
         <SuccessMessage message={successMessage} />
 
