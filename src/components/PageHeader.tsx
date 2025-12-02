@@ -22,6 +22,8 @@ interface PageHeaderProps {
   onBackClick?: () => void;
   /** Main page title */
   hideBack?: boolean;
+  /** Optional pre-title text displayed above the main title (e.g., "Welcome to") */
+  preTitle?: string;
   title: string;
   /** Optional subtitle below title */
   subtitle?: string;
@@ -45,7 +47,7 @@ interface PageHeaderProps {
  *   organizationId="org-uuid" // Shows org name badge
  * />
  */
-export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, title, subtitle, organizationId, children }: PageHeaderProps) {
+export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, preTitle, title, subtitle, organizationId, children }: PageHeaderProps) {
   const { organization } = useOrganization(organizationId);
 
   return (
@@ -74,6 +76,9 @@ export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, t
               {organization.organization_name}
             </span>
           </div>
+        )}
+        {preTitle && (
+          <p className="text-xl font-bold text-gray-700">{preTitle}</p>
         )}
         <div className="text-2xl lg:text-4xl font-semibold text-gray-900">{title}</div>
         {subtitle && (
