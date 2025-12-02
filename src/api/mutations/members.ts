@@ -37,6 +37,14 @@ export interface DeleteMemberParams {
 }
 
 /**
+ * Parameters for updating member role
+ */
+export interface UpdateMemberRoleParams {
+  memberId: string;
+  role: 'player' | 'league_operator' | 'admin';
+}
+
+/**
  * Parameters for updating member profile
  */
 export interface UpdateMemberProfileParams {
@@ -272,5 +280,35 @@ export async function deleteMember(params: DeleteMemberParams): Promise<void> {
 
   if (error) {
     throw new Error(`Failed to delete member: ${error.message} (${error.code})`);
+  }
+}
+
+/**
+ * Update member's role
+ *
+ * Changes a member's role (e.g., from 'player' to 'league_operator').
+ * Used during league operator application approval.
+ *
+ * @param params - Update parameters (memberId, role)
+ * @throws Error if database update fails
+ *
+ * @example
+ * await updateMemberRole({
+ *   memberId: 'member-123',
+ *   role: 'league_operator'
+ * });
+ */
+export async function updateMemberRole(
+  params: UpdateMemberRoleParams
+): Promise<void> {
+  const { memberId, role } = params;
+
+  const { error } = await supabase
+    .from('members')
+    .update({ role })
+    .eq('id', memberId);
+
+  if (error) {
+    throw new Error(`Failed to update member role: ${error.message}`);
   }
 }

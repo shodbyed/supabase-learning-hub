@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="64" height="64">
+  <defs>
+    <!-- Ball body gradient (light top-left to dark bottom-right) -->
+    <radialGradient id="ballGradient-9" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="50%" stop-color="#F5F5F5"/>
+      <stop offset="100%" stop-color="#CCCCCC"/>
+    </radialGradient>
+    <!-- Yellow stripe gradient -->
+    <linearGradient id="stripeGradient-9" x1="0" y1="40%" x2="100%" y2="60%">
+      <stop offset="0%" stop-color="#FFEF7A"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#E0B800"/>
+    </linearGradient>
+    <!-- Subtle highlight -->
+    <radialGradient id="highlight-9" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- Outer white ball with subtle gradient -->
+  <circle cx="50" cy="50" r="48" fill="url(#ballGradient-9)" stroke="black" stroke-width="2"/>
+  <!-- Fatter curved yellow stripe with gradient -->
+  <ellipse cx="50" cy="50" rx="60" ry="26" fill="url(#stripeGradient-9)"/>
+  <!-- Thin top grey border -->
+  <path d="M -10,50 A 60,26 0 0 1 110,50" fill="none" stroke="grey" stroke-width="0.5"/>
+  <!-- Black ring to clip the ball -->
+  <circle cx="50" cy="50" r="55" fill="none" stroke="black" stroke-width="16"/>
+  <!-- Inner white circle for number -->
+  <circle cx="50" cy="50" r="14" fill="white" stroke="black" stroke-width="2"/>
+  <!-- Number 9 -->
+  <text x="50" y="55" text-anchor="middle" font-size="14" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">9</text>
+  <!-- Glossy highlight -->
+  <circle cx="38" cy="38" r="15" fill="url(#highlight-9)"/>
+</svg>

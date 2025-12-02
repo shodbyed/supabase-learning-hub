@@ -28,6 +28,7 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
   const navigate = useNavigate();
   const [teams, setTeams] = useState<TeamWithQueryDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
 
   /**
@@ -76,11 +77,13 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
         <Button
           onClick={(e) => {
             e.stopPropagation();
+            setIsNavigating(true);
             navigate(`/league/${leagueId}/manage-teams`);
           }}
           size="sm"
+          disabled={isNavigating}
         >
-          Manage Teams
+          {isNavigating ? 'Loading...' : 'Manage Teams'}
         </Button>
       </div>
 
@@ -93,10 +96,14 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
           <div className="text-4xl mb-3">👥</div>
           <p className="text-gray-600 mb-4">No teams yet</p>
           <Button
-            onClick={() => navigate(`/league/${leagueId}/manage-teams`)}
+            onClick={() => {
+              setIsNavigating(true);
+              navigate(`/league/${leagueId}/manage-teams`);
+            }}
             variant="outline"
+            disabled={isNavigating}
           >
-            Add Your First Team
+            {isNavigating ? 'Loading...' : 'Add Your First Team'}
           </Button>
         </div>
       ) : (

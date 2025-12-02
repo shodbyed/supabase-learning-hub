@@ -34,6 +34,8 @@ interface RadioChoiceStepProps {
   infoLabel?: string;
   error?: string;
   isSubmitting?: boolean;
+  /** Shows loading state during navigation (for lazy loading feedback) */
+  isNavigating?: boolean;
 }
 
 /**
@@ -60,7 +62,8 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   infoContent,
   infoLabel,
   error,
-  isSubmitting
+  isSubmitting,
+  isNavigating
 }) => {
   const canProceed = selectedValue && selectedValue.trim() !== '';
 
@@ -113,9 +116,9 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
 
           <Button
             onClick={onNext}
-            disabled={!canProceed || isSubmitting}
+            disabled={!canProceed || isSubmitting || isNavigating}
           >
-            {isSubmitting ? 'Creating League...' : isLastQuestion ? 'Create League' : 'Continue'}
+            {isSubmitting ? 'Creating League...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Create League' : 'Continue'}
           </Button>
         </div>
       </div>

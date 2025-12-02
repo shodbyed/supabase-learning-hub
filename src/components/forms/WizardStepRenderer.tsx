@@ -28,6 +28,8 @@ interface WizardStepRendererProps {
   error?: string;
   /** Whether form is currently submitting */
   isSubmitting?: boolean;
+  /** Whether navigation is in progress (for lazy loading feedback) */
+  isNavigating?: boolean;
   /** Handler for input changes */
   onInputChange: (value: string) => void;
   /** Handler for choice selection */
@@ -57,6 +59,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
   currentInput,
   error,
   isSubmitting,
+  isNavigating,
   onInputChange,
   onChoiceSelect,
   onNext,
@@ -82,6 +85,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
         infoLabel={currentStep.infoLabel}
         error={error}
         isSubmitting={isSubmitting}
+        isNavigating={isNavigating}
       />
     );
   }
@@ -106,6 +110,7 @@ export const WizardStepRenderer: React.FC<WizardStepRendererProps> = ({
       infoContent={currentStep.infoContent ?? undefined}
       error={error}
       isSubmitting={isSubmitting}
+      isNavigating={isNavigating}
       inputType={
         currentStep.id === 'start_date' ||
         currentStep.id === 'bca_custom_start_date' ||

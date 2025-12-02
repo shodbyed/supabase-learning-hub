@@ -17,7 +17,7 @@
  * - Form reducer logic moved to applicationReducer.ts
  * - Modal components extracted to separate files
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QuestionStep } from '@/components/forms/QuestionStep';
 import { ChoiceStep } from '@/components/forms/ChoiceStep';
@@ -26,7 +26,8 @@ import { SecurityDisclaimerModal } from '@/components/modals/SecurityDisclaimerM
 import { SetupGuideModal } from '@/components/modals/SetupGuideModal';
 import { useApplicationForm } from './useApplicationForm';
 import { useUserProfile } from '@/api/hooks';
-import { supabase } from '../supabaseClient';
+import { useCreateOrganization } from '@/api/hooks/useOrganizationMutations';
+import { useUpdateMemberRole } from '@/api/hooks/useMemberMutations';
 import { generateMockPaymentData } from '@/types/operator';
 import { leagueEmailSchema, leaguePhoneSchema } from '../schemas/leagueOperatorSchema';
 import { logger } from '@/utils/logger';
@@ -49,8 +50,15 @@ export const LeagueOperatorApplication: React.FC = () => {
   // Navigation hook for redirecting after completion
   const navigate = useNavigate();
 
+  // Track submission state to prevent double-clicks
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Get member profile data for pre-filling operator info
   const { member, refreshProfile } = useUserProfile();
+
+  // TanStack Query mutations for creating organization and updating member role
+  const createOrganization = useCreateOrganization();
+  const updateMemberRole = useUpdateMemberRole();
 
   // Get all form state and handlers from custom hook
   const {
@@ -164,25 +172,30 @@ export const LeagueOperatorApplication: React.FC = () => {
 
   /**
    * Handle form submission (when user clicks Continue on last question)
-   * 1. Creates organization record
-   * 2. Creates organization_staff record (owner position)
-   * 3. Upgrades user role from 'player' to 'league_operator'
+   * 1. Creates organization record (via TanStack Query mutation)
+   * 2. Creates organization_staff record (owner position - automatic via DB trigger)
+   * 3. Upgrades user role from 'player' to 'league_operator' (via TanStack Query mutation)
    * 4. Clears form state
    * 5. Redirects to congratulations page
    */
   const handleSubmit = async () => {
+    // Prevent double submission
+    if (isSubmitting) return;
+
     if (!member) {
       logger.error('Cannot submit: No member profile found');
       return;
     }
 
-    // Generate mock payment data for testing
-    const mockPayment = generateMockPaymentData();
+    // Disable button immediately to prevent multiple clicks
+    setIsSubmitting(true);
 
-    // Step 1: Create organization
-    const { data: organization, error: orgError } = await supabase
-      .from('organizations')
-      .insert({
+    try {
+      // Generate mock payment data for testing
+      const mockPayment = generateMockPaymentData();
+
+      // Step 1: Create organization using TanStack Query mutation
+      await createOrganization.mutateAsync({
         organization_name: state.leagueName,
         created_by: member.id,
 
@@ -204,33 +217,27 @@ export const LeagueOperatorApplication: React.FC = () => {
         expiry_month: mockPayment.expiry_month,
         expiry_year: mockPayment.expiry_year,
         billing_zip: mockPayment.billing_zip,
-      })
-      .select()
-      .single();
+      });
 
-    if (orgError || !organization) {
-      logger.error('Failed to create organization', { error: orgError?.message || 'Unknown error' });
-      toast.error(`Failed to create organization: ${orgError?.message || 'Unknown error'}`);
+      // Step 2: Organization_staff record is automatically created by database trigger
+      // (create_owner_staff_trigger adds the creator as owner)
+
+      // Step 3: Update member role to league_operator using TanStack Query mutation
+      await updateMemberRole.mutateAsync({
+        memberId: member.id,
+        role: 'league_operator',
+      });
+
+      // Refresh the user profile context so the new role is immediately available
+      refreshProfile();
+    } catch (error) {
+      // Handle any errors from the mutations
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to submit application', { error: errorMessage });
+      toast.error(`Failed to submit application: ${errorMessage}`);
+      setIsSubmitting(false);
       return;
     }
-
-    // Step 2: Organization_staff record is automatically created by database trigger
-    // (create_owner_staff_trigger adds the creator as owner)
-
-    // Step 3: Update member role to league_operator
-    const { error: updateError } = await supabase
-      .from('members')
-      .update({ role: 'league_operator' })
-      .eq('id', member.id);
-
-    if (updateError) {
-      logger.error('Failed to update member role', { error: updateError.message });
-      toast.error(`Failed to update member role: ${updateError.message}`);
-      return;
-    }
-
-    // Refresh the user profile context so the new role is immediately available
-    refreshProfile();
 
     // Wait a moment for the profile to refresh before navigating
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -311,6 +318,7 @@ export const LeagueOperatorApplication: React.FC = () => {
                 infoContent={currentQuestion.infoContent}
                 additionalContent={currentQuestion.additionalContent}
                 error={error}
+                isSubmitting={isSubmitting}
               />
             ) : (
               <QuestionStep
@@ -328,6 +336,7 @@ export const LeagueOperatorApplication: React.FC = () => {
                 isLastQuestion={isLastQuestion}
                 infoTitle={currentQuestion.infoTitle}
                 infoContent={currentQuestion.infoContent}
+                isSubmitting={isSubmitting}
               />
             )}
           </div>

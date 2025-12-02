@@ -26,6 +26,7 @@ import { PersonalInfoSection } from './PersonalInfoSection';
 import { ContactInfoSection } from './ContactInfoSection';
 import { AddressSection } from './AddressSection';
 import { PrivacySettingsSection } from './PrivacySettingsSection';
+import { PageHeader } from '@/components/PageHeader';
 
 /**
  * Member Profile Page Component
@@ -94,25 +95,44 @@ export const Profile: React.FC = () => {
   const duesStatusStyling = getDuesStatusStyling(membershipStatus.status);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Member Profile
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Manage your personal information and account details
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Dashboard"
+        title="Player Settings"
+        subtitle="Manage your personal information and account details"
+      />
 
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Success Message */}
         <SuccessMessage message={successMessage} />
 
         <div className="space-y-6">
-          {/* Membership Status Section (Read-Only) */}
+          {/* Editable Sections */}
+          <PersonalInfoSection
+            member={member}
+            form={personalForm}
+            handlers={personalHandlers}
+          />
+
+          <ContactInfoSection
+            member={member}
+            form={contactForm}
+            handlers={contactHandlers}
+          />
+
+          <AddressSection
+            member={member}
+            form={addressForm}
+            handlers={addressHandlers}
+          />
+
+          {/* Privacy Settings Section */}
+          <PrivacySettingsSection />
+
+          {/* BCA Membership Status Section (Read-Only) */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Membership Status</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">BCA Membership Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <span className="text-sm font-medium text-gray-500">BCA Member Number</span>
@@ -138,28 +158,6 @@ export const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Editable Sections */}
-          <PersonalInfoSection
-            member={member}
-            form={personalForm}
-            handlers={personalHandlers}
-          />
-
-          <ContactInfoSection
-            member={member}
-            form={contactForm}
-            handlers={contactHandlers}
-          />
-
-          <AddressSection
-            member={member}
-            form={addressForm}
-            handlers={addressHandlers}
-          />
-
-          {/* Privacy Settings Section */}
-          <PrivacySettingsSection />
         </div>
       </div>
     </div>

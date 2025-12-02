@@ -20,7 +20,8 @@ import {
   updateMemberNickname,
   updateMemberProfile,
   createMember,
-  deleteMember
+  deleteMember,
+  updateMemberRole
 } from '../mutations/members';
 
 /**
@@ -180,6 +181,36 @@ export function useDeleteMember() {
     mutationFn: deleteMember,
     onSuccess: () => {
       // Invalidate all member queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.members.all,
+      });
+    },
+  });
+}
+
+/**
+ * Hook to update member's role
+ *
+ * Changes a member's role (e.g., from 'player' to 'league_operator').
+ * Automatically invalidates member cache after successful update.
+ *
+ * @returns TanStack Mutation object with mutate/mutateAsync functions
+ *
+ * @example
+ * const updateRole = useUpdateMemberRole();
+ *
+ * await updateRole.mutateAsync({
+ *   memberId: 'member-123',
+ *   role: 'league_operator'
+ * });
+ */
+export function useUpdateMemberRole() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMemberRole,
+    onSuccess: () => {
+      // Invalidate all member queries to refresh role everywhere
       queryClient.invalidateQueries({
         queryKey: queryKeys.members.all,
       });

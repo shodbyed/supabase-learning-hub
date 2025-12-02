@@ -27,6 +27,9 @@ interface ChoiceStepProps {
   infoContent?: React.ReactNode;
   additionalContent?: React.ReactNode;
   error?: string;
+  isSubmitting?: boolean;
+  /** Shows loading state during navigation (for lazy loading feedback) */
+  isNavigating?: boolean;
 }
 
 /**
@@ -52,7 +55,9 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
   infoTitle,
   infoContent,
   additionalContent,
-  error
+  error,
+  isSubmitting,
+  isNavigating
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-8">
@@ -124,10 +129,10 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
 
             <Button
               onClick={onNext}
-              disabled={!selectedValue}
+              disabled={!selectedValue || isSubmitting || isNavigating}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isLastQuestion ? 'Continue' : 'Next'}
+              {isSubmitting ? 'Submitting...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Submit Application' : 'Next'}
             </Button>
           </div>
         </div>

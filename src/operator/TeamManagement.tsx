@@ -69,6 +69,7 @@ export const TeamManagement: React.FC = () => {
   const [importingTeams, setImportingTeams] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [showVenueCreation, setShowVenueCreation] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   /**
    * Check if all venues are assigned
@@ -403,8 +404,14 @@ export const TeamManagement: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error || 'League not found'}</p>
-            <Button onClick={() => navigate(organizationId ? `/operator-dashboard/${organizationId}` : '/operator-dashboard')}>
-              Back to Dashboard
+            <Button
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(organizationId ? `/operator-dashboard/${organizationId}` : '/operator-dashboard');
+              }}
+              disabled={isNavigating}
+            >
+              {isNavigating ? 'Loading...' : 'Back to Dashboard'}
             </Button>
           </div>
         </div>
@@ -441,16 +448,24 @@ export const TeamManagement: React.FC = () => {
                 className="w-full"
                 size="lg"
                 variant="outline"
-                onClick={() => navigate(`/league/${leagueId}`)}
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(`/league/${leagueId}`);
+                }}
+                disabled={isNavigating}
               >
-                Save & Exit
+                {isNavigating ? 'Loading...' : 'Save & Exit'}
               </Button>
               <Button
                 className="w-full"
                 size="lg"
-                onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+                }}
+                disabled={isNavigating}
               >
-                Save & Continue →
+                {isNavigating ? 'Loading...' : 'Save & Continue →'}
                 </Button>
               </div>
             )}
@@ -661,15 +676,23 @@ export const TeamManagement: React.FC = () => {
             <Button
               size="lg"
               variant="outline"
-              onClick={() => navigate(`/league/${leagueId}`)}
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(`/league/${leagueId}`);
+              }}
+              disabled={isNavigating}
             >
-              Save & Exit
+              {isNavigating ? 'Loading...' : 'Save & Exit'}
             </Button>
             <Button
               size="lg"
-              onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+              }}
+              disabled={isNavigating}
             >
-              Save & Continue →
+              {isNavigating ? 'Loading...' : 'Save & Continue →'}
             </Button>
           </div>
         )}

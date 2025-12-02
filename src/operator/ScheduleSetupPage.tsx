@@ -27,6 +27,7 @@ export const ScheduleSetupPage: React.FC = () => {
   const [teams, setTeams] = useState<TeamWithQueryDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   /**
    * Fetch teams for the season
@@ -71,6 +72,7 @@ export const ScheduleSetupPage: React.FC = () => {
    */
   const handleSuccess = () => {
     // Navigate to schedule view page
+    setIsNavigating(true);
     navigate(`/league/${leagueId}/season/${seasonId}/schedule`);
   };
 
@@ -78,6 +80,7 @@ export const ScheduleSetupPage: React.FC = () => {
    * Handle cancel
    */
   const handleCancel = () => {
+    setIsNavigating(true);
     navigate(`/league/${leagueId}/manage-teams`);
   };
 
@@ -99,14 +102,24 @@ export const ScheduleSetupPage: React.FC = () => {
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error}</p>
             <div className="flex gap-3">
-              <Button onClick={() => navigate(`/league/${leagueId}`)}>
-                Back to League
+              <Button
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(`/league/${leagueId}`);
+                }}
+                disabled={isNavigating}
+              >
+                {isNavigating ? 'Loading...' : 'Back to League'}
               </Button>
               <Button
                 variant="outline"
-                onClick={() => navigate(`/league/${leagueId}/manage-teams`)}
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(`/league/${leagueId}/manage-teams`);
+                }}
+                disabled={isNavigating}
               >
-                Manage Teams
+                {isNavigating ? 'Loading...' : 'Manage Teams'}
               </Button>
             </div>
           </div>

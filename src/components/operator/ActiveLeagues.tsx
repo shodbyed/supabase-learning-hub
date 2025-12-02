@@ -33,6 +33,8 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
     id: string;
     name: string;
   } | null>(null);
+  // Track navigation loading state for lazy-loaded pages
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Fetch leagues with progress data using TanStack Query
   const {
@@ -131,8 +133,14 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
             You haven't created any leagues yet. Start by creating your first
             league!
           </p>
-          <Button asChild>
-            <Link to={`/create-league/${operatorId}`}>Create Your First League</Link>
+          <Button
+            onClick={() => {
+              setIsNavigating(true);
+              navigate(`/create-league/${operatorId}`);
+            }}
+            disabled={isNavigating}
+          >
+            {isNavigating ? 'Loading...' : 'Create Your First League'}
           </Button>
         </div>
       </div>
@@ -146,8 +154,14 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
         <h3 className="text-xl font-semibold text-gray-900">
           Your Active Leagues
         </h3>
-        <Button onClick={() => navigate(`/create-league/${operatorId}`)}>
-          Create New League
+        <Button
+          onClick={() => {
+            setIsNavigating(true);
+            navigate(`/create-league/${operatorId}`);
+          }}
+          disabled={isNavigating}
+        >
+          {isNavigating ? 'Loading...' : 'Create New League'}
         </Button>
       </div>
 

@@ -4,8 +4,9 @@ import { supabase } from '../supabaseClient';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { CardAction } from '@/components/ui/card';
+import { CardAction, CardFooter } from '@/components/ui/card';
 import { LoginCard } from './LoginCard';
+import { Link } from 'react-router-dom';
 
 export const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -82,6 +83,7 @@ export const ResetPassword: React.FC = () => {
             placeholder="Enter new password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
         </div>
@@ -92,6 +94,7 @@ export const ResetPassword: React.FC = () => {
             placeholder="Confirm new password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
         </div>
@@ -101,6 +104,9 @@ export const ResetPassword: React.FC = () => {
           </Button>
         </CardAction>
       </form>
+      <CardFooter className="mt-4 text-sm flex justify-around w-full">
+        <Link to="/login">Back to Login</Link>
+      </CardFooter>
     </LoginCard>
   );
 };

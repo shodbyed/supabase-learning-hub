@@ -2,8 +2,8 @@
  * @fileoverview DashboardCard Component
  * Reusable card component for operator dashboard quick actions
  */
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -51,6 +51,18 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
   buttonColor,
   badgeCount,
 }) => {
+  const navigate = useNavigate();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleClick = () => {
+    if (linkTo) {
+      setIsNavigating(true);
+      navigate(linkTo);
+    } else if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-2">
@@ -64,25 +76,15 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       </div>
       <p className="text-sm text-gray-600 mb-4">{description}</p>
 
-      {linkTo ? (
-        <Button
-          asChild
-          variant={variant}
-          className="w-full"
-          style={buttonColor ? { backgroundColor: buttonColor, color: 'white' } : undefined}
-        >
-          <Link to={linkTo}>{buttonText}</Link>
-        </Button>
-      ) : (
-        <Button
-          variant={variant}
-          className="w-full"
-          onClick={onClick}
-          style={buttonColor ? { backgroundColor: buttonColor, color: 'white' } : undefined}
-        >
-          {buttonText}
-        </Button>
-      )}
+      <Button
+        variant={variant}
+        className="w-full"
+        onClick={handleClick}
+        disabled={isNavigating}
+        style={buttonColor ? { backgroundColor: buttonColor, color: 'white' } : undefined}
+      >
+        {isNavigating ? 'Loading...' : buttonText}
+      </Button>
     </div>
   );
 };
