@@ -131,8 +131,8 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
             You haven't created any leagues yet. Start by creating your first
             league!
           </p>
-          <Button asChild>
-            <Link to={`/create-league/${operatorId}`}>Create Your First League</Link>
+          <Button onClick={() => navigate(`/create-league/${operatorId}`)}>
+            Create Your First League
           </Button>
         </div>
       </div>
