@@ -82,6 +82,7 @@ export const ResetPassword: React.FC = () => {
             placeholder="Enter new password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
         </div>
@@ -92,6 +93,7 @@ export const ResetPassword: React.FC = () => {
             placeholder="Confirm new password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
         </div>
