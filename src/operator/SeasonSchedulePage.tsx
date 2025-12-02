@@ -103,6 +103,7 @@ export const SeasonSchedulePage: React.FC = () => {
   const [clearing, setClearing] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const [_error, setError] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const loading = seasonLoading || scheduleLoading;
   const seasonName = season?.season_name || `Season ${season?.season_length || 0} Weeks`;
@@ -331,8 +332,14 @@ export const SeasonSchedulePage: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 Generate your season schedule to see all matchups
               </p>
-              <Button onClick={() => navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`)}>
-                Generate Schedule
+              <Button
+                onClick={() => {
+                  setIsNavigating(true);
+                  navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+                }}
+                disabled={isNavigating}
+              >
+                {isNavigating ? 'Loading...' : 'Generate Schedule'}
               </Button>
             </CardContent>
           </Card>

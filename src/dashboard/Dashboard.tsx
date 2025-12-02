@@ -2,20 +2,23 @@
  * @fileoverview Dashboard Component
  * Mobile-first dashboard with navigation to player features
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
 import { useOrganizations } from '@/api/hooks/useOrganizations';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
-import { Users, MessageSquare, Trophy, Building2 } from 'lucide-react';
+import { Users, MessageSquare, Trophy, Building2, Settings } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { user } = useUser();
   const { member, loading } = useUserProfile();
   const { organizations, loading: orgsLoading } = useOrganizations(member?.id);
+  const navigate = useNavigate();
+  // Track which org button is loading during navigation
+  const [navigatingOrgId, setNavigatingOrgId] = useState<string | null>(null);
 
   if (loading || orgsLoading) {
     return (
@@ -80,6 +83,23 @@ export const Dashboard: React.FC = () => {
             </Card>
           </Link>
 
+          {/* Player Settings */}
+          <Link to="/profile">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <Settings className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-lg text-gray-900">Player Settings</h2>
+                    <p className="text-sm text-gray-600">Manage your profile and preferences</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           {/* Tournaments (Coming Soon) */}
           <Card className="opacity-50">
             <CardContent className="p-6">
@@ -104,17 +124,28 @@ export const Dashboard: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               {organizations.map((org) => (
-                <Link key={org.id} to={`/operator-dashboard/${org.id}`}>
-                  <Button variant="outline" className="w-full justify-between hover:bg-blue-100">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      <span className="font-medium">{org.organization_name}</span>
-                    </div>
+                <Button
+                  key={org.id}
+                  variant="outline"
+                  className="w-full justify-between hover:bg-blue-100"
+                  disabled={navigatingOrgId !== null}
+                  onClick={() => {
+                    setNavigatingOrgId(org.id);
+                    navigate(`/operator-dashboard/${org.id}`);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    <span className="font-medium">
+                      {navigatingOrgId === org.id ? 'Loading...' : org.organization_name}
+                    </span>
+                  </div>
+                  {navigatingOrgId !== org.id && (
                     <span className="text-xs px-2 py-1 bg-blue-100 rounded">
                       {org.position === 'owner' ? 'Owner' : 'Admin'}
                     </span>
-                  </Button>
-                </Link>
+                  )}
+                </Button>
               ))}
             </CardContent>
           </Card>

@@ -28,6 +28,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
   const [activeSeason, setActiveSeason] = useState<any | null>(null);
   const [upcomingWeeks, setUpcomingWeeks] = useState<Array<{ name: string; date: string; type: string }>>([]);
   const [nextBlackout, setNextBlackout] = useState<{ name: string; date: string } | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [weeksCompleted, setWeeksCompleted] = useState(0);
   const [totalWeeks, setTotalWeeks] = useState(0);
   const [seasonStartDate, setSeasonStartDate] = useState<string | null>(null);
@@ -207,6 +208,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
    */
   const handleCreateSchedule = () => {
     if (activeSeason) {
+      setIsNavigating(true);
       navigate(`/league/${leagueId}/season/${activeSeason.id}/schedule-setup`);
     }
   };
@@ -216,6 +218,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
    */
   const handleViewSchedule = () => {
     if (activeSeason) {
+      setIsNavigating(true);
       navigate(`/league/${leagueId}/season/${activeSeason.id}/schedule`);
     }
   };
@@ -225,8 +228,8 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Schedule</h2>
         {scheduleExists && (
-          <Button size="sm" onClick={handleViewSchedule}>
-            View Schedule
+          <Button size="sm" onClick={handleViewSchedule} disabled={isNavigating}>
+            {isNavigating ? 'Loading...' : 'View Schedule'}
           </Button>
         )}
       </div>
@@ -332,8 +335,8 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
         <div className="text-center py-8">
           <div className="text-4xl mb-3">🗓️</div>
           <p className="text-gray-600 mb-4">Ready to create your schedule</p>
-          <Button onClick={handleCreateSchedule}>
-            Create Schedule
+          <Button onClick={handleCreateSchedule} disabled={isNavigating}>
+            {isNavigating ? 'Loading...' : 'Create Schedule'}
           </Button>
         </div>
       )}

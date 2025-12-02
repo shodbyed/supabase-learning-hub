@@ -110,9 +110,31 @@ export const Profile: React.FC = () => {
         <SuccessMessage message={successMessage} />
 
         <div className="space-y-6">
-          {/* Membership Status Section (Read-Only) */}
+          {/* Editable Sections */}
+          <PersonalInfoSection
+            member={member}
+            form={personalForm}
+            handlers={personalHandlers}
+          />
+
+          <ContactInfoSection
+            member={member}
+            form={contactForm}
+            handlers={contactHandlers}
+          />
+
+          <AddressSection
+            member={member}
+            form={addressForm}
+            handlers={addressHandlers}
+          />
+
+          {/* Privacy Settings Section */}
+          <PrivacySettingsSection />
+
+          {/* BCA Membership Status Section (Read-Only) */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Membership Status</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">BCA Membership Status</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <span className="text-sm font-medium text-gray-500">BCA Member Number</span>
@@ -138,28 +160,6 @@ export const Profile: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Editable Sections */}
-          <PersonalInfoSection
-            member={member}
-            form={personalForm}
-            handlers={personalHandlers}
-          />
-
-          <ContactInfoSection
-            member={member}
-            form={contactForm}
-            handlers={contactHandlers}
-          />
-
-          <AddressSection
-            member={member}
-            form={addressForm}
-            handlers={addressHandlers}
-          />
-
-          {/* Privacy Settings Section */}
-          <PrivacySettingsSection />
         </div>
       </div>
     </div>

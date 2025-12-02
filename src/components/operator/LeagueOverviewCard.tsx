@@ -46,6 +46,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
   const [currentPlayWeek, setCurrentPlayWeek] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   /**
    * Fetch the most recent season for this league (active or otherwise)
@@ -166,6 +167,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
     localStorage.removeItem(`season-wizard-step-${league.id}`);
     localStorage.removeItem('season-schedule-review');
     localStorage.removeItem('season-blackout-weeks');
+    setIsNavigating(true);
     navigate(`/league/${league.id}/create-season`);
   };
 
@@ -294,6 +296,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
       localStorage.setItem(`season-wizard-step-${league.id}`, startStep.toString());
 
       // Navigate to wizard with seasonId for tracking
+      setIsNavigating(true);
       navigate(`/league/${league.id}/create-season?seasonId=${currentSeason.id}`);
     } catch (err) {
       logger.error('Error loading season data for Continue Setup', { error: err instanceof Error ? err.message : String(err) });
@@ -375,9 +378,13 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
             <Button
               size="sm"
               variant="outline"
-              onClick={() => navigate(`/league/${league.id}/season/${currentSeason.id}/manage-schedule`)}
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(`/league/${league.id}/season/${currentSeason.id}/manage-schedule`);
+              }}
+              disabled={isNavigating}
             >
-              Manage Season
+              {isNavigating ? 'Loading...' : 'Manage Season'}
             </Button>
           )}
 
@@ -388,8 +395,9 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
               size="sm"
               onClick={handleContinueSetupClick}
               style={{ backgroundColor: '#2563eb', color: 'white' }}
+              disabled={isNavigating}
             >
-              Continue Setup
+              {isNavigating ? 'Loading...' : 'Continue Setup'}
             </Button>
           )}
 
@@ -399,8 +407,9 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
               size="sm"
               onClick={handleCreateSeasonClick}
               style={{ backgroundColor: '#2563eb', color: 'white' }}
+              disabled={isNavigating}
             >
-              Create Season
+              {isNavigating ? 'Loading...' : 'Create Season'}
             </Button>
           )}
 

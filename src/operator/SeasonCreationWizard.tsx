@@ -277,6 +277,8 @@ export const SeasonCreationWizard: React.FC = () => {
     );
   }
 
+  // Navigation loading is tracked via isCreating state in the submit handler
+
   /**
    * User accepted the day of week change
    * Updates the league and saves the new date

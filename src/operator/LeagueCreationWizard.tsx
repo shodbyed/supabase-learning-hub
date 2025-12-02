@@ -6,7 +6,7 @@
  *
  * Season scheduling and team building moved to separate wizards.
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUserProfile, useCreateLeague, useOrganizationPreferences } from '@/api/hooks';
 import { useOrganization } from '@/api/hooks/useOrganizations';
@@ -37,6 +37,9 @@ export const LeagueCreationWizard: React.FC = () => {
   const { orgId } = useParams<{ orgId: string }>();
   const { member } = useUserProfile();
   const [createdLeagueId, setCreatedLeagueId] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  // Track which navigation button was clicked for loading state on success screen
+  const [navigatingTo, setNavigatingTo] = useState<'season' | 'dashboard' | null>(null);
   const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
   // Fetch organization with TanStack Query (cached, reusable)
@@ -113,13 +116,42 @@ export const LeagueCreationWizard: React.FC = () => {
     getCurrentStep,
     handleInputChange,
     handleChoiceSelect,
-    handleNext,
-    handlePrevious,
+    handleNext: originalHandleNext,
+    handlePrevious: originalHandlePrevious,
     clearFormData
   } = useLeagueWizard({
     onSubmit: handleSubmit,
     orgPreferences,
   });
+
+  /**
+   * Clear navigation state after component has loaded
+   * Uses a short delay to allow lazy-loaded components to render
+   */
+  useEffect(() => {
+    if (isNavigating) {
+      const timer = setTimeout(() => {
+        setIsNavigating(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isNavigating]);
+
+  /**
+   * Wrap handleNext to show immediate loading feedback during lazy loading
+   */
+  const handleNext = useCallback(() => {
+    setIsNavigating(true);
+    originalHandleNext();
+  }, [originalHandleNext]);
+
+  /**
+   * Wrap handlePrevious to show immediate loading feedback during lazy loading
+   */
+  const handlePrevious = useCallback(() => {
+    setIsNavigating(true);
+    originalHandlePrevious();
+  }, [originalHandlePrevious]);
 
   /**
    * Sync input field with current step's saved value when navigating
@@ -195,19 +227,27 @@ export const LeagueCreationWizard: React.FC = () => {
 
             <div className="space-y-3">
               <Button
-                onClick={() => navigate(`/league/${createdLeagueId}/create-season`)}
+                onClick={() => {
+                  setNavigatingTo('season');
+                  navigate(`/league/${createdLeagueId}/create-season`);
+                }}
                 className="w-full"
                 size="lg"
+                disabled={navigatingTo !== null}
               >
-                Create Season
+                {navigatingTo === 'season' ? 'Loading...' : 'Create Season'}
               </Button>
               <Button
-                onClick={() => navigate(`/operator-dashboard/${orgId}`)}
+                onClick={() => {
+                  setNavigatingTo('dashboard');
+                  navigate(`/operator-dashboard/${orgId}`);
+                }}
                 variant="outline"
                 className="w-full"
                 size="lg"
+                disabled={navigatingTo !== null}
               >
-                Back to Dashboard
+                {navigatingTo === 'dashboard' ? 'Loading...' : 'Back to Dashboard'}
               </Button>
             </div>
           </div>
@@ -260,6 +300,7 @@ export const LeagueCreationWizard: React.FC = () => {
             onCancel={handleCancel}
             updateFormData={() => {}} // Not used in simplified version
             isSubmitting={isCreating}
+            isNavigating={isNavigating}
           />
         </div>
 

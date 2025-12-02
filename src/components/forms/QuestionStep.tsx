@@ -26,6 +26,8 @@ interface QuestionStepProps {
   infoContent?: React.ReactNode;
   inputType?: 'text' | 'date' | 'email' | 'tel'; // New prop to specify input type
   isSubmitting?: boolean;
+  /** Shows loading state during navigation (for lazy loading feedback) */
+  isNavigating?: boolean;
 }
 
 /**
@@ -54,7 +56,8 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   infoTitle,
   infoContent,
   inputType = 'text',
-  isSubmitting
+  isSubmitting,
+  isNavigating
 }) => {
   const capitalizeInputRef = useRef<{ getValue: () => string }>(null);
 
@@ -172,9 +175,9 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
 
             <Button
               onClick={handleNext}
-              disabled={!value.trim() || isSubmitting}
+              disabled={!value.trim() || isSubmitting || isNavigating}
             >
-              {isSubmitting ? 'Submitting...' : isLastQuestion ? 'Continue' : 'Next'}
+              {isSubmitting ? 'Submitting...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Continue' : 'Next'}
             </Button>
           </div>
         </div>

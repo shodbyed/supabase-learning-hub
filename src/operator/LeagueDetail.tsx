@@ -18,6 +18,7 @@ import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
 import { StatsCard } from '@/components/operator/StatsCard';
+import { Button } from '@/components/ui/button';
 
 /**
  * League Detail Component
@@ -45,6 +46,8 @@ export const LeagueDetail: React.FC = () => {
   // const [totalWeeksCount, setTotalWeeksCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Track navigation loading state for lazy-loaded pages
+  const [isNavigating, setIsNavigating] = useState(false);
 
   /**
    * Fetch league details, season count, team count, player count, and schedule status on mount
@@ -278,12 +281,16 @@ export const LeagueDetail: React.FC = () => {
                 : 'Manage venues and teams for your league'
               }
             </p>
-            <button
-              onClick={() => navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : `/league/${league.id}/manage-teams`)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            <Button
+              onClick={() => {
+                setIsNavigating(true);
+                navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : `/league/${league.id}/manage-teams`);
+              }}
+              disabled={isNavigating}
+              size="lg"
             >
-              Let's Go!
-            </button>
+              {isNavigating ? 'Loading...' : "Let's Go!"}
+            </Button>
           </div>
         </div>
 

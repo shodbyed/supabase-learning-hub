@@ -16,7 +16,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail, Users } from 'lucide-react';
+import { ArrowLeft, Mail, Users, Award } from 'lucide-react';
 import { formatGameType, formatDayOfWeek } from '@/types/league';
 import { logger } from '@/utils/logger';
 
@@ -175,11 +175,6 @@ export function PlayerProfile() {
           <p className="text-lg text-gray-600">
             Player #{player.system_player_number.toString().padStart(5, '0')}
           </p>
-          {player.bca_member_number && (
-            <p className="text-sm text-gray-500">
-              BCA Member: {player.bca_member_number}
-            </p>
-          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Email */}
@@ -246,6 +241,26 @@ export function PlayerProfile() {
                 </li>
               ))}
             </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* BCA Membership Status */}
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-gray-600" />
+            <CardTitle>BCA Membership Status</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {player.bca_member_number ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">Active</span>
+              <span className="text-gray-700">Member #{player.bca_member_number}</span>
+            </div>
+          ) : (
+            <p className="text-gray-500">No BCA membership on file</p>
           )}
         </CardContent>
       </Card>
