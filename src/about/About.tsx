@@ -5,12 +5,14 @@ export const About: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <div className="mb-4 relative">
+        {/*
         <SponsorLogos
           leftSponsor={sponsorConfigs.predator}
           rightSponsor={sponsorConfigs.bca}
         />
+        */}
         <p className="text-xl font-bold text-gray-700">Welcome to</p>
-        <h1 className="text-3xl font-bold">Rackem Leagues Network</h1>
+        <h1 className="text-3xl font-bold">Rackem Leagues</h1>
       </div>
       <div className="space-y-6">
         <section>
