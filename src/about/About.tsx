@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PageHeader } from '@/components/PageHeader';
+//import { SponsorLogos, sponsorConfigs } from '../components/SponsorLogos';
 
 export const About: React.FC = () => {
   return (
