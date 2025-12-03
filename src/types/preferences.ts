@@ -32,6 +32,12 @@ export interface Preferences {
   // Match Rules (NULL = use next level default)
   golden_break_counts_as_win: boolean | null;
 
+  // Player Authorization (NULL = use next level default, system default: true)
+  allow_unauthorized_players: boolean | null;
+
+  // Content Moderation (NULL = use next level default, system default: false)
+  profanity_filter_enabled: boolean | null;
+
   // Timestamps
   created_at: string;
   updated_at: string;
@@ -49,6 +55,8 @@ export type PreferencesInsertData = {
   game_history_limit?: number | null;
   team_format?: TeamFormat | null;
   golden_break_counts_as_win?: boolean | null;
+  allow_unauthorized_players?: boolean | null;
+  profanity_filter_enabled?: boolean | null;
 };
 
 /**
@@ -98,6 +106,8 @@ export interface ResolvedLeaguePreferences {
   game_history_limit: number;
   team_format: TeamFormat;
   golden_break_counts_as_win: boolean;
+  allow_unauthorized_players: boolean;
+  profanity_filter_enabled: boolean;
 }
 
 /**
@@ -110,4 +120,6 @@ export const SYSTEM_DEFAULTS = {
   game_history_limit: 200,
   team_format: '5_man' as TeamFormat,
   golden_break_counts_as_win: true,
+  allow_unauthorized_players: true,
+  profanity_filter_enabled: false,
 } as const;

@@ -2,28 +2,20 @@
  * @fileoverview Organization Settings Page
  *
  * Overview page showing organization info and rules in card format.
- * Links to detailed edit pages for each section.
+ * Uses only reusable components for each settings section.
  */
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/api/hooks';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { DashboardCard } from '@/components/operator/DashboardCard';
-import { InfoButton } from '@/components/InfoButton';
 import { PageHeader } from '@/components/PageHeader';
-import { CalendarX, Shield } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { parseLocalDate } from '@/utils/formatters';
-import { useOperatorProfanityToggle } from '@/hooks/useOperatorProfanityToggle';
-import { useChampionshipPreferences } from '@/hooks/useChampionshipPreferences';
-import { useChampionshipDateEditor } from '@/hooks/useChampionshipDateEditor';
-import { useChampionshipIgnoreToggle } from '@/hooks/useChampionshipIgnoreToggle';
+import { BookOpen, Building2 } from 'lucide-react';
 import { OrganizationBasicInfoCard } from '@/components/operator/OrganizationBasicInfoCard';
 import { ContactInfoCard } from '@/components/operator/ContactInfoCard';
 import { PaymentMethodCard } from '@/components/operator/PaymentMethodCard';
 import { OrganizationPreferencesCard } from '@/components/operator/OrganizationPreferencesCard';
+import { BlackoutDatesCard } from '@/components/operator/BlackoutDatesCard';
 
 /**
  * Organization Settings Component
@@ -46,60 +38,8 @@ export const OrganizationSettings: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ['organization', orgId] });
   };
 
-  // Profanity filter state
-  const [profanityFilterEnabled, setProfanityFilterEnabled] = useState(false);
-
-  // Sync profanity filter state when organization loads
-  useEffect(() => {
-    if (organization) {
-      setProfanityFilterEnabled(organization.profanity_filter_enabled || false);
-    }
-  }, [organization]);
-
-  // Profanity filter toggle hook
-  const { toggleFilter, isSaving: isSavingFilter, success: filterSuccess } = useOperatorProfanityToggle(
-    organization?.id || null,
-    profanityFilterEnabled,
-    setProfanityFilterEnabled
-  );
-
-  // Championship preferences hook
-  const {
-    bcaPreference,
-    apaPreference,
-    refetchPreferences,
-  } = useChampionshipPreferences(organization?.id);
-
-  // Championship date editor hooks (replaces all the duplicate edit state and functions)
-  const bcaEditor = useChampionshipDateEditor('BCA', bcaPreference, organization?.id, refetchPreferences);
-  const apaEditor = useChampionshipDateEditor('APA', apaPreference, organization?.id, refetchPreferences);
-
   // Convert query error to string
   const error = queryError ? (queryError as Error).message : null;
-
-  // Operator profile now handled by useOperatorProfile TanStack Query hook above
-  // Championship preferences handled by useChampionshipPreferences hook above
-  // Championship ignore toggles handled by useChampionshipIgnoreToggle hook below
-
-  const bcaIgnoreToggle = useChampionshipIgnoreToggle(
-    bcaPreference?.preference?.id,
-    bcaPreference?.preference?.preference_action,
-    refetchPreferences
-  );
-
-  const apaIgnoreToggle = useChampionshipIgnoreToggle(
-    apaPreference?.preference?.id,
-    apaPreference?.preference?.preference_action,
-    refetchPreferences
-  );
-
-  /**
-   * Toggle profanity filter for organization
-   * Now delegates to useOperatorProfanityToggle hook
-   */
-  const handleToggleProfanityFilter = toggleFilter;
-
-  // All BCA/APA date editing logic now handled by useChampionshipDateEditor hooks above
 
   // Loading state
   if (loading) {
@@ -143,16 +83,6 @@ export const OrganizationSettings: React.FC = () => {
         subtitle="Manage your organization information and league rules"
       />
       <div className="container mx-auto px-4 max-w-6xl py-8">
-
-        {/* Success Message */}
-        {filterSuccess && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-700 font-medium">
-              Profanity filter settings updated successfully!
-            </p>
-          </div>
-        )}
-
         {/* Cards Grid */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Organization Basic Info Card */}
@@ -180,7 +110,7 @@ export const OrganizationSettings: React.FC = () => {
 
           {/* League Rules Card */}
           <DashboardCard
-            icon="📋"
+            icon={<BookOpen className="h-6 w-6" />}
             iconColor="text-teal-600"
             title="League Rules"
             description="Access official BCA rules and manage optional house rules for your leagues"
@@ -190,7 +120,7 @@ export const OrganizationSettings: React.FC = () => {
 
           {/* Venue Management Card */}
           <DashboardCard
-            icon="🏢"
+            icon={<Building2 className="h-6 w-6" />}
             iconColor="text-blue-600"
             title="Venue Management"
             description="Add and manage venues where your leagues play"
@@ -198,224 +128,11 @@ export const OrganizationSettings: React.FC = () => {
             linkTo={`/venues/${organization.id}`}
           />
 
-          {/* Profanity Filter Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="h-6 w-6 text-purple-600" />
-              <h3 className="font-semibold text-gray-900">Content Moderation</h3>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Control profanity validation for your organization. When enabled, team names and other public content containing inappropriate language will be rejected.
-                </p>
-                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">Profanity Filter</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {profanityFilterEnabled
-                          ? 'Team names with inappropriate language will be rejected'
-                          : 'Team names are not validated for profanity'}
-                      </p>
-                      <div className="mt-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          profanityFilterEnabled
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {profanityFilterEnabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleToggleProfanityFilter}
-                      disabled={isSavingFilter}
-                      variant={profanityFilterEnabled ? 'destructive' : 'default'}
-                      size="sm"
-                      className="ml-4"
-                    >
-                      {isSavingFilter ? 'Saving...' : profanityFilterEnabled ? 'Disable' : 'Enable'}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              {profanityFilterEnabled && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <p className="text-sm text-blue-700">
-                    <strong>Note:</strong> This setting validates team names and organization-wide content only. Individual messages are filtered based on each user's personal preferences.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Blackout Dates Card */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <CalendarX className="h-6 w-6 text-red-600" />
-              <h3 className="font-semibold text-gray-900">Blackout Dates</h3>
-            </div>
-            <div className="space-y-3 mb-6">
-              {/* BCA Preference */}
-              <div className="border rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 font-medium">BCA Championship</span>
-                  {!bcaEditor.isEditing ? (
-                    <button
-                      onClick={bcaEditor.startEditing}
-                      className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
-                    >
-                      {bcaPreference?.championship ? 'Edit' : 'Add'}
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={bcaEditor.saveDates}
-                        size="sm"
-                        className="text-xs h-7"
-                        disabled={bcaEditor.isSaving}
-                      >
-                        {bcaEditor.isSaving ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button
-                        onClick={bcaEditor.cancelEditing}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-7"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                {bcaEditor.isEditing ? (
-                  <div className="space-y-2 mb-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                        <Calendar
-                          value={bcaEditor.startDate}
-                          onChange={bcaEditor.setStartDate}
-                          placeholder="Select start date"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                        <Calendar
-                          value={bcaEditor.endDate}
-                          onChange={bcaEditor.setEndDate}
-                          placeholder="Select end date"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : bcaPreference && bcaPreference.championship ? (
-                  <>
-                    <div className="text-sm text-gray-900 mb-2">
-                      {parseLocalDate(bcaPreference.championship.start_date).toLocaleDateString()} - {parseLocalDate(bcaPreference.championship.end_date).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-2 text-sm text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={bcaPreference.preference?.preference_action === 'ignore'}
-                          onChange={bcaIgnoreToggle.toggleIgnore}
-                          disabled={bcaIgnoreToggle.isToggling}
-                          className="rounded"
-                        />
-                        Ignore these dates
-                      </label>
-                      <InfoButton title="Championship Dates">
-                        National tournament dates are normally flagged as potential schedule conflicts since many players travel to play or attend. If you don't expect enough of your players to be affected to justify rescheduling, these dates can safely be ignored.
-                      </InfoButton>
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-400 italic">Not set</span>
-                )}
-              </div>
-
-              {/* APA Preference */}
-              <div className="border rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600 font-medium">APA Championship</span>
-                  {!apaEditor.isEditing ? (
-                    <button
-                      onClick={apaEditor.startEditing}
-                      className="text-xs px-2 py-1 border border-gray-300 rounded hover:bg-gray-50"
-                    >
-                      {apaPreference?.championship ? 'Edit' : 'Add'}
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={apaEditor.saveDates}
-                        size="sm"
-                        className="text-xs h-7"
-                        disabled={apaEditor.isSaving}
-                      >
-                        {apaEditor.isSaving ? 'Saving...' : 'Save'}
-                      </Button>
-                      <Button
-                        onClick={apaEditor.cancelEditing}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-7"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                {apaEditor.isEditing ? (
-                  <div className="space-y-2 mb-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-                        <Calendar
-                          value={apaEditor.startDate}
-                          onChange={apaEditor.setStartDate}
-                          placeholder="Select start date"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">End Date</label>
-                        <Calendar
-                          value={apaEditor.endDate}
-                          onChange={apaEditor.setEndDate}
-                          placeholder="Select end date"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : apaPreference && apaPreference.championship ? (
-                  <>
-                    <div className="text-sm text-gray-900 mb-2">
-                      {parseLocalDate(apaPreference.championship.start_date).toLocaleDateString()} - {parseLocalDate(apaPreference.championship.end_date).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-2 text-sm text-gray-600">
-                        <input
-                          type="checkbox"
-                          checked={apaPreference.preference?.preference_action === 'ignore'}
-                          onChange={apaIgnoreToggle.toggleIgnore}
-                          disabled={apaIgnoreToggle.isToggling}
-                          className="rounded"
-                        />
-                        Ignore these dates
-                      </label>
-                      <InfoButton title="Championship Dates">
-                        National tournament dates are normally flagged as potential schedule conflicts since many players travel to play or attend. If you don't expect enough of your players to be affected to justify rescheduling, these dates can safely be ignored.
-                      </InfoButton>
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-400 italic">Not set</span>
-                )}
-              </div>
-            </div>
-          </div>
+          <BlackoutDatesCard
+            organizationId={organization.id}
+            onUpdate={() => refetchOrganization()}
+          />
         </div>
       </div>
     </div>

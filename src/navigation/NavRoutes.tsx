@@ -43,6 +43,7 @@ const PlayerManagement = lazy(() => import('../operator/PlayerManagement'));
 const LeagueCreationWizard = lazy(() => import('../operator/LeagueCreationWizard'));
 const LeagueRules = lazy(() => import('../operator/LeagueRules'));
 const LeagueDetail = lazy(() => import('../operator/LeagueDetail'));
+const LeagueSettings = lazy(() => import('../operator/LeagueSettings'));
 const SeasonCreationWizard = lazy(() => import('../operator/SeasonCreationWizard'));
 const SeasonScheduleManager = lazy(() => import('../operator/SeasonScheduleManager'));
 const VenueManagement = lazy(() => import('../operator/VenueManagement'));
@@ -106,6 +107,7 @@ const operatorRoutes = [
   { path: '/operator-settings/:orgId', element: <OrganizationSettings /> },
   { path: '/league-rules/:orgId', element: <LeagueRules /> },
   { path: '/league/:leagueId', element: <LeagueDetail /> },
+  { path: '/league/:leagueId/settings', element: <LeagueSettings /> },
   { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
   { path: '/league/:leagueId/season/:seasonId/manage-schedule', element: <SeasonScheduleManager /> },
   { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
