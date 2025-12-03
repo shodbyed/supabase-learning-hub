@@ -133,9 +133,9 @@ export const LeagueSettings: React.FC = () => {
             icon={<Building2 className="h-6 w-6" />}
             iconColor="text-blue-600"
             title="Venue Management"
-            description="Add and manage venues where your leagues play"
+            description="Assign venues and set table limits for this league"
             buttonText="Manage Venues"
-            linkTo={`/venues/${league.organization_id}`}
+            linkTo={`/venues/${league.organization_id}?leagueId=${league.id}`}
           />
         </div>
       </div>
