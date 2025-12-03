@@ -8,6 +8,7 @@ import { NavRoutes } from './navigation/NavRoutes';
 import { UserProvider } from './context/UserProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from './components/ui/sonner';
+import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
 
 
 /**
@@ -54,6 +55,7 @@ const App: React.FC = () => {
           </Router>
         </UserProvider>
         <Toaster position="top-right" />
+        <PWAUpdatePrompt />
       </div>
     </ErrorBoundary>
   );

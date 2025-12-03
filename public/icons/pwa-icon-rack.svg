@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <defs>
+    <!-- 9-ball gradients -->
+    <radialGradient id="ballGradient-9" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="50%" stop-color="#F5F5F5"/>
+      <stop offset="100%" stop-color="#CCCCCC"/>
+    </radialGradient>
+    <linearGradient id="stripeGradient-9" x1="0" y1="40%" x2="100%" y2="60%">
+      <stop offset="0%" stop-color="#FFEF7A"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#E0B800"/>
+    </linearGradient>
+    <radialGradient id="highlight-9" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 8-ball gradients -->
+    <radialGradient id="ballGradient-8" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#333333"/>
+      <stop offset="50%" stop-color="#1A1A1A"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="highlight-8" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 1-ball gradient (solid yellow) -->
+    <radialGradient id="ballGradient-1" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFEF7A"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#E0B800"/>
+    </radialGradient>
+    <radialGradient id="highlight-1" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 2-ball gradient (solid blue) -->
+    <radialGradient id="ballGradient-2" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#4169E1"/>
+      <stop offset="50%" stop-color="#0000FF"/>
+      <stop offset="100%" stop-color="#0000CC"/>
+    </radialGradient>
+    <radialGradient id="highlight-2" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 3-ball gradient (solid red) -->
+    <radialGradient id="ballGradient-3" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FF6666"/>
+      <stop offset="50%" stop-color="#FF0000"/>
+      <stop offset="100%" stop-color="#CC0000"/>
+    </radialGradient>
+    <radialGradient id="highlight-3" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 4-ball gradient (solid purple) -->
+    <radialGradient id="ballGradient-4" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#9966CC"/>
+      <stop offset="50%" stop-color="#800080"/>
+      <stop offset="100%" stop-color="#660066"/>
+    </radialGradient>
+    <radialGradient id="highlight-4" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 5-ball gradient (solid orange) -->
+    <radialGradient id="ballGradient-5" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFB366"/>
+      <stop offset="50%" stop-color="#FF7F00"/>
+      <stop offset="100%" stop-color="#CC6600"/>
+    </radialGradient>
+    <radialGradient id="highlight-5" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 6-ball gradient (solid dark green / grass green) -->
+    <radialGradient id="ballGradient-6" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#4CAF50"/>
+      <stop offset="50%" stop-color="#228B22"/>
+      <stop offset="100%" stop-color="#006400"/>
+    </radialGradient>
+    <radialGradient id="highlight-6" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 7-ball gradient (solid brown / maroon) -->
+    <radialGradient id="ballGradient-7" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#A0522D"/>
+      <stop offset="50%" stop-color="#8B4513"/>
+      <stop offset="100%" stop-color="#5D2906"/>
+    </radialGradient>
+    <radialGradient id="highlight-7" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="ball9Clip">
+      <circle cx="0" cy="0" r="8"/>
+    </clipPath>
+  </defs>
+
+  <!-- Square background with rounded corners -->
+  <rect x="0" y="0" width="100" height="100" rx="6" ry="6" fill="#539dc2"/>
+
+  <!-- Rack scaled and centered -->
+  <g transform="translate(50, 50) scale(1.1) translate(-60, -74)">
+    <!-- Diamond rack outline -->
+    <polygon
+      points="
+        32,71.5
+        32,76.5
+        57.5,118
+        62.5,118
+        88,76.5
+        88,71.5
+        62.5,30
+        57.5,30
+      "
+      fill="none"
+      stroke="black"
+      stroke-width="3"
+    />
+
+    <!-- Balls -->
+
+    <!-- 1-ball (top) -->
+    <g transform="translate(60, 46)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-1)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">1</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-1)"/>
+    </g>
+
+    <!-- 3-ball (second row, left) -->
+    <g transform="translate(52, 60)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-3)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">3</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-3)"/>
+    </g>
+
+    <!-- 8-ball (second row, right) -->
+    <g transform="translate(68, 60)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-8)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">8</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-8)"/>
+    </g>
+
+    <!-- 6-ball (third row, left) -->
+    <g transform="translate(44, 74)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-6)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">6</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-6)"/>
+    </g>
+
+    <!-- 9-ball in center position -->
+    <g transform="translate(60, 74)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-9)" stroke="black" stroke-width="0.4"/>
+      <g clip-path="url(#ball9Clip)">
+        <ellipse cx="0" cy="0" rx="10" ry="4.4" fill="url(#stripeGradient-9)"/>
+      </g>
+      <circle cx="0" cy="0" r="2.4" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1" text-anchor="middle" font-size="3" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">9</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-9)"/>
+    </g>
+
+    <!-- 4-ball (third row, right) -->
+    <g transform="translate(76, 74)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-4)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">4</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-4)"/>
+    </g>
+
+    <!-- 5-ball (fourth row, left) -->
+    <g transform="translate(52, 88)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-5)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">5</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-5)"/>
+    </g>
+
+    <!-- 7-ball (fourth row, right) -->
+    <g transform="translate(68, 88)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-7)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">7</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-7)"/>
+    </g>
+
+    <!-- 2-ball (bottom center) -->
+    <g transform="translate(60, 102)">
+      <circle cx="0" cy="0" r="8" fill="url(#ballGradient-2)" stroke="black" stroke-width="0.4"/>
+      <circle cx="0" cy="0" r="3" fill="white" stroke="black" stroke-width="0.3"/>
+      <text x="0" y="1.2" text-anchor="middle" font-size="3.5" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">2</text>
+      <circle cx="-2" cy="-2" r="2" fill="url(#highlight-2)"/>
+    </g>
+  </g>
+
+  <!-- Rackem text on left side, stacked vertically -->
+  <text x="6" font-size="10" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="white">
+    <tspan x="6" y="22">R</tspan>
+    <tspan x="6" y="35">a</tspan>
+    <tspan x="6" y="48">c</tspan>
+    <tspan x="6" y="61">k</tspan>
+    <tspan x="6" y="74">e</tspan>
+    <tspan x="6" y="87">m</tspan>
+  </text>
+
+  <!-- Leagues text on right side, stacked vertically -->
+  <text x="88" font-size="10" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="white">
+    <tspan x="88" y="15">L</tspan>
+    <tspan x="88" y="28">e</tspan>
+    <tspan x="88" y="41">a</tspan>
+    <tspan x="88" y="54">g</tspan>
+    <tspan x="88" y="67">u</tspan>
+    <tspan x="88" y="80">e</tspan>
+    <tspan x="88" y="93">s</tspan>
+  </text>
+</svg>

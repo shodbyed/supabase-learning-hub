@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512">
+  <defs>
+    <!-- Ball body gradient (light top-left to dark bottom-right) -->
+    <radialGradient id="ballGradient-9" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="50%" stop-color="#F5F5F5"/>
+      <stop offset="100%" stop-color="#CCCCCC"/>
+    </radialGradient>
+    <!-- Yellow stripe gradient -->
+    <linearGradient id="stripeGradient-9" x1="0" y1="40%" x2="100%" y2="60%">
+      <stop offset="0%" stop-color="#FFEF7A"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#E0B800"/>
+    </linearGradient>
+    <!-- Subtle highlight -->
+    <radialGradient id="highlight-9" cx="35%" cy="25%" r="25%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Clip path to contain the stripe within the ball -->
+    <clipPath id="ballClip">
+      <circle cx="50" cy="50" r="44"/>
+    </clipPath>
+  </defs>
+  <!-- Square background with rounded corners -->
+  <rect x="0" y="0" width="100" height="100" rx="6" ry="6" fill="#539dc2"/>
+  <!-- Outer white ball with subtle gradient - very thin stroke -->
+  <circle cx="50" cy="50" r="44" fill="url(#ballGradient-9)" stroke="black" stroke-width="0.4"/>
+  <!-- Yellow stripe clipped to ball shape -->
+  <g clip-path="url(#ballClip)">
+    <ellipse cx="50" cy="50" rx="55" ry="24" fill="url(#stripeGradient-9)"/>
+  </g>
+  <!-- Inner white circle for number -->
+  <circle cx="50" cy="50" r="13" fill="white" stroke="black" stroke-width="1.5"/>
+  <!-- Number 9 -->
+  <text x="50" y="56" text-anchor="middle" font-size="18" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="black">9</text>
+  <!-- Glossy highlight -->
+  <circle cx="38" cy="38" r="12" fill="url(#highlight-9)"/>
+</svg>
