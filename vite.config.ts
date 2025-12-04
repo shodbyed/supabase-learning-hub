@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: "Rack 'Em",
-        short_name: 'Rackem',
+        name: "Rack 'Em Leagues",
+        short_name: "Rack 'Em",
         description: 'Pool league management app for tracking teams, players, and matches',
         theme_color: '#539dc2',
         background_color: '#ffffff',
