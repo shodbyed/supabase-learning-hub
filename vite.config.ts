@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons/*.png', 'icons/*.svg'],
       manifest: {
-        name: 'Rackem Leagues',
+        name: "Rack 'Em",
         short_name: 'Rackem',
         description: 'Pool league management app for tracking teams, players, and matches',
         theme_color: '#539dc2',
@@ -24,17 +24,17 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icons/icon-rack-192.png',
+            src: '/icons/rackem-icon@1x.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icons/pwa-icon-rack.png',
+            src: '/icons/rackem-icon@2x.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/icons/pwa-icon-rack.png',
+            src: '/icons/rackem-icon@2x.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
