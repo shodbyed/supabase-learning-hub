@@ -17,7 +17,7 @@ export default defineConfig({
         short_name: "Rack 'Em",
         description: 'Pool league management app for tracking teams, players, and matches',
         theme_color: '#539dc2',
-        background_color: '#ffffff',
+        background_color: '#539dc2',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/',
