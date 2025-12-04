@@ -8,7 +8,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Download, Smartphone, X } from 'lucide-react';
 
 /**
  * BeforeInstallPromptEvent interface
@@ -34,6 +35,11 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
+
+  // Dev mode preview - shows the component even without the browser event
+  const isDev = import.meta.env.DEV;
+  const showDevPreview = isDev && !isInstallable && !isInstalled && !isDismissed;
 
   useEffect(() => {
     // Check if already installed (standalone mode)
@@ -71,7 +77,13 @@ export function PWAInstallPrompt() {
    * Triggers the native install prompt
    */
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      // In dev mode without the event, just show an alert
+      if (isDev) {
+        alert('Install prompt would appear here in production (requires HTTPS)');
+      }
+      return;
+    }
 
     // Show the install prompt
     await deferredPrompt.prompt();
@@ -87,20 +99,57 @@ export function PWAInstallPrompt() {
     setDeferredPrompt(null);
   };
 
-  // Don't show anything if already installed or not installable
-  if (isInstalled || !isInstallable) {
+  /**
+   * Dismiss the install prompt
+   */
+  const handleDismiss = () => {
+    setIsDismissed(true);
+  };
+
+  // Don't show anything if already installed, dismissed, or not installable (unless dev preview)
+  if (isInstalled || isDismissed || (!isInstallable && !showDevPreview)) {
     return null;
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleInstallClick}
-      className="gap-2"
-    >
-      <Download className="h-4 w-4" />
-      Install App
-    </Button>
+    <Card className="border-blue-200 bg-blue-50">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-blue-100 rounded-lg shrink-0">
+            <Smartphone className="h-5 w-5 text-blue-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">
+                  Install Rackem Leagues
+                  {showDevPreview && (
+                    <span className="ml-2 text-xs text-orange-600 font-normal">(Dev Preview)</span>
+                  )}
+                </h3>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Add to your home screen for quick access
+                </p>
+              </div>
+              <button
+                onClick={handleDismiss}
+                className="text-gray-400 hover:text-gray-600 p-1"
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleInstallClick}
+              className="mt-3 gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Install App
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

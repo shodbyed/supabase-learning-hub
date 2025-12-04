@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { Users, MessageSquare, Trophy, Building2, Settings } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -47,6 +48,9 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Content - Mobile First */}
       <main className="px-4 py-6 max-w-2xl mx-auto space-y-6">
+        {/* PWA Install Prompt - only shows if app is installable */}
+        <PWAInstallPrompt />
+
         {/* Quick Action Cards */}
         <div className="space-y-4">
           {/* My Teams */}

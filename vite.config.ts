@@ -68,7 +68,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: '127.0.0.1',
+    host: true, // Allow network access (same as --host)
     port: 5173,
     strictPort: false,
   },
