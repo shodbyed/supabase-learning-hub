@@ -54,7 +54,9 @@
       "Bash(echo \"=== console.warn (KEEP) ===\" grep -r \"console\\.warn\" --include=\"*.ts\" --include=\"*.tsx\" src/)",
       "Bash(echo \"=== console.log (REVIEW) ===\" grep -r \"console\\.log\" --include=\"*.ts\" --include=\"*.tsx\" src/)",
       "Bash(pnpm list:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm exec tsc:*)"
     ],
     "deny": [],
     "ask": []

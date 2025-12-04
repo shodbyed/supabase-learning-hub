@@ -7,8 +7,8 @@
  *
  * BCA Standard Rules:
  * - 9-Ball: Golden break DOES count as win
+ * - 10-Ball: Golden break DOES count as win
  * - 8-Ball: Golden break does NOT count as win
- * - 10-Ball: Golden break does NOT count as win
  */
 
 import type { GameType } from '@/types/league';
@@ -47,10 +47,10 @@ export function shouldGoldenBreakCount(
   // Otherwise use BCA Standard rules based on game type
   switch (gameType) {
     case 'nine_ball':
-      return true; // BCA Standard: 9-ball golden break counts as win
-    case 'eight_ball':
     case 'ten_ball':
-      return false; // BCA Standard: 8-ball and 10-ball golden break does NOT count
+      return true; // BCA Standard: 9-ball and 10-ball golden break counts as win
+    case 'eight_ball':
+      return false; // BCA Standard: 8-ball golden break does NOT count
     default:
       return false; // Safe default
   }

@@ -19,6 +19,8 @@ import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
 import { StatsCard } from '@/components/operator/StatsCard';
 import { Button } from '@/components/ui/button';
+import { DashboardCard } from '@/components/operator/DashboardCard';
+import { Settings } from 'lucide-react';
 
 /**
  * League Detail Component
@@ -299,6 +301,18 @@ export const LeagueDetail: React.FC = () => {
 
         {/* League Overview */}
         <LeagueOverviewCard league={league} />
+
+        {/* League Settings */}
+        <div className="mb-6">
+          <DashboardCard
+            icon={<Settings className="h-6 w-6" />}
+            iconColor="text-indigo-600"
+            title="League Settings"
+            description="Configure handicap, format, and match rules for this league"
+            buttonText="Manage League"
+            linkTo={`/league/${league.id}/settings`}
+          />
+        </div>
 
         {/* Teams Section */}
         <TeamsCard leagueId={league.id} />

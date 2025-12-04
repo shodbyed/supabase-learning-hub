@@ -279,15 +279,16 @@ export async function getLeagueBySeasonId(seasonId: string): Promise<League> {
 }
 
 /**
- * Fetch operator's profanity filter setting for a league
+ * Fetch resolved profanity filter setting for a league
  *
- * Gets the league's operator and returns whether profanity validation
- * should be enforced for team names and organization content.
+ * Queries the resolved_league_preferences view which handles cascading:
+ * league → organization → system default (false)
+ * Returns whether profanity validation should be enforced for team names.
  * Used by TeamEditorModal to validate team name input.
  *
  * @param leagueId - League's primary key ID
  * @returns Boolean indicating if profanity filter is enabled
- * @throws Error if league or operator not found
+ * @throws Error if league not found
  *
  * @example
  * const shouldValidate = await getOperatorProfanityFilter('league-uuid');
@@ -296,27 +297,15 @@ export async function getLeagueBySeasonId(seasonId: string): Promise<League> {
  * }
  */
 export async function getOperatorProfanityFilter(leagueId: string): Promise<boolean> {
-  // Fetch league to get organization_id
-  const { data: league, error: leagueError } = await supabase
-    .from('leagues')
-    .select('organization_id')
-    .eq('id', leagueId)
-    .single();
-
-  if (leagueError || !league) {
-    throw new Error(`Failed to fetch league: ${leagueError?.message || 'League not found'}`);
-  }
-
-  // Fetch organization's profanity filter setting
-  const { data: organization, error: organizationError } = await supabase
-    .from('organizations')
+  const { data, error } = await supabase
+    .from('resolved_league_preferences')
     .select('profanity_filter_enabled')
-    .eq('id', league.organization_id)
+    .eq('league_id', leagueId)
     .single();
 
-  if (organizationError || !organization) {
-    throw new Error(`Failed to fetch organization: ${organizationError?.message || 'Organization not found'}`);
+  if (error || !data) {
+    throw new Error(`Failed to fetch resolved preferences: ${error?.message || 'League not found'}`);
   }
 
-  return organization.profanity_filter_enabled || false;
+  return data.profanity_filter_enabled ?? false;
 }

@@ -6,9 +6,10 @@
  * - View all players in their leagues
  * - See player details (leagues, teams, game counts)
  * - Set starting handicaps for players with limited game history
+ * - Authorize new players via the AuthorizeNewPlayersCard component
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,8 +22,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { InfoButton } from '@/components/InfoButton';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { AuthorizeNewPlayersCard } from '@/components/operator/AuthorizeNewPlayersCard';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { Users, DollarSign } from 'lucide-react';
+import { Users, DollarSign, AlertCircle } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
 import { logger } from '@/utils/logger';
@@ -32,6 +34,7 @@ import {
   updatePlayerStartingHandicaps,
   markMembershipPaid,
   updateMembershipPaidDate,
+  isPlayerAuthorized,
 } from '@/api/queries/players';
 
 /**
@@ -80,6 +83,10 @@ export const PlayerManagement: React.FC = () => {
 
   const playerDetails = playerDetailsData?.data;
 
+  // Check if player is authorized (has non-NULL starting handicaps)
+  const playerIsAuthorized = playerDetails ? isPlayerAuthorized(playerDetails) : true;
+  const isEstablishedPlayer = playerDetails ? playerDetails.gameCounts.total >= 15 : false;
+
   // Update starting handicaps mutation
   const updateHandicapsMutation = useMutation({
     mutationFn: ({ playerId, h3v3, h5v5 }: { playerId: string; h3v3: number; h5v5: number }) =>
@@ -88,6 +95,10 @@ export const PlayerManagement: React.FC = () => {
       // Invalidate player details query to refetch
       queryClient.invalidateQueries({
         queryKey: ['playerDetails', selectedPlayerId, operatorId],
+      });
+      // Invalidate unauthorized players list (player is now authorized)
+      queryClient.invalidateQueries({
+        queryKey: ['unauthorizedPlayers', operatorId],
       });
       toast.success('Starting handicaps updated successfully!');
       // Close the collapsible section
@@ -132,7 +143,7 @@ export const PlayerManagement: React.FC = () => {
   });
 
   // Update form fields when player details load
-  React.useEffect(() => {
+  useEffect(() => {
     if (playerDetails) {
       setHandicap3v3(String(playerDetails.starting_handicap_3v3 ?? 0));
       setHandicap5v5(String(playerDetails.starting_handicap_5v5 ?? 40));
@@ -296,6 +307,14 @@ export const PlayerManagement: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Authorize New Players Card (handles its own state and modal) */}
+        {operatorId && (
+          <AuthorizeNewPlayersCard
+            operatorId={operatorId}
+            onSelectPlayer={setSelectedPlayerId}
+          />
+        )}
+
         {/* Player Details */}
         {selectedPlayerId && (
           <>
@@ -400,6 +419,25 @@ export const PlayerManagement: React.FC = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Unauthorized Player Warning */}
+                {!playerIsAuthorized && (
+                  <Card className="rounded-none lg:rounded-xl border-amber-300 bg-amber-50">
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-medium text-amber-800">Player Not Established</p>
+                          <p className="text-sm text-amber-700 mt-1">
+                            {isEstablishedPlayer
+                              ? 'This player has 15+ games and is established in the system. Set their starting handicaps below to authorize them.'
+                              : `This player has ${playerDetails.gameCounts.total} of 15 games needed to be established in the system. Set their starting handicaps below to authorize them for use in a restricted league match.`}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Teams */}
                 <Card className="rounded-none lg:rounded-xl">
@@ -507,13 +545,32 @@ export const PlayerManagement: React.FC = () => {
                     {/* Divider */}
                     <div className="border-t border-gray-200 my-4"></div>
 
+                    {/* Current Starting Handicaps Display */}
+                    <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Current Starting Handicaps</p>
+                      <div className="flex gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">3v3:</span>{' '}
+                          <span className={`font-semibold ${playerDetails.starting_handicap_3v3 === null ? 'text-amber-600' : ''}`}>
+                            {playerDetails.starting_handicap_3v3 !== null ? playerDetails.starting_handicap_3v3 : 'Not Set'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">5v5:</span>{' '}
+                          <span className={`font-semibold ${playerDetails.starting_handicap_5v5 === null ? 'text-amber-600' : ''}`}>
+                            {playerDetails.starting_handicap_5v5 !== null ? `${playerDetails.starting_handicap_5v5}%` : 'Not Set'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Toggle Link for Starting Handicaps */}
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 mt-4">
                       <button
                         onClick={() => setIsHandicapOpen(!isHandicapOpen)}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        Set Starting Handicaps
+                        {isHandicapOpen ? 'Hide Form' : 'Set Starting Handicaps'}
                       </button>
                       <InfoButton
                         title="Starting Handicaps"
@@ -523,7 +580,7 @@ export const PlayerManagement: React.FC = () => {
                     </div>
 
                     {/* Collapsible Content */}
-                    {isHandicapOpen && (
+                    {(isHandicapOpen || !playerIsAuthorized) && (
                       <div className="mt-4 space-y-4">
 
                         {/* 3v3 Handicap */}

@@ -70,19 +70,33 @@ export async function fetchOperatorPlayerCount(
 }
 
 /**
+ * Filter options for fetching operator players
+ */
+export interface OperatorPlayersFilter {
+  /** Only include players on active/upcoming season teams */
+  activeOnly?: boolean;
+  /** Only include players with NULL starting handicaps (unauthorized) */
+  unauthorizedOnly?: boolean;
+}
+
+/**
  * Fetch all players in operator's leagues (for dropdown selection)
  *
  * Returns list of unique players with basic info (id, name, player number).
- * If activeOnly is true, only includes players on teams in active or upcoming seasons.
+ * Supports flexible filtering via options object.
  *
  * @param operatorId - The operator ID to fetch players for
- * @param activeOnly - Whether to filter for only active players (default: false)
+ * @param options - Filter options (activeOnly, unauthorizedOnly)
  * @returns Promise with array of players
  */
 export async function fetchOperatorPlayers(
   operatorId: string,
-  activeOnly: boolean = false
+  options: OperatorPlayersFilter | boolean = false
 ) {
+  // Support legacy boolean parameter for backwards compatibility
+  const filters: OperatorPlayersFilter = typeof options === 'boolean'
+    ? { activeOnly: options }
+    : options;
   // Get all unique member IDs from teams in organization's leagues
   let teamPlayersQuery = supabase
     .from('team_players')
@@ -101,7 +115,7 @@ export async function fetchOperatorPlayers(
     .eq('team.league.organization_id', operatorId);
 
   // Filter by active status if activeOnly
-  if (activeOnly) {
+  if (filters.activeOnly) {
     teamPlayersQuery = teamPlayersQuery
       .eq('status', 'active')
       .in('team.season.status', ['active', 'upcoming']);
@@ -120,12 +134,20 @@ export async function fetchOperatorPlayers(
     return { data: [], error: null };
   }
 
-  // Fetch member details
-  const { data: members, error: membersError } = await supabase
+  // Fetch member details - include starting handicaps for unauthorized filter
+  let membersQuery = supabase
     .from('members')
-    .select('id, first_name, last_name, system_player_number, bca_member_number')
-    .in('id', uniqueMemberIds)
-    .order('last_name');
+    .select('id, first_name, last_name, system_player_number, bca_member_number, starting_handicap_3v3, starting_handicap_5v5')
+    .in('id', uniqueMemberIds);
+
+  // Filter for unauthorized players (both starting handicaps are NULL)
+  if (filters.unauthorizedOnly) {
+    membersQuery = membersQuery
+      .is('starting_handicap_3v3', null)
+      .is('starting_handicap_5v5', null);
+  }
+
+  const { data: members, error: membersError } = await membersQuery.order('last_name');
 
   if (membersError) {
     return { data: null, error: membersError };
@@ -343,4 +365,94 @@ export async function updateMembershipPaidDate(playerId: string, date: string | 
 export async function markMembershipPaid(playerId: string) {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
   return updateMembershipPaidDate(playerId, today);
+}
+
+/**
+ * Result of auto-authorization attempt
+ */
+export interface AutoAuthorizeResult {
+  /** Whether the player was auto-authorized */
+  authorized: boolean;
+  /** Total game count across all game types */
+  totalGames: number;
+  /** The 3v3 handicap that was set (if authorized) */
+  handicap3v3?: number;
+  /** The 5v5 handicap that was set (if authorized) */
+  handicap5v5?: number;
+  /** Error message if authorization failed */
+  error?: string;
+}
+
+/**
+ * Attempt to auto-authorize an established player
+ *
+ * Players with 15+ total games (across all game types) are considered "established"
+ * and can be auto-authorized by calculating their handicaps from game history.
+ *
+ * @param playerId - The player's member ID
+ * @returns Promise with authorization result
+ */
+export async function autoAuthorizeEstablishedPlayer(
+  playerId: string
+): Promise<AutoAuthorizeResult> {
+  try {
+    // Fetch game counts for all game types
+    const eightBallGames = await fetchPlayerGameHistory(playerId, 'eight_ball', undefined, 10000);
+    const nineBallGames = await fetchPlayerGameHistory(playerId, 'nine_ball', undefined, 10000);
+    const tenBallGames = await fetchPlayerGameHistory(playerId, 'ten_ball', undefined, 10000);
+
+    const totalGames = eightBallGames.length + nineBallGames.length + tenBallGames.length;
+
+    // Need 15+ games to auto-authorize
+    if (totalGames < 15) {
+      return {
+        authorized: false,
+        totalGames,
+      };
+    }
+
+    // Calculate handicaps using the standard calculation
+    // Use 8-ball as the primary game type for handicap calculation
+    // (most common game type, provides best baseline)
+    const handicap3v3 = await calculatePlayerHandicap(playerId, '5_man', 'standard', 'eight_ball');
+    const handicap5v5 = await calculatePlayerHandicap(playerId, '8_man', 'standard', 'eight_ball');
+
+    // Update the player's starting handicaps
+    const { error } = await updatePlayerStartingHandicaps(playerId, handicap3v3, handicap5v5);
+
+    if (error) {
+      return {
+        authorized: false,
+        totalGames,
+        error: error.message,
+      };
+    }
+
+    return {
+      authorized: true,
+      totalGames,
+      handicap3v3,
+      handicap5v5,
+    };
+  } catch (error) {
+    logger.error('Error auto-authorizing player', { error: error instanceof Error ? error.message : String(error) });
+    return {
+      authorized: false,
+      totalGames: 0,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * Check if a player is authorized (has non-NULL starting handicaps)
+ *
+ * @param player - Player object with starting_handicap_3v3 and starting_handicap_5v5
+ * @returns true if player is authorized (both handicaps are set)
+ */
+export function isPlayerAuthorized(player: {
+  starting_handicap_3v3: number | null;
+  starting_handicap_5v5: number | null;
+}): boolean {
+  return player.starting_handicap_3v3 !== null && player.starting_handicap_5v5 !== null;
 }
