@@ -24,17 +24,17 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/icons/rackem-icon@1x.png',
+            src: '/icons/rackem-iconmdpi.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icons/rackem-icon@2x.png',
+            src: '/icons/rackem-iconhdpi.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: '/icons/rackem-icon@2x.png',
+            src: '/icons/rackem-iconhdpi.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
