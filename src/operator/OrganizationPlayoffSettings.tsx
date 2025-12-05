@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, Users, Info, Settings } from 'lucide-react';
+import { Trophy, Users, Info, Settings, Shuffle, ThumbsDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -21,24 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PageHeader } from '@/components/PageHeader';
-import { generatePlayoffPairs } from '@/utils/playoffGenerator';
 import { ParticipationSettingsCard } from '@/components/playoff/ParticipationSettingsCard';
+import { PlayoffWeeksCard } from '@/components/playoff/PlayoffWeeksCard';
+import { WildcardSettingsCard } from '@/components/playoff/WildcardSettingsCard';
 import {
   usePlayoffSettingsReducer,
   calculateQualifyingTeams,
+  generateMatchupPairs,
+  getMatchupStyleLabel,
+  getMatchupStyleDescription,
 } from '@/hooks/playoff/usePlayoffSettingsReducer';
+import type { MatchupStyle } from '@/hooks/playoff/usePlayoffSettingsReducer';
 
 /**
  * Get ordinal suffix for a number (1st, 2nd, 3rd, etc.)
@@ -51,48 +45,149 @@ function getOrdinal(n: number): string {
 
 /**
  * Generic matchup card showing placeholder teams
+ * Shows wildcard icon for seeds that fall within wildcard spots
+ * Handles different matchup styles:
+ * - Seeded/Ranked: Shows seed numbers and team positions
+ * - Random: Shows shuffle icons for all positions
+ * - Bracket: Shows "Winner of Match X" references
  */
-function GenericMatchupCard({ matchNumber, homeSeed, awaySeed }: {
+function GenericMatchupCard({ matchNumber, homeSeed, awaySeed, bracketSize, wildcardSpots }: {
   matchNumber: number;
   homeSeed: number;
   awaySeed: number;
+  bracketSize: number;
+  wildcardSpots: number;
 }) {
+  // Determine if a seed is a wildcard spot (last N positions in bracket)
+  const isWildcard = (seed: number) => {
+    if (wildcardSpots === 0) return false;
+    if (seed < 0 || seed > 100) return false; // Random or bracket seeds aren't wildcards
+    const wildcardStartSeed = bracketSize - wildcardSpots + 1;
+    return seed >= wildcardStartSeed;
+  };
+
+  // Check if this is a random matchup (negative seeds)
+  const isRandom = homeSeed < 0 || awaySeed < 0;
+
+  // Check if this is a bracket progression matchup (seeds > 100)
+  // 100-199 = Winners, 200-299 = Losers, 300 = Wildcard from losers
+  const isBracket = homeSeed > 100 || awaySeed > 100;
+
+  // Get display info for a seed based on matchup style
+  const getSeedDisplay = (seed: number, isHome: boolean) => {
+    // Random matchup - show shuffle icon
+    if (isRandom) {
+      return {
+        icon: <Shuffle className="h-4 w-4" />,
+        label: 'Random Team',
+        bgColor: 'bg-purple-50',
+        circleBg: 'bg-purple-600',
+        textColor: 'text-purple-700',
+        badgeColor: isHome ? 'text-purple-600' : 'text-purple-500',
+      };
+    }
+
+    // Bracket progression - handle winners (100+), losers (200+), and wildcard (300)
+    if (isBracket) {
+      // Wildcard from losers pool (remaining losers after one was picked)
+      if (seed === 300) {
+        return {
+          icon: <Shuffle className="h-4 w-4" />,
+          label: 'Remaining Loser',
+          bgColor: 'bg-amber-50',
+          circleBg: 'bg-amber-600',
+          textColor: 'text-amber-700',
+          badgeColor: isHome ? 'text-amber-600' : 'text-amber-500',
+        };
+      }
+
+      // Loser of match X (200-299)
+      if (seed >= 200 && seed < 300) {
+        const matchRef = seed - 200;
+        return {
+          icon: <ThumbsDown className="h-4 w-4" />,
+          label: `Loser Match ${matchRef}`,
+          bgColor: 'bg-gray-100',
+          circleBg: 'bg-gray-500',
+          textColor: 'text-gray-600',
+          badgeColor: isHome ? 'text-gray-600' : 'text-gray-500',
+        };
+      }
+
+      // Winner of match X (100-199)
+      const matchRef = seed - 100;
+      return {
+        icon: <Trophy className="h-4 w-4" />,
+        label: `Winner Match ${matchRef}`,
+        bgColor: 'bg-indigo-50',
+        circleBg: 'bg-indigo-600',
+        textColor: 'text-indigo-700',
+        badgeColor: isHome ? 'text-indigo-600' : 'text-indigo-500',
+      };
+    }
+
+    // Wildcard spot
+    if (isWildcard(seed)) {
+      return {
+        icon: <Shuffle className="h-4 w-4" />,
+        label: 'Wildcard',
+        bgColor: 'bg-amber-50',
+        circleBg: 'bg-amber-600',
+        textColor: 'text-amber-700',
+        badgeColor: isHome ? 'text-amber-600' : 'text-amber-500',
+      };
+    }
+
+    // Regular seeded/ranked - show seed number
+    return {
+      icon: seed,
+      label: `${getOrdinal(seed)} Place Team`,
+      bgColor: isHome ? 'bg-blue-50' : 'bg-gray-50',
+      circleBg: isHome ? 'bg-blue-600' : 'bg-gray-600',
+      textColor: 'text-gray-500',
+      badgeColor: isHome ? 'text-blue-600' : 'text-gray-500',
+    };
+  };
+
+  const homeDisplay = getSeedDisplay(homeSeed, true);
+  const awayDisplay = getSeedDisplay(awaySeed, false);
+
   return (
     <div className="border border-gray-200 rounded-lg p-4 bg-white">
       <div className="text-xs text-gray-500 mb-2 text-center">
         Match {matchNumber}
       </div>
       <div className="space-y-3">
-        {/* Home team (higher seed) */}
-        <div className="flex items-center justify-between bg-blue-50 rounded-lg p-3">
+        {/* Home team */}
+        <div className={`flex items-center justify-between rounded-lg p-3 ${homeDisplay.bgColor}`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-              {homeSeed}
+            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-sm ${homeDisplay.circleBg}`}>
+              {homeDisplay.icon}
             </div>
             <div>
-              <div className="font-semibold text-gray-500 italic">
-                {getOrdinal(homeSeed)} Place Team
+              <div className={`font-semibold italic ${homeDisplay.textColor}`}>
+                {homeDisplay.label}
               </div>
             </div>
           </div>
-          <div className="text-xs text-blue-600 font-medium">HOME</div>
+          <div className={`text-xs font-medium ${homeDisplay.badgeColor}`}>HOME</div>
         </div>
 
         <div className="text-center text-gray-400 text-sm font-medium">vs</div>
 
-        {/* Away team (lower seed) */}
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+        {/* Away team */}
+        <div className={`flex items-center justify-between rounded-lg p-3 ${awayDisplay.bgColor}`}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">
-              {awaySeed}
+            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-sm ${awayDisplay.circleBg}`}>
+              {awayDisplay.icon}
             </div>
             <div>
-              <div className="font-semibold text-gray-500 italic">
-                {getOrdinal(awaySeed)} Place Team
+              <div className={`font-semibold italic ${awayDisplay.textColor}`}>
+                {awayDisplay.label}
               </div>
             </div>
           </div>
-          <div className="text-xs text-gray-500 font-medium">AWAY</div>
+          <div className={`text-xs font-medium ${awayDisplay.badgeColor}`}>AWAY</div>
         </div>
       </div>
     </div>
@@ -164,27 +259,33 @@ export const OrganizationPlayoffSettings: React.FC = () => {
   // Use the reducer for all playoff settings state
   const [settings, dispatch] = usePlayoffSettingsReducer();
 
-  // Destructure for convenience
+  // Destructure for convenience (only values used directly in this component)
   const {
     exampleTeamCount,
     playoffWeeks,
     qualificationType,
     qualifyingPercentage,
-    showAddWeeksModal,
-    weeksToAdd,
-    paymentMethod,
+    wildcardSpots,
+    weekMatchupStyles,
   } = settings;
 
   // Calculate bracket size based on qualification settings
   const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
 
-  // Generate matchups based on qualifying teams (bracketSize)
-  const pairs = generatePlayoffPairs(bracketSize);
-  const bracketMatchups = pairs.map((pair, index) => ({
-    matchNumber: index + 1,
-    homeSeed: pair[0],
-    awaySeed: pair[1],
-  }));
+  /**
+   * Generate matchups for a specific week based on its matchup style
+   * @param weekIndex - Zero-based week index
+   * @returns Array of matchup objects with matchNumber, homeSeed, awaySeed
+   */
+  const getWeekMatchups = (weekIndex: number) => {
+    const style = weekMatchupStyles[weekIndex] || 'seeded';
+    const pairs = generateMatchupPairs(bracketSize, style);
+    return pairs.map((pair, index) => ({
+      matchNumber: index + 1,
+      homeSeed: pair[0],
+      awaySeed: pair[1],
+    }));
+  };
 
   // Available team count options (4-40, matching schedule generator capability)
   const teamCountOptions = Array.from({ length: 37 }, (_, i) => i + 4);
@@ -273,38 +374,20 @@ export const OrganizationPlayoffSettings: React.FC = () => {
               </div>
             </div>
 
-            {/* Playoff Weeks */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700"># of playoff weeks</span>
-                <Select
-                  value={playoffWeeks.toString()}
-                  onValueChange={(value) => {
-                    if (value === 'add') {
-                      dispatch({ type: 'OPEN_ADD_WEEKS_MODAL' });
-                      return;
-                    }
-                    dispatch({ type: 'SET_PLAYOFF_WEEKS', payload: parseInt(value, 10) });
-                  }}
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Select weeks" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* Dynamically generate options from 1 to current playoffWeeks count */}
-                    {Array.from({ length: Math.max(2, playoffWeeks) }, (_, i) => i + 1).map((weekNum) => (
-                      <SelectItem key={weekNum} value={weekNum.toString()}>
-                        {weekNum}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="add">Add weeks...</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            {/* Playoff Weeks Card Component */}
+            <PlayoffWeeksCard
+              settings={settings}
+              dispatch={dispatch}
+            />
 
             {/* Participation Card Component */}
             <ParticipationSettingsCard
+              settings={settings}
+              dispatch={dispatch}
+            />
+
+            {/* Wildcard Settings Card Component */}
+            <WildcardSettingsCard
               settings={settings}
               dispatch={dispatch}
             />
@@ -342,36 +425,96 @@ export const OrganizationPlayoffSettings: React.FC = () => {
         </Card>
 
         {/* Example Brackets - dynamically generated for each playoff week */}
-        {Array.from({ length: playoffWeeks }, (_, i) => i + 1).map((weekNum) => (
-          <Card key={weekNum}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-purple-600" />
-                Example Bracket - Week {weekNum}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Show note when not all teams qualify */}
-              {exampleTeamCount !== bracketSize && (
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                  {qualificationType === 'all' && `With ${exampleTeamCount} teams, the ${getOrdinal(exampleTeamCount)} place team does not participate in playoffs.`}
-                  {qualificationType === 'fixed' && `Only top ${bracketSize} teams qualify. Teams ranked ${bracketSize + 1}${exampleTeamCount > bracketSize + 1 ? `-${exampleTeamCount}` : ''} do not participate.`}
-                  {qualificationType === 'percentage' && `Based on ${qualifyingPercentage}% qualification, ${bracketSize} of ${exampleTeamCount} teams participate.`}
+        {Array.from({ length: playoffWeeks }, (_, i) => i).map((weekIndex) => {
+          const weekNum = weekIndex + 1;
+          const currentStyle = weekMatchupStyles[weekIndex] || 'seeded';
+          const weekMatchups = getWeekMatchups(weekIndex);
+
+          return (
+            <Card key={weekNum}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-purple-600" />
+                    Example Bracket - Week {weekNum}
+                  </CardTitle>
+                  {/* Matchup Style Dropdown */}
+                  <Select
+                    value={currentStyle}
+                    onValueChange={(value) =>
+                      dispatch({
+                        type: 'SET_WEEK_MATCHUP_STYLE',
+                        payload: { weekIndex, style: value as MatchupStyle },
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="seeded">
+                        <div className="flex flex-col">
+                          <span>Seeded</span>
+                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('seeded')}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="ranked">
+                        <div className="flex flex-col">
+                          <span>Ranked</span>
+                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('ranked')}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="random">
+                        <div className="flex flex-col">
+                          <span>Random Draw</span>
+                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('random')}</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bracket">
+                        <div className="flex flex-col">
+                          <span>Bracket Progression</span>
+                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('bracket')}</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-              <div className="grid gap-4 md:grid-cols-2">
-                {bracketMatchups.map((matchup) => (
-                  <GenericMatchupCard
-                    key={matchup.matchNumber}
-                    matchNumber={matchup.matchNumber}
-                    homeSeed={matchup.homeSeed}
-                    awaySeed={matchup.awaySeed}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                {/* Style description below title */}
+                <p className="text-sm text-gray-500 mt-2">
+                  {getMatchupStyleLabel(currentStyle)}: {getMatchupStyleDescription(currentStyle)}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {/* Show note when not all teams qualify or when wildcards are used */}
+                {exampleTeamCount !== bracketSize && wildcardSpots === 0 && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                    {qualificationType === 'all' && `With ${exampleTeamCount} teams, the ${getOrdinal(exampleTeamCount)} place team does not participate in playoffs.`}
+                    {qualificationType === 'fixed' && `Only top ${bracketSize} teams qualify. Teams ranked ${bracketSize + 1}${exampleTeamCount > bracketSize + 1 ? `-${exampleTeamCount}` : ''} do not participate.`}
+                    {qualificationType === 'percentage' && `Based on ${qualifyingPercentage}% qualification, ${bracketSize} of ${exampleTeamCount} teams participate.`}
+                  </div>
+                )}
+                {/* Show wildcard info when wildcards are enabled */}
+                {wildcardSpots > 0 && (
+                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    {wildcardSpots === 1 ? '1 wildcard spot' : `${wildcardSpots} wildcard spots`} randomly selected from teams that didn't automatically qualify.
+                  </div>
+                )}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {weekMatchups.map((matchup) => (
+                    <GenericMatchupCard
+                      key={matchup.matchNumber}
+                      matchNumber={matchup.matchNumber}
+                      homeSeed={matchup.homeSeed}
+                      awaySeed={matchup.awaySeed}
+                      bracketSize={bracketSize}
+                      wildcardSpots={wildcardSpots}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
 
         {/* Example Standings */}
         <Card>
@@ -399,108 +542,6 @@ export const OrganizationPlayoffSettings: React.FC = () => {
           </Button>
         </div>
       </div>
-
-      {/* Add Weeks Modal */}
-      <Dialog
-        open={showAddWeeksModal}
-        onOpenChange={(open) => {
-          if (!open) dispatch({ type: 'CLOSE_ADD_WEEKS_MODAL' });
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Playoff Weeks</DialogTitle>
-            <DialogDescription>
-              Additional playoff weeks are charged at $2 per team per week.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Number of weeks input */}
-            <div className="space-y-2">
-              <Label htmlFor="weeksToAdd"># of weeks to add</Label>
-              <Input
-                id="weeksToAdd"
-                type="number"
-                min={1}
-                max={10}
-                value={weeksToAdd}
-                onChange={(e) =>
-                  dispatch({ type: 'SET_WEEKS_TO_ADD', payload: parseInt(e.target.value) || 1 })
-                }
-                className="w-32"
-              />
-            </div>
-
-            {/* Price calculation */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="text-xs text-gray-500 mb-2">Example pricing based on {exampleTeamCount} teams:</div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Price per team per week:</span>
-                <span className="font-medium">$2.00</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Teams × Weeks:</span>
-                <span className="font-medium">{exampleTeamCount} × {weeksToAdd}</span>
-              </div>
-              <div className="border-t pt-2 mt-2">
-                <div className="flex justify-between">
-                  <span className="font-medium text-gray-700">Example total:</span>
-                  <span className="font-bold text-purple-600">
-                    ${(exampleTeamCount * weeksToAdd * 2).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment Method */}
-            <div className="space-y-3">
-              <Label>Payment method</Label>
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(value) =>
-                  dispatch({ type: 'SET_PAYMENT_METHOD', payload: value as 'automatic' | 'manual' })
-                }
-                className="space-y-2"
-              >
-                <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
-                  <RadioGroupItem value="automatic" id="automatic" />
-                  <Label htmlFor="automatic" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Charge automatically</div>
-                    <div className="text-xs text-gray-500">
-                      Amount will be charged to your payment method during playoff weeks
-                    </div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50">
-                  <RadioGroupItem value="manual" id="manual" />
-                  <Label htmlFor="manual" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Pay manually</div>
-                    <div className="text-xs text-gray-500">
-                      You will receive an invoice to pay before playoff weeks begin
-                    </div>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => dispatch({ type: 'CLOSE_ADD_WEEKS_MODAL' })}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => dispatch({ type: 'ADD_PLAYOFF_WEEKS', payload: weeksToAdd })}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              Add Weeks
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

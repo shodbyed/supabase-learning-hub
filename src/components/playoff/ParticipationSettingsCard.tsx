@@ -2,8 +2,8 @@
  * @fileoverview Participation Settings Card Component
  *
  * A reusable card component that displays and allows editing of playoff
- * participation/qualification settings. Shows a visual representation of
- * how many teams qualify for playoffs and provides collapsible editing controls.
+ * participation/qualification settings. Shows the configured settings
+ * (not calculated results) since this is for organization-level defaults.
  *
  * Supports three qualification types:
  * - All teams: All teams qualify (odd numbers drop last place)
@@ -30,7 +30,6 @@ import type {
   PlayoffSettingsAction,
   QualificationType,
 } from '@/hooks/playoff/usePlayoffSettingsReducer';
-import { calculateQualifyingTeams } from '@/hooks/playoff/usePlayoffSettingsReducer';
 
 /**
  * Props for the ParticipationSettingsCard component
@@ -39,7 +38,6 @@ export interface ParticipationSettingsCardProps {
   /** Current playoff settings state */
   settings: Pick<
     PlayoffSettingsState,
-    | 'exampleTeamCount'
     | 'qualificationType'
     | 'fixedTeamCount'
     | 'qualifyingPercentage'
@@ -51,20 +49,10 @@ export interface ParticipationSettingsCardProps {
 }
 
 /**
- * Get ordinal suffix for a number (1st, 2nd, 3rd, etc.)
- */
-function getOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-/**
  * ParticipationSettingsCard Component
  *
- * Displays the current playoff participation settings with a visual percentage
- * indicator and provides collapsible editing controls for changing the
- * qualification rules.
+ * Displays the current playoff participation settings (the configured values,
+ * not calculated results) and provides collapsible editing controls.
  */
 export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps> = ({
   settings,
@@ -74,7 +62,6 @@ export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps>
   const [showQualificationEdit, setShowQualificationEdit] = useState(false);
 
   const {
-    exampleTeamCount,
     qualificationType,
     fixedTeamCount,
     qualifyingPercentage,
@@ -82,41 +69,55 @@ export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps>
     percentageMax,
   } = settings;
 
-  // Calculate bracket size based on current settings
-  const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
+  // Determine what to show in the circle based on qualification type
+  const circleDisplay = qualificationType === 'all'
+    ? 'ALL'
+    : qualificationType === 'fixed'
+      ? fixedTeamCount.toString()
+      : `${qualifyingPercentage}%`;
 
-  // Calculate display percentage
-  const displayPercentage = bracketSize === 0
-    ? '0%'
-    : exampleTeamCount === bracketSize
-      ? '100%'
-      : `${Math.round((bracketSize / exampleTeamCount) * 100)}%`;
+  // Build the title text
+  const titleText = qualificationType === 'all'
+    ? 'All Teams Participate'
+    : qualificationType === 'fixed'
+      ? `Top ${fixedTeamCount} Teams`
+      : `Top ${qualifyingPercentage}% of Teams`;
+
+  // Build the description text showing the full settings
+  const getDescriptionText = () => {
+    if (qualificationType === 'all') {
+      return 'All teams qualify for playoffs (odd numbers drop last place)';
+    }
+    if (qualificationType === 'fixed') {
+      return `Top ${fixedTeamCount} teams qualify for playoffs`;
+    }
+    // Percentage type - show min/max constraints
+    const parts = [`${qualifyingPercentage}% of teams qualify`];
+    if (percentageMin > 0) {
+      parts.push(`minimum ${percentageMin}`);
+    }
+    if (percentageMax !== null) {
+      parts.push(`maximum ${percentageMax}`);
+    }
+    return parts.join(', ');
+  };
 
   return (
     <div className="p-4 bg-green-50 rounded-lg space-y-3">
       {/* Summary Row */}
       <div className="flex items-center gap-3">
-        {/* Percentage Circle */}
-        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white font-bold text-lg">
-          {displayPercentage}
+        {/* Circle indicator */}
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white font-bold text-sm">
+          {circleDisplay}
         </div>
 
         {/* Description */}
         <div className="flex-1">
           <div className="font-medium text-green-900">
-            {bracketSize} of {exampleTeamCount} Teams Participate
+            {titleText}
           </div>
           <div className="text-sm text-green-700 mt-1">
-            {qualificationType === 'all' && exampleTeamCount === bracketSize && 'All teams qualify for the playoff bracket.'}
-            {qualificationType === 'all' && exampleTeamCount !== bracketSize && `With an odd number of teams, the ${getOrdinal(exampleTeamCount)} place team does not participate.`}
-            {qualificationType === 'fixed' && `Top ${bracketSize} teams qualify for playoffs.`}
-            {qualificationType === 'percentage' && (
-              <>
-                {`${qualifyingPercentage}% = ${bracketSize} teams`}
-                {percentageMin > 0 && bracketSize === percentageMin && ` (minimum ${percentageMin} applied)`}
-                {percentageMax !== null && bracketSize === percentageMax && ` (maximum ${percentageMax} applied)`}
-              </>
-            )}
+            {getDescriptionText()}
           </div>
         </div>
 
