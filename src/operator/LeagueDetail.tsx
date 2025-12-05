@@ -18,6 +18,7 @@ import { LeagueOverviewCard } from '@/components/operator/LeagueOverviewCard';
 import { TeamsCard } from '@/components/operator/TeamsCard';
 import { ScheduleCard } from '@/components/operator/ScheduleCard';
 import { StatsCard } from '@/components/operator/StatsCard';
+import { PlayoffsCard } from '@/components/operator/PlayoffsCard';
 import { Button } from '@/components/ui/button';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { Settings } from 'lucide-react';
@@ -319,6 +320,9 @@ export const LeagueDetail: React.FC = () => {
 
         {/* Schedule Section */}
         <ScheduleCard leagueId={league.id} />
+
+        {/* Playoffs Section */}
+        <PlayoffsCard leagueId={league.id} seasonId={activeSeason?.id || null} />
       </div>
     </div>
   );

@@ -50,6 +50,8 @@ const VenueManagement = lazy(() => import('../operator/VenueManagement'));
 const TeamManagement = lazy(() => import('../operator/TeamManagement'));
 const ScheduleSetupPage = lazy(() => import('../operator/ScheduleSetupPage'));
 const SeasonSchedulePage = lazy(() => import('../operator/SeasonSchedulePage'));
+const PlayoffSetup = lazy(() => import('../operator/PlayoffSetup'));
+const OrganizationPlayoffSettings = lazy(() => import('../operator/OrganizationPlayoffSettings'));
 
 // Public routes - no authentication required
 const publicRoutes = [
@@ -105,6 +107,7 @@ const operatorRoutes = [
   { path: '/manage-players/:orgId', element: <PlayerManagement /> },
   { path: '/create-league/:orgId', element: <LeagueCreationWizard /> },
   { path: '/operator-settings/:orgId', element: <OrganizationSettings /> },
+  { path: '/operator-settings/:orgId/playoffs', element: <OrganizationPlayoffSettings /> },
   { path: '/league-rules/:orgId', element: <LeagueRules /> },
   { path: '/league/:leagueId', element: <LeagueDetail /> },
   { path: '/league/:leagueId/settings', element: <LeagueSettings /> },
@@ -113,6 +116,7 @@ const operatorRoutes = [
   { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
   { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
   { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
+  { path: '/league/:leagueId/season/:seasonId/playoffs', element: <PlayoffSetup /> },
   { path: '/venues/:orgId', element: <VenueManagement /> },
 ];
 
