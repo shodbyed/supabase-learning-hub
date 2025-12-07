@@ -11,7 +11,7 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, Users, Info, Settings, Shuffle, ThumbsDown } from 'lucide-react';
+import { Trophy, Users, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -22,9 +22,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHeader } from '@/components/PageHeader';
+import { InfoButton } from '@/components/InfoButton';
 import { ParticipationSettingsCard } from '@/components/playoff/ParticipationSettingsCard';
 import { PlayoffWeeksCard } from '@/components/playoff/PlayoffWeeksCard';
 import { WildcardSettingsCard } from '@/components/playoff/WildcardSettingsCard';
+import { ExampleTeamCountCard } from '@/components/playoff/ExampleTeamCountCard';
+import { PlayoffMatchupCard } from '@/components/playoff/PlayoffMatchupCard';
+import { PlayoffStandingsTable } from '@/components/playoff/PlayoffStandingsTable';
 import {
   usePlayoffSettingsReducer,
   calculateQualifyingTeams,
@@ -32,222 +36,8 @@ import {
   getMatchupStyleLabel,
   getMatchupStyleDescription,
 } from '@/hooks/playoff/usePlayoffSettingsReducer';
+import { getOrdinal } from '@/utils/formatters';
 import type { MatchupStyle } from '@/hooks/playoff/usePlayoffSettingsReducer';
-
-/**
- * Get ordinal suffix for a number (1st, 2nd, 3rd, etc.)
- */
-function getOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-/**
- * Generic matchup card showing placeholder teams
- * Shows wildcard icon for seeds that fall within wildcard spots
- * Handles different matchup styles:
- * - Seeded/Ranked: Shows seed numbers and team positions
- * - Random: Shows shuffle icons for all positions
- * - Bracket: Shows "Winner of Match X" references
- */
-function GenericMatchupCard({ matchNumber, homeSeed, awaySeed, bracketSize, wildcardSpots }: {
-  matchNumber: number;
-  homeSeed: number;
-  awaySeed: number;
-  bracketSize: number;
-  wildcardSpots: number;
-}) {
-  // Determine if a seed is a wildcard spot (last N positions in bracket)
-  const isWildcard = (seed: number) => {
-    if (wildcardSpots === 0) return false;
-    if (seed < 0 || seed > 100) return false; // Random or bracket seeds aren't wildcards
-    const wildcardStartSeed = bracketSize - wildcardSpots + 1;
-    return seed >= wildcardStartSeed;
-  };
-
-  // Check if this is a random matchup (negative seeds)
-  const isRandom = homeSeed < 0 || awaySeed < 0;
-
-  // Check if this is a bracket progression matchup (seeds > 100)
-  // 100-199 = Winners, 200-299 = Losers, 300 = Wildcard from losers
-  const isBracket = homeSeed > 100 || awaySeed > 100;
-
-  // Get display info for a seed based on matchup style
-  const getSeedDisplay = (seed: number, isHome: boolean) => {
-    // Random matchup - show shuffle icon
-    if (isRandom) {
-      return {
-        icon: <Shuffle className="h-4 w-4" />,
-        label: 'Random Team',
-        bgColor: 'bg-purple-50',
-        circleBg: 'bg-purple-600',
-        textColor: 'text-purple-700',
-        badgeColor: isHome ? 'text-purple-600' : 'text-purple-500',
-      };
-    }
-
-    // Bracket progression - handle winners (100+), losers (200+), and wildcard (300)
-    if (isBracket) {
-      // Wildcard from losers pool (remaining losers after one was picked)
-      if (seed === 300) {
-        return {
-          icon: <Shuffle className="h-4 w-4" />,
-          label: 'Remaining Loser',
-          bgColor: 'bg-amber-50',
-          circleBg: 'bg-amber-600',
-          textColor: 'text-amber-700',
-          badgeColor: isHome ? 'text-amber-600' : 'text-amber-500',
-        };
-      }
-
-      // Loser of match X (200-299)
-      if (seed >= 200 && seed < 300) {
-        const matchRef = seed - 200;
-        return {
-          icon: <ThumbsDown className="h-4 w-4" />,
-          label: `Loser Match ${matchRef}`,
-          bgColor: 'bg-gray-100',
-          circleBg: 'bg-gray-500',
-          textColor: 'text-gray-600',
-          badgeColor: isHome ? 'text-gray-600' : 'text-gray-500',
-        };
-      }
-
-      // Winner of match X (100-199)
-      const matchRef = seed - 100;
-      return {
-        icon: <Trophy className="h-4 w-4" />,
-        label: `Winner Match ${matchRef}`,
-        bgColor: 'bg-indigo-50',
-        circleBg: 'bg-indigo-600',
-        textColor: 'text-indigo-700',
-        badgeColor: isHome ? 'text-indigo-600' : 'text-indigo-500',
-      };
-    }
-
-    // Wildcard spot
-    if (isWildcard(seed)) {
-      return {
-        icon: <Shuffle className="h-4 w-4" />,
-        label: 'Wildcard',
-        bgColor: 'bg-amber-50',
-        circleBg: 'bg-amber-600',
-        textColor: 'text-amber-700',
-        badgeColor: isHome ? 'text-amber-600' : 'text-amber-500',
-      };
-    }
-
-    // Regular seeded/ranked - show seed number
-    return {
-      icon: seed,
-      label: `${getOrdinal(seed)} Place Team`,
-      bgColor: isHome ? 'bg-blue-50' : 'bg-gray-50',
-      circleBg: isHome ? 'bg-blue-600' : 'bg-gray-600',
-      textColor: 'text-gray-500',
-      badgeColor: isHome ? 'text-blue-600' : 'text-gray-500',
-    };
-  };
-
-  const homeDisplay = getSeedDisplay(homeSeed, true);
-  const awayDisplay = getSeedDisplay(awaySeed, false);
-
-  return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white">
-      <div className="text-xs text-gray-500 mb-2 text-center">
-        Match {matchNumber}
-      </div>
-      <div className="space-y-3">
-        {/* Home team */}
-        <div className={`flex items-center justify-between rounded-lg p-3 ${homeDisplay.bgColor}`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-sm ${homeDisplay.circleBg}`}>
-              {homeDisplay.icon}
-            </div>
-            <div>
-              <div className={`font-semibold italic ${homeDisplay.textColor}`}>
-                {homeDisplay.label}
-              </div>
-            </div>
-          </div>
-          <div className={`text-xs font-medium ${homeDisplay.badgeColor}`}>HOME</div>
-        </div>
-
-        <div className="text-center text-gray-400 text-sm font-medium">vs</div>
-
-        {/* Away team */}
-        <div className={`flex items-center justify-between rounded-lg p-3 ${awayDisplay.bgColor}`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-sm ${awayDisplay.circleBg}`}>
-              {awayDisplay.icon}
-            </div>
-            <div>
-              <div className={`font-semibold italic ${awayDisplay.textColor}`}>
-                {awayDisplay.label}
-              </div>
-            </div>
-          </div>
-          <div className={`text-xs font-medium ${awayDisplay.badgeColor}`}>AWAY</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Generic standings table showing placeholder teams
- */
-function GenericStandingsTable({ teamCount, bracketSize }: { teamCount: number; bracketSize: number }) {
-  // Generate placeholder teams based on count
-  const placeholderTeams = Array.from({ length: teamCount }, (_, i) => ({
-    seed: i + 1,
-    name: `${getOrdinal(i + 1)} Place Team`,
-    inPlayoffs: i + 1 <= bracketSize, // Teams within bracket size are in playoffs
-  }));
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="text-left py-2 px-3 font-medium text-gray-600">Seed</th>
-            <th className="text-left py-2 px-3 font-medium text-gray-600">Team</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600">W</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600">L</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600">Pts</th>
-            <th className="text-center py-2 px-3 font-medium text-gray-600">Games</th>
-          </tr>
-        </thead>
-        <tbody>
-          {placeholderTeams.map((team) => (
-            <tr
-              key={team.seed}
-              className={`border-b ${team.inPlayoffs ? 'hover:bg-gray-50' : 'bg-red-50 opacity-60'}`}
-            >
-              <td className="py-2 px-3">
-                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-semibold text-xs ${
-                  team.inPlayoffs ? 'bg-gray-200 text-gray-700' : 'bg-red-200 text-red-700'
-                }`}>
-                  {team.seed}
-                </span>
-              </td>
-              <td className="py-2 px-3 font-medium text-gray-500 italic">
-                {team.name}
-                {!team.inPlayoffs && (
-                  <span className="ml-2 text-xs text-red-600">(Not in playoffs)</span>
-                )}
-              </td>
-              <td className="py-2 px-3 text-center text-gray-400">--</td>
-              <td className="py-2 px-3 text-center text-gray-400">--</td>
-              <td className="py-2 px-3 text-center text-gray-400">--</td>
-              <td className="py-2 px-3 text-center text-gray-400">--</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 /**
  * OrganizationPlayoffSettings Page Component
@@ -287,35 +77,26 @@ export const OrganizationPlayoffSettings: React.FC = () => {
     }));
   };
 
-  // Available team count options (4-40, matching schedule generator capability)
-  const teamCountOptions = Array.from({ length: 37 }, (_, i) => i + 4);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <PageHeader
         backTo={`/operator-settings/${orgId}`}
         backLabel="Back to Settings"
-        title="Playoff Settings"
+        title={
+          <span className="inline-flex items-center gap-2">
+            Playoff Settings
+            <InfoButton title="Organization Default Settings">
+              <p>
+                These settings will be used as the default for all leagues in your organization.
+                Individual leagues can override these settings if needed.
+              </p>
+            </InfoButton>
+          </span>
+        }
         subtitle="Organization Default Configuration"
       />
 
       <div className="container mx-auto px-4 max-w-4xl py-8 space-y-6">
-        {/* Info Card */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-              <div>
-                <div className="font-medium text-blue-800">Organization Default Settings</div>
-                <div className="text-sm text-blue-700 mt-1">
-                  These settings will be used as the default for all leagues in your organization.
-                  Individual leagues can override these settings if needed.
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Playoff Format Explanation */}
         <Card>
           <CardHeader className="pb-3">
@@ -350,29 +131,11 @@ export const OrganizationPlayoffSettings: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Show Example Dropdown */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">Show example of</span>
-                <Select
-                  value={exampleTeamCount.toString()}
-                  onValueChange={(value) =>
-                    dispatch({ type: 'SET_EXAMPLE_TEAM_COUNT', payload: parseInt(value, 10) })
-                  }
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Select teams" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teamCountOptions.map((count) => (
-                      <SelectItem key={count} value={count.toString()}>
-                        {count} Teams
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            {/* Example Team Count Card Component */}
+            <ExampleTeamCountCard
+              settings={settings}
+              dispatch={dispatch}
+            />
 
             {/* Playoff Weeks Card Component */}
             <PlayoffWeeksCard
@@ -501,7 +264,7 @@ export const OrganizationPlayoffSettings: React.FC = () => {
                 )}
                 <div className="grid gap-4 md:grid-cols-2">
                   {weekMatchups.map((matchup) => (
-                    <GenericMatchupCard
+                    <PlayoffMatchupCard
                       key={matchup.matchNumber}
                       matchNumber={matchup.matchNumber}
                       homeSeed={matchup.homeSeed}
@@ -528,7 +291,7 @@ export const OrganizationPlayoffSettings: React.FC = () => {
             <p className="text-sm text-gray-500 mb-4">
               Teams are seeded by: Match Wins → Points → Games Won
             </p>
-            <GenericStandingsTable teamCount={exampleTeamCount} bracketSize={bracketSize} />
+            <PlayoffStandingsTable teamCount={exampleTeamCount} bracketSize={bracketSize} wildcardSpots={wildcardSpots} />
           </CardContent>
         </Card>
 
