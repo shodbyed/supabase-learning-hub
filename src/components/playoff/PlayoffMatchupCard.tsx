@@ -17,6 +17,7 @@
 
 import React from 'react';
 import { Trophy, Shuffle, ThumbsDown } from 'lucide-react';
+import { JokerIcon } from '@/components/icons/JokerIcon';
 import { getOrdinal } from '@/utils/formatters';
 
 /**
@@ -132,7 +133,7 @@ export const PlayoffMatchupCard: React.FC<PlayoffMatchupCardProps> = ({
       // Wildcard from losers pool (remaining losers after one was picked)
       if (seed === 300) {
         return {
-          icon: <Shuffle className="h-4 w-4" />,
+          icon: <JokerIcon className="h-6 w-6" size={24} />,
           label: 'Remaining Loser',
           bgColor: 'bg-amber-50',
           circleBg: 'bg-amber-600',
@@ -169,7 +170,7 @@ export const PlayoffMatchupCard: React.FC<PlayoffMatchupCardProps> = ({
     // Wildcard spot
     if (isWildcard(seed)) {
       return {
-        icon: <Shuffle className="h-4 w-4" />,
+        icon: <JokerIcon className="h-6 w-6" size={24} />,
         label: 'Wildcard',
         bgColor: 'bg-amber-50',
         circleBg: 'bg-amber-600',

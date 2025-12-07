@@ -41,7 +41,7 @@
 -- ============================================================================
 -- PLAYOFF CONFIGURATIONS TABLE
 -- ============================================================================
-CREATE TABLE playoff_configurations (
+CREATE TABLE IF NOT EXISTS playoff_configurations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     -- === Entity Ownership ===
@@ -55,7 +55,7 @@ CREATE TABLE playoff_configurations (
     entity_id UUID NOT NULL,
 
     -- === Configuration Metadata ===
-    name TEXT NOT NULL,                          -- e.g., "Standard 4-Team Bracket", "Double Elimination"
+    name TEXT NOT NULL,                          -- e.g., "Money Round", "Standard Playoffs"
     description TEXT,                            -- Optional description of what this configuration does
 
     -- Is this the default config for this entity?
@@ -122,45 +122,58 @@ CREATE TABLE playoff_configurations (
 -- ============================================================================
 
 -- Fast lookup by entity
-CREATE INDEX idx_playoff_configurations_entity
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_entity
     ON playoff_configurations(entity_type, entity_id);
 
 -- Find global templates quickly
-CREATE INDEX idx_playoff_configurations_global
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_global
     ON playoff_configurations(entity_type)
     WHERE entity_type = 'global';
 
 -- Find default config for an entity
-CREATE INDEX idx_playoff_configurations_default
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_default
     ON playoff_configurations(entity_type, entity_id)
     WHERE is_default = true;
 
 
 -- ============================================================================
--- EXAMPLE: How configurations work at each level
+-- TRIGGERS
 -- ============================================================================
-/*
-Global Templates (entity_type = 'global', entity_id = '00000000-0000-0000-0000-000000000000'):
-- Created by developers, read-only for operators
-- Shown in template picker on org/league settings pages
-- Examples: "Standard Single Elimination", "Double Elimination"
 
-Organization Configs (entity_type = 'organization', entity_id = org_uuid):
-- Created by operators for their organization
-- Serves as default for all leagues in that org
-- Can be based on a global template or custom
+-- Update timestamps
+CREATE OR REPLACE FUNCTION update_playoff_configurations_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-League Configs (entity_type = 'league', entity_id = league_uuid):
-- Created when a league needs different settings than org default
-- Overrides organization settings for this specific league
+CREATE TRIGGER trigger_update_playoff_configurations_updated_at
+    BEFORE UPDATE ON playoff_configurations
+    FOR EACH ROW
+    EXECUTE FUNCTION update_playoff_configurations_updated_at();
 
-Example flow:
-1. Operator views playoff settings for their org
-2. Sees global templates: "Standard" and "Double Elimination"
-3. Selects "Standard" as their org default
-4. Creates a league - it inherits the org default
-5. Later, customizes one league to use different settings
-*/
+-- Ensure only one default per entity
+CREATE OR REPLACE FUNCTION ensure_single_default_playoff_config()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.is_default = true THEN
+        UPDATE playoff_configurations
+        SET is_default = false
+        WHERE entity_type = NEW.entity_type
+          AND entity_id = NEW.entity_id
+          AND id != NEW.id
+          AND is_default = true;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_ensure_single_default_playoff_config
+    BEFORE INSERT OR UPDATE ON playoff_configurations
+    FOR EACH ROW
+    EXECUTE FUNCTION ensure_single_default_playoff_config();
 
 
 -- ============================================================================
@@ -198,9 +211,22 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 -- ============================================================================
 -- ROW LEVEL SECURITY
 -- ============================================================================
+-- RLS policies intentionally left blank for development speed.
+-- TODO: Add proper policies before production deployment.
 
 ALTER TABLE playoff_configurations ENABLE ROW LEVEL SECURITY;
 
+-- Allow all operations during development
+CREATE POLICY "Dev: Allow all operations"
+    ON playoff_configurations
+    FOR ALL
+    USING (true)
+    WITH CHECK (true);
+
+-- ============================================================================
+-- PRODUCTION RLS POLICIES (commented out for dev, enable for production)
+-- ============================================================================
+/*
 -- Everyone can read global templates
 CREATE POLICY "Anyone can view global templates"
     ON playoff_configurations
@@ -262,44 +288,48 @@ CREATE POLICY "Org staff can manage league playoff configurations"
             WHERE m.user_id = auth.uid()
         )
     );
+*/
 
 
 -- ============================================================================
--- TRIGGERS
+-- COMMENTS
 -- ============================================================================
 
--- Update timestamps
-CREATE TRIGGER update_playoff_configurations_updated_at
-    BEFORE UPDATE ON playoff_configurations
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+COMMENT ON TABLE playoff_configurations IS
+    'Stores playoff bracket configurations at three levels: global (system templates), organization (org defaults), and league (overrides).';
 
--- Ensure only one default per entity
-CREATE OR REPLACE FUNCTION ensure_single_default_playoff_config()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.is_default = true THEN
-        UPDATE playoff_configurations
-        SET is_default = false
-        WHERE entity_type = NEW.entity_type
-          AND entity_id = NEW.entity_id
-          AND id != NEW.id
-          AND is_default = true;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+COMMENT ON COLUMN playoff_configurations.entity_type IS
+    'Level of this config: global (system template), organization (org default), or league (override)';
 
-CREATE TRIGGER trigger_ensure_single_default_playoff_config
-    BEFORE INSERT OR UPDATE ON playoff_configurations
-    FOR EACH ROW
-    EXECUTE FUNCTION ensure_single_default_playoff_config();
+COMMENT ON COLUMN playoff_configurations.entity_id IS
+    'UUID of the entity. For global: nil UUID (00000000-0000-0000-0000-000000000000). For org/league: their respective UUIDs.';
+
+COMMENT ON COLUMN playoff_configurations.name IS
+    'Display name for this configuration (required). Used in template picker menus.';
+
+COMMENT ON COLUMN playoff_configurations.description IS
+    'Optional description explaining what this configuration does. Helpful for operators choosing templates.';
+
+COMMENT ON COLUMN playoff_configurations.qualification_type IS
+    'How teams qualify: all (everyone plays), fixed (specific count), percentage (% of league)';
+
+COMMENT ON COLUMN playoff_configurations.week_matchup_styles IS
+    'Array of matchup styles per week. Values: seeded (1v8,2v7), ranked (1v2,3v4), random, bracket (winner vs winner)';
+
+COMMENT ON COLUMN playoff_configurations.wildcard_spots IS
+    'Number of bracket spots filled by random selection from non-qualifying teams. 0 = disabled.';
+
+COMMENT ON COLUMN playoff_configurations.payment_method IS
+    'How additional playoff week fees are handled: automatic (system charges) or manual (operator collects)';
+
+COMMENT ON COLUMN playoff_configurations.auto_generate IS
+    'When true, playoff matches are created automatically when regular season ends. When false, operator must manually trigger from league page.';
 
 
 -- ============================================================================
 -- SEED DATA: Global Templates
 -- ============================================================================
-/*
+
 INSERT INTO playoff_configurations (
     entity_type,
     entity_id,
@@ -313,26 +343,54 @@ INSERT INTO playoff_configurations (
     wildcard_spots,
     auto_generate
 ) VALUES
--- Standard Single Elimination (default global template)
+-- 1. Money Round (default global template)
 (
     'global',
     '00000000-0000-0000-0000-000000000000',
-    'Standard Single Elimination',
-    'Classic playoff format where top teams are seeded against bottom teams. Winners advance, losers are eliminated. Best for leagues wanting a quick, decisive playoff.',
+    'Money Round',
+    'Standard single last round. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.',
     true,
+    'all',
+    NULL,
+    1,
+    ARRAY['seeded']::TEXT[],
+    0,
+    false
+),
+-- 2. Money Round (Wildcard)
+(
+    'global',
+    '00000000-0000-0000-0000-000000000000',
+    'Money Round (Wildcard)',
+    'Standard single last round with odd number of teams. Wildcard allows last place team a chance to play. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.',
+    false,
+    'all',
+    NULL,
+    1,
+    ARRAY['seeded']::TEXT[],
+    1,
+    false
+),
+-- 3. Standard Playoffs (Wildcard)
+(
+    'global',
+    '00000000-0000-0000-0000-000000000000',
+    'Standard Playoffs (Wildcard)',
+    'Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs wildcard and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Wildcard is randomly picked team from teams not in top 3.',
+    false,
     'fixed',
     4,
     2,
     ARRAY['seeded', 'bracket']::TEXT[],
-    0,
+    1,
     false
 ),
--- Double Elimination
+-- 4. Standard Playoffs
 (
     'global',
     '00000000-0000-0000-0000-000000000000',
-    'Double Elimination',
-    'Teams must lose twice to be eliminated. First week pairs winners vs winners and losers vs losers. Gives teams a second chance while still rewarding top performers.',
+    'Standard Playoffs',
+    'Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs 4th and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Only top 4 teams play.',
     false,
     'fixed',
     4,
@@ -341,4 +399,60 @@ INSERT INTO playoff_configurations (
     0,
     false
 );
-*/
+
+
+-- ============================================================================
+-- RESOLVED PLAYOFF CONFIGURATION VIEW
+-- ============================================================================
+-- For each league, returns the effective playoff configuration using priority:
+-- 1. League-specific config (if exists and is_default = true)
+-- 2. Organization default config (if exists and is_default = true)
+-- 3. Global default config (fallback)
+--
+-- Unlike preferences (which merge individual columns), this returns ONE complete
+-- configuration record. Playoff settings are interdependent and used as a unit.
+-- ============================================================================
+
+CREATE OR REPLACE VIEW resolved_league_playoff_config AS
+SELECT
+    l.id AS league_id,
+    l.organization_id,
+    -- Include source info so UI can show "Using: Organization Default" or "Using: League Custom"
+    CASE
+        WHEN league_config.id IS NOT NULL THEN 'league'
+        WHEN org_config.id IS NOT NULL THEN 'organization'
+        ELSE 'global'
+    END AS config_source,
+    -- Return the effective configuration (coalesce picks first non-null)
+    COALESCE(league_config.id, org_config.id, global_config.id) AS config_id,
+    COALESCE(league_config.name, org_config.name, global_config.name) AS name,
+    COALESCE(league_config.description, org_config.description, global_config.description) AS description,
+    COALESCE(league_config.qualification_type, org_config.qualification_type, global_config.qualification_type) AS qualification_type,
+    COALESCE(league_config.fixed_team_count, org_config.fixed_team_count, global_config.fixed_team_count) AS fixed_team_count,
+    COALESCE(league_config.qualifying_percentage, org_config.qualifying_percentage, global_config.qualifying_percentage) AS qualifying_percentage,
+    COALESCE(league_config.percentage_min, org_config.percentage_min, global_config.percentage_min) AS percentage_min,
+    COALESCE(league_config.percentage_max, org_config.percentage_max, global_config.percentage_max) AS percentage_max,
+    COALESCE(league_config.playoff_weeks, org_config.playoff_weeks, global_config.playoff_weeks) AS playoff_weeks,
+    COALESCE(league_config.week_matchup_styles, org_config.week_matchup_styles, global_config.week_matchup_styles) AS week_matchup_styles,
+    COALESCE(league_config.wildcard_spots, org_config.wildcard_spots, global_config.wildcard_spots) AS wildcard_spots,
+    COALESCE(league_config.payment_method, org_config.payment_method, global_config.payment_method) AS payment_method,
+    COALESCE(league_config.auto_generate, org_config.auto_generate, global_config.auto_generate) AS auto_generate
+FROM leagues l
+-- League-specific config (entity_type = 'league', entity_id = league.id)
+LEFT JOIN playoff_configurations league_config
+    ON league_config.entity_type = 'league'
+    AND league_config.entity_id = l.id
+    AND league_config.is_default = true
+-- Organization default config (entity_type = 'organization', entity_id = org.id)
+LEFT JOIN playoff_configurations org_config
+    ON org_config.entity_type = 'organization'
+    AND org_config.entity_id = l.organization_id
+    AND org_config.is_default = true
+-- Global default config (entity_type = 'global', is_default = true)
+LEFT JOIN playoff_configurations global_config
+    ON global_config.entity_type = 'global'
+    AND global_config.entity_id = '00000000-0000-0000-0000-000000000000'
+    AND global_config.is_default = true;
+
+COMMENT ON VIEW resolved_league_playoff_config IS
+    'Returns the effective playoff configuration for each league. Priority: league config → org default → global default. Returns complete configuration record, not merged columns.';

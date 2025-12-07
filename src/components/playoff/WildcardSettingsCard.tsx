@@ -16,6 +16,7 @@ import React, { useState } from 'react';
 import { Pencil, ChevronUp, Shuffle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { JokerIcon } from '@/components/icons/JokerIcon';
 import type {
   PlayoffSettingsState,
   PlayoffSettingsAction,
@@ -46,8 +47,10 @@ export const WildcardSettingsCard: React.FC<WildcardSettingsCardProps> = ({
 
   const { wildcardSpots } = settings;
 
-  // Determine circle display
-  const circleDisplay = wildcardSpots === 0 ? 'OFF' : wildcardSpots.toString();
+  // Determine circle display - show "OFF" or joker icon
+  const circleDisplay = wildcardSpots === 0
+    ? 'OFF'
+    : <JokerIcon className="h-10 w-10" size={40} />;
 
   // Determine title text
   const titleText = wildcardSpots === 0
