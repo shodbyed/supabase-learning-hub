@@ -38,6 +38,21 @@ export type MatchupStyle = 'seeded' | 'ranked' | 'random' | 'bracket';
 export interface PlayoffSettingsState {
   // === Persistent Settings (saved to database) ===
 
+  /** Selected template ID (from playoff_configurations table) */
+  selectedTemplateId: string | undefined;
+
+  /** Original template name (used to generate "(Custom)" suffix when modified) */
+  originalTemplateName: string;
+
+  /** Configuration name (required for saving) */
+  configName: string;
+
+  /** Configuration description (optional) */
+  configDescription: string;
+
+  /** Whether settings have been modified from the selected template */
+  isModified: boolean;
+
   /** Number of playoff weeks */
   playoffWeeks: number;
 
@@ -86,6 +101,11 @@ export interface PlayoffSettingsState {
  */
 export const initialPlayoffSettingsState: PlayoffSettingsState = {
   // Persistent settings
+  selectedTemplateId: undefined,
+  originalTemplateName: '',
+  configName: '',
+  configDescription: '',
+  isModified: false,
   playoffWeeks: 1,
   qualificationType: 'all',
   fixedTeamCount: 4,
@@ -107,6 +127,9 @@ export const initialPlayoffSettingsState: PlayoffSettingsState = {
  */
 export type PlayoffSettingsAction =
   // Persistent setting actions
+  | { type: 'SET_SELECTED_TEMPLATE_ID'; payload: string | undefined }
+  | { type: 'SET_CONFIG_NAME'; payload: string }
+  | { type: 'SET_CONFIG_DESCRIPTION'; payload: string }
   | { type: 'SET_PLAYOFF_WEEKS'; payload: number }
   | { type: 'ADD_PLAYOFF_WEEKS'; payload: number }
   | { type: 'SET_QUALIFICATION_TYPE'; payload: QualificationType }
@@ -155,6 +178,27 @@ function adjustWeekMatchupStyles(
 }
 
 /**
+ * Helper to apply modification state when a setting changes
+ * - Sets isModified to true
+ * - On first modification, sets configName to "{originalTemplateName} (Custom)"
+ * - On first modification, clears configDescription
+ */
+function applyModification(state: PlayoffSettingsState): Partial<PlayoffSettingsState> {
+  if (state.isModified) {
+    // Already modified, just return the flag
+    return { isModified: true };
+  }
+  // First modification - set custom name and clear description
+  return {
+    isModified: true,
+    configName: state.originalTemplateName
+      ? `${state.originalTemplateName} (Custom)`
+      : '',
+    configDescription: '',
+  };
+}
+
+/**
  * Reducer function for playoff settings state
  */
 function playoffSettingsReducer(
@@ -164,12 +208,22 @@ function playoffSettingsReducer(
   switch (action.type) {
     // === Persistent Setting Actions ===
 
+    case 'SET_SELECTED_TEMPLATE_ID':
+      return { ...state, selectedTemplateId: action.payload, isModified: false };
+
+    case 'SET_CONFIG_NAME':
+      return { ...state, configName: action.payload };
+
+    case 'SET_CONFIG_DESCRIPTION':
+      return { ...state, configDescription: action.payload };
+
     case 'SET_PLAYOFF_WEEKS': {
       const newWeekCount = action.payload;
       return {
         ...state,
         playoffWeeks: newWeekCount,
         weekMatchupStyles: adjustWeekMatchupStyles(state.weekMatchupStyles, newWeekCount),
+        ...applyModification(state),
       };
     }
 
@@ -180,32 +234,34 @@ function playoffSettingsReducer(
         playoffWeeks: newWeekCount,
         weekMatchupStyles: adjustWeekMatchupStyles(state.weekMatchupStyles, newWeekCount),
         showAddWeeksModal: false,
+        ...applyModification(state),
       };
     }
 
     case 'SET_QUALIFICATION_TYPE':
-      return { ...state, qualificationType: action.payload };
+      return { ...state, qualificationType: action.payload, ...applyModification(state) };
 
     case 'SET_FIXED_TEAM_COUNT':
-      return { ...state, fixedTeamCount: Math.max(2, action.payload) };
+      return { ...state, fixedTeamCount: Math.max(2, action.payload), ...applyModification(state) };
 
     case 'SET_QUALIFYING_PERCENTAGE':
-      return { ...state, qualifyingPercentage: action.payload };
+      return { ...state, qualifyingPercentage: action.payload, ...applyModification(state) };
 
     case 'SET_PERCENTAGE_MIN':
-      return { ...state, percentageMin: Math.max(2, action.payload) };
+      return { ...state, percentageMin: Math.max(2, action.payload), ...applyModification(state) };
 
     case 'SET_PERCENTAGE_MAX':
       return {
         ...state,
         percentageMax: action.payload === null ? null : Math.max(2, action.payload),
+        ...applyModification(state),
       };
 
     case 'SET_PAYMENT_METHOD':
-      return { ...state, paymentMethod: action.payload };
+      return { ...state, paymentMethod: action.payload, ...applyModification(state) };
 
     case 'SET_WILDCARD_SPOTS':
-      return { ...state, wildcardSpots: Math.max(0, action.payload) };
+      return { ...state, wildcardSpots: Math.max(0, action.payload), ...applyModification(state) };
 
     case 'SET_WEEK_MATCHUP_STYLE': {
       const { weekIndex, style } = action.payload;
@@ -215,7 +271,7 @@ function playoffSettingsReducer(
       }
       const newStyles = [...state.weekMatchupStyles];
       newStyles[weekIndex] = style;
-      return { ...state, weekMatchupStyles: newStyles };
+      return { ...state, weekMatchupStyles: newStyles, ...applyModification(state) };
     }
 
     // === UI-Only Actions ===

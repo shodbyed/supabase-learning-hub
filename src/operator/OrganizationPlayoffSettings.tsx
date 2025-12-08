@@ -12,6 +12,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Trophy, Users, Settings } from 'lucide-react';
+import { toast } from 'sonner';
+import { useSavePlayoffConfiguration } from '@/api/mutations/playoffConfigurations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,6 +25,8 @@ import {
 } from '@/components/ui/select';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
+import { PlayoffTemplateSelector } from '@/components/playoff/PlayoffTemplateSelector';
+import { PlayoffMatchRulesCard } from '@/components/playoff/PlayoffMatchRulesCard';
 import { ParticipationSettingsCard } from '@/components/playoff/ParticipationSettingsCard';
 import { PlayoffWeeksCard } from '@/components/playoff/PlayoffWeeksCard';
 import { WildcardSettingsCard } from '@/components/playoff/WildcardSettingsCard';
@@ -49,6 +53,9 @@ export const OrganizationPlayoffSettings: React.FC = () => {
   // Use the reducer for all playoff settings state
   const [settings, dispatch] = usePlayoffSettingsReducer();
 
+  // Mutation for saving configurations (handles both create and update)
+  const saveConfigMutation = useSavePlayoffConfiguration();
+
   // Destructure for convenience (only values used directly in this component)
   const {
     exampleTeamCount,
@@ -57,7 +64,56 @@ export const OrganizationPlayoffSettings: React.FC = () => {
     qualifyingPercentage,
     wildcardSpots,
     weekMatchupStyles,
+    isModified,
+    configName,
+    configDescription,
   } = settings;
+
+  /**
+   * Handle saving the configuration to the database
+   * Creates a new organization-level playoff configuration
+   */
+  const handleSave = () => {
+    if (!orgId || !configName.trim()) return;
+
+    saveConfigMutation.mutate(
+      {
+        entityType: 'organization',
+        entityId: orgId,
+        name: configName.trim(),
+        description: configDescription.trim() || undefined,
+        qualificationType: settings.qualificationType,
+        fixedTeamCount: settings.qualificationType === 'fixed' ? settings.fixedTeamCount : null,
+        qualifyingPercentage: settings.qualificationType === 'percentage' ? settings.qualifyingPercentage : null,
+        percentageMin: settings.qualificationType === 'percentage' ? settings.percentageMin : null,
+        percentageMax: settings.qualificationType === 'percentage' ? settings.percentageMax : null,
+        playoffWeeks: settings.playoffWeeks,
+        weekMatchupStyles: settings.weekMatchupStyles,
+        wildcardSpots: settings.wildcardSpots,
+        paymentMethod: settings.paymentMethod,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success('Playoff configuration saved!');
+          // Load the saved config as the selected template
+          dispatch({
+            type: 'LOAD_SETTINGS',
+            payload: {
+              selectedTemplateId: data.id,
+              originalTemplateName: data.name,
+              configName: data.name,
+              configDescription: data.description ?? '',
+              isModified: false,
+            },
+          });
+        },
+        onError: (error: Error) => {
+          toast.error('Failed to save configuration');
+          console.error('Save error:', error);
+        },
+      }
+    );
+  };
 
   // Calculate bracket size based on qualification settings
   const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
@@ -97,30 +153,42 @@ export const OrganizationPlayoffSettings: React.FC = () => {
       />
 
       <div className="container mx-auto px-4 max-w-4xl py-8 space-y-6">
-        {/* Playoff Format Explanation */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-purple-600" />
-              Standard Playoff Format
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Playoffs are automatically seeded based on final regular season standings.
-              The bracket pairs top seeds against bottom seeds:
-            </p>
-            <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-              <li><strong>4 teams:</strong> 1st vs 4th, 2nd vs 3rd</li>
-              <li><strong>6 teams:</strong> 1st vs 6th, 2nd vs 5th, 3rd vs 4th</li>
-              <li><strong>8 teams:</strong> 1st vs 8th, 2nd vs 7th, 3rd vs 6th, 4th vs 5th</li>
-              <li><strong>Odd teams:</strong> Last place team does not participate</li>
-            </ul>
-            <p className="text-sm text-gray-600">
-              Higher seeds are designated as the <strong>home team</strong> and play at their home venue.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Playoff Rules - at the top for visibility */}
+        <PlayoffMatchRulesCard />
+
+        {/* Playoff Template Selector */}
+        <PlayoffTemplateSelector
+          organizationId={orgId}
+          selectedTemplateId={settings.selectedTemplateId}
+          isModified={isModified}
+          configName={configName}
+          configDescription={configDescription}
+          onTemplateSelect={(template) => {
+            // Set the template ID and load template settings
+            dispatch({ type: 'SET_SELECTED_TEMPLATE_ID', payload: template.id });
+            dispatch({
+              type: 'LOAD_SETTINGS',
+              payload: {
+                originalTemplateName: template.name,
+                configName: template.name,
+                configDescription: template.description ?? '',
+                qualificationType: template.qualification_type,
+                fixedTeamCount: template.fixed_team_count ?? 4,
+                qualifyingPercentage: template.qualifying_percentage ?? 50,
+                percentageMin: template.percentage_min ?? 4,
+                percentageMax: template.percentage_max,
+                playoffWeeks: template.playoff_weeks,
+                weekMatchupStyles: template.week_matchup_styles as MatchupStyle[],
+                wildcardSpots: template.wildcard_spots,
+                paymentMethod: template.payment_method,
+              },
+            });
+          }}
+          onNameChange={(name) => dispatch({ type: 'SET_CONFIG_NAME', payload: name })}
+          onDescriptionChange={(desc) => dispatch({ type: 'SET_CONFIG_DESCRIPTION', payload: desc })}
+          onSave={handleSave}
+          isSaving={saveConfigMutation.isPending}
+        />
 
         {/* Playoff Settings */}
         <Card>
@@ -154,36 +222,6 @@ export const OrganizationPlayoffSettings: React.FC = () => {
               settings={settings}
               dispatch={dispatch}
             />
-          </CardContent>
-        </Card>
-
-        {/* Playoff Rules */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Playoff Match Rules</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 rounded-full bg-purple-600" />
-              <div className="text-sm">
-                <span className="font-medium">No Team Handicap Bonus</span>
-                <span className="text-gray-500 ml-2">— Team standing modifiers do not apply</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 rounded-full bg-purple-600" />
-              <div className="text-sm">
-                <span className="font-medium">Points Don&apos;t Count</span>
-                <span className="text-gray-500 ml-2">— Only win/loss matters for advancement</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-2 h-2 rounded-full bg-purple-600" />
-              <div className="text-sm">
-                <span className="font-medium">Early Termination</span>
-                <span className="text-gray-500 ml-2">— Match ends when win threshold is reached</span>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
