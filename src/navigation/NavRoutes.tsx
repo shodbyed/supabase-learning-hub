@@ -52,6 +52,7 @@ const ScheduleSetupPage = lazy(() => import('../operator/ScheduleSetupPage'));
 const SeasonSchedulePage = lazy(() => import('../operator/SeasonSchedulePage'));
 const PlayoffSetup = lazy(() => import('../operator/PlayoffSetup'));
 const OrganizationPlayoffSettings = lazy(() => import('../operator/OrganizationPlayoffSettings'));
+const LeaguePlayoffSettings = lazy(() => import('../operator/LeaguePlayoffSettings'));
 
 // Public routes - no authentication required
 const publicRoutes = [
@@ -117,6 +118,7 @@ const operatorRoutes = [
   { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
   { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
   { path: '/league/:leagueId/season/:seasonId/playoffs', element: <PlayoffSetup /> },
+  { path: '/operator/league/:leagueId/playoffs/:orgId', element: <LeaguePlayoffSettings /> },
   { path: '/venues/:orgId', element: <VenueManagement /> },
 ];
 

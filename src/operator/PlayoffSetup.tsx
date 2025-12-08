@@ -2,25 +2,55 @@
  * @fileoverview Playoff Setup Page
  *
  * Allows operators to configure and approve playoff brackets for a season.
- * Shows the generated bracket based on final regular season standings,
- * with the ability to approve and create the playoff matches.
+ * Shows the current playoff configuration with ability to modify settings,
+ * displays the generated bracket based on standings, and allows
+ * operators to approve and create the playoff matches.
+ *
+ * Features:
+ * - View/modify playoff configuration (template, settings, bracket style)
+ * - Preview bracket for each playoff week
+ * - Generate bracket from current standings
+ * - Create playoff matches when ready
  *
  * Flow:
- * 1. Check if regular season is complete
- * 2. Generate bracket from standings (seed teams)
- * 3. Display bracket for operator review
- * 4. On approval, create playoff matches in database
+ * 1. Load resolved playoff configuration for the league
+ * 2. Check if regular season is complete
+ * 3. Generate bracket from standings using configuration
+ * 4. Allow operator to adjust settings
+ * 5. On approval, create playoff matches in database
  */
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { Trophy, AlertCircle, Check, Users, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/PageHeader';
+import { InfoButton } from '@/components/InfoButton';
+import { PlayoffTemplateSelector } from '@/components/playoff/PlayoffTemplateSelector';
+import { PlayoffMatchRulesCard } from '@/components/playoff/PlayoffMatchRulesCard';
+import { PlayoffBracketPreviewCard } from '@/components/playoff/PlayoffBracketPreviewCard';
+import { PlayoffSeedingCard } from '@/components/playoff/PlayoffSeedingCard';
+import { PlayoffSettingsCard } from '@/components/playoff/PlayoffSettingsCard';
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog';
 import { parseLocalDate } from '@/utils/formatters';
-import { useSeasonById } from '@/api/hooks';
+import { useSeasonById, useLeagueById } from '@/api/hooks';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { useSavePlayoffConfiguration } from '@/api/mutations/playoffConfigurations';
+import {
+  useResolvedPlayoffConfig,
+  usePlayoffConfigurations,
+  type PlayoffConfiguration,
+} from '@/api/hooks/usePlayoffConfigurations';
+import {
+  usePlayoffSettingsReducer,
+  calculateQualifyingTeams,
+  buildLoadSettingsPayload,
+  buildSavePayload,
+  buildPostSavePayload,
+} from '@/hooks/playoff/usePlayoffSettingsReducer';
+import type { MatchupStyle } from '@/hooks/playoff/usePlayoffSettingsReducer';
 import {
   generatePlayoffBracket,
   getPlayoffWeek,
@@ -180,10 +210,29 @@ export const PlayoffSetup: React.FC = () => {
   const navigate = useNavigate();
   const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 
-  // Season data
+  // Season and league data
   const { data: season, isLoading: seasonLoading } = useSeasonById(seasonId);
+  const { data: league, isLoading: leagueLoading } = useLeagueById(leagueId);
 
-  // Local state
+  // Get the organization ID from the league
+  const orgId = league?.organization_id;
+
+  // Fetch resolved playoff configuration for this league
+  const { data: resolvedConfig, isLoading: configLoading } = useResolvedPlayoffConfig(leagueId);
+
+  // Fetch league's existing configuration (if any) for saving
+  const { data: leagueConfigs } = usePlayoffConfigurations('league', leagueId);
+
+  // Use the reducer for all playoff settings state
+  const [settings, dispatch] = usePlayoffSettingsReducer();
+
+  // Track if we've loaded the initial config to prevent re-loading
+  const hasLoadedInitialConfig = useRef(false);
+
+  // Mutation for saving configurations
+  const saveConfigMutation = useSavePlayoffConfiguration();
+
+  // Local state for bracket generation
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bracket, setBracket] = useState<PlayoffBracket | null>(null);
@@ -200,6 +249,38 @@ export const PlayoffSetup: React.FC = () => {
   } | null>(null);
   const [creating, setCreating] = useState(false);
   const [matchesExist, setMatchesExist] = useState(false);
+
+  // Load the resolved config into the settings reducer
+  useEffect(() => {
+    if (hasLoadedInitialConfig.current) return;
+    if (!resolvedConfig) return;
+
+    hasLoadedInitialConfig.current = true;
+
+    // Build a PlayoffConfiguration-like object from the resolved config
+    const configToLoad = {
+      id: resolvedConfig.config_id,
+      name: resolvedConfig.name,
+      description: resolvedConfig.description,
+      qualification_type: resolvedConfig.qualification_type,
+      fixed_team_count: resolvedConfig.fixed_team_count,
+      qualifying_percentage: resolvedConfig.qualifying_percentage,
+      percentage_min: resolvedConfig.percentage_min,
+      percentage_max: resolvedConfig.percentage_max,
+      playoff_weeks: resolvedConfig.playoff_weeks,
+      week_matchup_styles: resolvedConfig.week_matchup_styles,
+      wildcard_spots: resolvedConfig.wildcard_spots,
+      payment_method: resolvedConfig.payment_method,
+    };
+
+    dispatch({ type: 'SET_SELECTED_TEMPLATE_ID', payload: resolvedConfig.config_id });
+    dispatch({ type: 'LOAD_SETTINGS', payload: buildLoadSettingsPayload(configToLoad as PlayoffConfiguration) });
+  }, [resolvedConfig, dispatch]);
+
+  // Block navigation when there are unsaved changes
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    settings.isModified && currentLocation.pathname !== nextLocation.pathname
+  );
 
   /**
    * Load playoff data on mount
@@ -252,6 +333,58 @@ export const PlayoffSetup: React.FC = () => {
 
     loadPlayoffData();
   }, [seasonId]);
+
+  // Destructure settings for convenience
+  const {
+    exampleTeamCount,
+    playoffWeeks,
+    wildcardSpots,
+    weekMatchupStyles,
+    isModified,
+    configName,
+    configDescription,
+  } = settings;
+
+  // Calculate bracket size based on qualification settings
+  const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
+
+  /**
+   * Handle saving the configuration to the database
+   */
+  const handleSave = () => {
+    if (!leagueId || !settings.configName.trim()) return;
+
+    const payload = buildSavePayload('league', leagueId, settings);
+
+    saveConfigMutation.mutate(payload, {
+      onSuccess: (data) => {
+        toast.success('Playoff configuration saved!');
+        dispatch({ type: 'LOAD_SETTINGS', payload: buildPostSavePayload(data) });
+      },
+      onError: (error: Error) => {
+        toast.error('Failed to save configuration');
+        console.error('Save error:', error);
+      },
+    });
+  };
+
+  /**
+   * Handle template selection from dropdown
+   */
+  const handleTemplateSelect = (template: PlayoffConfiguration) => {
+    dispatch({ type: 'SET_SELECTED_TEMPLATE_ID', payload: template.id });
+    dispatch({ type: 'LOAD_SETTINGS', payload: buildLoadSettingsPayload(template) });
+  };
+
+  /**
+   * Handle matchup style change for a specific week
+   */
+  const handleMatchupStyleChange = (weekIndex: number, style: MatchupStyle) => {
+    dispatch({
+      type: 'SET_WEEK_MATCHUP_STYLE',
+      payload: { weekIndex, style },
+    });
+  };
 
   /**
    * Handle creating playoff matches
@@ -310,8 +443,25 @@ export const PlayoffSetup: React.FC = () => {
     }
   };
 
+  /**
+   * Get the source label for the current configuration
+   */
+  const getConfigSourceLabel = () => {
+    if (!resolvedConfig) return null;
+    switch (resolvedConfig.config_source) {
+      case 'league':
+        return 'League Configuration';
+      case 'organization':
+        return 'Organization Default';
+      case 'global':
+        return 'System Template';
+      default:
+        return null;
+    }
+  };
+
   // Loading state
-  if (loading || seasonLoading) {
+  if (loading || seasonLoading || leagueLoading || configLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -325,10 +475,23 @@ export const PlayoffSetup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Unsaved changes warning dialog */}
+      <UnsavedChangesDialog blocker={blocker} />
+
       <PageHeader
         backTo={`/league/${leagueId}`}
         backLabel="Back to League"
-        title="Playoff Setup"
+        title={
+          <span className="inline-flex items-center gap-2">
+            Playoff Setup
+            <InfoButton title="Playoff Setup">
+              <p>
+                Configure your playoff settings, preview the bracket, and create
+                playoff matches when the regular season is complete.
+              </p>
+            </InfoButton>
+          </span>
+        }
         subtitle={seasonName}
       />
 
@@ -357,6 +520,64 @@ export const PlayoffSetup: React.FC = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Playoff Rules - at the top for visibility */}
+        <PlayoffMatchRulesCard />
+
+        {/* Playoff Template Selector */}
+        <PlayoffTemplateSelector
+          context="league"
+          organizationId={orgId}
+          leagueId={leagueId}
+          selectedTemplateId={settings.selectedTemplateId}
+          isModified={isModified}
+          configName={configName}
+          configDescription={configDescription}
+          onTemplateSelect={handleTemplateSelect}
+          onNameChange={(name) => dispatch({ type: 'SET_CONFIG_NAME', payload: name })}
+          onDescriptionChange={(desc) => dispatch({ type: 'SET_CONFIG_DESCRIPTION', payload: desc })}
+          onSave={handleSave}
+          isSaving={saveConfigMutation.isPending}
+        />
+
+        {/* Current Configuration Source Info */}
+        {resolvedConfig && !isModified && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-purple-600" />
+              <div>
+                <span className="font-medium text-purple-900">{resolvedConfig.name}</span>
+                <span className="text-purple-700 ml-2">({getConfigSourceLabel()})</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Playoff Settings */}
+        <PlayoffSettingsCard settings={settings} dispatch={dispatch} />
+
+        {/* Bracket Preview Cards - one for each playoff week */}
+        {Array.from({ length: playoffWeeks }, (_, weekIndex) => (
+          <PlayoffBracketPreviewCard
+            key={weekIndex}
+            weekNum={weekIndex + 1}
+            weekIndex={weekIndex}
+            matchupStyle={weekMatchupStyles[weekIndex] || 'seeded'}
+            bracketSize={bracketSize}
+            totalTeams={exampleTeamCount}
+            qualificationType={settings.qualificationType}
+            qualifyingPercentage={settings.qualifyingPercentage}
+            wildcardSpots={wildcardSpots}
+            onMatchupStyleChange={handleMatchupStyleChange}
+          />
+        ))}
+
+        {/* Example Standings */}
+        <PlayoffSeedingCard
+          teamCount={exampleTeamCount}
+          bracketSize={bracketSize}
+          wildcardSpots={wildcardSpots}
+        />
 
         {/* Season Status Card */}
         {seasonStatus && (
@@ -424,7 +645,7 @@ export const PlayoffSetup: React.FC = () => {
           </Card>
         )}
 
-        {/* Bracket Display */}
+        {/* Actual Bracket Display (from standings) */}
         {bracket && (
           <>
             {/* Excluded Teams Notice */}
@@ -435,7 +656,7 @@ export const PlayoffSetup: React.FC = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-purple-600" />
-                  Playoff Bracket ({bracket.bracketSize} Teams)
+                  Current Standings Bracket ({bracket.bracketSize} Teams)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -463,30 +684,32 @@ export const PlayoffSetup: React.FC = () => {
                 <StandingsTable teams={bracket.seededTeams} />
               </CardContent>
             </Card>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/league/${leagueId}`)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleCreateMatches}
-                disabled={creating || !seasonStatus?.isComplete}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                {creating
-                  ? 'Creating...'
-                  : !seasonStatus?.isComplete
-                    ? 'Complete Regular Season First'
-                    : 'Approve & Create Matches'
-                }
-              </Button>
-            </div>
           </>
         )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/league/${leagueId}`)}
+          >
+            Cancel
+          </Button>
+          {bracket && (
+            <Button
+              onClick={handleCreateMatches}
+              disabled={creating || !seasonStatus?.isComplete}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {creating
+                ? 'Creating...'
+                : !seasonStatus?.isComplete
+                  ? 'Complete Regular Season First'
+                  : 'Approve & Create Matches'
+              }
+            </Button>
+          )}
+        </div>
       </div>
 
       {ConfirmDialogComponent}

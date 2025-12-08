@@ -6,12 +6,13 @@
  * When settings are modified from the template, shows editable name/description
  * fields and a save button.
  *
- * Shows both global templates (read-only) and organization-specific configs
- * in the dropdown, with visual distinction between them.
+ * Supports two contexts:
+ * 1. Organization level: Shows global templates + org's saved config
+ * 2. League level: Shows global templates + org's config + league's saved config
  *
- * Used on the Organization Playoff Settings page to let operators choose
- * which global template to use as their organization's default or create
- * a custom configuration.
+ * Used on:
+ * - Organization Playoff Settings page
+ * - League Playoff Settings page
  */
 
 import React, { useMemo } from 'react';
@@ -37,11 +38,22 @@ import {
 import type { PlayoffConfiguration } from '@/api/hooks/usePlayoffConfigurations';
 
 /**
+ * Context type for the template selector
+ * - 'organization': Used on org settings page, shows global + org configs
+ * - 'league': Used on league settings page, shows global + org + league configs
+ */
+export type TemplateSelectorContext = 'organization' | 'league';
+
+/**
  * Props for PlayoffTemplateSelector component
  */
 export interface PlayoffTemplateSelectorProps {
+  /** Context determines which configs to fetch and display */
+  context?: TemplateSelectorContext;
   /** Organization ID to fetch org-specific configs */
   organizationId: string | undefined;
+  /** League ID to fetch league-specific configs (required when context is 'league') */
+  leagueId?: string;
   /** Currently selected template ID */
   selectedTemplateId: string | undefined;
   /** Whether settings have been modified from the selected template */
@@ -65,14 +77,16 @@ export interface PlayoffTemplateSelectorProps {
 /**
  * PlayoffTemplateSelector Component
  *
- * Fetches global playoff templates and organization configs, displays them
- * in a grouped dropdown. When unmodified, shows the template's name and description.
+ * Fetches playoff templates based on context and displays them in a grouped dropdown.
+ * When unmodified, shows the template's name and description.
  * When modified, shows editable fields for custom name/description and a save button.
  *
  * Validates that custom names don't match global template names.
  */
 export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = ({
+  context = 'organization',
   organizationId,
+  leagueId,
   selectedTemplateId,
   isModified,
   configName,
@@ -92,15 +106,22 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
     organizationId
   );
 
-  const isLoading = isLoadingGlobal || isLoadingOrg;
+  // Fetch league-specific configurations (only when in league context)
+  const { data: leagueConfigs, isLoading: isLoadingLeague } = usePlayoffConfigurations(
+    'league',
+    context === 'league' ? leagueId : undefined
+  );
+
+  const isLoading = isLoadingGlobal || isLoadingOrg || (context === 'league' && isLoadingLeague);
 
   // Combine all templates for lookup
   const allTemplates = useMemo(() => {
     const all: PlayoffConfiguration[] = [];
     if (globalTemplates) all.push(...globalTemplates);
     if (orgConfigs) all.push(...orgConfigs);
+    if (context === 'league' && leagueConfigs) all.push(...leagueConfigs);
     return all;
-  }, [globalTemplates, orgConfigs]);
+  }, [globalTemplates, orgConfigs, leagueConfigs, context]);
 
   // Find the currently selected template
   const selectedTemplate = allTemplates.find((t) => t.id === selectedTemplateId);
@@ -163,8 +184,22 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
               {/* Organization Configs Group (if any exist) */}
               {orgConfigs && orgConfigs.length > 0 && (
                 <SelectGroup>
-                  <SelectLabel>Your Configurations</SelectLabel>
+                  <SelectLabel>
+                    {context === 'league' ? 'Organization Default' : 'Your Configurations'}
+                  </SelectLabel>
                   {orgConfigs.map((config) => (
+                    <SelectItem key={config.id} value={config.id}>
+                      {config.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+
+              {/* League Configs Group (only in league context, if any exist) */}
+              {context === 'league' && leagueConfigs && leagueConfigs.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>League Configuration</SelectLabel>
+                  {leagueConfigs.map((config) => (
                     <SelectItem key={config.id} value={config.id}>
                       {config.name}
                     </SelectItem>
@@ -180,7 +215,9 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
           // Modified state: show editable name/description and save button
           <>
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-              Settings have been modified. Enter a name and save to create your organization&apos;s custom configuration.
+              {context === 'league'
+                ? 'Settings have been modified. Enter a name and save to create this league\'s custom configuration.'
+                : 'Settings have been modified. Enter a name and save to create your organization\'s custom configuration.'}
             </div>
             <div className="space-y-3">
               <div className="space-y-1">
@@ -217,7 +254,11 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                 className="w-full"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {isSaving ? 'Saving...' : 'Save as Organization Default'}
+                {isSaving
+                  ? 'Saving...'
+                  : context === 'league'
+                    ? 'Save as League Configuration'
+                    : 'Save as Organization Default'}
               </Button>
             </div>
           </>
