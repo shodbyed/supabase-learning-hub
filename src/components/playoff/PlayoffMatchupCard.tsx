@@ -194,8 +194,8 @@ export const PlayoffMatchupCard: React.FC<PlayoffMatchupCardProps> = ({
   const awayDisplay = getSeedDisplay(awaySeed, false);
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white">
-      <div className="text-xs text-gray-500 mb-2 text-center">
+    <div className="border-2 border-gray-300 rounded-lg p-4 bg-white shadow-sm">
+      <div className="text-sm text-gray-700 font-medium mb-2 text-center">
         Match {matchNumber}
       </div>
       <div className="space-y-3">
@@ -214,7 +214,7 @@ export const PlayoffMatchupCard: React.FC<PlayoffMatchupCardProps> = ({
           <div className={`text-xs font-medium ${homeDisplay.badgeColor}`}>HOME</div>
         </div>
 
-        <div className="text-center text-gray-400 text-sm font-medium">vs</div>
+        <div className="text-center text-gray-600 text-sm font-semibold">vs</div>
 
         {/* Away team */}
         <div className={`flex items-center justify-between rounded-lg p-3 ${awayDisplay.bgColor}`}>

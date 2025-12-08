@@ -158,8 +158,8 @@ const MatchupDisplay: React.FC<MatchupDisplayProps> = ({
   const awayDisplay = getTeamDisplay(awaySeed, awayTeam);
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white">
-      <div className="text-xs text-gray-500 mb-2 text-center">
+    <div className="border-2 border-gray-300 rounded-lg p-4 bg-white shadow-sm">
+      <div className="text-sm text-gray-700 font-medium mb-2 text-center">
         Match {matchNumber}
       </div>
       <div className="space-y-3">
@@ -187,7 +187,7 @@ const MatchupDisplay: React.FC<MatchupDisplayProps> = ({
           <div className="text-xs text-blue-600 font-medium">HOME</div>
         </div>
 
-        <div className="text-center text-gray-400 text-sm font-medium">vs</div>
+        <div className="text-center text-gray-600 text-sm font-semibold">vs</div>
 
         {/* Away team (lower seed) */}
         <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">

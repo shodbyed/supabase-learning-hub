@@ -205,6 +205,12 @@ export function useSavePlayoffConfiguration() {
       queryClient.invalidateQueries({
         queryKey: ['playoff-configurations', data.entity_type, data.entity_id],
       });
+
+      // Also invalidate all resolved playoff configs since they may inherit from this entity
+      // This ensures league pages show updated org defaults, and org pages show updated global defaults
+      queryClient.invalidateQueries({
+        queryKey: ['resolved-playoff-config'],
+      });
     },
   });
 }
@@ -230,6 +236,11 @@ export function useDeletePlayoffConfiguration(
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['playoff-configurations', entityType, entityId],
+      });
+
+      // Also invalidate all resolved playoff configs since they may inherit from this entity
+      queryClient.invalidateQueries({
+        queryKey: ['resolved-playoff-config'],
       });
     },
   });

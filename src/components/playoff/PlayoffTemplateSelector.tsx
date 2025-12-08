@@ -141,6 +141,24 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
     return null;
   }, [selectedTemplate, orgConfigs, leagueConfigs, context]);
 
+  // Check if the selected template is a global template (not already saved as org/league config)
+  const isGlobalTemplateSelected = useMemo(() => {
+    if (!selectedTemplate) return false;
+    return globalTemplates?.some((t) => t.id === selectedTemplate.id) ?? false;
+  }, [selectedTemplate, globalTemplates]);
+
+  // Check if there's already a saved config for this entity (org or league)
+  const hasSavedConfig = useMemo(() => {
+    if (context === 'organization') {
+      return (orgConfigs?.length ?? 0) > 0;
+    }
+    // For league context, check if league has its own config
+    return (leagueConfigs?.length ?? 0) > 0;
+  }, [context, orgConfigs, leagueConfigs]);
+
+  // Show "Set as Default" when a global template is selected and it's not already the saved default
+  const canSetAsDefault = isGlobalTemplateSelected && !isModified;
+
   // Check if the current name matches a global template name (case-insensitive)
   const nameMatchesGlobalTemplate = useMemo(() => {
     if (!configName.trim() || !globalTemplates) return false;
@@ -282,14 +300,34 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
             </div>
           </>
         ) : (
-          // Unmodified state: show template description
-          selectedTemplate?.description ? (
-            <p className="text-sm text-gray-600">{selectedTemplate.description}</p>
-          ) : (
-            <p className="text-sm text-gray-400 italic">
-              Select a playoff format to see its description.
-            </p>
-          )
+          // Unmodified state: show template description and optional "Set as Default" button
+          <>
+            {selectedTemplate?.description ? (
+              <p className="text-sm text-gray-600">{selectedTemplate.description}</p>
+            ) : (
+              <p className="text-sm text-gray-400 italic">
+                Select a playoff format to see its description.
+              </p>
+            )}
+            {/* Show "Set as Default" button when a global template is selected */}
+            {canSetAsDefault && (
+              <Button
+                onClick={onSave}
+                disabled={isSaving}
+                className="w-full mt-4"
+                variant="outline"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {isSaving
+                  ? 'Saving...'
+                  : context === 'league'
+                    ? 'Set as League Default'
+                    : hasSavedConfig
+                      ? 'Change Organization Default'
+                      : 'Set as Organization Default'}
+              </Button>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

@@ -115,6 +115,10 @@ export const usePlayoffConfigurations = (
       return data || [];
     },
     enabled: !!entityId,
+    // Refetch when mounting if data is stale (important after cache invalidation)
+    refetchOnMount: true,
+    // Config data doesn't change frequently, but should be fresh when viewing
+    staleTime: 60 * 1000, // 1 minute
   });
 };
 
@@ -170,6 +174,11 @@ export const useResolvedPlayoffConfig = (leagueId: string | undefined) => {
       return data;
     },
     enabled: !!leagueId,
+    // Refetch when mounting if data is stale (important for inheritance chain updates)
+    // This ensures league pages show updated org/global defaults after they change
+    refetchOnMount: true,
+    // Config data doesn't change frequently, but should be fresh when viewing
+    staleTime: 60 * 1000, // 1 minute
   });
 };
 
