@@ -9,11 +9,14 @@
  * State is organized for easy database persistence.
  */
 
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { useParams, useNavigate, useBlocker } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useSavePlayoffConfiguration } from '@/api/mutations/playoffConfigurations';
-import type { PlayoffConfiguration } from '@/api/hooks/usePlayoffConfigurations';
+import {
+  usePlayoffConfigurations,
+  type PlayoffConfiguration,
+} from '@/api/hooks/usePlayoffConfigurations';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
@@ -22,6 +25,7 @@ import { PlayoffMatchRulesCard } from '@/components/playoff/PlayoffMatchRulesCar
 import { PlayoffBracketPreviewCard } from '@/components/playoff/PlayoffBracketPreviewCard';
 import { PlayoffSeedingCard } from '@/components/playoff/PlayoffSeedingCard';
 import { PlayoffSettingsCard } from '@/components/playoff/PlayoffSettingsCard';
+import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog';
 import {
   usePlayoffSettingsReducer,
   calculateQualifyingTeams,
@@ -40,6 +44,30 @@ export const OrganizationPlayoffSettings: React.FC = () => {
 
   // Use the reducer for all playoff settings state
   const [settings, dispatch] = usePlayoffSettingsReducer();
+
+  // Track if we've loaded the initial config to prevent re-loading
+  const hasLoadedInitialConfig = useRef(false);
+
+  // Fetch organization's existing configuration (if any)
+  const { data: orgConfigs } = usePlayoffConfigurations('organization', orgId);
+
+  // Load the org's existing config on mount (only once)
+  useEffect(() => {
+    if (hasLoadedInitialConfig.current) return;
+    if (!orgConfigs || orgConfigs.length === 0) return;
+
+    // Org has an existing config - load it
+    const existingConfig = orgConfigs[0];
+    hasLoadedInitialConfig.current = true;
+
+    dispatch({ type: 'SET_SELECTED_TEMPLATE_ID', payload: existingConfig.id });
+    dispatch({ type: 'LOAD_SETTINGS', payload: buildLoadSettingsPayload(existingConfig) });
+  }, [orgConfigs, dispatch]);
+
+  // Block navigation when there are unsaved changes
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    settings.isModified && currentLocation.pathname !== nextLocation.pathname
+  );
 
   // Mutation for saving configurations (handles both create and update)
   const saveConfigMutation = useSavePlayoffConfiguration();
@@ -99,6 +127,9 @@ export const OrganizationPlayoffSettings: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Unsaved changes warning dialog */}
+      <UnsavedChangesDialog blocker={blocker} />
+
       <PageHeader
         backTo={`/operator-settings/${orgId}`}
         backLabel="Back to Settings"
