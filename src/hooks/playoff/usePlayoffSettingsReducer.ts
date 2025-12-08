@@ -515,6 +515,138 @@ export function getMatchupStyleDescription(style: MatchupStyle): string {
 }
 
 /**
+ * Playoff configuration template from database
+ * Matches the shape returned by playoff_configurations queries
+ *
+ * Note: week_matchup_styles is string[] from the database, but we cast
+ * to MatchupStyle[] internally since we control the values.
+ */
+export interface PlayoffConfigurationTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  qualification_type: QualificationType;
+  fixed_team_count: number | null;
+  qualifying_percentage: number | null;
+  percentage_min: number | null;
+  percentage_max: number | null;
+  playoff_weeks: number;
+  week_matchup_styles: string[];
+  wildcard_spots: number;
+  payment_method: PaymentMethod;
+}
+
+/**
+ * Build the LOAD_SETTINGS payload from a template
+ *
+ * Converts a database template record into the payload format
+ * expected by the LOAD_SETTINGS action. Used when selecting
+ * a template from the dropdown.
+ *
+ * @param template - Template record from playoff_configurations table
+ * @returns Payload for LOAD_SETTINGS action
+ *
+ * @example
+ * const payload = buildLoadSettingsPayload(template);
+ * dispatch({ type: 'SET_SELECTED_TEMPLATE_ID', payload: template.id });
+ * dispatch({ type: 'LOAD_SETTINGS', payload });
+ */
+export function buildLoadSettingsPayload(
+  template: PlayoffConfigurationTemplate
+): Partial<PlayoffSettingsState> {
+  return {
+    originalTemplateName: template.name,
+    configName: template.name,
+    configDescription: template.description ?? '',
+    qualificationType: template.qualification_type,
+    fixedTeamCount: template.fixed_team_count ?? 4,
+    qualifyingPercentage: template.qualifying_percentage ?? 50,
+    percentageMin: template.percentage_min ?? 4,
+    percentageMax: template.percentage_max,
+    playoffWeeks: template.playoff_weeks,
+    weekMatchupStyles: template.week_matchup_styles as MatchupStyle[],
+    wildcardSpots: template.wildcard_spots,
+    paymentMethod: template.payment_method,
+    isModified: false,
+  };
+}
+
+/**
+ * Entity type for playoff configurations
+ */
+export type PlayoffConfigEntityType = 'organization' | 'league';
+
+/**
+ * Build the save payload for the useSavePlayoffConfiguration mutation
+ *
+ * Extracts the relevant settings from state and formats them for
+ * the database mutation. Works for both organization and league configs.
+ *
+ * @param entityType - 'organization' or 'league'
+ * @param entityId - UUID of the organization or league
+ * @param settings - Current playoff settings state
+ * @returns Payload for useSavePlayoffConfiguration mutation
+ *
+ * @example
+ * const payload = buildSavePayload('organization', orgId, settings);
+ * saveConfigMutation.mutate(payload, {
+ *   onSuccess: (data) => toast.success('Saved!'),
+ * });
+ */
+export function buildSavePayload(
+  entityType: PlayoffConfigEntityType,
+  entityId: string,
+  settings: PlayoffSettingsState
+) {
+  return {
+    entityType,
+    entityId,
+    name: settings.configName.trim(),
+    description: settings.configDescription.trim() || undefined,
+    qualificationType: settings.qualificationType,
+    fixedTeamCount: settings.qualificationType === 'fixed' ? settings.fixedTeamCount : null,
+    qualifyingPercentage: settings.qualificationType === 'percentage' ? settings.qualifyingPercentage : null,
+    percentageMin: settings.qualificationType === 'percentage' ? settings.percentageMin : null,
+    percentageMax: settings.qualificationType === 'percentage' ? settings.percentageMax : null,
+    playoffWeeks: settings.playoffWeeks,
+    weekMatchupStyles: settings.weekMatchupStyles,
+    wildcardSpots: settings.wildcardSpots,
+    paymentMethod: settings.paymentMethod,
+  };
+}
+
+/**
+ * Build the LOAD_SETTINGS payload after a successful save
+ *
+ * After saving a configuration, this creates the payload to update
+ * the reducer state with the saved record's ID and reset isModified.
+ *
+ * @param savedConfig - The configuration record returned from the save mutation
+ * @returns Payload for LOAD_SETTINGS action
+ *
+ * @example
+ * saveConfigMutation.mutate(payload, {
+ *   onSuccess: (data) => {
+ *     dispatch({ type: 'LOAD_SETTINGS', payload: buildPostSavePayload(data) });
+ *     toast.success('Saved!');
+ *   },
+ * });
+ */
+export function buildPostSavePayload(savedConfig: {
+  id: string;
+  name: string;
+  description: string | null;
+}): Partial<PlayoffSettingsState> {
+  return {
+    selectedTemplateId: savedConfig.id,
+    originalTemplateName: savedConfig.name,
+    configName: savedConfig.name,
+    configDescription: savedConfig.description ?? '',
+    isModified: false,
+  };
+}
+
+/**
  * Hook for managing playoff settings state
  *
  * @param initialState - Optional initial state to override defaults
