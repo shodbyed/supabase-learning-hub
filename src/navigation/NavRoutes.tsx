@@ -1,5 +1,18 @@
+/**
+ * @fileoverview Route definitions for the application
+ *
+ * Uses createBrowserRouter (data router) to enable features like useBlocker
+ * for unsaved changes warnings. Routes are organized by access level:
+ * - Public routes (no auth required)
+ * - Dev routes (only in development mode)
+ * - Auth routes (require login)
+ * - Member routes (require login + approved application)
+ * - Operator routes (require league_operator role)
+ * - Developer routes (require developer role)
+ */
+
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { Home } from '../home/Home';
 import { Login } from '../login/Login';
 import { Register } from '../login/Register';
@@ -54,145 +67,130 @@ const PlayoffSetup = lazy(() => import('../operator/PlayoffSetup'));
 const OrganizationPlayoffSettings = lazy(() => import('../operator/OrganizationPlayoffSettings'));
 const LeaguePlayoffSettings = lazy(() => import('../operator/LeaguePlayoffSettings'));
 
-// Public routes - no authentication required
-const publicRoutes = [
-  { path: '/', element: <Home /> },
-  { path: '/about', element: <About /> },
-  { path: '/pricing', element: <Pricing /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
-  { path: '/forgot-password', element: <ForgotPassword /> },
-  { path: '/reset-password', element: <ResetPassword /> },
-  { path: '/confirm', element: <EmailConfirmation /> },
-  { path: '/5-man-format-details', element: <FiveManFormatDetails /> },
-  { path: '/8-man-format-details', element: <EightManFormatDetails /> },
-  { path: '/format-comparison', element: <FormatComparison /> },
-  { path: '/test/handicap-lookup', element: <HandicapLookupTest /> },
-];
-
-// Development-only routes - only accessible when running in dev mode
-const devRoutes = [
-  { path: '/dev/rls-tests', element: <DevOnly><RLSTestPage /></DevOnly> },
-];
-
-// Protected routes - require authentication only
-const authRoutes = [
-  { path: '/new-player', element: <NewPlayerForm /> },
-  { path: '/become-league-operator', element: <BecomeLeagueOperator /> },
-  { path: '/league-operator-application', element: <LeagueOperatorApplication /> },
-];
-
-// Protected routes - require authentication + approved member application
-const memberRoutes = [
-  { path: '/dashboard', element: <Dashboard /> },
-  { path: '/profile', element: <Profile /> },
-  { path: '/messages', element: <Messages /> },
-  { path: '/player/:playerId', element: <PlayerProfile /> },
-  { path: '/my-teams', element: <MyTeams /> },
-  { path: '/team/:teamId/schedule', element: <TeamSchedule /> },
-  { path: '/match/:matchId/lineup', element: <MatchLineup /> },
-  { path: '/match/:matchId/score', element: <ScoreMatch /> },
-  // Stats & Standings pages (accessible to all members)
-  { path: '/league/:leagueId/season/:seasonId/standings', element: <Standings /> },
-  { path: '/league/:leagueId/season/:seasonId/top-shooters', element: <TopShooters /> },
-  { path: '/league/:leagueId/season/:seasonId/team-stats', element: <TeamStats /> },
-  { path: '/league/:leagueId/season/:seasonId/feats', element: <FeatsOfExcellence /> },
-  { path: '/league/:leagueId/season/:seasonId/match-data', element: <MatchDataViewer /> },
-];
-
-// Protected routes - require league_operator role
-const operatorRoutes = [
-  { path: '/operator-welcome', element: <OperatorWelcome /> },
-  { path: '/operator-dashboard/:orgId', element: <OperatorDashboard /> },
-  { path: '/operator-reports', element: <ReportsManagement /> },
-  { path: '/manage-players/:orgId', element: <PlayerManagement /> },
-  { path: '/create-league/:orgId', element: <LeagueCreationWizard /> },
-  { path: '/operator-settings/:orgId', element: <OrganizationSettings /> },
-  { path: '/operator-settings/:orgId/playoffs', element: <OrganizationPlayoffSettings /> },
-  { path: '/league-rules/:orgId', element: <LeagueRules /> },
-  { path: '/league/:leagueId', element: <LeagueDetail /> },
-  { path: '/league/:leagueId/settings', element: <LeagueSettings /> },
-  { path: '/league/:leagueId/create-season', element: <SeasonCreationWizard /> },
-  { path: '/league/:leagueId/season/:seasonId/manage-schedule', element: <SeasonScheduleManager /> },
-  { path: '/league/:leagueId/manage-teams', element: <TeamManagement /> },
-  { path: '/league/:leagueId/season/:seasonId/schedule-setup', element: <ScheduleSetupPage /> },
-  { path: '/league/:leagueId/season/:seasonId/schedule', element: <SeasonSchedulePage /> },
-  { path: '/league/:leagueId/season/:seasonId/playoffs', element: <PlayoffSetup /> },
-  { path: '/operator/league/:leagueId/playoffs/:orgId', element: <LeaguePlayoffSettings /> },
-  { path: '/venues/:orgId', element: <VenueManagement /> },
-];
-
-// Protected routes - require developer role
-const developerRoutes = [
-  { path: '/admin-reports', element: <AdminReports /> },
-];
-
-export const NavRoutes: React.FC = () => {
+/**
+ * Helper to wrap element with ProtectedRoute for auth-only routes
+ */
+function withAuth(element: React.ReactNode) {
   return (
-    <Routes>
-      {/* Development-only routes - only accessible in dev mode */}
-      {devRoutes.map(({ path, element }) => (
-        <Route key={path} path={path} element={element} />
-      ))}
-
-      {/* Public routes */}
-      {publicRoutes.map(({ path, element }) => (
-        <Route key={path} path={path} element={element} />
-      ))}
-
-      {/* Protected routes - require authentication */}
-      {authRoutes.map(({ path, element }) => (
-        <Route
-          key={path}
-          path={path}
-          element={
-            <ProtectedRoute requireAuth={true}>
-              {element}
-            </ProtectedRoute>
-          }
-        />
-      ))}
-
-      {/* Protected routes - require authentication + member record */}
-      {memberRoutes.map(({ path, element }) => (
-        <Route
-          key={path}
-          path={path}
-          element={
-            <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
-              {element}
-            </ProtectedRoute>
-          }
-        />
-      ))}
-
-      {/* League Operator Routes - Require league_operator role */}
-      {operatorRoutes.map(({ path, element }) => (
-        <Route
-          key={path}
-          path={path}
-          element={
-            <Suspense fallback={<LoadingSpinner />}>
-              <ProtectedRoute requireAuth={true} requiredRole="league_operator">
-                {element}
-              </ProtectedRoute>
-            </Suspense>
-          }
-        />
-      ))}
-
-      {/* Developer Routes - Require developer role */}
-      {developerRoutes.map(({ path, element }) => (
-        <Route
-          key={path}
-          path={path}
-          element={
-            <ProtectedRoute requireAuth={true} requiredRole="developer">
-              {element}
-            </ProtectedRoute>
-          }
-        />
-      ))}
-    </Routes>
+    <ProtectedRoute requireAuth={true}>
+      {element}
+    </ProtectedRoute>
   );
-};
+}
+
+/**
+ * Helper to wrap element with ProtectedRoute for member routes
+ */
+function withMember(element: React.ReactNode) {
+  return (
+    <ProtectedRoute requireAuth={true} requireApprovedApplication={true}>
+      {element}
+    </ProtectedRoute>
+  );
+}
+
+/**
+ * Helper to wrap lazy operator components with Suspense + ProtectedRoute
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function withOperator(Component: React.LazyExoticComponent<React.ComponentType<any>>) {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <ProtectedRoute requireAuth={true} requiredRole="league_operator">
+        <Component />
+      </ProtectedRoute>
+    </Suspense>
+  );
+}
+
+/**
+ * Helper to wrap element with ProtectedRoute for developer routes
+ */
+function withDeveloper(element: React.ReactNode) {
+  return (
+    <ProtectedRoute requireAuth={true} requiredRole="developer">
+      {element}
+    </ProtectedRoute>
+  );
+}
+
+/**
+ * Root layout component that just renders child routes
+ * This is needed for createBrowserRouter to work with our provider structure
+ */
+export function RootLayout() {
+  return <Outlet />;
+}
+
+/**
+ * Router configuration using createBrowserRouter (data router)
+ * This enables features like useBlocker for unsaved changes warnings
+ */
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <RootLayout />,
+    children: [
+      // === Public Routes ===
+      { index: true, element: <Home /> },
+      { path: 'about', element: <About /> },
+      { path: 'pricing', element: <Pricing /> },
+      { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
+      { path: 'reset-password', element: <ResetPassword /> },
+      { path: 'confirm', element: <EmailConfirmation /> },
+      { path: '5-man-format-details', element: <FiveManFormatDetails /> },
+      { path: '8-man-format-details', element: <EightManFormatDetails /> },
+      { path: 'format-comparison', element: <FormatComparison /> },
+      { path: 'test/handicap-lookup', element: <HandicapLookupTest /> },
+
+      // === Development-only Routes ===
+      { path: 'dev/rls-tests', element: <DevOnly><RLSTestPage /></DevOnly> },
+
+      // === Auth Routes (require login) ===
+      { path: 'new-player', element: withAuth(<NewPlayerForm />) },
+      { path: 'become-league-operator', element: withAuth(<BecomeLeagueOperator />) },
+      { path: 'league-operator-application', element: withAuth(<LeagueOperatorApplication />) },
+
+      // === Member Routes (require login + approved application) ===
+      { path: 'dashboard', element: withMember(<Dashboard />) },
+      { path: 'profile', element: withMember(<Profile />) },
+      { path: 'messages', element: withMember(<Messages />) },
+      { path: 'player/:playerId', element: withMember(<PlayerProfile />) },
+      { path: 'my-teams', element: withMember(<MyTeams />) },
+      { path: 'team/:teamId/schedule', element: withMember(<TeamSchedule />) },
+      { path: 'match/:matchId/lineup', element: withMember(<MatchLineup />) },
+      { path: 'match/:matchId/score', element: withMember(<ScoreMatch />) },
+      // Stats & Standings pages (accessible to all members)
+      { path: 'league/:leagueId/season/:seasonId/standings', element: withMember(<Standings />) },
+      { path: 'league/:leagueId/season/:seasonId/top-shooters', element: withMember(<TopShooters />) },
+      { path: 'league/:leagueId/season/:seasonId/team-stats', element: withMember(<TeamStats />) },
+      { path: 'league/:leagueId/season/:seasonId/feats', element: withMember(<FeatsOfExcellence />) },
+      { path: 'league/:leagueId/season/:seasonId/match-data', element: withMember(<MatchDataViewer />) },
+
+      // === Operator Routes (require league_operator role) ===
+      { path: 'operator-welcome', element: withOperator(OperatorWelcome) },
+      { path: 'operator-dashboard/:orgId', element: withOperator(OperatorDashboard) },
+      { path: 'operator-reports', element: withOperator(ReportsManagement) },
+      { path: 'manage-players/:orgId', element: withOperator(PlayerManagement) },
+      { path: 'create-league/:orgId', element: withOperator(LeagueCreationWizard) },
+      { path: 'operator-settings/:orgId', element: withOperator(OrganizationSettings) },
+      { path: 'operator-settings/:orgId/playoffs', element: withOperator(OrganizationPlayoffSettings) },
+      { path: 'league-rules/:orgId', element: withOperator(LeagueRules) },
+      { path: 'league/:leagueId', element: withOperator(LeagueDetail) },
+      { path: 'league/:leagueId/settings', element: withOperator(LeagueSettings) },
+      { path: 'league/:leagueId/create-season', element: withOperator(SeasonCreationWizard) },
+      { path: 'league/:leagueId/season/:seasonId/manage-schedule', element: withOperator(SeasonScheduleManager) },
+      { path: 'league/:leagueId/manage-teams', element: withOperator(TeamManagement) },
+      { path: 'league/:leagueId/season/:seasonId/schedule-setup', element: withOperator(ScheduleSetupPage) },
+      { path: 'league/:leagueId/season/:seasonId/schedule', element: withOperator(SeasonSchedulePage) },
+      { path: 'league/:leagueId/season/:seasonId/playoffs', element: withOperator(PlayoffSetup) },
+      { path: 'operator/league/:leagueId/playoffs/:orgId', element: withOperator(LeaguePlayoffSettings) },
+      { path: 'venues/:orgId', element: withOperator(VenueManagement) },
+
+      // === Developer Routes (require developer role) ===
+      { path: 'admin-reports', element: withDeveloper(<AdminReports />) },
+    ],
+  },
+]);

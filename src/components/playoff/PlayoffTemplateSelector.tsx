@@ -126,6 +126,21 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
   // Find the currently selected template
   const selectedTemplate = allTemplates.find((t) => t.id === selectedTemplateId);
 
+  // Determine the source of the selected template for display in the title
+  const templateSource = useMemo(() => {
+    if (!selectedTemplate) return null;
+    // Check if it's an org config (show "Organization Default" in league context)
+    if (context === 'league' && orgConfigs?.some((t) => t.id === selectedTemplate.id)) {
+      return 'Organization Default';
+    }
+    // Check if it's a league config
+    if (leagueConfigs?.some((t) => t.id === selectedTemplate.id)) {
+      return 'League Configuration';
+    }
+    // Global templates don't need a source label
+    return null;
+  }, [selectedTemplate, orgConfigs, leagueConfigs, context]);
+
   // Check if the current name matches a global template name (case-insensitive)
   const nameMatchesGlobalTemplate = useMemo(() => {
     if (!configName.trim() || !globalTemplates) return false;
@@ -143,10 +158,14 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
     }
   };
 
-  // Determine what to show as the title
+  // Determine what to show as the title (include source if applicable)
   const displayTitle = isModified
     ? 'Custom Configuration'
-    : selectedTemplate?.name || 'Select Playoff Format';
+    : selectedTemplate?.name
+      ? templateSource
+        ? `${selectedTemplate.name} (${templateSource})`
+        : selectedTemplate.name
+      : 'Select Playoff Format';
 
   // Determine if save is disabled
   const isSaveDisabled =

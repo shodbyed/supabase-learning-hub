@@ -211,7 +211,7 @@ export const PlayoffWeeksCard: React.FC<PlayoffWeeksCardProps> = ({
               <Label>Payment method</Label>
               <RadioGroup
                 value={paymentMethod}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   dispatch({ type: 'SET_PAYMENT_METHOD', payload: value as PaymentMethod })
                 }
                 className="space-y-2"

@@ -1,43 +1,21 @@
-// Navigation
-import { BrowserRouter as Router } from 'react-router-dom';
+/**
+ * @fileoverview Main application entry point
+ *
+ * Sets up the app with:
+ * - React Query for data fetching
+ * - React Router (data router) for navigation
+ * - User context for authentication state
+ * - Error boundary for graceful error handling
+ * - Toast notifications
+ * - PWA update prompts
+ */
 
-// Components
-// import { NavBar } from './navigation/NavBar';
-// import { OperatorNavBar } from './navigation/OperatorNavBar';
-import { NavRoutes } from './navigation/NavRoutes';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './navigation/NavRoutes';
 import { UserProvider } from './context/UserProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Toaster } from './components/ui/sonner';
 import { PWAUpdatePrompt } from './components/PWAUpdatePrompt';
-
-
-/**
- * NavigationWrapper Component
- * Conditionally renders the appropriate navigation bar based on current route
- */
-// const NavigationWrapper: React.FC = () => {
-//   const location = useLocation();
-
-//   // Hide navbar for match scoring (full-screen experience), team schedule, and stats pages
-//   const hideNavbar = (location.pathname.includes('/match/') &&
-//                      (location.pathname.endsWith('/score') ||
-//                       location.pathname.endsWith('/lineup'))) ||
-//                      location.pathname.match(/^\/team\/[^/]+\/schedule$/) ||
-//                      location.pathname.includes('/standings') ||
-//                      location.pathname.includes('/top-shooters') ||
-//                      location.pathname.includes('/team-stats') ||
-//                      location.pathname.includes('/feats') ||
-//                      location.pathname.includes('/match-data');
-
-//   // Show OperatorNavBar for operator routes
-//   const isOperatorRoute = location.pathname.startsWith('/operator') ||
-//                          location.pathname.startsWith('/create-league') ||
-//                          location.pathname.startsWith('/league/');
-
-//   if (hideNavbar) return null;
-
-//   return isOperatorRoute ? <OperatorNavBar /> : <NavBar />;
-// };
 
 const App: React.FC = () => {
   return (
@@ -47,12 +25,7 @@ const App: React.FC = () => {
         className="full-screen"
       >
         <UserProvider>
-          <Router>
-            {/*
-            <NavigationWrapper />
-            */}
-            <NavRoutes />
-          </Router>
+          <RouterProvider router={router} />
         </UserProvider>
         <Toaster position="top-right" />
         <PWAUpdatePrompt />

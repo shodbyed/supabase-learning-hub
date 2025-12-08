@@ -30,8 +30,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
 import { PlayoffTemplateSelector } from '@/components/playoff/PlayoffTemplateSelector';
 import { PlayoffMatchRulesCard } from '@/components/playoff/PlayoffMatchRulesCard';
-import { PlayoffBracketPreviewCard } from '@/components/playoff/PlayoffBracketPreviewCard';
-import { PlayoffSeedingCard } from '@/components/playoff/PlayoffSeedingCard';
+import { PlayoffBracketCard } from '@/components/playoff/PlayoffBracketCard';
 import { PlayoffSettingsCard } from '@/components/playoff/PlayoffSettingsCard';
 import { UnsavedChangesDialog } from '@/components/UnsavedChangesDialog';
 import { parseLocalDate } from '@/utils/formatters';
@@ -45,7 +44,6 @@ import {
 } from '@/api/hooks/usePlayoffConfigurations';
 import {
   usePlayoffSettingsReducer,
-  calculateQualifyingTeams,
   buildLoadSettingsPayload,
   buildSavePayload,
   buildPostSavePayload,
@@ -58,82 +56,9 @@ import {
   createPlayoffMatches,
   clearPlayoffMatches,
 } from '@/utils/playoffGenerator';
-import type { PlayoffBracket, PlayoffMatchup, SeededTeam, ExcludedTeam } from '@/types/playoff';
+import type { PlayoffBracket, SeededTeam, ExcludedTeam } from '@/types/playoff';
 import { logger } from '@/utils/logger';
 
-/**
- * Get ordinal suffix for a number (1st, 2nd, 3rd, etc.)
- */
-function getOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-/**
- * Single matchup card showing two seeded teams
- * When season is not complete, shows placeholders like "1st Place" instead of team names
- */
-function MatchupCard({ matchup, isSeasonComplete }: { matchup: PlayoffMatchup; isSeasonComplete: boolean }) {
-  // Show placeholder names when season is not complete
-  const homeDisplayName = isSeasonComplete
-    ? matchup.homeTeam.teamName
-    : `${getOrdinal(matchup.homeSeed)} Place`;
-  const awayDisplayName = isSeasonComplete
-    ? matchup.awayTeam.teamName
-    : `${getOrdinal(matchup.awaySeed)} Place`;
-
-  return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white">
-      <div className="text-xs text-gray-500 mb-2 text-center">
-        Match {matchup.matchNumber}
-      </div>
-      <div className="space-y-3">
-        {/* Home team (higher seed) */}
-        <div className="flex items-center justify-between bg-blue-50 rounded-lg p-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-              {matchup.homeSeed}
-            </div>
-            <div>
-              <div className={`font-semibold ${isSeasonComplete ? 'text-gray-900' : 'text-gray-500 italic'}`}>
-                {homeDisplayName}
-              </div>
-              {isSeasonComplete && (
-                <div className="text-xs text-gray-500">
-                  {matchup.homeTeam.matchWins}W - {matchup.homeTeam.matchLosses}L
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="text-xs text-blue-600 font-medium">HOME</div>
-        </div>
-
-        <div className="text-center text-gray-400 text-sm font-medium">vs</div>
-
-        {/* Away team (lower seed) */}
-        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-600 text-white flex items-center justify-center font-bold text-sm">
-              {matchup.awaySeed}
-            </div>
-            <div>
-              <div className={`font-semibold ${isSeasonComplete ? 'text-gray-900' : 'text-gray-500 italic'}`}>
-                {awayDisplayName}
-              </div>
-              {isSeasonComplete && (
-                <div className="text-xs text-gray-500">
-                  {matchup.awayTeam.matchWins}W - {matchup.awayTeam.matchLosses}L
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 font-medium">AWAY</div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /**
  * Standings table showing all seeded teams
@@ -221,7 +146,7 @@ export const PlayoffSetup: React.FC = () => {
   const { data: resolvedConfig, isLoading: configLoading } = useResolvedPlayoffConfig(leagueId);
 
   // Fetch league's existing configuration (if any) for saving
-  const { data: leagueConfigs } = usePlayoffConfigurations('league', leagueId);
+  const { data: _leagueConfigs } = usePlayoffConfigurations('league', leagueId);
 
   // Use the reducer for all playoff settings state
   const [settings, dispatch] = usePlayoffSettingsReducer();
@@ -336,17 +261,12 @@ export const PlayoffSetup: React.FC = () => {
 
   // Destructure settings for convenience
   const {
-    exampleTeamCount,
     playoffWeeks,
-    wildcardSpots,
     weekMatchupStyles,
     isModified,
     configName,
     configDescription,
   } = settings;
-
-  // Calculate bracket size based on qualification settings
-  const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
 
   /**
    * Handle saving the configuration to the database
@@ -443,23 +363,6 @@ export const PlayoffSetup: React.FC = () => {
     }
   };
 
-  /**
-   * Get the source label for the current configuration
-   */
-  const getConfigSourceLabel = () => {
-    if (!resolvedConfig) return null;
-    switch (resolvedConfig.config_source) {
-      case 'league':
-        return 'League Configuration';
-      case 'organization':
-        return 'Organization Default';
-      case 'global':
-        return 'System Template';
-      default:
-        return null;
-    }
-  };
-
   // Loading state
   if (loading || seasonLoading || leagueLoading || configLoading) {
     return (
@@ -524,6 +427,65 @@ export const PlayoffSetup: React.FC = () => {
         {/* Playoff Rules - at the top for visibility */}
         <PlayoffMatchRulesCard />
 
+        {/* Season Status Card - includes playoff week info */}
+        {seasonStatus && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Season Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Playoff Week Date */}
+              {playoffWeek && (
+                <div className="flex items-center gap-2 text-purple-700">
+                  <Trophy className="h-5 w-5" />
+                  <span className="font-medium">{playoffWeek.week_name}:</span>
+                  <span>
+                    {parseLocalDate(playoffWeek.scheduled_date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {/* Regular Season Progress */}
+              <div className="flex items-center gap-4">
+                {seasonStatus.isComplete ? (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <Check className="h-5 w-5" />
+                    <span className="font-medium">Regular Season Complete</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-yellow-600">
+                    <AlertCircle className="h-5 w-5" />
+                    <span className="font-medium">Regular Season In Progress</span>
+                  </div>
+                )}
+                <div className="text-sm text-gray-600">
+                  {seasonStatus.completedMatches} of {seasonStatus.totalMatches} matches completed
+                  {seasonStatus.remainingMatches > 0 && (
+                    <span className="ml-1">
+                      ({seasonStatus.remainingMatches} remaining)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {!seasonStatus.isComplete && (
+                <p className="text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg">
+                  You can configure playoff settings now, but playoff matches cannot be created until all regular season matches are complete.
+                  The bracket preview below is based on current standings and will update as more matches are played.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Playoff Template Selector */}
         <PlayoffTemplateSelector
           context="league"
@@ -540,144 +502,35 @@ export const PlayoffSetup: React.FC = () => {
           isSaving={saveConfigMutation.isPending}
         />
 
-        {/* Current Configuration Source Info */}
-        {resolvedConfig && !isModified && (
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-purple-600" />
-              <div>
-                <span className="font-medium text-purple-900">{resolvedConfig.name}</span>
-                <span className="text-purple-700 ml-2">({getConfigSourceLabel()})</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Playoff Settings */}
         <PlayoffSettingsCard settings={settings} dispatch={dispatch} />
 
-        {/* Bracket Preview Cards - one for each playoff week */}
-        {Array.from({ length: playoffWeeks }, (_, weekIndex) => (
-          <PlayoffBracketPreviewCard
-            key={weekIndex}
-            weekNum={weekIndex + 1}
-            weekIndex={weekIndex}
-            matchupStyle={weekMatchupStyles[weekIndex] || 'seeded'}
-            bracketSize={bracketSize}
-            totalTeams={exampleTeamCount}
-            qualificationType={settings.qualificationType}
-            qualifyingPercentage={settings.qualifyingPercentage}
-            wildcardSpots={wildcardSpots}
-            onMatchupStyleChange={handleMatchupStyleChange}
-          />
-        ))}
-
-        {/* Example Standings */}
-        <PlayoffSeedingCard
-          teamCount={exampleTeamCount}
-          bracketSize={bracketSize}
-          wildcardSpots={wildcardSpots}
-        />
-
-        {/* Season Status Card */}
-        {seasonStatus && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Regular Season Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                {seasonStatus.isComplete ? (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <Check className="h-5 w-5" />
-                    <span className="font-medium">Complete</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-yellow-600">
-                    <AlertCircle className="h-5 w-5" />
-                    <span className="font-medium">In Progress</span>
-                  </div>
-                )}
-                <div className="text-sm text-gray-600">
-                  {seasonStatus.completedMatches} of {seasonStatus.totalMatches} matches completed
-                  {seasonStatus.remainingMatches > 0 && (
-                    <span className="ml-1">
-                      ({seasonStatus.remainingMatches} remaining)
-                    </span>
-                  )}
-                </div>
-              </div>
-              {!seasonStatus.isComplete && (
-                <p className="text-sm text-yellow-700 mt-3 bg-yellow-50 p-3 rounded-lg">
-                  Note: You can still set up playoffs before the regular season ends.
-                  The bracket shown is based on current standings and may change as more matches are completed.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Playoff Week Info */}
-        {playoffWeek && (
-          <Card className="bg-purple-50 border-purple-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2 text-purple-800">
-                <Trophy className="h-5 w-5" />
-                Playoff Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-purple-900">
-                <div className="font-semibold">{playoffWeek.week_name}</div>
-                <div className="text-sm text-purple-700">
-                  {parseLocalDate(playoffWeek.scheduled_date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Actual Bracket Display (from standings) */}
+        {/* Bracket Cards - one for each playoff week using actual team data */}
         {bracket && (
           <>
             {/* Excluded Teams Notice */}
             <ExcludedTeamsNotice teams={bracket.excludedTeams} />
 
-            {/* Matchups */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-purple-600" />
-                  Current Standings Bracket ({bracket.bracketSize} Teams)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {bracket.matchups.map((matchup) => (
-                    <MatchupCard
-                      key={matchup.matchNumber}
-                      matchup={matchup}
-                      isSeasonComplete={seasonStatus?.isComplete ?? false}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Bracket cards for each playoff week */}
+            {Array.from({ length: playoffWeeks }, (_, weekIndex) => (
+              <PlayoffBracketCard
+                key={weekIndex}
+                weekNum={weekIndex + 1}
+                weekIndex={weekIndex}
+                matchupStyle={weekMatchupStyles[weekIndex] || 'seeded'}
+                seededTeams={bracket.seededTeams}
+                bracketSize={bracket.bracketSize}
+                isSeasonComplete={seasonStatus?.isComplete ?? false}
+                onMatchupStyleChange={handleMatchupStyleChange}
+              />
+            ))}
 
-            {/* Final Standings */}
+            {/* Standings - shows "Current" while season in progress, "Final" when complete */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Final Standings (Seeding)
+                  {seasonStatus?.isComplete ? 'Final Standings' : 'Current Standings'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
