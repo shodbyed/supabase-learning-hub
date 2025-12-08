@@ -11,36 +11,25 @@
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, Users, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSavePlayoffConfiguration } from '@/api/mutations/playoffConfigurations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { PageHeader } from '@/components/PageHeader';
 import { InfoButton } from '@/components/InfoButton';
 import { PlayoffTemplateSelector } from '@/components/playoff/PlayoffTemplateSelector';
 import { PlayoffMatchRulesCard } from '@/components/playoff/PlayoffMatchRulesCard';
+import { PlayoffBracketPreviewCard } from '@/components/playoff/PlayoffBracketPreviewCard';
+import { PlayoffSeedingCard } from '@/components/playoff/PlayoffSeedingCard';
 import { ParticipationSettingsCard } from '@/components/playoff/ParticipationSettingsCard';
 import { PlayoffWeeksCard } from '@/components/playoff/PlayoffWeeksCard';
 import { WildcardSettingsCard } from '@/components/playoff/WildcardSettingsCard';
 import { ExampleTeamCountCard } from '@/components/playoff/ExampleTeamCountCard';
-import { PlayoffMatchupCard } from '@/components/playoff/PlayoffMatchupCard';
-import { PlayoffStandingsTable } from '@/components/playoff/PlayoffStandingsTable';
 import {
   usePlayoffSettingsReducer,
   calculateQualifyingTeams,
-  generateMatchupPairs,
-  getMatchupStyleLabel,
-  getMatchupStyleDescription,
 } from '@/hooks/playoff/usePlayoffSettingsReducer';
-import { getOrdinal } from '@/utils/formatters';
 import type { MatchupStyle } from '@/hooks/playoff/usePlayoffSettingsReducer';
 
 /**
@@ -60,8 +49,6 @@ export const OrganizationPlayoffSettings: React.FC = () => {
   const {
     exampleTeamCount,
     playoffWeeks,
-    qualificationType,
-    qualifyingPercentage,
     wildcardSpots,
     weekMatchupStyles,
     isModified,
@@ -119,18 +106,13 @@ export const OrganizationPlayoffSettings: React.FC = () => {
   const bracketSize = calculateQualifyingTeams(exampleTeamCount, settings);
 
   /**
-   * Generate matchups for a specific week based on its matchup style
-   * @param weekIndex - Zero-based week index
-   * @returns Array of matchup objects with matchNumber, homeSeed, awaySeed
+   * Handle matchup style change for a specific week
    */
-  const getWeekMatchups = (weekIndex: number) => {
-    const style = weekMatchupStyles[weekIndex] || 'seeded';
-    const pairs = generateMatchupPairs(bracketSize, style);
-    return pairs.map((pair, index) => ({
-      matchNumber: index + 1,
-      homeSeed: pair[0],
-      awaySeed: pair[1],
-    }));
+  const handleMatchupStyleChange = (weekIndex: number, style: MatchupStyle) => {
+    dispatch({
+      type: 'SET_WEEK_MATCHUP_STYLE',
+      payload: { weekIndex, style },
+    });
   };
 
   return (
@@ -226,112 +208,27 @@ export const OrganizationPlayoffSettings: React.FC = () => {
         </Card>
 
         {/* Example Brackets - dynamically generated for each playoff week */}
-        {Array.from({ length: playoffWeeks }, (_, i) => i).map((weekIndex) => {
-          const weekNum = weekIndex + 1;
-          const currentStyle = weekMatchupStyles[weekIndex] || 'seeded';
-          const weekMatchups = getWeekMatchups(weekIndex);
-
-          return (
-            <Card key={weekNum}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-purple-600" />
-                    Example Bracket - Week {weekNum}
-                  </CardTitle>
-                  {/* Matchup Style Dropdown */}
-                  <Select
-                    value={currentStyle}
-                    onValueChange={(value) =>
-                      dispatch({
-                        type: 'SET_WEEK_MATCHUP_STYLE',
-                        payload: { weekIndex, style: value as MatchupStyle },
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="seeded">
-                        <div className="flex flex-col">
-                          <span>Seeded</span>
-                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('seeded')}</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="ranked">
-                        <div className="flex flex-col">
-                          <span>Ranked</span>
-                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('ranked')}</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="random">
-                        <div className="flex flex-col">
-                          <span>Random Draw</span>
-                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('random')}</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="bracket">
-                        <div className="flex flex-col">
-                          <span>Bracket Progression</span>
-                          <span className="text-xs text-gray-500">{getMatchupStyleDescription('bracket')}</span>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {/* Style description below title */}
-                <p className="text-sm text-gray-500 mt-2">
-                  {getMatchupStyleLabel(currentStyle)}: {getMatchupStyleDescription(currentStyle)}
-                </p>
-              </CardHeader>
-              <CardContent>
-                {/* Show note when not all teams qualify or when wildcards are used */}
-                {exampleTeamCount !== bracketSize && wildcardSpots === 0 && (
-                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-                    {qualificationType === 'all' && `With ${exampleTeamCount} teams, the ${getOrdinal(exampleTeamCount)} place team does not participate in playoffs.`}
-                    {qualificationType === 'fixed' && `Only top ${bracketSize} teams qualify. Teams ranked ${bracketSize + 1}${exampleTeamCount > bracketSize + 1 ? `-${exampleTeamCount}` : ''} do not participate.`}
-                    {qualificationType === 'percentage' && `Based on ${qualifyingPercentage}% qualification, ${bracketSize} of ${exampleTeamCount} teams participate.`}
-                  </div>
-                )}
-                {/* Show wildcard info when wildcards are enabled */}
-                {wildcardSpots > 0 && (
-                  <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                    {wildcardSpots === 1 ? '1 wildcard spot' : `${wildcardSpots} wildcard spots`} randomly selected from teams that didn't automatically qualify.
-                  </div>
-                )}
-                <div className="grid gap-4 md:grid-cols-2">
-                  {weekMatchups.map((matchup) => (
-                    <PlayoffMatchupCard
-                      key={matchup.matchNumber}
-                      matchNumber={matchup.matchNumber}
-                      homeSeed={matchup.homeSeed}
-                      awaySeed={matchup.awaySeed}
-                      bracketSize={bracketSize}
-                      wildcardSpots={wildcardSpots}
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {Array.from({ length: playoffWeeks }, (_, weekIndex) => (
+          <PlayoffBracketPreviewCard
+            key={weekIndex}
+            weekNum={weekIndex + 1}
+            weekIndex={weekIndex}
+            matchupStyle={weekMatchupStyles[weekIndex] || 'seeded'}
+            bracketSize={bracketSize}
+            totalTeams={exampleTeamCount}
+            qualificationType={settings.qualificationType}
+            qualifyingPercentage={settings.qualifyingPercentage}
+            wildcardSpots={wildcardSpots}
+            onMatchupStyleChange={handleMatchupStyleChange}
+          />
+        ))}
 
         {/* Example Standings */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Example Seeding ({exampleTeamCount} Teams)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-500 mb-4">
-              Teams are seeded by: Match Wins → Points → Games Won
-            </p>
-            <PlayoffStandingsTable teamCount={exampleTeamCount} bracketSize={bracketSize} wildcardSpots={wildcardSpots} />
-          </CardContent>
-        </Card>
+        <PlayoffSeedingCard
+          teamCount={exampleTeamCount}
+          bracketSize={bracketSize}
+          wildcardSpots={wildcardSpots}
+        />
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3">
