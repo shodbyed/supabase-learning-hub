@@ -68,8 +68,10 @@ export interface PlayoffTemplateSelectorProps {
   onNameChange: (name: string) => void;
   /** Callback when config description changes */
   onDescriptionChange: (description: string) => void;
-  /** Callback when save button is clicked */
+  /** Callback when save button is clicked (saves to current context level) */
   onSave: () => void;
+  /** Callback when "Save to Both" button is clicked (league context only, saves to league AND org) */
+  onSaveToBoth?: () => void;
   /** Whether save is in progress */
   isSaving?: boolean;
 }
@@ -95,6 +97,7 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
   onNameChange,
   onDescriptionChange,
   onSave,
+  onSaveToBoth,
   isSaving = false,
 }) => {
   // Fetch global templates
@@ -155,6 +158,14 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
     // For league context, check if league has its own config
     return (leagueConfigs?.length ?? 0) > 0;
   }, [context, orgConfigs, leagueConfigs]);
+
+  // Check if organization has a saved config (for "Save to Both" option in league context)
+  const hasOrgConfig = useMemo(() => {
+    return (orgConfigs?.length ?? 0) > 0;
+  }, [orgConfigs]);
+
+  // Show "Save to Both" option in league context when org has no saved config
+  const canSaveToBoth = context === 'league' && !hasOrgConfig && onSaveToBoth;
 
   // Show "Set as Default" when a global template is selected and it's not already the saved default
   const canSetAsDefault = isGlobalTemplateSelected && !isModified;
@@ -297,6 +308,18 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                     ? 'Save as League Configuration'
                     : 'Save as Organization Default'}
               </Button>
+              {/* Show "Save to Both" option when in league context and org has no default */}
+              {canSaveToBoth && (
+                <Button
+                  onClick={onSaveToBoth}
+                  disabled={isSaveDisabled}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? 'Saving...' : 'Save as League + Organization Default'}
+                </Button>
+              )}
             </div>
           </>
         ) : (
@@ -311,21 +334,35 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
             )}
             {/* Show "Set as Default" button when a global template is selected */}
             {canSetAsDefault && (
-              <Button
-                onClick={onSave}
-                disabled={isSaving}
-                className="w-full mt-4"
-                variant="outline"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isSaving
-                  ? 'Saving...'
-                  : context === 'league'
-                    ? 'Set as League Default'
-                    : hasSavedConfig
-                      ? 'Change Organization Default'
-                      : 'Set as Organization Default'}
-              </Button>
+              <>
+                <Button
+                  onClick={onSave}
+                  disabled={isSaving}
+                  className="w-full mt-4"
+                  variant="outline"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving
+                    ? 'Saving...'
+                    : context === 'league'
+                      ? 'Set as League Default'
+                      : hasSavedConfig
+                        ? 'Change Organization Default'
+                        : 'Set as Organization Default'}
+                </Button>
+                {/* Show "Save to Both" option when in league context and org has no default */}
+                {canSaveToBoth && (
+                  <Button
+                    onClick={onSaveToBoth}
+                    disabled={isSaving}
+                    variant="ghost"
+                    className="w-full mt-2"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {isSaving ? 'Saving...' : 'Set as League + Organization Default'}
+                  </Button>
+                )}
+              </>
             )}
           </>
         )}

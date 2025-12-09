@@ -66,6 +66,7 @@ const SeasonSchedulePage = lazy(() => import('../operator/SeasonSchedulePage'));
 const PlayoffSetup = lazy(() => import('../operator/PlayoffSetup'));
 const OrganizationPlayoffSettings = lazy(() => import('../operator/OrganizationPlayoffSettings'));
 const LeaguePlayoffSettings = lazy(() => import('../operator/LeaguePlayoffSettings'));
+const PlayoffsSetupWizard = lazy(() => import('../operator/PlayoffsSetupWizard'));
 
 /**
  * Helper to wrap element with ProtectedRoute for auth-only routes
@@ -183,6 +184,7 @@ export const router = createBrowserRouter([
       { path: 'league/:leagueId/create-season', element: withOperator(SeasonCreationWizard) },
       { path: 'league/:leagueId/season/:seasonId/manage-schedule', element: withOperator(SeasonScheduleManager) },
       { path: 'league/:leagueId/manage-teams', element: withOperator(TeamManagement) },
+      { path: 'league/:leagueId/season/:seasonId/playoffs-setup', element: withOperator(PlayoffsSetupWizard) },
       { path: 'league/:leagueId/season/:seasonId/schedule-setup', element: withOperator(ScheduleSetupPage) },
       { path: 'league/:leagueId/season/:seasonId/schedule', element: withOperator(SeasonSchedulePage) },
       { path: 'league/:leagueId/season/:seasonId/playoffs', element: withOperator(PlayoffSetup) },

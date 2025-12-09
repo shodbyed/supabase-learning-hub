@@ -125,10 +125,13 @@ export const PlayoffBracketPreviewCard: React.FC<PlayoffBracketPreviewCardProps>
 
   /**
    * Get the wildcard info message
-   * Returns null if wildcards are disabled
+   * Only shows for Week 1 since wildcard selection happens at the start of playoffs
+   * Returns null if wildcards are disabled or if not Week 1
    */
   const getWildcardMessage = (): string | null => {
     if (wildcardSpots === 0) return null;
+    // Wildcard selection only happens in Week 1
+    if (weekNum > 1) return null;
     return wildcardSpots === 1
       ? '1 wildcard spot randomly selected from teams that didn\'t automatically qualify.'
       : `${wildcardSpots} wildcard spots randomly selected from teams that didn't automatically qualify.`;
