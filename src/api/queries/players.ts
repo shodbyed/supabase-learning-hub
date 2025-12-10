@@ -384,10 +384,37 @@ export interface AutoAuthorizeResult {
 }
 
 /**
+ * Fast count of total completed games for a player (across all game types)
+ *
+ * Uses Supabase count query instead of fetching all game records.
+ * Much faster than fetchPlayerGameHistory when you only need the count.
+ *
+ * @param playerId - The player's member ID
+ * @returns Promise with total game count
+ */
+export async function fetchPlayerTotalGameCount(playerId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('match_games')
+    .select('*', { count: 'exact', head: true })
+    .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`)
+    .not('winner_player_id', 'is', null);
+
+  if (error) {
+    logger.error('Error fetching player game count', { error: error.message, playerId });
+    return 0;
+  }
+
+  return count || 0;
+}
+
+/**
  * Attempt to auto-authorize an established player
  *
  * Players with 15+ total games (across all game types) are considered "established"
  * and can be auto-authorized by calculating their handicaps from game history.
+ *
+ * OPTIMIZED: Uses count query instead of fetching all games, and runs
+ * handicap calculations in parallel.
  *
  * @param playerId - The player's member ID
  * @returns Promise with authorization result
@@ -396,12 +423,8 @@ export async function autoAuthorizeEstablishedPlayer(
   playerId: string
 ): Promise<AutoAuthorizeResult> {
   try {
-    // Fetch game counts for all game types
-    const eightBallGames = await fetchPlayerGameHistory(playerId, 'eight_ball', undefined, 10000);
-    const nineBallGames = await fetchPlayerGameHistory(playerId, 'nine_ball', undefined, 10000);
-    const tenBallGames = await fetchPlayerGameHistory(playerId, 'ten_ball', undefined, 10000);
-
-    const totalGames = eightBallGames.length + nineBallGames.length + tenBallGames.length;
+    // Fast count query - single DB call instead of fetching all game records
+    const totalGames = await fetchPlayerTotalGameCount(playerId);
 
     // Need 15+ games to auto-authorize
     if (totalGames < 15) {
@@ -411,11 +434,13 @@ export async function autoAuthorizeEstablishedPlayer(
       };
     }
 
-    // Calculate handicaps using the standard calculation
+    // Calculate handicaps in parallel (was sequential before)
     // Use 8-ball as the primary game type for handicap calculation
     // (most common game type, provides best baseline)
-    const handicap3v3 = await calculatePlayerHandicap(playerId, '5_man', 'standard', 'eight_ball');
-    const handicap5v5 = await calculatePlayerHandicap(playerId, '8_man', 'standard', 'eight_ball');
+    const [handicap3v3, handicap5v5] = await Promise.all([
+      calculatePlayerHandicap(playerId, '5_man', 'standard', 'eight_ball'),
+      calculatePlayerHandicap(playerId, '8_man', 'standard', 'eight_ball'),
+    ]);
 
     // Update the player's starting handicaps
     const { error } = await updatePlayerStartingHandicaps(playerId, handicap3v3, handicap5v5);
@@ -442,6 +467,28 @@ export async function autoAuthorizeEstablishedPlayer(
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+/**
+ * Batch auto-authorize multiple players in parallel
+ *
+ * Runs all player checks concurrently for much faster processing.
+ * Returns results for all players, including which ones were authorized.
+ *
+ * @param playerIds - Array of player member IDs to check
+ * @returns Promise with array of authorization results
+ */
+export async function batchAutoAuthorizeEstablishedPlayers(
+  playerIds: string[]
+): Promise<{ playerId: string; result: AutoAuthorizeResult }[]> {
+  const results = await Promise.all(
+    playerIds.map(async (playerId) => ({
+      playerId,
+      result: await autoAuthorizeEstablishedPlayer(playerId),
+    }))
+  );
+
+  return results;
 }
 
 /**
