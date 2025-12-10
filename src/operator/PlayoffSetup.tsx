@@ -53,7 +53,7 @@ import {
   generatePlayoffBracket,
   getPlayoffWeek,
   checkRegularSeasonComplete,
-  createPlayoffMatches,
+  populatePlayoffMatches,
   clearPlayoffMatches,
 } from '@/utils/playoffGenerator';
 import type { PlayoffBracket, SeededTeam, ExcludedTeam } from '@/types/playoff';
@@ -307,15 +307,18 @@ export const PlayoffSetup: React.FC = () => {
   };
 
   /**
-   * Handle creating playoff matches
+   * Handle populating playoff matches with teams from standings
+   *
+   * Updates existing placeholder matches (created during schedule generation)
+   * with the actual team IDs based on the bracket seeding.
    */
   const handleCreateMatches = async () => {
     if (!bracket) return;
 
     const confirmed = await confirm({
-      title: 'Create Playoff Matches?',
-      message: `This will create ${bracket.matchups.length} playoff matches based on the current standings. Teams will be able to see their playoff matchups immediately.`,
-      confirmText: 'Create Matches',
+      title: 'Set Playoff Matchups?',
+      message: `This will assign ${bracket.matchups.length} teams to playoff matches based on the current standings. Teams will be able to see their playoff matchups immediately.`,
+      confirmText: 'Set Matchups',
       confirmVariant: 'default',
     });
 
@@ -323,16 +326,16 @@ export const PlayoffSetup: React.FC = () => {
 
     setCreating(true);
 
-    const result = await createPlayoffMatches(bracket);
+    const result = await populatePlayoffMatches(bracket);
 
     if (result.success) {
       // Navigate to schedule page to see the matches
       navigate(`/league/${leagueId}/season/${seasonId}/schedule`);
     } else {
-      if (result.error?.includes('already exist')) {
+      if (result.error?.includes('No placeholder matches')) {
         setMatchesExist(true);
       }
-      setError(result.error || 'Failed to create playoff matches');
+      setError(result.error || 'Failed to populate playoff matches');
     }
 
     setCreating(false);
@@ -555,10 +558,10 @@ export const PlayoffSetup: React.FC = () => {
               className="bg-purple-600 hover:bg-purple-700"
             >
               {creating
-                ? 'Creating...'
+                ? 'Setting Matchups...'
                 : !seasonStatus?.isComplete
                   ? 'Complete Regular Season First'
-                  : 'Approve & Create Matches'
+                  : 'Approve & Set Matchups'
               }
             </Button>
           )}

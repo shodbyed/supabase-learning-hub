@@ -337,6 +337,130 @@ export async function createPlayoffMatches(
 }
 
 /**
+ * Populate existing placeholder playoff matches with team data
+ *
+ * Instead of inserting new matches, this function UPDATES the existing
+ * placeholder matches that were created during schedule generation.
+ * Placeholder matches have null home_team_id and away_team_id.
+ *
+ * The function:
+ * 1. Fetches existing placeholder matches for the playoff week (ordered by match_number)
+ * 2. Uses the bracket's matchups (with seeding order) to assign teams
+ * 3. Updates each placeholder with the correct team IDs and venue
+ *
+ * @param bracket - Generated playoff bracket with matchups
+ * @returns Result with count of matches populated
+ *
+ * @example
+ * ```typescript
+ * const result = await populatePlayoffMatches(bracket);
+ * if (result.success) {
+ *   console.log(`Populated ${result.matchesPopulated} playoff matches`);
+ * }
+ * ```
+ */
+export async function populatePlayoffMatches(
+  bracket: PlayoffBracket
+): Promise<{ success: boolean; matchesPopulated: number; error?: string }> {
+  try {
+    // Fetch existing placeholder matches for this playoff week
+    // These are matches with null team IDs, ordered by match_number
+    const { data: placeholderMatches, error: fetchError } = await supabase
+      .from('matches')
+      .select('id, match_number')
+      .eq('season_week_id', bracket.playoffWeekId)
+      .is('home_team_id', null)
+      .is('away_team_id', null)
+      .order('match_number', { ascending: true });
+
+    if (fetchError) {
+      return {
+        success: false,
+        matchesPopulated: 0,
+        error: `Failed to fetch placeholder matches: ${fetchError.message}`,
+      };
+    }
+
+    if (!placeholderMatches || placeholderMatches.length === 0) {
+      return {
+        success: false,
+        matchesPopulated: 0,
+        error: 'No placeholder matches found for this playoff week. The schedule may not have been generated correctly.',
+      };
+    }
+
+    // Verify we have enough placeholders for the bracket
+    if (placeholderMatches.length < bracket.matchups.length) {
+      return {
+        success: false,
+        matchesPopulated: 0,
+        error: `Not enough placeholder matches (${placeholderMatches.length}) for bracket size (${bracket.matchups.length} matchups).`,
+      };
+    }
+
+    // Get home venue for each team (higher seed is home team)
+    const teamIds = bracket.matchups.flatMap(m => [m.homeTeam.teamId, m.awayTeam.teamId]);
+    const { data: teams } = await supabase
+      .from('teams')
+      .select('id, home_venue_id')
+      .in('id', teamIds);
+
+    const teamVenues = new Map<string, string | null>();
+    teams?.forEach(t => teamVenues.set(t.id, t.home_venue_id));
+
+    // Update each placeholder match with the bracket matchup data
+    // Match placeholders by index (both are ordered by match_number)
+    let updatedCount = 0;
+
+    for (let i = 0; i < bracket.matchups.length; i++) {
+      const matchup = bracket.matchups[i];
+      const placeholder = placeholderMatches[i];
+
+      const { error: updateError } = await supabase
+        .from('matches')
+        .update({
+          home_team_id: matchup.homeTeam.teamId,
+          away_team_id: matchup.awayTeam.teamId,
+          scheduled_venue_id: teamVenues.get(matchup.homeTeam.teamId) || null,
+        })
+        .eq('id', placeholder.id);
+
+      if (updateError) {
+        logger.error('Failed to update playoff match', {
+          matchId: placeholder.id,
+          error: updateError.message,
+        });
+        // Continue with other matches even if one fails
+      } else {
+        updatedCount++;
+      }
+    }
+
+    if (updatedCount === 0) {
+      return {
+        success: false,
+        matchesPopulated: 0,
+        error: 'Failed to update any playoff matches.',
+      };
+    }
+
+    return {
+      success: true,
+      matchesPopulated: updatedCount,
+    };
+  } catch (error) {
+    logger.error('Error populating playoff matches', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      success: false,
+      matchesPopulated: 0,
+      error: error instanceof Error ? error.message : 'Unknown error populating playoff matches',
+    };
+  }
+}
+
+/**
  * Clear existing playoff matches for a season
  *
  * @param seasonId - Season ID
