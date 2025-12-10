@@ -275,14 +275,14 @@ export const SeasonSchedulePage: React.FC = () => {
                           <div className="flex w-full items-center gap-4">
                             <div className="text-right flex-1 flex flex-col items-center">
                               <span className="font-semibold text-gray-900">
-                                {match.home_team?.team_name || 'BYE'}
+                                {match.home_team?.team_name || (week.week_type === 'playoffs' ? 'TBD' : 'BYE')}
                               </span>
                               <span className="text-xs text-gray-500 ml-2">(Home)</span>
                             </div>
                             <div className="text-xl font-bold text-gray-400">vs</div>
                             <div className="text-left flex-1 flex flex-col items-center">
                               <span className="font-semibold text-gray-900">
-                                {match.away_team?.team_name || 'BYE'}
+                                {match.away_team?.team_name || (week.week_type === 'playoffs' ? 'TBD' : 'BYE')}
                               </span>
                               <span className="text-xs text-gray-500 ml-2">(Away)</span>
                             </div>

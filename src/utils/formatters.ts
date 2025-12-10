@@ -273,3 +273,27 @@ export const isEighteenOrOlder = (dateOfBirth: string | Date): boolean => {
 
   return age >= 18;
 };
+
+/**
+ * Get ordinal suffix for a number (1st, 2nd, 3rd, etc.)
+ *
+ * Handles special cases for 11th, 12th, 13th and standard suffixes.
+ * Used for displaying rankings, seeds, and positions.
+ *
+ * @param n - The number to format
+ * @returns The number with its ordinal suffix
+ *
+ * @example
+ * getOrdinal(1);  // "1st"
+ * getOrdinal(2);  // "2nd"
+ * getOrdinal(3);  // "3rd"
+ * getOrdinal(4);  // "4th"
+ * getOrdinal(11); // "11th"
+ * getOrdinal(21); // "21st"
+ * getOrdinal(22); // "22nd"
+ */
+export const getOrdinal = (n: number): string => {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};

@@ -461,7 +461,7 @@ export const TeamManagement: React.FC = () => {
                 size="lg"
                 onClick={() => {
                   setIsNavigating(true);
-                  navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+                  navigate(`/league/${leagueId}/season/${seasonId}/playoffs-setup`);
                 }}
                 disabled={isNavigating}
               >
@@ -688,7 +688,7 @@ export const TeamManagement: React.FC = () => {
               size="lg"
               onClick={() => {
                 setIsNavigating(true);
-                navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+                navigate(`/league/${leagueId}/season/${seasonId}/playoffs-setup`);
               }}
               disabled={isNavigating}
             >

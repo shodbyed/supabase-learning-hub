@@ -10,7 +10,7 @@ import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { DashboardCard } from '@/components/operator/DashboardCard';
 import { PageHeader } from '@/components/PageHeader';
-import { BookOpen, Building2 } from 'lucide-react';
+import { BookOpen, Building2, Trophy } from 'lucide-react';
 import { OrganizationBasicInfoCard } from '@/components/operator/OrganizationBasicInfoCard';
 import { ContactInfoCard } from '@/components/operator/ContactInfoCard';
 import { PaymentMethodCard } from '@/components/operator/PaymentMethodCard';
@@ -132,6 +132,16 @@ export const OrganizationSettings: React.FC = () => {
           <BlackoutDatesCard
             organizationId={organization.id}
             onUpdate={() => refetchOrganization()}
+          />
+
+          {/* Playoff Settings Card */}
+          <DashboardCard
+            icon={<Trophy className="h-6 w-6" />}
+            iconColor="text-purple-600"
+            title="Playoff Settings"
+            description="Configure default playoff format and rules for your leagues"
+            buttonText="View Settings"
+            linkTo={`/operator-settings/${organization.id}/playoffs`}
           />
         </div>
       </div>

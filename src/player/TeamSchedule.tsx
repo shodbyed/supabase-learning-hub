@@ -9,7 +9,7 @@
 
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { useMatchesByTeam, useTeamDetails } from '@/api/hooks';
+import { useMatchesByTeam, useTeamDetails, useSeasonWeeks } from '@/api/hooks';
 import type { MatchWithDetails } from '@/types';
 import {
   Accordion,
@@ -30,6 +30,13 @@ export function TeamSchedule() {
   // Fetch team details and matches using TanStack Query hooks
   const { data: team, isLoading: teamLoading, error: teamError } = useTeamDetails(teamId);
   const { data: matches = [], isLoading: matchesLoading, error: matchesError } = useMatchesByTeam(teamId);
+
+  // Get season ID from team to fetch playoff weeks
+  const seasonId = team?.season?.id;
+  const { data: seasonWeeks = [] } = useSeasonWeeks(seasonId);
+
+  // Filter to get playoff weeks only
+  const playoffWeeks = seasonWeeks.filter(week => week.week_type === 'playoffs');
 
   const loading = teamLoading || matchesLoading;
   const error = teamError || matchesError ? 'Failed to load team schedule' : null;
@@ -319,6 +326,44 @@ export function TeamSchedule() {
               );
             })}
           </Accordion>
+        )}
+
+        {/* Playoff Week Placeholders */}
+        {playoffWeeks.length > 0 && (
+          <div className="mt-6 space-y-4">
+            {playoffWeeks.map((week) => (
+              <Card
+                key={week.id}
+                className="bg-purple-50 border-purple-300"
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Trophy className="h-5 w-5 text-purple-600" />
+                      <div>
+                        <div className="font-semibold text-purple-900">
+                          {week.week_name}
+                        </div>
+                        <div className="text-sm text-purple-700">
+                          {parseLocalDate(week.scheduled_date).toLocaleDateString(
+                            'en-US',
+                            {
+                              weekday: 'long',
+                              month: 'short',
+                              day: 'numeric',
+                            }
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-sm font-medium text-purple-600 italic">
+                      TBD
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </main>
     </div>

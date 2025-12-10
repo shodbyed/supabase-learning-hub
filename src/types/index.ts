@@ -77,3 +77,13 @@ export type {
   TeamSchedulePosition,
   TeamSchedulePositionInsertData
 } from './schedule';
+
+// Playoff types
+export type {
+  SeededTeam,
+  PlayoffMatchup,
+  ExcludedTeam,
+  PlayoffBracket,
+  GeneratePlayoffResult,
+  CreatePlayoffMatchesResult
+} from './playoff';

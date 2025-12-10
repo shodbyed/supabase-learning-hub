@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-11-24 (added OrganizationPreferencesCard.tsx component)
+> **Last Updated**: 2025-12-05 (added WildcardSettingsCard component in /components/playoff/)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -524,6 +524,11 @@ Reusable wizard/form step components
 - `VenueCard.tsx` - Venue card
 - `VenueCreationModal.tsx` - Venue creation modal
 
+#### Playoff Components (`/components/playoff/`)
+- `ParticipationSettingsCard.tsx` - Playoff participation/qualification settings with collapsible edit controls
+- `PlayoffWeeksCard.tsx` - Playoff weeks selector with add weeks modal and payment method options
+- `WildcardSettingsCard.tsx` - Wildcard spots configuration for random selection from non-qualifying teams
+
 #### Player Components (`/components/player/`)
 - `TeamCard.tsx` - Player team card ⚠️ **DUPLICATE** (also in `/components`)
 
@@ -601,6 +606,9 @@ Reusable wizard/form step components
 #### Utilities
 - `useDebounce.ts` - Debounce hook
 - `useLocalStorage.ts` - Local storage hook
+
+#### Playoff Hooks (`/hooks/playoff/`)
+- `usePlayoffSettingsReducer.ts` - Playoff settings state management with useReducer pattern
 
 ---
 

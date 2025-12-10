@@ -24,7 +24,8 @@ interface PageHeaderProps {
   hideBack?: boolean;
   /** Optional pre-title text displayed above the main title (e.g., "Welcome to") */
   preTitle?: string;
-  title: string;
+  /** Main page title - can be a string or JSX element (e.g., with InfoButton) */
+  title: React.ReactNode;
   /** Optional subtitle below title */
   subtitle?: string;
   /** Optional organization ID to display organization context */

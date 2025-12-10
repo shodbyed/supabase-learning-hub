@@ -17,22 +17,26 @@ export interface HandicapThresholds {
 /**
  * BCA 5v5 Handicap Chart - Range-based lookup
  *
- * Instead of 1000+ rows, we use 7 ranges per side (14 total entries).
+ * Instead of 1000+ rows, we use 7 ranges with separate values for higher/lower teams.
  * Handicap differences are percentage-based (0-500 range).
+ *
+ * IMPORTANT: The lower team's games_to_win is NOT simply (25 - higherTeamWins).
+ * Each team has its own lookup value from the BCA chart.
  */
 const BCA_5V5_RANGES: Array<{
   minDiff: number;
   maxDiff: number;
-  gamesNeeded: number;
+  higherTeamWins: number;  // Games needed by HIGHER handicap team
+  lowerTeamWins: number;   // Games needed by LOWER handicap team
 }> = [
-  // Format: [min, max, games_needed]
-  { minDiff: 0, maxDiff: 14, gamesNeeded: 13 },
-  { minDiff: 15, maxDiff: 40, gamesNeeded: 14 },
-  { minDiff: 41, maxDiff: 66, gamesNeeded: 15 },
-  { minDiff: 67, maxDiff: 92, gamesNeeded: 16 },
-  { minDiff: 93, maxDiff: 118, gamesNeeded: 17 },
-  { minDiff: 119, maxDiff: 144, gamesNeeded: 18 },
-  { minDiff: 145, maxDiff: 999, gamesNeeded: 19 }, // 145+ capped at 19
+  // Format: [min, max, higher_team_wins, lower_team_wins]
+  { minDiff: 0, maxDiff: 14, higherTeamWins: 13, lowerTeamWins: 13 },
+  { minDiff: 15, maxDiff: 40, higherTeamWins: 14, lowerTeamWins: 12 },
+  { minDiff: 41, maxDiff: 66, higherTeamWins: 15, lowerTeamWins: 11 },
+  { minDiff: 67, maxDiff: 92, higherTeamWins: 16, lowerTeamWins: 10 },
+  { minDiff: 93, maxDiff: 118, higherTeamWins: 17, lowerTeamWins: 9 },
+  { minDiff: 119, maxDiff: 144, higherTeamWins: 18, lowerTeamWins: 8 },
+  { minDiff: 145, maxDiff: 999, higherTeamWins: 19, lowerTeamWins: 7 }, // 145+ capped
 ];
 
 /**
@@ -67,14 +71,18 @@ export function get5v5GamesNeeded(handicapDiff: number): HandicapThresholds {
     throw new Error(`Invalid handicap difference: ${handicapDiff}`);
   }
 
-  // Higher handicap team needs more wins, lower needs fewer
-  // Total must equal 25 games: games_to_win + games_to_lose = 25
-  const gamesNeeded = range.gamesNeeded;
-  const opponentGamesNeeded = 25 - gamesNeeded;
+  // Look up the correct value based on whether this team is higher or lower handicap
+  // Each team has its own games_to_win value from the BCA chart
+  const gamesNeeded = isHigherHandicap ? range.higherTeamWins : range.lowerTeamWins;
+
+  // games_to_lose = the number of wins that would make you lose
+  // If you need 14 to win, opponent needs 12, so you lose if opponent gets 12
+  // games_to_lose = opponent's games_to_win - 1 (they win at that threshold)
+  const opponentGamesNeeded = isHigherHandicap ? range.lowerTeamWins : range.higherTeamWins;
 
   return {
-    games_to_win: isHigherHandicap ? gamesNeeded : opponentGamesNeeded,
+    games_to_win: gamesNeeded,
     games_to_tie: null, // No ties in 25-game format
-    games_to_lose: isHigherHandicap ? opponentGamesNeeded - 1 : gamesNeeded - 1,
+    games_to_lose: opponentGamesNeeded - 1,
   };
 }
