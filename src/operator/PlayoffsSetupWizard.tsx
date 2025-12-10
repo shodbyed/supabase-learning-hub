@@ -46,6 +46,7 @@ import {
   buildPostSavePayload,
 } from '@/hooks/playoff/usePlayoffSettingsReducer';
 import type { MatchupStyle } from '@/hooks/playoff/usePlayoffSettingsReducer';
+import { syncPlayoffWeeks } from '@/utils/scheduleUtils';
 
 /**
  * PlayoffsSetupWizard Component
@@ -206,8 +207,36 @@ export const PlayoffsSetupWizard: React.FC = () => {
   };
 
   /**
+   * Sync playoff weeks in the database and then navigate
+   * This ensures season_weeks has the correct number of playoff weeks
+   */
+  const syncAndNavigate = async () => {
+    if (!seasonId) {
+      navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+      return;
+    }
+
+    // Sync playoff weeks in the database to match the configuration
+    const syncResult = await syncPlayoffWeeks(seasonId, playoffWeeks);
+
+    if (!syncResult.success) {
+      toast.error('Failed to sync playoff weeks');
+      console.error('Sync error:', syncResult.error);
+      setIsNavigating(false);
+      return;
+    }
+
+    if (syncResult.weeksAdded > 0) {
+      toast.success(`Added ${syncResult.weeksAdded} playoff week${syncResult.weeksAdded > 1 ? 's' : ''}`);
+    }
+
+    navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+  };
+
+  /**
    * Handle continue to schedule setup
    * If settings were modified but not saved, save them first
+   * Then sync playoff weeks and navigate
    */
   const handleContinue = async () => {
     setIsNavigating(true);
@@ -217,8 +246,8 @@ export const PlayoffsSetupWizard: React.FC = () => {
       const payload = buildSavePayload('league', leagueId, settings);
 
       saveConfigMutation.mutate(payload, {
-        onSuccess: () => {
-          navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+        onSuccess: async () => {
+          await syncAndNavigate();
         },
         onError: (error: Error) => {
           toast.error('Failed to save configuration');
@@ -227,17 +256,18 @@ export const PlayoffsSetupWizard: React.FC = () => {
         },
       });
     } else {
-      // Not modified, just continue
-      navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+      // Not modified, just sync and continue
+      await syncAndNavigate();
     }
   };
 
   /**
    * Handle skip (use default without changes)
+   * Still need to sync playoff weeks based on the resolved config
    */
-  const handleSkip = () => {
+  const handleSkip = async () => {
     setIsNavigating(true);
-    navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
+    await syncAndNavigate();
   };
 
   // Loading state

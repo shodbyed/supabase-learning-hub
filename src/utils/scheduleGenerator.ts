@@ -90,6 +90,29 @@ async function fetchSeasonWeeks(
 }
 
 /**
+ * Fetch playoff weeks from database
+ *
+ * @param seasonId - Season ID to fetch playoff weeks for
+ * @returns Array of playoff weeks or empty array
+ */
+async function fetchPlayoffWeeks(
+  seasonId: string
+): Promise<{ weeks: SeasonWeek[]; error?: string }> {
+  const { data: playoffWeeks, error: weeksError } = await supabase
+    .from('season_weeks')
+    .select('id, scheduled_date, week_name, week_type')
+    .eq('season_id', seasonId)
+    .eq('week_type', 'playoffs')
+    .order('scheduled_date', { ascending: true });
+
+  if (weeksError) {
+    return { weeks: [], error: weeksError.message };
+  }
+
+  return { weeks: playoffWeeks || [] };
+}
+
+/**
  * Build a map of schedule positions to teams for quick lookup
  *
  * @param teams - Array of teams with positions
@@ -213,6 +236,82 @@ async function insertMatches(matches: MatchInsertData[]): Promise<string | undef
 }
 
 /**
+ * Generate playoff placeholder matches for all playoff weeks
+ *
+ * These are TBD matches - home_team_id and away_team_id are null.
+ * They will be populated when playoffs start based on regular season standings.
+ *
+ * For each playoff week, we calculate how many matches are needed:
+ * - Week 1: bracketSize / 2 matches (e.g., 8 teams = 4 matches)
+ * - Week 2: bracketSize / 4 matches (e.g., 8 teams = 2 matches)
+ * - Week 3: bracketSize / 8 matches (e.g., 8 teams = 1 match)
+ *
+ * @param playoffWeeks - Array of playoff week records
+ * @param seasonId - Season ID
+ * @param teamCount - Total number of teams (used to calculate bracket size)
+ * @returns Array of playoff match insert data (with null team IDs)
+ */
+function generatePlayoffPlaceholderMatches(
+  playoffWeeks: SeasonWeek[],
+  seasonId: string,
+  teamCount: number
+): MatchInsertData[] {
+  const playoffMatches: MatchInsertData[] = [];
+
+  // Calculate bracket size (must be power of 2, use largest power of 2 <= teamCount)
+  // Common sizes: 4, 8, 16, etc.
+  let bracketSize = 1;
+  while (bracketSize * 2 <= teamCount) {
+    bracketSize *= 2;
+  }
+
+  // Minimum bracket size is 4 teams (2 matches in round 1)
+  bracketSize = Math.max(4, bracketSize);
+
+  logger.info('Generating playoff placeholder matches', {
+    teamCount,
+    bracketSize,
+    playoffWeeks: playoffWeeks.length,
+  });
+
+  // Generate matches for each playoff week
+  let remainingTeams = bracketSize;
+
+  for (let weekIndex = 0; weekIndex < playoffWeeks.length; weekIndex++) {
+    const playoffWeek = playoffWeeks[weekIndex];
+
+    // Number of matches for this round = remaining teams / 2
+    const matchesThisWeek = Math.floor(remainingTeams / 2);
+
+    if (matchesThisWeek < 1) {
+      // No more matches to create (finals already done)
+      break;
+    }
+
+    for (let matchNum = 0; matchNum < matchesThisWeek; matchNum++) {
+      playoffMatches.push({
+        season_id: seasonId,
+        season_week_id: playoffWeek.id,
+        home_team_id: null, // TBD - determined by standings
+        away_team_id: null, // TBD - determined by standings
+        scheduled_venue_id: null, // TBD - home team's venue after seeding
+        match_number: matchNum + 1,
+        status: 'scheduled',
+      });
+    }
+
+    // Winners advance, so half the teams remain for next round
+    remainingTeams = matchesThisWeek;
+  }
+
+  logger.info('Generated playoff placeholder matches', {
+    totalPlayoffMatches: playoffMatches.length,
+  });
+
+  return playoffMatches;
+}
+
+/**
  * Generate full season schedule based on team positions
  *
  * This is the main orchestration function that coordinates the schedule generation process.
@@ -222,8 +321,12 @@ async function insertMatches(matches: MatchInsertData[]): Promise<string | undef
  * 2. Fetch all regular season weeks from database (fetchSeasonWeeks)
  * 3. Get matchup table for team count (getMatchupTable)
  * 4. Build team position lookup map (buildTeamPositionMap)
- * 5. Generate match records for entire season (generateAllMatches)
- * 6. Insert matches in bulk to database (insertMatches)
+ * 5. Generate regular season match records (generateAllMatches)
+ * 6. Fetch playoff weeks and generate placeholder matches (fetchPlayoffWeeks, generatePlayoffPlaceholderMatches)
+ * 7. Insert all matches in bulk to database (insertMatches)
+ *
+ * Playoff matches are created as TBD placeholders with null team IDs.
+ * They will be populated when playoffs start based on regular season standings.
  *
  * @param params - Season ID and teams with assigned positions
  * @returns Result indicating success and number of matches created
@@ -301,16 +404,31 @@ export async function generateSchedule({
     // Step 4: Build team position lookup map
     const teamsByPosition = buildTeamPositionMap(teams);
 
-    // Step 5: Generate all match records
-    const matches = generateAllMatches(
+    // Step 5: Generate all regular season match records
+    const regularMatches = generateAllMatches(
       seasonWeeks,
       matchupTable,
       teamsByPosition,
       seasonId
     );
 
-    // Step 6: Insert matches in bulk
-    const insertError = await insertMatches(matches);
+    // Step 6: Fetch playoff weeks and generate placeholder matches
+    const { weeks: playoffWeeks } = await fetchPlayoffWeeks(seasonId);
+    let playoffMatches: MatchInsertData[] = [];
+
+    if (playoffWeeks.length > 0) {
+      playoffMatches = generatePlayoffPlaceholderMatches(
+        playoffWeeks,
+        seasonId,
+        teams.length
+      );
+    }
+
+    // Step 7: Combine regular and playoff matches
+    const allMatches = [...regularMatches, ...playoffMatches];
+
+    // Step 8: Insert all matches in bulk
+    const insertError = await insertMatches(allMatches);
     if (insertError) {
       return {
         success: false,
@@ -319,9 +437,15 @@ export async function generateSchedule({
       };
     }
 
+    logger.info('Schedule generated successfully', {
+      regularMatches: regularMatches.length,
+      playoffMatches: playoffMatches.length,
+      totalMatches: allMatches.length,
+    });
+
     return {
       success: true,
-      matchesCreated: matches.length,
+      matchesCreated: allMatches.length,
     };
   } catch (error) {
     logger.error('Error generating schedule', { error: error instanceof Error ? error.message : String(error) });
