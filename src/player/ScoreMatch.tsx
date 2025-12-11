@@ -33,7 +33,7 @@ import { getPlayerStatsByPosition } from '@/hooks/usePlayerStatsByPosition';
 import { ScoringDialog } from '@/components/scoring/ScoringDialog';
 import { ConfirmationDialog } from '@/components/scoring/ConfirmationDialog';
 import { EditGameDialog } from '@/components/scoring/EditGameDialog';
-import { MatchScoreboard } from '@/components/scoring/MatchScoreboard';
+import { ThreeVThreeScoreboard } from '@/components/scoring/ThreeVThreeScoreboard';
 import { FiveVFiveScoreboard } from '@/components/scoring/FiveVFiveScoreboard';
 import { TiebreakerScoreboard } from '@/components/scoring/TiebreakerScoreboard';
 import { GamesList } from '@/components/scoring/GamesList';
@@ -124,8 +124,6 @@ export function ScoreMatch() {
     currentWinnerName: string;
   } | null>(null);
 
-  // Scoreboard view toggle (true = home team, false = away team)
-  const [showingHomeTeam, setShowingHomeTeam] = useState(true);
 
   // Process confirmation queue when modal closes or queue changes
   useEffect(() => {
@@ -147,12 +145,6 @@ export function ScoreMatch() {
     }
   }, [confirmationGame, confirmationQueue, removeFromConfirmationQueue]); // Watch both - but queue updates won't replace modal
 
-  // Set showing home team based on user's team (from hook)
-  useEffect(() => {
-    if (isHomeTeam !== null) {
-      setShowingHomeTeam(isHomeTeam);
-    }
-  }, [isHomeTeam]);
 
   // Detect when all games are complete (works for any format: 3, 18, 25, etc.)
   // Total games = count of games in database
@@ -589,7 +581,7 @@ export function ScoreMatch() {
           getPlayerStats={getPlayerStats}
         />
       ) : (
-        <MatchScoreboard
+        <ThreeVThreeScoreboard
           match={{
             ...match,
             home_team_verified_by: (match as any).home_team_verified_by ?? null,
@@ -597,18 +589,22 @@ export function ScoreMatch() {
           }}
           homeLineup={homeLineup}
           awayLineup={awayLineup}
-          gameResults={filteredGameResults}
-          homeTeamHandicap={homeTeamHandicap}
           homeThresholds={homeThresholds}
           awayThresholds={awayThresholds}
-          showingHomeTeam={showingHomeTeam}
-          onToggleTeam={setShowingHomeTeam}
-          getPlayerDisplayName={getPlayerDisplayName}
+          homeWins={homeStats.wins}
+          awayWins={awayStats.wins}
+          homeLosses={homeStats.losses}
+          awayLosses={awayStats.losses}
+          homePoints={homeStats.wins}
+          awayPoints={awayStats.wins}
+          homeTeamHandicap={homeTeamHandicap}
           allGamesComplete={allGamesComplete}
           isHomeTeam={isHomeTeam ?? false}
           onVerify={handleVerify}
           isVerifying={isVerifying}
           gameType={gameType}
+          getPlayerDisplayName={getPlayerDisplayName}
+          getPlayerStats={getPlayerStats}
         />
       )}
 

@@ -5,9 +5,13 @@
  * Shows wins, losses, points, and threshold progress.
  * Includes collapsible player stats section.
  *
+ * Supports two modes:
+ * - 5v5 (8-man): Shows "To Win" and "For 1.5" (70% bonus threshold)
+ * - 3v3: Shows "To Win" and "To Tie" (uses thresholds.games_to_tie)
+ *
  * Used by:
  * - FiveVFiveScoreboard (5v5/8-man format matches)
- * - Can be adapted for 3v3 format as well
+ * - ThreeVThreeScoreboard (3v3 format matches)
  */
 
 import { Card } from '@/components/ui/card';
@@ -48,6 +52,13 @@ interface TeamStatsCardProps {
   getPlayerDisplayName: (playerId: string) => string;
   /** Function to get player stats (wins/losses) by position */
   getPlayerStats: PlayerStatsGetter;
+  /**
+   * Match format mode - determines second threshold row display:
+   * - '5v5': Shows "For 1.5" (70% bonus threshold)
+   * - '3v3': Shows "To Tie" (uses thresholds.games_to_tie)
+   * @default '5v5'
+   */
+  mode?: '5v5' | '3v3';
 }
 
 /**
@@ -55,9 +66,9 @@ interface TeamStatsCardProps {
  *
  * Compact card displaying team statistics:
  * - Team name (clickable to toggle player stats)
- * - Wins/Losses/Points
- * - Games needed to win
- * - Games needed for 1.5x bonus (70% threshold)
+ * - Games needed to win (To Win threshold)
+ * - Second threshold: "For 1.5" (5v5) or "To Tie" (3v3)
+ * - Points display
  * - Collapsible player stats table
  */
 export function TeamStatsCard({
@@ -73,13 +84,20 @@ export function TeamStatsCard({
   onTogglePlayerStats,
   getPlayerDisplayName,
   getPlayerStats,
+  mode = '5v5',
 }: TeamStatsCardProps) {
-  // Calculate 70% threshold for 1.5x bonus
-  const bonus70 = Math.round(thresholds.games_to_win * 0.7);
+  // Calculate second threshold based on mode
+  // 5v5: 70% of games_to_win for 1.5x bonus
+  // 3v3: games_to_tie threshold (can be null if no ties possible)
+  const secondThreshold = mode === '5v5'
+    ? Math.round(thresholds.games_to_win * 0.7)
+    : thresholds.games_to_tie;
 
   // Calculate games remaining to reach thresholds
   const gamesNeededToWin = Math.max(0, thresholds.games_to_win - wins);
-  const gamesNeededFor15 = Math.max(0, bonus70 - wins);
+  const gamesNeededForSecond = secondThreshold !== null
+    ? Math.max(0, secondThreshold - wins)
+    : null;
 
   // Get colors from shared constants
   const colors = getTeamColors(isHome);
@@ -108,7 +126,18 @@ export function TeamStatsCard({
           {teamName}
         </button>
 
-        {/* Threshold Progress - To Win */}
+        {/* 3v3 Mode: Static threshold row at top */}
+        {mode === '3v3' && (
+          <div className="flex justify-center gap-3 text-xs text-gray-600 pt-1">
+            <span><span className="font-semibold">{thresholds.games_to_win}</span> Win</span>
+            {thresholds.games_to_tie !== null && (
+              <span><span className="font-semibold">{thresholds.games_to_tie}</span> Tie</span>
+            )}
+            <span><span className="font-semibold">{thresholds.games_to_lose}</span> Lose</span>
+          </div>
+        )}
+
+        {/* Threshold Progress - To Win (both modes) */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center pt-2">
           <div className={`font-semibold ${thresholdColor} text-2xl text-right pr-1`}>
             {thresholds.games_to_win}
@@ -122,19 +151,21 @@ export function TeamStatsCard({
           </div>
         </div>
 
-        {/* 1.5x Bonus Threshold - slightly smaller font */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-          <div className="font-semibold text-orange-600 text-xl text-right pr-1">
-            {bonus70}
+        {/* 5v5 Mode: For 1.5 Bonus Threshold */}
+        {mode === '5v5' && secondThreshold !== null && gamesNeededForSecond !== null && (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+            <div className="font-semibold text-orange-600 text-xl text-right pr-1">
+              {secondThreshold}
+            </div>
+            <div className="font-semibold text-orange-600 text-xl">/</div>
+            <div className="flex items-center pl-1">
+              <span className="font-semibold text-orange-600 text-xl">
+                {gamesNeededForSecond}
+              </span>
+              <span className="text-gray-600 ml-2 text-xs">For 1.5</span>
+            </div>
           </div>
-          <div className="font-semibold text-orange-600 text-xl">/</div>
-          <div className="flex items-center pl-1">
-            <span className="font-semibold text-orange-600 text-xl">
-              {gamesNeededFor15}
-            </span>
-            <span className="text-gray-600 ml-2 text-xs">For 1.5</span>
-          </div>
-        </div>
+        )}
 
         {/* Points - decimal point centered like "/" in threshold rows */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center pb-2">
