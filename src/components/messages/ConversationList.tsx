@@ -210,7 +210,7 @@ export function ConversationList({
       {/* Footer - Exit button (mobile only) */}
       {onExit && (
         <div className="md:hidden border-t bg-gray-300 px-4 py-4 flex justify-end flex-shrink-0">
-          <Button onClick={onExit}>
+          <Button loadingText="none" onClick={onExit}>
             Exit to Dashboard
           </Button>
         </div>

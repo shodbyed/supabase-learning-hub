@@ -546,8 +546,8 @@ export function PlayerNameLink({
             <Button variant="outline" onClick={() => setShowHandicapModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleHandicapSave} disabled={updateHandicapsMutation.isPending}>
-              {updateHandicapsMutation.isPending ? 'Saving...' : 'Save Handicaps'}
+            <Button onClick={handleHandicapSave} disabled={updateHandicapsMutation.isPending} loadingText="Saving..." isLoading={updateHandicapsMutation.isPending}>
+              Save Handicaps
             </Button>
           </DialogFooter>
         </DialogContent>

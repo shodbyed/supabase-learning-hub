@@ -55,6 +55,7 @@ export function MessageInput({ onSend, disabled = false, maxLength = 2000 }: Mes
           maxLength={maxLength}
         />
         <Button
+          loadingText="none"
           onClick={handleSendMessage}
           disabled={!messageInput.trim() || sending || disabled}
           size="lg"

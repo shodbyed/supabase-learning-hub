@@ -553,13 +553,13 @@ export const PlayoffSetup: React.FC = () => {
           </Button>
           {bracket && (
             <Button
+              loadingText="Setting Matchups..."
+              isLoading={creating}
               onClick={handleCreateMatches}
               disabled={creating || !seasonStatus?.isComplete}
               className="bg-purple-600 hover:bg-purple-700"
             >
-              {creating
-                ? 'Setting Matchups...'
-                : !seasonStatus?.isComplete
+              {!seasonStatus?.isComplete
                   ? 'Complete Regular Season First'
                   : 'Approve & Set Matchups'
               }

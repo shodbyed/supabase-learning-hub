@@ -94,6 +94,7 @@ export const ContentModerationCard: React.FC<ContentModerationCardProps> = ({
               variant={profanityFilterEnabled ? 'destructive' : 'default'}
               size="sm"
               className="ml-4"
+              loadingText="Saving..."
             >
               {isSaving ? 'Saving...' : profanityFilterEnabled ? 'Disable' : 'Enable'}
             </Button>

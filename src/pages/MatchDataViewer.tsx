@@ -103,6 +103,7 @@ export function MatchDataViewer() {
               variant={statusFilter === 'completed' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('completed')}
+              loadingText="none"
             >
               Completed ({statusCounts.completed})
             </Button>
@@ -110,6 +111,7 @@ export function MatchDataViewer() {
               variant={statusFilter === 'awaiting_verification' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('awaiting_verification')}
+              loadingText="none"
             >
               Awaiting Verification ({statusCounts.awaiting_verification})
             </Button>
@@ -117,6 +119,7 @@ export function MatchDataViewer() {
               variant={statusFilter === 'in_progress' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('in_progress')}
+              loadingText="none"
             >
               In Progress ({statusCounts.in_progress})
             </Button>
@@ -124,6 +127,7 @@ export function MatchDataViewer() {
               variant={statusFilter === 'scheduled' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('scheduled')}
+              loadingText="none"
             >
               Scheduled ({statusCounts.scheduled})
             </Button>
@@ -131,6 +135,7 @@ export function MatchDataViewer() {
               variant={statusFilter === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setStatusFilter('all')}
+              loadingText="none"
             >
               All ({statusCounts.all})
             </Button>

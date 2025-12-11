@@ -338,17 +338,17 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
             variant="outline"
             onClick={onCancel}
             disabled={saving}
+            loadingText="none"
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
             disabled={saving}
+            isLoading={saving}
+            loadingText={isEditing ? 'Updating...' : 'Creating...'}
           >
-            {saving
-              ? (isEditing ? 'Updating...' : 'Creating...')
-              : (isEditing ? 'Update Venue' : 'Create Venue')
-            }
+            {isEditing ? 'Update Venue' : 'Create Venue'}
           </Button>
         </div>
       </div>

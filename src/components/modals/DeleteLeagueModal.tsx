@@ -232,7 +232,7 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={onCancel}>
+            <Button loadingText="none" onClick={onCancel}>
               Close
             </Button>
           </div>
@@ -305,11 +305,13 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
               Cancel
             </Button>
             <Button
+              loadingText="Deleting..."
+              isLoading={deleting}
               onClick={handleDelete}
               disabled={requiresConfirmation || deleting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {deleting ? 'Deleting...' : 'Delete League'}
+              Delete League
             </Button>
           </div>
         </div>
@@ -357,11 +359,13 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
               Cancel
             </Button>
             <Button
+              loadingText="Deleting..."
+              isLoading={deleting}
               onClick={handleDelete}
               disabled={deleting}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              {deleting ? 'Deleting...' : 'Delete League'}
+              Delete League
             </Button>
           </div>
         </div>
@@ -401,11 +405,13 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
             Cancel
           </Button>
           <Button
+            loadingText="Deleting..."
+            isLoading={deleting}
             onClick={handleDelete}
             disabled={deleting}
             className="bg-red-600 hover:bg-red-700 text-white"
           >
-            {deleting ? 'Deleting...' : 'Delete League'}
+            Delete League
           </Button>
         </div>
       </div>

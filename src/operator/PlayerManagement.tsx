@@ -625,11 +625,13 @@ export const PlayerManagement: React.FC = () => {
 
                         {/* Save Button */}
                         <Button
+                          loadingText="Saving..."
+                          isLoading={updateHandicapsMutation.isPending}
                           onClick={handleSave}
                           disabled={updateHandicapsMutation.isPending}
                           className="w-full"
                         >
-                          {updateHandicapsMutation.isPending ? 'Saving...' : 'Save Starting Handicaps'}
+                          Save Starting Handicaps
                         </Button>
                       </div>
                     )}

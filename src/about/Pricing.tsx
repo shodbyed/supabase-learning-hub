@@ -207,7 +207,7 @@ export const Pricing: React.FC = () => {
         <p className="text-gray-700">No upfront costs. No hidden fees. Just professional league management.</p>
         <div className="flex gap-4 justify-center">
           <Link to="/become-league-operator">
-            <Button size="lg">
+            <Button size="lg" loadingText="none">
               Become an Operator
             </Button>
           </Link>

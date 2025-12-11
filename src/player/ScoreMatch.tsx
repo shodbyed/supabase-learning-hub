@@ -409,7 +409,7 @@ export function ScoreMatch() {
                 Error
               </div>
               <div className="text-gray-700 mb-4">{error}</div>
-              <Button onClick={() => navigate(-1)}>Go Back</Button>
+              <Button loadingText="none" onClick={() => navigate(-1)}>Go Back</Button>
             </div>
           </CardContent>
         </Card>
@@ -469,11 +469,12 @@ export function ScoreMatch() {
                 This usually means the home team's lineup lock failed to prepare the match.
                 Both teams should go back to lineup and try again.
               </div>
-              <Button onClick={() => window.location.reload()}>Try Again</Button>
+              <Button onClick={() => window.location.reload()} loadingText="none">Try Again</Button>
               <Button
                 variant="outline"
                 onClick={() => navigate(`/match/${matchId}/lineup`)}
                 className="ml-2"
+                loadingText="none"
               >
                 Back to Lineup
               </Button>

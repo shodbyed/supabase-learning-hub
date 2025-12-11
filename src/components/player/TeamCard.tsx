@@ -214,12 +214,12 @@ export function TeamCard({
       {/* Action Buttons */}
       <CardFooter className="flex gap-3 pt-4">
         <Link to={`/league/${leagueId}/season/${seasonId}/schedule?from=player`} className="flex-1">
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" loadingText="none">
             View Schedule
           </Button>
         </Link>
         <Link to="/score-match" className="flex-1">
-          <Button className="w-full">
+          <Button className="w-full" loadingText="none">
             Score Match
           </Button>
         </Link>

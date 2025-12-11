@@ -396,6 +396,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
               onClick={handleContinueSetupClick}
               style={{ backgroundColor: '#2563eb', color: 'white' }}
               disabled={isNavigating}
+              loadingText="Loading..."
             >
               {isNavigating ? 'Loading...' : 'Continue Setup'}
             </Button>
@@ -408,6 +409,7 @@ export const LeagueOverviewCard: React.FC<LeagueOverviewCardProps> = ({ league }
               onClick={handleCreateSeasonClick}
               style={{ backgroundColor: '#2563eb', color: 'white' }}
               disabled={isNavigating}
+              loadingText="Loading..."
             >
               {isNavigating ? 'Loading...' : 'Create Season'}
             </Button>

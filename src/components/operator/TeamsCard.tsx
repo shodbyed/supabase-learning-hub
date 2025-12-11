@@ -82,6 +82,7 @@ export const TeamsCard: React.FC<TeamsCardProps> = ({ leagueId }) => {
           }}
           size="sm"
           disabled={isNavigating}
+          loadingText="Loading..."
         >
           {isNavigating ? 'Loading...' : 'Manage Teams'}
         </Button>

@@ -37,7 +37,7 @@ export const BecomeLeagueOperator: React.FC = () => {
             {/* Quick Action Buttons */}
             <div className="flex justify-center space-x-4">
               <Link to="/league-operator-application">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
+                <Button loadingText="none" size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
                   Start Application
                 </Button>
               </Link>
@@ -184,7 +184,7 @@ export const BecomeLeagueOperator: React.FC = () => {
             </p>
             <div className="flex justify-center space-x-4">
               <Link to="/league-operator-application">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8">
+                <Button loadingText="none" size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8">
                   Start Application
                 </Button>
               </Link>

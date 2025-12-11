@@ -90,7 +90,7 @@ export function EditGameDialog({
 
         <DialogFooter className="flex flex-row justify-around gap-4">
           {!hasRequested && (
-            <Button className="flex-1" onClick={handleVacate}>
+            <Button className="flex-1" onClick={handleVacate} loadingText="Requesting...">
               Request Vacate Winner
             </Button>
           )}
@@ -98,6 +98,7 @@ export function EditGameDialog({
             variant="outline"
             className="flex-1"
             onClick={onClose}
+            loadingText="none"
           >
             Close
           </Button>

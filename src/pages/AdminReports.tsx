@@ -566,13 +566,13 @@ export function AdminReports() {
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
-                      <Button onClick={handleTakeAction}>
+                      <Button onClick={handleTakeAction} loadingText="Recording Action">
                         Record Action
                       </Button>
-                      <Button variant="outline" onClick={handleResolve}>
+                      <Button variant="outline" onClick={handleResolve} loadingText="Marking Resolved">
                         Mark Resolved
                       </Button>
-                      <Button variant="outline" onClick={handleDismiss}>
+                      <Button variant="outline" onClick={handleDismiss} loadingText="Dismissing">
                         Dismiss
                       </Button>
                     </div>

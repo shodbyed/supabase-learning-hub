@@ -191,9 +191,11 @@ export const Register: React.FC = () => {
         <CardAction>
           <Button
             type="submit"
+            loadingText="Creating Account..."
+            isLoading={loading}
             disabled={loading}
           >
-            {loading ? 'Creating Account...' : 'Register'}
+            Register
           </Button>
           {message && (
             <p className="text-sm mt-2 text-red-500">

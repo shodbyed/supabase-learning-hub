@@ -148,7 +148,7 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
           <>
             <Button
               className="hidden lg:block"
-              variant={isWeekOff ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => onToggleWeekOff(index)}
             >
@@ -162,7 +162,7 @@ export const ScheduleWeekRow: React.FC<ScheduleWeekRowProps> = ({
             </Button>
             <Button
               className="lg:hidden"
-              variant={isWeekOff ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => onToggleWeekOff(index)}
             >

@@ -140,6 +140,7 @@ export function MatchScoreboard({
             <Button
               variant={showingHomeTeam ? 'default' : 'outline'}
               onClick={() => onToggleTeam(true)}
+              loadingText="none"
             >
               {match.home_team?.team_name}
             </Button>
@@ -147,6 +148,7 @@ export function MatchScoreboard({
             <Button
               variant={!showingHomeTeam ? 'default' : 'outline'}
               onClick={() => onToggleTeam(false)}
+              loadingText="none"
             >
               {match.away_team?.team_name}
             </Button>

@@ -115,10 +115,12 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
           </div>
 
           <Button
+            loadingText={isLastQuestion ? 'Creating League...' : 'Loading...'}
+            isLoading={isSubmitting || isNavigating}
             onClick={onNext}
             disabled={!canProceed || isSubmitting || isNavigating}
           >
-            {isSubmitting ? 'Creating League...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Create League' : 'Continue'}
+            {isLastQuestion ? 'Create League' : 'Continue'}
           </Button>
         </div>
       </div>

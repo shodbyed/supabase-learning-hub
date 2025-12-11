@@ -109,6 +109,7 @@ export const PlayoffWeeksCard: React.FC<PlayoffWeeksCardProps> = ({
             size="sm"
             onClick={() => setShowEdit(!showEdit)}
             className="text-purple-700 hover:text-purple-900 hover:bg-purple-100"
+            loadingText="none"
           >
             {showEdit ? (
               <ChevronUp className="h-4 w-4" />
@@ -242,12 +243,14 @@ export const PlayoffWeeksCard: React.FC<PlayoffWeeksCardProps> = ({
             <Button
               variant="outline"
               onClick={() => dispatch({ type: 'CLOSE_ADD_WEEKS_MODAL' })}
+              loadingText="none"
             >
               Cancel
             </Button>
             <Button
               onClick={() => dispatch({ type: 'ADD_PLAYOFF_WEEKS', payload: weeksToAdd })}
               className="bg-purple-600 hover:bg-purple-700"
+              loadingText="none"
             >
               Add Weeks
             </Button>

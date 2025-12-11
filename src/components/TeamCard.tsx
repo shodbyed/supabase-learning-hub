@@ -80,10 +80,10 @@ export const TeamCard: React.FC<TeamCardProps> = ({
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button size="sm" onClick={onEdit}>
+          <Button loadingText="none" size="sm" onClick={onEdit}>
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="destructive" onClick={onDelete}>
+          <Button loadingText="Deleting..." size="sm" variant="destructive" onClick={onDelete}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

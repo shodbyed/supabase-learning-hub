@@ -17,6 +17,7 @@ export const FormatComparison: React.FC = () => {
       <div className="fixed top-20 right-4 z-50">
         <Button
           variant="default"
+          loadingText="none"
           onClick={() => navigate(-1)}
           size="lg"
           className="shadow-lg"
@@ -136,6 +137,7 @@ export const FormatComparison: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <Button
             variant="default"
+            loadingText="none"
             onClick={() => navigate('/5-man-format-details')}
             size="lg"
           >
@@ -143,6 +145,7 @@ export const FormatComparison: React.FC = () => {
           </Button>
           <Button
             variant="default"
+            loadingText="none"
             onClick={() => navigate('/8-man-format-details')}
             size="lg"
           >

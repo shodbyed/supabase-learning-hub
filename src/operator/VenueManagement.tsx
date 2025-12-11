@@ -176,7 +176,7 @@ export const VenueManagement: React.FC = () => {
         title="Manage Venues"
         subtitle="Add and manage venues where your leagues play"
       >
-        <Button onClick={() => setShowModal(true)} className="mt-4">
+        <Button onClick={() => setShowModal(true)} className="mt-4" loadingText="none">
           <Plus className="h-5 w-5 mr-2" />
           Add Venue
         </Button>
@@ -208,7 +208,7 @@ export const VenueManagement: React.FC = () => {
             <p className="text-gray-600 mb-6">
               Add your first venue to start organizing league play locations.
             </p>
-            <Button onClick={() => setShowModal(true)}>
+            <Button onClick={() => setShowModal(true)} loadingText="none">
               Add First Venue
             </Button>
           </div>

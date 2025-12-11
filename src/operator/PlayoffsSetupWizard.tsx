@@ -323,12 +323,14 @@ export const PlayoffsSetupWizard: React.FC = () => {
             variant="outline"
             onClick={handleSkip}
             disabled={isNavigating}
+            loadingText="Loading..."
           >
             {isNavigating ? 'Loading...' : 'Skip'}
           </Button>
           <Button
             onClick={handleContinue}
             disabled={isNavigating}
+            loadingText="Saving..."
           >
             {isNavigating ? 'Loading...' : 'Continue to Schedule →'}
           </Button>
@@ -419,6 +421,7 @@ export const PlayoffsSetupWizard: React.FC = () => {
             size="lg"
             onClick={handleContinue}
             disabled={isNavigating}
+            loadingText="Saving..."
           >
             <ArrowRight className="h-4 w-4 mr-2" />
             {isNavigating ? 'Loading...' : 'Continue to Schedule'}
@@ -429,6 +432,7 @@ export const PlayoffsSetupWizard: React.FC = () => {
             size="lg"
             onClick={handleSkip}
             disabled={isNavigating}
+            loadingText="Loading..."
           >
             {isNavigating ? 'Loading...' : 'Skip (Use Default)'}
           </Button>
@@ -439,6 +443,7 @@ export const PlayoffsSetupWizard: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => navigate(`/league/${leagueId}/manage-teams?seasonId=${seasonId}`)}
+            loadingText="none"
           >
             Back to Teams
           </Button>
@@ -446,12 +451,14 @@ export const PlayoffsSetupWizard: React.FC = () => {
             variant="outline"
             onClick={handleSkip}
             disabled={isNavigating}
+            loadingText="Loading..."
           >
             Skip (Use Default)
           </Button>
           <Button
             onClick={handleContinue}
             disabled={isNavigating}
+            loadingText="Saving..."
           >
             {isNavigating ? 'Saving...' : 'Continue to Schedule →'}
           </Button>

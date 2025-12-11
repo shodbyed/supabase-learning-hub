@@ -404,13 +404,14 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <Button variant="outline" onClick={onCancel} disabled={generating}>
+        <Button variant="outline" onClick={onCancel} disabled={generating} loadingText="none">
           Cancel
         </Button>
         <Button
           onClick={handleGenerateSchedule}
           disabled={generating}
           size="lg"
+          loadingText="Generating Schedule..."
         >
           <Lock className="h-4 w-4 mr-2" />
           {generating ? 'Generating Schedule...' : 'Lock Positions & Generate Schedule'}
@@ -435,12 +436,14 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
                 variant="outline"
                 onClick={handleKeepSchedule}
                 className="flex-1"
+                loadingText="none"
               >
                 Keep Existing
               </Button>
               <Button
                 onClick={handleReplaceSchedule}
                 className="flex-1"
+                loadingText="Creating..."
               >
                 Create New
               </Button>

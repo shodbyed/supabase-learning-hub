@@ -227,6 +227,8 @@ export const LeagueCreationWizard: React.FC = () => {
 
             <div className="space-y-3">
               <Button
+                loadingText="Loading..."
+                isLoading={navigatingTo === 'season'}
                 onClick={() => {
                   setNavigatingTo('season');
                   navigate(`/league/${createdLeagueId}/create-season`);
@@ -235,7 +237,7 @@ export const LeagueCreationWizard: React.FC = () => {
                 size="lg"
                 disabled={navigatingTo !== null}
               >
-                {navigatingTo === 'season' ? 'Loading...' : 'Create Season'}
+                Create Season
               </Button>
               <Button
                 onClick={() => {

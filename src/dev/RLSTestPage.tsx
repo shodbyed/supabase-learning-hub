@@ -662,11 +662,13 @@ export default function RLSTestPage() {
                 Tests INSERT and DELETE for members table
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testMemberInsertDelete}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test Member INSERT/DELETE'}
+                Test Member INSERT/DELETE
               </Button>
             </div>
 
@@ -676,11 +678,13 @@ export default function RLSTestPage() {
                 Tests INSERT and DELETE for venues table (has generated column)
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testVenueInsertDelete}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test Venue INSERT/DELETE'}
+                Test Venue INSERT/DELETE
               </Button>
             </div>
 
@@ -690,11 +694,13 @@ export default function RLSTestPage() {
                 Tests linked tables with FK relationship (championship_date_options → operator_blackout_preferences)
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testChampionshipWithPreference}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test Championship + Preference'}
+                Test Championship + Preference
               </Button>
             </div>
 
@@ -704,11 +710,13 @@ export default function RLSTestPage() {
                 Tests team creation with captain requirement. Must have team name and captain in roster.
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testTeamInsertDelete}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test Team INSERT/DELETE'}
+                Test Team INSERT/DELETE
               </Button>
             </div>
 
@@ -718,11 +726,13 @@ export default function RLSTestPage() {
                 Tests league creation. Requires organization, game type, day of week, team format.
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testLeagueInsertDelete}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test League INSERT/DELETE'}
+                Test League INSERT/DELETE
               </Button>
             </div>
 
@@ -732,11 +742,13 @@ export default function RLSTestPage() {
                 Tests league-level preferences (overrides). Creates test league to avoid touching real preferences.
               </p>
               <Button
+                loadingText="Testing..."
+                isLoading={testing}
                 onClick={testPreferenceInsertDelete}
                 disabled={testing}
                 className="w-full"
               >
-                {testing ? 'Testing...' : 'Test Preference INSERT/DELETE'}
+                Test Preference INSERT/DELETE
               </Button>
             </div>
           </div>

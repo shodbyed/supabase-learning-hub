@@ -147,6 +147,7 @@ export function TeamSchedule() {
               size="sm"
               onClick={() => setHideCompleted(!hideCompleted)}
               className="w-full sm:w-auto"
+              loadingText="none"
             >
               {hideCompleted ? (
                 <>
@@ -305,7 +306,7 @@ export function TeamSchedule() {
                         {/* Action Button */}
                         {match.status === 'scheduled' && (
                           <Link to={`/match/${match.id}/lineup`} className="block pt-2">
-                            <Button className="w-full">
+                            <Button className="w-full" loadingText="none">
                               <Trophy className="h-4 w-4 mr-2" />
                               Score Match
                             </Button>
@@ -313,7 +314,7 @@ export function TeamSchedule() {
                         )}
                         {match.status === 'in_progress' && (
                           <Link to={`/match/${match.id}/lineup`} className="block pt-2">
-                            <Button className="w-full">
+                            <Button className="w-full" loadingText="none">
                               <Trophy className="h-4 w-4 mr-2" />
                               Continue Scoring
                             </Button>

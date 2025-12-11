@@ -143,6 +143,7 @@ export function PWAInstallPrompt() {
               size="sm"
               onClick={handleInstallClick}
               className="mt-3 gap-2"
+              loadingText="Installing..."
             >
               <Download className="h-4 w-4" />
               Install App

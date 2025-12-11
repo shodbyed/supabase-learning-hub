@@ -170,6 +170,7 @@ export function ReportUserModal({
             onClick={onClose}
             variant="outline"
             disabled={createReportMutation.isPending}
+            loadingText="none"
           >
             Cancel
           </Button>
@@ -178,6 +179,8 @@ export function ReportUserModal({
             onClick={handleSubmit}
             disabled={createReportMutation.isPending || description.trim().length < 10}
             className="bg-orange-600 hover:bg-orange-700"
+            isLoading={createReportMutation.isPending}
+            loadingText="Submitting..."
           >
             {createReportMutation.isPending ? 'Submitting...' : 'Submit Report'}
           </Button>

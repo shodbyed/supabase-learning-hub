@@ -122,6 +122,7 @@ export function ConfirmationModal({
           <Button
             className="flex-1"
             onClick={onAccept}
+            loadingText="Confirming..."
           >
             {isVacateRequest ? 'Agree - Vacate Winner' : 'Yes - Confirm'}
           </Button>
@@ -129,6 +130,7 @@ export function ConfirmationModal({
             variant="destructive"
             className="flex-1"
             onClick={onDeny}
+            loadingText="Denying..."
           >
             {isVacateRequest ? 'Deny - Keep Winner' : 'No - Deny'}
           </Button>

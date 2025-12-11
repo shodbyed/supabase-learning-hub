@@ -356,6 +356,7 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
               type="button"
               variant="outline"
               onClick={onBack}
+              loadingText="none"
             >
               Previous
             </Button>
@@ -366,6 +367,7 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
                 variant="outline"
                 onClick={() => onConfirm('dashboard')}
                 className="flex-1"
+                loadingText="Saving..."
               >
                 Save & Exit
               </Button>
@@ -375,6 +377,7 @@ export const ScheduleReview: React.FC<ScheduleReviewProps> = ({
                 onClick={() => onConfirm('teams')}
                 className="flex-1"
                 style={{ backgroundColor: '#2563eb', color: 'white' }}
+                loadingText="Saving..."
               >
                 Save & Add Teams →
               </Button>

@@ -51,6 +51,7 @@ export const ContactInfoSection: React.FC<ContactInfoSectionProps> = ({
             size="sm"
             onClick={handlers.startEdit}
             className="text-blue-600 border-blue-600 hover:bg-blue-50"
+            loadingText="none"
           >
             Edit
           </Button>
@@ -97,10 +98,10 @@ export const ContactInfoSection: React.FC<ContactInfoSectionProps> = ({
 
           {/* Action Buttons */}
           <div className="flex space-x-2 pt-4">
-            <Button onClick={handlers.save} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handlers.save} className="bg-blue-600 hover:bg-blue-700" loadingText="Saving...">
               Save Changes
             </Button>
-            <Button variant="outline" onClick={handlers.cancel}>
+            <Button variant="outline" onClick={handlers.cancel} loadingText="none">
               Cancel
             </Button>
           </div>

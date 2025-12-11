@@ -87,6 +87,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({ error, onReset }) 
             <Button
               className="flex-1"
               onClick={handleGoHome}
+              loadingText="none"
             >
               <Home className="h-4 w-4 mr-2" />
               Go Home

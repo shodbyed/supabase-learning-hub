@@ -147,6 +147,7 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
             </Button>
 
             <Button
+              loadingText="none"
               onClick={handleNext}
               disabled={!value.trim()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
