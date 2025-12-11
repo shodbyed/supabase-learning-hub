@@ -13,6 +13,8 @@
 import { Card } from '@/components/ui/card';
 import type { Lineup, HandicapThresholds } from '@/types';
 import { getTeamColors } from './scoreboardColors';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { TeamNameLink } from '@/components/TeamNameLink';
 
 interface PlayerStatsGetter {
   (playerId: string, position: number, isHomeTeam: boolean): {
@@ -107,49 +109,45 @@ export function TeamStatsCard({
         </button>
 
         {/* Threshold Progress - To Win */}
-        <div className="flex pt-2">
-          <span className={`font-semibold ${thresholdColor} text-center text-2xl w-8`}>
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center pt-2">
+          <div className={`font-semibold ${thresholdColor} text-2xl text-right pr-1`}>
             {thresholds.games_to_win}
-          </span>
-          <span className={`font-semibold ${thresholdColor} text-center text-2xl w-4`}>
-            /
-          </span>
-          <span className={`font-semibold ${thresholdColor} text-center text-2xl w-8`}>
-            {gamesNeededToWin}
-          </span>
-          <span className="text-gray-600 ml-5 inline-flex items-center">
-            To Win
-          </span>
+          </div>
+          <div className={`font-semibold ${thresholdColor} text-2xl`}>/</div>
+          <div className="flex items-center pl-1">
+            <span className={`font-semibold ${thresholdColor} text-2xl`}>
+              {gamesNeededToWin}
+            </span>
+            <span className="text-gray-600 ml-2 text-sm">To Win</span>
+          </div>
         </div>
 
-        {/* 1.5x Bonus Threshold */}
-        <div className="flex pb-2">
-          <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
+        {/* 1.5x Bonus Threshold - slightly smaller font */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+          <div className="font-semibold text-orange-600 text-xl text-right pr-1">
             {bonus70}
-          </span>
-          <span className="text-2xl font-semibold text-orange-600 w-4 text-center">
-            /
-          </span>
-          <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
-            {gamesNeededFor15}
-          </span>
-          <span className="text-gray-600 ml-5 inline-flex items-center">
-            For 1.5
-          </span>
+          </div>
+          <div className="font-semibold text-orange-600 text-xl">/</div>
+          <div className="flex items-center pl-1">
+            <span className="font-semibold text-orange-600 text-xl">
+              {gamesNeededFor15}
+            </span>
+            <span className="text-gray-600 ml-2 text-xs">For 1.5</span>
+          </div>
         </div>
 
-        {/* Wins/Losses/Points */}
-        <div className="flex pt-1 border-t">
-          <span className="text-gray-600 w-16">Wins:</span>
-          <span className="font-semibold text-gray-900">{wins}</span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 w-16">Losses:</span>
-          <span className="font-semibold text-gray-900">{losses}</span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 w-16">Points:</span>
-          <span className="font-semibold text-gray-900">{points.toFixed(1)}</span>
+        {/* Points - decimal point centered like "/" in threshold rows */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center pb-2">
+          <div className="font-semibold text-gray-700 text-xl text-right pr-0.5">
+            {Math.floor(points)}
+          </div>
+          <div className="font-semibold text-gray-700 text-xl">.</div>
+          <div className="flex items-center pl-0.5">
+            <span className="font-semibold text-gray-700 text-xl">
+              {Math.round((points % 1) * 10)}
+            </span>
+            <span className="text-gray-600 ml-2 text-xs">Points</span>
+          </div>
         </div>
 
         {/* Collapsible Player Stats */}
@@ -164,7 +162,9 @@ export function TeamStatsCard({
 
               {/* Team Summary Row */}
               <div className="font-semibold text-gray-900">{teamHandicap}</div>
-              <div className="font-semibold text-gray-900 truncate">{teamName}</div>
+              <div className="font-semibold text-gray-900 truncate">
+                <TeamNameLink teamId={lineup.team_id} teamName={teamName} />
+              </div>
               <div className="font-semibold text-gray-900 text-center">{wins}</div>
               <div className="font-semibold text-gray-900 text-center">{losses}</div>
 
@@ -176,8 +176,11 @@ export function TeamStatsCard({
                     <div key={`${player.id}-hc`} className="text-gray-700">
                       {player.handicap}
                     </div>
-                    <div key={`${player.id}-name`} className="text-gray-900">
-                      {getPlayerDisplayName(player.id!)}
+                    <div key={`${player.id}-name`} className="text-gray-900 truncate">
+                      <PlayerNameLink
+                        playerId={player.id!}
+                        playerName={getPlayerDisplayName(player.id!)}
+                      />
                     </div>
                     <div key={`${player.id}-wins`} className="text-center text-gray-900">
                       {stats.wins}

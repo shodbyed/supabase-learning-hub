@@ -88,6 +88,22 @@ export function PlayerNameLink({
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
+  // Fetch player's full name (always when popover is open)
+  const { data: playerFullName } = useQuery({
+    queryKey: ['playerFullName', playerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('members')
+        .select('first_name, last_name')
+        .eq('id', playerId)
+        .single();
+      if (error) throw error;
+      return `${data.first_name} ${data.last_name}`;
+    },
+    enabled: open && !!playerId,
+    staleTime: 60000, // 1 minute - names don't change often
+  });
+
   // Fetch player's membership status and handicaps (only when popover is open and user is operator)
   const { data: playerData } = useQuery({
     queryKey: ['playerOperatorData', playerId],
@@ -346,6 +362,13 @@ export function PlayerNameLink({
         </PopoverTrigger>
         <PopoverContent className="w-56 p-0" align="start">
           <div className="flex flex-col">
+            {/* Player Full Name Header */}
+            <div className="px-4 py-3 border-b bg-gray-50">
+              <div className="font-semibold text-gray-900">
+                {playerFullName || playerName}
+              </div>
+            </div>
+
             {/* View Profile */}
             <button
               onClick={handleViewProfile}
