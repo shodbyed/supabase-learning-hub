@@ -12,8 +12,8 @@
  */
 
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { MatchEndVerification } from '@/components/scoring/MatchEndVerification';
+import { TeamStatsCard } from '@/components/scoring/TeamStatsCard';
 import { InfoButton } from '@/components/InfoButton';
 import type { HandicapThresholds, MatchWithLeagueSettings, Lineup } from '@/types';
 
@@ -93,21 +93,20 @@ export function FiveVFiveScoreboard({
   // Accordion state for player stats
   const [showPlayerStats, setShowPlayerStats] = useState(false);
 
-  // Calculate 70% thresholds for 1.5x bonus (straight round, not round up)
-  const homeBonus70 = Math.round(homeThresholds.games_to_win * 0.7);
-  const awayBonus70 = Math.round(awayThresholds.games_to_win * 0.7);
+  // Calculate total team handicaps from lineup data
+  const homeTeamHandicap =
+    (homeLineup.player1_handicap || 0) +
+    (homeLineup.player2_handicap || 0) +
+    (homeLineup.player3_handicap || 0) +
+    (homeLineup.player4_handicap || 0) +
+    (homeLineup.player5_handicap || 0);
 
-  // Calculate games remaining to reach thresholds
-  const homeGamesNeededToWin = Math.max(
-    0,
-    homeThresholds.games_to_win - homeWins
-  );
-  const awayGamesNeededToWin = Math.max(
-    0,
-    awayThresholds.games_to_win - awayWins
-  );
-  const homeGamesNeededFor15 = Math.max(0, homeBonus70 - homeWins);
-  const awayGamesNeededFor15 = Math.max(0, awayBonus70 - awayWins);
+  const awayTeamHandicap =
+    (awayLineup.player1_handicap || 0) +
+    (awayLineup.player2_handicap || 0) +
+    (awayLineup.player3_handicap || 0) +
+    (awayLineup.player4_handicap || 0) +
+    (awayLineup.player5_handicap || 0);
 
   return (
     <div className="bg-white border-b shadow-sm flex-shrink-0">
@@ -154,400 +153,36 @@ export function FiveVFiveScoreboard({
         {/* Dual Team Cards - Side by Side */}
         <div className="grid grid-cols-2 gap-4">
           {/* Home Team */}
-          <div>
-            <Card className="border-blue-200 bg-blue-50 p-0">
-              <div className="text-sm p-2">
-                <button
-                  onClick={() => setShowPlayerStats(!showPlayerStats)}
-                  className="text-base font-bold text-blue-900 text-center truncate border-b border-blue-300 pb-1 w-full"
-                >
-                  {match.home_team?.team_name || 'Home'}
-                </button>
-                <div className="flex pt-2">
-                  <span className="text-gray-600 w-16">Wins:</span>
-                  <span className="font-semibold text-gray-900">
-                    {homeWins}
-                  </span>
-                </div>
-                <div className="flex ">
-                  <span className="text-gray-600 w-16">Losses:</span>
-                  <span className="font-semibold text-gray-900">
-                    {homeLosses}
-                  </span>
-                </div>
-                <div className="flex pb-2">
-                  <span className="text-gray-600 w-16">Points:</span>
-                  <span className="font-semibold text-gray-900">
-                    {homePoints.toFixed(1)}
-                  </span>
-                </div>
-                <div className="flex pt-1 border-t">
-                  <span className="font-semibold text-blue-600 text-center text-2xl w-8">
-                    {homeThresholds.games_to_win}
-                  </span>
-                  <span className="font-semibold text-blue-600 text-center text-2xl w-4">
-                    /
-                  </span>
-                  <span className="font-semibold text-blue-600 text-center text-2xl w-8">
-                    {homeGamesNeededToWin}
-                  </span>
-                  <span className="text-gray-600  ml-5 inline-flex items-center">
-                    To Win
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
-                    {homeBonus70}
-                  </span>
-                  <span className="text-2xl font-semibold text-orange-600 w-4 text-center">
-                    /
-                  </span>
-                  <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
-                    {homeGamesNeededFor15}
-                  </span>
-
-                  <span className="text-gray-600 ml-5 inline-flex items-center">
-                    For 1.5
-                  </span>
-                </div>
-
-                {/* Home team player stats */}
-                {showPlayerStats && (
-                  <div className="pt-2 border-t border-blue-300">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto] gap-2 text-xs">
-                      {/* Header */}
-                      <div className="font-semibold text-gray-600">HC</div>
-                      <div className="font-semibold text-gray-600">Player</div>
-                      <div className="font-semibold text-gray-600 text-center">
-                        W
-                      </div>
-                      <div className="font-semibold text-gray-600 text-center">
-                        L
-                      </div>
-
-                      {/* Player 1 */}
-                      {homeLineup.player1_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {homeLineup.player1_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(homeLineup.player1_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player1_id, 1, true)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player1_id, 1, true)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 2 */}
-                      {homeLineup.player2_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {homeLineup.player2_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(homeLineup.player2_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player2_id, 2, true)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player2_id, 2, true)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 3 */}
-                      {homeLineup.player3_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {homeLineup.player3_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(homeLineup.player3_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player3_id, 3, true)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player3_id, 3, true)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 4 */}
-                      {homeLineup.player4_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {homeLineup.player4_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(homeLineup.player4_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player4_id, 4, true)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player4_id, 4, true)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 5 */}
-                      {homeLineup.player5_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {homeLineup.player5_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(homeLineup.player5_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player5_id, 5, true)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(homeLineup.player5_id, 5, true)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
+          <TeamStatsCard
+            teamName={match.home_team?.team_name || 'Home'}
+            isHome={true}
+            wins={homeWins}
+            losses={homeLosses}
+            points={homePoints}
+            thresholds={homeThresholds}
+            lineup={homeLineup}
+            teamHandicap={homeTeamHandicap}
+            showPlayerStats={showPlayerStats}
+            onTogglePlayerStats={() => setShowPlayerStats(!showPlayerStats)}
+            getPlayerDisplayName={getPlayerDisplayName}
+            getPlayerStats={getPlayerStats}
+          />
 
           {/* Away Team */}
-          <div>
-            <Card className="border-green-200 bg-green-50 p-0">
-              <div className="text-sm p-2">
-                <button
-                  onClick={() => setShowPlayerStats(!showPlayerStats)}
-                  className="text-base font-bold text-green-900 text-center truncate border-b border-green-300 pb-1 w-full"
-                >
-                  {match.away_team?.team_name || 'Away'}
-                </button>
-                <div className="flex pt-2">
-                  <span className="text-gray-600 w-16">Wins:</span>
-                  <span className="font-semibold text-gray-900">
-                    {awayWins}
-                  </span>
-                </div>
-                <div className="flex ">
-                  <span className="text-gray-600 w-16">Losses:</span>
-                  <span className="font-semibold text-gray-900">
-                    {awayLosses}
-                  </span>
-                </div>
-                <div className="flex pb-2">
-                  <span className="text-gray-600 w-16">Points:</span>
-                  <span className="font-semibold text-gray-900">
-                    {awayPoints.toFixed(1)}
-                  </span>
-                </div>
-                <div className="flex pt-1 border-t">
-                  <span className="font-semibold text-green-600 text-center text-2xl w-8">
-                    {awayThresholds.games_to_win}
-                  </span>
-                  <span className="font-semibold text-green-600 text-center text-2xl w-4">
-                    /
-                  </span>
-                  <span className="font-semibold text-green-600 text-center text-2xl w-8">
-                    {awayGamesNeededToWin}
-                  </span>
-                  <span className="text-gray-600  ml-5 inline-flex items-center">
-                    To Win
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
-                    {awayBonus70}
-                  </span>
-                  <span className="text-2xl font-semibold text-orange-600 w-4 text-center">
-                    /
-                  </span>
-                  <span className="text-2xl font-semibold text-orange-600 w-8 text-center">
-                    {awayGamesNeededFor15}
-                  </span>
-
-                  <span className="text-gray-600 ml-5 inline-flex items-center">
-                    For 1.5
-                  </span>
-                </div>
-
-                {/* Away team player stats */}
-                {showPlayerStats && (
-                  <div className="pt-2 border-t border-green-300">
-                    <div className="grid grid-cols-[auto_1fr_auto_auto] gap-2 text-xs">
-                      {/* Header */}
-                      <div className="font-semibold text-gray-600">HC</div>
-                      <div className="font-semibold text-gray-600">Player</div>
-                      <div className="font-semibold text-gray-600 text-center">
-                        W
-                      </div>
-                      <div className="font-semibold text-gray-600 text-center">
-                        L
-                      </div>
-
-                      {/* Player 1 */}
-                      {awayLineup.player1_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {awayLineup.player1_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(awayLineup.player1_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player1_id, 1, false)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player1_id, 1, false)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 2 */}
-                      {awayLineup.player2_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {awayLineup.player2_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(awayLineup.player2_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player2_id, 2, false)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player2_id, 2, false)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 3 */}
-                      {awayLineup.player3_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {awayLineup.player3_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(awayLineup.player3_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player3_id, 3, false)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player3_id, 3, false)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 4 */}
-                      {awayLineup.player4_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {awayLineup.player4_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(awayLineup.player4_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player4_id, 4, false)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player4_id, 4, false)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      {/* Player 5 */}
-                      {awayLineup.player5_id && (
-                        <>
-                          <div className="text-gray-700">
-                            {awayLineup.player5_handicap}
-                          </div>
-                          <div className="text-gray-900">
-                            {getPlayerDisplayName(awayLineup.player5_id)}
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player5_id, 5, false)
-                                .wins
-                            }
-                          </div>
-                          <div className="text-center text-gray-900">
-                            {
-                              getPlayerStats(awayLineup.player5_id, 5, false)
-                                .losses
-                            }
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
+          <TeamStatsCard
+            teamName={match.away_team?.team_name || 'Away'}
+            isHome={false}
+            wins={awayWins}
+            losses={awayLosses}
+            points={awayPoints}
+            thresholds={awayThresholds}
+            lineup={awayLineup}
+            teamHandicap={awayTeamHandicap}
+            showPlayerStats={showPlayerStats}
+            onTogglePlayerStats={() => setShowPlayerStats(!showPlayerStats)}
+            getPlayerDisplayName={getPlayerDisplayName}
+            getPlayerStats={getPlayerStats}
+          />
         </div>
       </div>
     </div>

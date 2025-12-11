@@ -11,6 +11,7 @@
  */
 
 import { Button } from '@/components/ui/button';
+import { getTeamColors } from './scoreboardColors';
 
 interface GameButtonRowProps {
   /** Game number */
@@ -153,6 +154,9 @@ export function GameButtonRow({
   }
 
   // Unscored state: Buttons with team colors
+  const breakerColors = getTeamColors(breakerIsHome);
+  const rackerColors = getTeamColors(rackerIsHome);
+
   return (
     <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
       <div className="font-semibold">{gameNumber}.</div>
@@ -160,11 +164,7 @@ export function GameButtonRow({
         <Button
           variant="outline"
           size="sm"
-          className={`w-full ${
-            breakerIsHome
-              ? 'bg-blue-100 hover:bg-blue-200'
-              : 'bg-orange-100 hover:bg-orange-200'
-          }`}
+          className={`w-full ${breakerColors.bg} ${breakerColors.bgHover}`}
           onClick={() =>
             onPlayerClick(gameNumber, breakerPlayerId, breakerName, breakerTeamId)
           }
@@ -177,11 +177,7 @@ export function GameButtonRow({
         <Button
           variant="outline"
           size="sm"
-          className={`w-full ${
-            rackerIsHome
-              ? 'bg-blue-100 hover:bg-blue-200'
-              : 'bg-orange-100 hover:bg-orange-200'
-          }`}
+          className={`w-full ${rackerColors.bg} ${rackerColors.bgHover}`}
           onClick={() =>
             onPlayerClick(gameNumber, rackerPlayerId, rackerName, rackerTeamId)
           }

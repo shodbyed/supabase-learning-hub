@@ -15,6 +15,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InfoButton } from '@/components/InfoButton';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { useFeatsStats } from '@/api/hooks/useFeatsStats';
 import { StatsNavBar } from '@/components/StatsNavBar';
 import { PageHeader } from '@/components/PageHeader';
@@ -130,7 +131,9 @@ export function FeatsOfExcellence() {
                       {feats.breakAndRuns.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
                           <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
-                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">
+                            <PlayerNameLink playerId={player.playerId} playerName={player.playerName} />
+                          </td>
                           <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}
@@ -165,7 +168,9 @@ export function FeatsOfExcellence() {
                       {feats.goldenBreaks.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
                           <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
-                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">
+                            <PlayerNameLink playerId={player.playerId} playerName={player.playerName} />
+                          </td>
                           <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}
@@ -205,7 +210,9 @@ export function FeatsOfExcellence() {
                       {feats.flawlessNights.map((player, index) => (
                         <tr key={player.playerId} className="border-b">
                           <td className="text-center px-1 sm:px-4 py-2 text-xs sm:text-base">{index + 1}</td>
-                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">{player.playerName}</td>
+                          <td className="px-1 sm:px-4 py-2 text-xs sm:text-base">
+                            <PlayerNameLink playerId={player.playerId} playerName={player.playerName} />
+                          </td>
                           <td className="text-center px-1 sm:px-4 py-2 font-semibold text-xs sm:text-base">{player.count}</td>
                         </tr>
                       ))}

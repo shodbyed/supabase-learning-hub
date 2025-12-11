@@ -39,6 +39,7 @@ import { useTopShooters } from '@/api/hooks/useTopShooters';
 import { StatsNavBar } from '@/components/StatsNavBar';
 import { PageHeader } from '@/components/PageHeader';
 import { useCurrentMember } from '@/api/hooks/useCurrentMember';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 
 /**
  * Top Shooters Component
@@ -185,7 +186,9 @@ export function TopShooters() {
                     <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">
                       {player.handicap > 0 ? `+${player.handicap}` : player.handicap}
                     </TableCell>
-                    <TableCell className="px-1 sm:px-4 text-xs sm:text-base">{player.playerName}</TableCell>
+                    <TableCell className="px-1 sm:px-4 text-xs sm:text-base">
+                      <PlayerNameLink playerId={player.playerId} playerName={player.playerName} />
+                    </TableCell>
                     <TableCell className="font-medium px-1 sm:px-4 text-center text-xs sm:text-base">{player.gamesWon}</TableCell>
                     <TableCell className="text-center px-1 sm:px-4 text-xs sm:text-base">{player.gamesLost}</TableCell>
                     {teamFormat === '5_man' && (

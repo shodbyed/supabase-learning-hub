@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { formatPartialMemberNumber, type PartialMember } from '@/types/member';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 
 interface RosterPlayer {
   member_id?: string;
@@ -48,10 +49,10 @@ export const TeamRosterList: React.FC<TeamRosterListProps> = ({
             key={tp.member_id}
             className="text-sm text-gray-900 flex items-center gap-2"
           >
-            <span>
-              {member.first_name} {member.last_name}{' '}
-              {formatPartialMemberNumber(member)}
-            </span>
+            <PlayerNameLink
+              playerId={tp.member_id!}
+              playerName={`${member.first_name} ${member.last_name} ${formatPartialMemberNumber(member)}`}
+            />
             {tp.is_captain && (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
                 Captain
