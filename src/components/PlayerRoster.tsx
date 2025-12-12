@@ -8,6 +8,7 @@
 
 import { useMembersByIds } from '@/api/hooks/useCurrentMember';
 import { usePlayerHandicaps } from '@/api/hooks/usePlayerHandicaps';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 import type { TeamFormat, HandicapVariant, GameType } from '@/types/league';
 
 interface PlayerRosterProps {
@@ -128,7 +129,11 @@ export function PlayerRoster({
               )}
               {!hideNickname && (
                 <span className={`truncate ${isCaptain ? 'text-gray-900 font-semibold' : 'text-gray-900'}`}>
-                  {player.nickname || '-'}
+                  <PlayerNameLink
+                    playerId={player.id}
+                    playerName={player.nickname || `${player.first_name} ${player.last_name}`}
+                    className={isCaptain ? 'font-semibold' : ''}
+                  />
                 </span>
               )}
               {!hideName && (

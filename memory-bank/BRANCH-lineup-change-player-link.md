@@ -10,11 +10,25 @@ Lineup change player link functionality (primary focus of this branch)
 
 ---
 
+## Completed This Session
+
+### Lineup Change Feature - DONE ✅
+- Request/Approve/Deny flow implemented
+- Real-time updates working for both teams
+- Handicap thresholds recalculate on player swap
+- Unplayed games updated with new player
+- Per-match handicap caching (prevents mid-match recalculation)
+
+### Migrations Created
+- `20251211_enable_realtime.sql` - Real-time for matches, match_lineups, match_games, messages, conversation_participants
+
+---
+
 ## Task List
 
 ### 1. Action Button Loading States
 **Priority:** High
-**Status:** Not Started
+**Status:** ✅ COMPLETE
 
 **Problem:**
 When buttons are pressed in the wizard and other places, database calls or calculations take time. The UI gives no feedback that something is happening, making users think nothing occurred or they click multiple times.
@@ -49,7 +63,7 @@ Enhance the existing `Button` component with built-in loading state support:
 
 ### 2. Audit Player Names Missing PlayerNameLink
 **Priority:** High
-**Status:** Not Started
+**Status:** ✅ COMPLETE
 
 **Problem:**
 Player names are displayed in various places throughout the app but may not be wrapped in the `PlayerNameLink` component, missing out on the interactive popover functionality.
@@ -69,7 +83,7 @@ Find all places where player names are displayed and ensure they use `PlayerName
 
 ### 3. Add Teammates List to My Teams Page
 **Priority:** High
-**Status:** Not Started
+**Status:** ✅ COMPLETE (PlayerRoster already shows teammates, now wrapped with PlayerNameLink)
 
 **Problem:**
 On the My Teams page, users can see their teams but cannot see who their teammates are on each team.
@@ -86,7 +100,7 @@ Add a list of teammates to each team card/section on the My Teams page. Each tea
 
 ### 4. Lineup Change Feature (Main Goal)
 **Priority:** Critical
-**Status:** Not Started
+**Status:** ✅ COMPLETE
 
 **Problem:**
 Once lineups are set and games are created, there's no way to fix mistakes. If someone accidentally selects the wrong player, there's currently no mechanism to correct it.
@@ -166,7 +180,7 @@ Expand the table type options to include:
 
 ### 6. Unify 3v3 and 5v5 Scoreboard Styles
 **Priority:** Medium
-**Status:** Not Started
+**Status:** ✅ COMPLETE
 
 **Problem:**
 The 3v3 scoreboard on the scoring page is much more complicated and different from the 5v5 scoreboard. The 5v5 style is cleaner and preferred.
