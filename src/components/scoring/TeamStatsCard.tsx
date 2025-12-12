@@ -14,11 +14,13 @@
  * - ThreeVThreeScoreboard (3v3 format matches)
  */
 
+import { Fragment } from 'react';
 import { Card } from '@/components/ui/card';
 import type { Lineup, HandicapThresholds } from '@/types';
 import { getTeamColors } from './scoreboardColors';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { TeamNameLink } from '@/components/TeamNameLink';
+import { UserRoundPen } from 'lucide-react';
 
 interface PlayerStatsGetter {
   (playerId: string, position: number, isHomeTeam: boolean): {
@@ -59,6 +61,18 @@ interface TeamStatsCardProps {
    * @default '5v5'
    */
   mode?: '5v5' | '3v3';
+  /**
+   * Whether this team card represents the current user's team.
+   * Used to determine if "Swap Player" option should be shown.
+   */
+  isUserTeam?: boolean;
+  /**
+   * Handler called when user clicks "Swap Player" for a player.
+   * Only available for players with 0 wins and 0 losses on user's team.
+   * @param playerId - The player ID to swap out
+   * @param position - The lineup position (1-5) of the player
+   */
+  onSwapPlayer?: (playerId: string, position: number) => void;
 }
 
 /**
@@ -85,6 +99,8 @@ export function TeamStatsCard({
   getPlayerDisplayName,
   getPlayerStats,
   mode = '5v5',
+  isUserTeam = false,
+  onSwapPlayer,
 }: TeamStatsCardProps) {
   // Calculate second threshold based on mode
   // 5v5: 70% of games_to_win for 1.5x bonus
@@ -202,24 +218,37 @@ export function TeamStatsCard({
               {/* Player Rows */}
               {players.map((player) => {
                 const stats = getPlayerStats(player.id!, player.position, isHome);
+                // Show "Swap Player" option when:
+                // 1. This is the user's team
+                // 2. The player has 0 wins AND 0 losses (hasn't played yet)
+                // 3. onSwapPlayer handler is provided
+                const canSwap = isUserTeam && stats.wins === 0 && stats.losses === 0 && onSwapPlayer;
+                const swapAction = canSwap ? [{
+                  label: 'Swap Player',
+                  icon: <UserRoundPen className="h-4 w-4 text-purple-600" />,
+                  onClick: () => onSwapPlayer(player.id!, player.position),
+                  className: 'flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-purple-600',
+                }] : [];
+
                 return (
-                  <>
-                    <div key={`${player.id}-hc`} className="text-gray-700">
+                  <Fragment key={`position-${player.position}`}>
+                    <div className="text-gray-700">
                       {player.handicap}
                     </div>
-                    <div key={`${player.id}-name`} className="text-gray-900 truncate">
+                    <div className="text-gray-900 truncate">
                       <PlayerNameLink
                         playerId={player.id!}
                         playerName={getPlayerDisplayName(player.id!)}
+                        customActions={swapAction}
                       />
                     </div>
-                    <div key={`${player.id}-wins`} className="text-center text-gray-900">
+                    <div className="text-center text-gray-900">
                       {stats.wins}
                     </div>
-                    <div key={`${player.id}-losses`} className="text-center text-gray-900">
+                    <div className="text-center text-gray-900">
                       {stats.losses}
                     </div>
-                  </>
+                  </Fragment>
                 );
               })}
             </div>

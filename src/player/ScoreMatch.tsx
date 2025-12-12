@@ -18,13 +18,21 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useCurrentMember } from '@/api/hooks';
 import { InfoButton } from '@/components/InfoButton';
+import { LineupChangeModal } from '@/components/scoring/LineupChangeModal';
+import { LineupChangeRequestModal } from '@/components/scoring/LineupChangeRequestModal';
+import {
+  requestLineupChange,
+  approveLineupChange,
+  denyLineupChange,
+} from '@/api/mutations/matchLineups';
+import { usePlayerHandicaps } from '@/api/hooks/usePlayerHandicaps';
 // getAllGames no longer needed - all game data comes from database
 import { getCompletedGamesCount } from '@/types/match';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
@@ -72,6 +80,8 @@ export function ScoreMatch() {
     homeTeamHandicap,
     homeThresholds,
     awayThresholds,
+    homeTeamRoster,
+    awayTeamRoster,
     userTeamId,
     isHomeTeam,
     goldenBreakCountsAsWin,
@@ -96,6 +106,64 @@ export function ScoreMatch() {
           isVacateRequest
         );
       }
+    },
+  });
+
+  // Get user's team roster from the hook (already fetched for both teams)
+  const teamRoster = isHomeTeam ? homeTeamRoster : awayTeamRoster;
+
+  // Get the user's lineup (home or away based on isHomeTeam)
+  const userLineup = isHomeTeam ? homeLineup : awayLineup;
+  const opponentLineup = isHomeTeam ? awayLineup : homeLineup;
+
+  // Get handicaps for roster players (for lineup change requests)
+  // Uses TanStack Query caching with matchId - if these were already fetched on lineup page, they'll be cached
+  // The matchId in the query key ensures same handicaps are used throughout the match
+  const rosterPlayerIds = teamRoster.map((tp: any) => tp.member_id).filter(Boolean);
+  const { handicaps: rosterHandicaps } = usePlayerHandicaps({
+    playerIds: rosterPlayerIds,
+    teamFormat: match?.league?.team_format || '5_man',
+    handicapVariant: match?.league?.handicap_variant || 'standard',
+    gameType: gameType,
+    leagueId: match?.league?.id,
+    matchId: matchId, // Per-match cache scoping - same handicaps as lineup page
+  });
+
+  // Lineup change mutations
+  const requestLineupChangeMutation = useMutation({
+    mutationFn: requestLineupChange,
+    onSuccess: () => {
+      toast.success('Lineup change request sent to opponent');
+      setLineupChangeData(null);
+      // Invalidate lineup queries to refresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.lineup(matchId!) });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to request lineup change');
+    },
+  });
+
+  const approveLineupChangeMutation = useMutation({
+    mutationFn: approveLineupChange,
+    onSuccess: () => {
+      toast.success('Lineup change approved');
+      // Invalidate lineup queries to refresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.lineup(matchId!) });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to approve lineup change');
+    },
+  });
+
+  const denyLineupChangeMutation = useMutation({
+    mutationFn: denyLineupChange,
+    onSuccess: () => {
+      toast.info('Lineup change denied');
+      // Invalidate lineup queries to refresh data
+      queryClient.invalidateQueries({ queryKey: queryKeys.matches.lineup(matchId!) });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || 'Failed to deny lineup change');
     },
   });
 
@@ -124,6 +192,12 @@ export function ScoreMatch() {
     currentWinnerName: string;
   } | null>(null);
 
+  // Lineup change modal state
+  const [lineupChangeData, setLineupChangeData] = useState<{
+    playerId: string;
+    playerName: string;
+    position: number;
+  } | null>(null);
 
   // Process confirmation queue when modal closes or queue changes
   useEffect(() => {
@@ -337,6 +411,55 @@ export function ScoreMatch() {
       },
       (gameNumber) => mutations.confirmOpponentScore(gameNumber)
     );
+  };
+
+  /**
+   * Handle swap player action from scoreboard.
+   * Opens modal to select replacement player and request lineup change.
+   * Only available for players who haven't played any games yet (0 wins, 0 losses).
+   *
+   * @param playerId - The player ID to swap out
+   * @param position - The lineup position (1-5) of the player
+   */
+  const handleSwapPlayer = (playerId: string, position: number) => {
+    // Get the player name for display
+    const playerName = getPlayerDisplayName(playerId);
+    setLineupChangeData({ playerId, playerName, position });
+  };
+
+  /**
+   * Handle lineup change request submission
+   * Sends request to opponent for approval
+   */
+  const handleLineupChangeRequest = async (newPlayerId: string) => {
+    if (!userLineup || !lineupChangeData) return;
+
+    // Get the new player's handicap from the cached handicaps (calculated via usePlayerHandicaps)
+    // This uses TanStack Query caching - likely already calculated from lineup page
+    const newPlayerHandicap = rosterHandicaps.get(newPlayerId) ?? 0;
+
+    requestLineupChangeMutation.mutate({
+      lineupId: userLineup.id,
+      position: lineupChangeData.position,
+      newPlayerId,
+      newPlayerHandicap,
+    });
+  };
+
+  /**
+   * Handle approving opponent's lineup change request
+   */
+  const handleApproveLineupChange = () => {
+    if (!opponentLineup) return;
+    approveLineupChangeMutation.mutate(opponentLineup.id);
+  };
+
+  /**
+   * Handle denying opponent's lineup change request
+   */
+  const handleDenyLineupChange = () => {
+    if (!opponentLineup) return;
+    denyLineupChangeMutation.mutate(opponentLineup.id);
   };
 
   // Auto-retry mechanism: Wait for match preparation to complete
@@ -579,6 +702,7 @@ export function ScoreMatch() {
           gameType={gameType}
           getPlayerDisplayName={getPlayerDisplayName}
           getPlayerStats={getPlayerStats}
+          onSwapPlayer={handleSwapPlayer}
         />
       ) : (
         <ThreeVThreeScoreboard
@@ -605,6 +729,7 @@ export function ScoreMatch() {
           gameType={gameType}
           getPlayerDisplayName={getPlayerDisplayName}
           getPlayerStats={getPlayerStats}
+          onSwapPlayer={handleSwapPlayer}
         />
       )}
 
@@ -726,6 +851,39 @@ export function ScoreMatch() {
           }
         }}
         onClose={() => setEditingGame(null)}
+      />
+
+      {/* Lineup Change Request Modal - for selecting replacement player */}
+      {userLineup && (
+        <LineupChangeModal
+          isOpen={lineupChangeData !== null}
+          currentPlayer={lineupChangeData ? {
+            id: lineupChangeData.playerId,
+            name: lineupChangeData.playerName,
+            position: lineupChangeData.position,
+          } : { id: '', name: '', position: 0 }}
+          lineup={userLineup}
+          teamRoster={teamRoster}
+          onSubmit={handleLineupChangeRequest}
+          onCancel={() => setLineupChangeData(null)}
+          isSubmitting={requestLineupChangeMutation.isPending}
+        />
+      )}
+
+      {/* Lineup Change Approval Modal - shown when opponent requests a change */}
+      <LineupChangeRequestModal
+        isOpen={!!(opponentLineup?.swap_position)}
+        requestingTeamName={isHomeTeam ? (match.away_team?.team_name || 'Opponent') : (match.home_team?.team_name || 'Opponent')}
+        position={opponentLineup?.swap_position || 0}
+        oldPlayerName={opponentLineup?.swap_position
+          ? getPlayerDisplayName((opponentLineup as any)[`player${opponentLineup.swap_position}_id`])
+          : ''}
+        newPlayerName={opponentLineup?.swap_new_player_id
+          ? getPlayerDisplayName(opponentLineup.swap_new_player_id)
+          : ''}
+        onApprove={handleApproveLineupChange}
+        onDeny={handleDenyLineupChange}
+        isProcessing={approveLineupChangeMutation.isPending || denyLineupChangeMutation.isPending}
       />
     </div>
   );

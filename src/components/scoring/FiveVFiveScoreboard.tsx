@@ -58,6 +58,11 @@ interface FiveVFiveScoreboardProps {
     position: number,
     playerIsHomeTeam: boolean
   ) => { wins: number; losses: number };
+  /**
+   * Handler called when user clicks "Swap Player" for a player.
+   * Only available for players with 0 wins and 0 losses on user's team.
+   */
+  onSwapPlayer?: (playerId: string, position: number) => void;
 }
 
 /**
@@ -89,6 +94,7 @@ export function FiveVFiveScoreboard({
   gameType,
   getPlayerDisplayName,
   getPlayerStats,
+  onSwapPlayer,
 }: FiveVFiveScoreboardProps) {
   // Accordion state for player stats
   const [showPlayerStats, setShowPlayerStats] = useState(false);
@@ -166,6 +172,8 @@ export function FiveVFiveScoreboard({
             onTogglePlayerStats={() => setShowPlayerStats(!showPlayerStats)}
             getPlayerDisplayName={getPlayerDisplayName}
             getPlayerStats={getPlayerStats}
+            isUserTeam={isHomeTeam}
+            onSwapPlayer={onSwapPlayer}
           />
 
           {/* Away Team */}
@@ -182,6 +190,8 @@ export function FiveVFiveScoreboard({
             onTogglePlayerStats={() => setShowPlayerStats(!showPlayerStats)}
             getPlayerDisplayName={getPlayerDisplayName}
             getPlayerStats={getPlayerStats}
+            isUserTeam={!isHomeTeam}
+            onSwapPlayer={onSwapPlayer}
           />
         </div>
       </div>

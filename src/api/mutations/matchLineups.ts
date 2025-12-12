@@ -15,6 +15,7 @@
  */
 
 import { supabase } from '@/supabaseClient';
+import { getHandicapThresholds } from '@/api/queries/handicaps';
 
 /**
  * Player in a lineup with position and handicap
@@ -346,6 +347,320 @@ export async function updateMatchLineup(params: UpdateMatchLineupParams): Promis
 
   if (error) {
     throw new Error(`Failed to update lineup: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Parameters for requesting a lineup change
+ */
+export interface RequestLineupChangeParams {
+  lineupId: string;
+  position: number;
+  newPlayerId: string;
+  newPlayerHandicap: number;
+}
+
+/**
+ * Request a lineup change (swap player)
+ *
+ * Initiates a lineup change request that requires opponent approval.
+ * Only allowed if there's no pending swap request on this lineup.
+ * The old player is derived from the lineup's player{position}_id field.
+ *
+ * @param params - Swap request parameters
+ * @returns The updated lineup with pending swap request
+ * @throws Error if there's already a pending request or database operation fails
+ */
+export async function requestLineupChange(params: RequestLineupChangeParams): Promise<MatchLineup> {
+  // Check if there's already a pending swap request (swap_position being non-null)
+  const { data: lineup, error: fetchError } = await supabase
+    .from('match_lineups')
+    .select('swap_position')
+    .eq('id', params.lineupId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to check lineup: ${fetchError.message}`);
+  }
+
+  if (lineup?.swap_position) {
+    throw new Error('There is already a pending lineup change request. Please wait for it to be resolved.');
+  }
+
+  // Create the swap request
+  // Note: swap_new_player_name is not stored - the name is looked up from team roster at display time
+  const { data, error } = await supabase
+    .from('match_lineups')
+    .update({
+      swap_position: params.position,
+      swap_new_player_id: params.newPlayerId,
+      swap_new_player_handicap: params.newPlayerHandicap,
+      swap_requested_at: new Date().toISOString(),
+    })
+    .eq('id', params.lineupId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to request lineup change: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Recalculate and update handicap thresholds for a match
+ *
+ * Called after a lineup change to update games_to_win, games_to_tie, games_to_lose
+ * for both teams based on the new handicap totals.
+ *
+ * Simple approach: Sum lineup handicaps, compare to chart, update match.
+ * Team bonus is already included in lineup handicaps from initial calculation.
+ *
+ * @param matchId - The match to recalculate thresholds for
+ */
+async function recalculateMatchThresholds(matchId: string): Promise<void> {
+  // Fetch match with team IDs
+  const { data: match, error: matchError } = await supabase
+    .from('matches')
+    .select('id, home_team_id, away_team_id')
+    .eq('id', matchId)
+    .single();
+
+  if (matchError || !match) {
+    console.error('Failed to fetch match for threshold recalculation:', matchError?.message);
+    return;
+  }
+
+  // Fetch both lineups with their current handicaps
+  const { data: lineups, error: lineupsError } = await supabase
+    .from('match_lineups')
+    .select('team_id, player1_handicap, player2_handicap, player3_handicap, player4_handicap, player5_handicap')
+    .eq('match_id', matchId);
+
+  if (lineupsError || !lineups || lineups.length !== 2) {
+    console.error('Failed to fetch lineups for threshold recalculation:', lineupsError?.message);
+    return;
+  }
+
+  const homeLineup = lineups.find(l => l.team_id === match.home_team_id);
+  const awayLineup = lineups.find(l => l.team_id === match.away_team_id);
+
+  if (!homeLineup || !awayLineup) {
+    console.error('Could not identify home/away lineups');
+    return;
+  }
+
+  // Determine format from lineup data - if player4/5 have non-zero handicaps, it's 5v5
+  const is5v5 = (homeLineup.player4_handicap !== null && homeLineup.player4_handicap !== 0) ||
+                (homeLineup.player5_handicap !== null && homeLineup.player5_handicap !== 0);
+  const teamFormat: '5_man' | '8_man' = is5v5 ? '8_man' : '5_man';
+
+  // Calculate player handicap totals (sum all player handicaps)
+  // Team bonus is already baked into the lineup handicaps from initial match preparation
+  const homeHandicapTotal =
+    (homeLineup.player1_handicap || 0) +
+    (homeLineup.player2_handicap || 0) +
+    (homeLineup.player3_handicap || 0) +
+    (homeLineup.player4_handicap || 0) +
+    (homeLineup.player5_handicap || 0);
+
+  const awayHandicapTotal =
+    (awayLineup.player1_handicap || 0) +
+    (awayLineup.player2_handicap || 0) +
+    (awayLineup.player3_handicap || 0) +
+    (awayLineup.player4_handicap || 0) +
+    (awayLineup.player5_handicap || 0);
+
+  // Look up thresholds based on handicap difference
+  const homeThresholds = getHandicapThresholds(homeHandicapTotal - awayHandicapTotal, teamFormat);
+  const awayThresholds = getHandicapThresholds(awayHandicapTotal - homeHandicapTotal, teamFormat);
+
+  // Update match with new thresholds
+  const { error: updateError } = await supabase
+    .from('matches')
+    .update({
+      home_games_to_win: homeThresholds.games_to_win,
+      home_games_to_tie: homeThresholds.games_to_tie,
+      home_games_to_lose: homeThresholds.games_to_lose,
+      away_games_to_win: awayThresholds.games_to_win,
+      away_games_to_tie: awayThresholds.games_to_tie,
+      away_games_to_lose: awayThresholds.games_to_lose,
+    })
+    .eq('id', matchId);
+
+  if (updateError) {
+    console.error('Failed to update match thresholds:', updateError.message);
+  }
+}
+
+/**
+ * Approve a lineup change request
+ *
+ * Updates the lineup with the new player and clears the swap request fields.
+ * Also updates all match_games where the old player was assigned to use the new player.
+ * Recalculates handicap thresholds for both teams.
+ *
+ * IMPORTANT: Players can only be swapped if they have NOT played any games yet.
+ * If the old player has any games with a winner_player_id, the swap is rejected.
+ *
+ * Should only be called by the opposing team.
+ *
+ * @param lineupId - The lineup with the pending swap request
+ * @returns The updated lineup with the swap applied
+ * @throws Error if player has played games, no pending request, or database operation fails
+ */
+export async function approveLineupChange(lineupId: string): Promise<MatchLineup> {
+  // Fetch the pending swap request AND the old player ID at that position, plus match_id and team_id
+  const { data: lineup, error: fetchError } = await supabase
+    .from('match_lineups')
+    .select('match_id, team_id, swap_position, swap_new_player_id, swap_new_player_handicap, player1_id, player2_id, player3_id, player4_id, player5_id')
+    .eq('id', lineupId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch lineup: ${fetchError.message}`);
+  }
+
+  if (!lineup?.swap_position) {
+    throw new Error('No pending lineup change request to approve.');
+  }
+
+  // Get the old player ID from the lineup at the swap position
+  const oldPlayerId = lineup[`player${lineup.swap_position}_id` as keyof typeof lineup] as string | null;
+
+  // Check if the old player has played any games (has winner_player_id set)
+  // Players can only be swapped if they haven't played yet
+  if (oldPlayerId) {
+    const { data: match, error: matchError } = await supabase
+      .from('matches')
+      .select('home_team_id, away_team_id')
+      .eq('id', lineup.match_id)
+      .single();
+
+    if (matchError) {
+      throw new Error(`Failed to fetch match: ${matchError.message}`);
+    }
+
+    const isHomeTeam = match.home_team_id === lineup.team_id;
+    const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+
+    // Check if the old player has any completed games (winner_player_id is set)
+    const { data: completedGames, error: gamesCheckError } = await supabase
+      .from('match_games')
+      .select('id, game_number')
+      .eq('match_id', lineup.match_id)
+      .eq(playerField, oldPlayerId)
+      .not('winner_player_id', 'is', null);
+
+    if (gamesCheckError) {
+      throw new Error(`Failed to check player games: ${gamesCheckError.message}`);
+    }
+
+    if (completedGames && completedGames.length > 0) {
+      throw new Error('Cannot swap this player - they have already played games in this match.');
+    }
+  }
+
+  // Build the update to apply the swap and clear request fields
+  const positionField = `player${lineup.swap_position}_id`;
+  const handicapField = `player${lineup.swap_position}_handicap`;
+
+  const { data, error } = await supabase
+    .from('match_lineups')
+    .update({
+      [positionField]: lineup.swap_new_player_id,
+      [handicapField]: lineup.swap_new_player_handicap,
+      // Clear swap request fields
+      swap_position: null,
+      swap_new_player_id: null,
+      swap_new_player_handicap: null,
+      swap_requested_at: null,
+    })
+    .eq('id', lineupId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to approve lineup change: ${error.message}`);
+  }
+
+  // Update all match_games where the old player was assigned (only unplayed games)
+  // Since we verified above that the player has no completed games, all their games are unplayed
+  if (oldPlayerId && lineup.swap_new_player_id) {
+    const { data: match } = await supabase
+      .from('matches')
+      .select('home_team_id')
+      .eq('id', lineup.match_id)
+      .single();
+
+    if (match) {
+      const isHomeTeam = match.home_team_id === lineup.team_id;
+      const playerField = isHomeTeam ? 'home_player_id' : 'away_player_id';
+
+      // Update all games in this match where the old player was assigned
+      const { error: gamesError } = await supabase
+        .from('match_games')
+        .update({ [playerField]: lineup.swap_new_player_id })
+        .eq('match_id', lineup.match_id)
+        .eq(playerField, oldPlayerId);
+
+      if (gamesError) {
+        console.error('Failed to update match games with new player:', gamesError.message);
+      }
+    }
+  }
+
+  // Recalculate handicap thresholds since a player's handicap has changed
+  // This affects games_to_win, games_to_tie, games_to_lose for both teams
+  await recalculateMatchThresholds(lineup.match_id);
+
+  return data;
+}
+
+/**
+ * Deny a lineup change request
+ *
+ * Clears the swap request fields without making any player changes.
+ * Should only be called by the opposing team.
+ *
+ * @param lineupId - The lineup with the pending swap request
+ * @returns The updated lineup with swap request cleared
+ * @throws Error if no pending request or database operation fails
+ */
+export async function denyLineupChange(lineupId: string): Promise<MatchLineup> {
+  // Verify there's a pending request (swap_position being non-null)
+  const { data: lineup, error: fetchError } = await supabase
+    .from('match_lineups')
+    .select('swap_position')
+    .eq('id', lineupId)
+    .single();
+
+  if (fetchError) {
+    throw new Error(`Failed to fetch lineup: ${fetchError.message}`);
+  }
+
+  if (!lineup?.swap_position) {
+    throw new Error('No pending lineup change request to deny.');
+  }
+
+  // Clear all swap request fields
+  const { data, error } = await supabase
+    .from('match_lineups')
+    .update({
+      swap_position: null,
+      swap_new_player_id: null,
+      swap_new_player_handicap: null,
+      swap_requested_at: null,
+    })
+    .eq('id', lineupId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to deny lineup change: ${error.message}`);
   }
 
   return data;
