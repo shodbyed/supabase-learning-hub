@@ -109,7 +109,7 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
         <div className="text-center py-12">
           <div className="text-4xl mb-4">⚠️</div>
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()} variant="outline">
+          <Button loadingText="none" onClick={() => window.location.reload()} variant="outline">
             Try Again
           </Button>
         </div>
@@ -134,13 +134,15 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
             league!
           </p>
           <Button
+            loadingText="Loading..."
+            isLoading={isNavigating}
             onClick={() => {
               setIsNavigating(true);
               navigate(`/create-league/${operatorId}`);
             }}
             disabled={isNavigating}
           >
-            {isNavigating ? 'Loading...' : 'Create Your First League'}
+            Create Your First League
           </Button>
         </div>
       </div>
@@ -155,13 +157,15 @@ export const ActiveLeagues: React.FC<ActiveLeaguesProps> = ({ operatorId }) => {
           Your Active Leagues
         </h3>
         <Button
+          loadingText="Loading..."
+          isLoading={isNavigating}
           onClick={() => {
             setIsNavigating(true);
             navigate(`/create-league/${operatorId}`);
           }}
           disabled={isNavigating}
         >
-          {isNavigating ? 'Loading...' : 'Create New League'}
+          Create New League
         </Button>
       </div>
 

@@ -268,7 +268,7 @@ export const SeasonCreationWizard: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{state.error || 'League not found'}</p>
-            <Button onClick={() => navigate(`/operator-dashboard/${organizationId}`)}>
+            <Button onClick={() => navigate(`/operator-dashboard/${organizationId}`)} loadingText="none">
               Back to Dashboard
             </Button>
           </div>
@@ -723,16 +723,18 @@ export const SeasonCreationWizard: React.FC = () => {
                 </Button>
 
                 {state.currentStep < steps.length - 1 ? (
-                  <Button onClick={handleNext} disabled={state.isCreating}>
+                  <Button onClick={handleNext} disabled={state.isCreating} loadingText="none">
                     Next
                   </Button>
                 ) : (
                   <Button
                     onClick={() => handleCreateSeason('dashboard')}
                     disabled={state.isCreating}
+                    isLoading={state.isCreating}
+                    loadingText="Creating Season..."
                     className="bg-blue-600 hover:bg-blue-700"
                   >
-                    {state.isCreating ? 'Creating Season...' : 'Create Season'}
+                    Create Season
                   </Button>
                 )}
               </div>

@@ -5,10 +5,21 @@
  * Calculates handicaps based on game history for multiple players in parallel.
  *
  * Benefits:
- * - Automatic caching (handicaps cached for 5 minutes)
+ * - Per-match caching - each match gets its own cached handicaps
+ * - Infinite stale time - handicaps stay fresh for entire match session
+ * - Fresh calculations for new matches - changing matchId triggers recalculation
  * - Parallel fetching (all players calculated simultaneously)
  * - Request deduplication
  * - Loading and error states
+ *
+ * Caching Strategy:
+ * Handicaps are cached per-match using the matchId in the query key.
+ * - Same match: Handicaps calculated once on lineup page, cached forever
+ * - Different match: Fresh handicaps calculated (different query key)
+ * - Page refresh: Handicaps recalculated (cache cleared)
+ *
+ * This prevents mid-match handicap changes while ensuring each new match
+ * gets fresh calculations based on the latest game history.
  *
  * @example
  * const { data: handicaps } = usePlayerHandicaps({
@@ -16,7 +27,8 @@
  *   teamFormat: '5_man',
  *   handicapVariant: 'standard',
  *   gameType: 'nine_ball',
- *   seasonId: 'season-123'
+ *   leagueId: 'league-123',
+ *   matchId: 'match-456' // Scopes cache to this match
  * });
  * // Returns: Map of playerId -> handicap number
  */
@@ -33,14 +45,23 @@ interface UsePlayerHandicapsParams {
   gameType: GameType;
   leagueId?: string;
   gameLimit?: number;
+  /** Optional match ID to scope caching per-match. When provided, handicaps are cached
+   * separately for each match, ensuring fresh calculations for new matches while
+   * maintaining stable handicaps throughout a single match session. */
+  matchId?: string;
 }
+
+// Infinity - handicaps stay fresh for entire browser session
+// They're calculated once on lineup page and never refetched during the match
+// A page refresh or new session will recalculate fresh handicaps
+const HANDICAP_STALE_TIME = Infinity;
 
 /**
  * Hook to fetch handicaps for multiple players in parallel
  *
  * Fetches handicaps for all players simultaneously using useQueries.
  * Returns a Map for easy lookup by player ID.
- * Caches handicaps for 5 minutes.
+ * Caches handicaps for 2 hours (entire match session).
  *
  * @param params - Parameters for handicap calculation
  * @returns Object with handicaps Map, loading state, and any errors
@@ -66,10 +87,14 @@ export function usePlayerHandicaps({
   gameType,
   leagueId,
   gameLimit = 200,
+  matchId,
 }: UsePlayerHandicapsParams) {
   // Use useQueries to fetch all player handicaps in parallel
   const queries = useQueries({
     queries: playerIds.map((playerId) => ({
+      // Include matchId in query key to scope caching per-match
+      // This ensures each match gets fresh handicap calculations, but handicaps
+      // stay stable throughout a single match session
       queryKey: [
         ...queryKeys.players.handicap(playerId),
         teamFormat,
@@ -77,6 +102,7 @@ export function usePlayerHandicaps({
         gameType,
         leagueId || 'none',
         gameLimit,
+        matchId || 'no-match', // Per-match scoping
       ],
       queryFn: () =>
         calculatePlayerHandicap(
@@ -87,7 +113,7 @@ export function usePlayerHandicaps({
           leagueId,
           gameLimit
         ),
-      staleTime: 5 * 60 * 1000, // 5 minutes - handicaps don't change that frequently
+      staleTime: HANDICAP_STALE_TIME, // 2 hours - handicaps don't change during a match
       retry: 1,
       refetchOnWindowFocus: false,
     })),

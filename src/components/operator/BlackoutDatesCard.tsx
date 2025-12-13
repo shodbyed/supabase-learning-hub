@@ -83,12 +83,14 @@ export const BlackoutDatesCard: React.FC<BlackoutDatesCardProps> = ({
             ) : (
               <div className="flex gap-2">
                 <Button
+                  loadingText="Saving..."
+                  isLoading={bcaEditor.isSaving}
                   onClick={bcaEditor.saveDates}
                   size="sm"
                   className="text-xs h-7"
                   disabled={bcaEditor.isSaving}
                 >
-                  {bcaEditor.isSaving ? 'Saving...' : 'Save'}
+                  Save
                 </Button>
                 <Button
                   onClick={bcaEditor.cancelEditing}
@@ -162,12 +164,14 @@ export const BlackoutDatesCard: React.FC<BlackoutDatesCardProps> = ({
             ) : (
               <div className="flex gap-2">
                 <Button
+                  loadingText="Saving..."
+                  isLoading={apaEditor.isSaving}
                   onClick={apaEditor.saveDates}
                   size="sm"
                   className="text-xs h-7"
                   disabled={apaEditor.isSaving}
                 >
-                  {apaEditor.isSaving ? 'Saving...' : 'Save'}
+                  Save
                 </Button>
                 <Button
                   onClick={apaEditor.cancelEditing}

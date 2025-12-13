@@ -96,6 +96,7 @@ export const OperatorWelcome: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/operator-dashboard">
               <Button
+                loadingText="none"
                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
               >
                 Go to Operator Dashboard

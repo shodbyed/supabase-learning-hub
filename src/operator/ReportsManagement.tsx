@@ -484,16 +484,16 @@ export function ReportsManagement() {
                     </div>
 
                     <div className="flex gap-2 flex-wrap">
-                      <Button onClick={handleTakeAction}>
+                      <Button onClick={handleTakeAction} loadingText="Recording...">
                         Record Action
                       </Button>
-                      <Button variant="outline" onClick={handleResolve}>
+                      <Button variant="outline" onClick={handleResolve} loadingText="Resolving...">
                         Mark Resolved
                       </Button>
-                      <Button variant="outline" onClick={handleDismiss}>
+                      <Button variant="outline" onClick={handleDismiss} loadingText="Dismissing...">
                         Dismiss
                       </Button>
-                      <Button variant="destructive" onClick={handleEscalate}>
+                      <Button variant="destructive" onClick={handleEscalate} loadingText="Escalating...">
                         <ArrowUp className="h-4 w-4 mr-2" />
                         Escalate to Developer
                       </Button>

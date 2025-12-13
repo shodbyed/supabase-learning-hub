@@ -110,6 +110,7 @@ export function Standings() {
             className="w-full"
             size="lg"
             onClick={() => navigate(`/my-teams`)}
+            loadingText="none"
           >
             <ArrowLeft className="h-4 w-4" />
             My Teams
@@ -119,6 +120,7 @@ export function Standings() {
               className="w-full"
               size="lg"
               onClick={() => navigate(`/league/${leagueId}`)}
+              loadingText="none"
             >
               <ArrowLeft className="h-4 w-4" />
               League Dashboard

@@ -287,6 +287,7 @@ export function AnnouncementModal({
           Cancel
         </Button>
         <Button
+          loadingText="Sending..."
           onClick={handleCreate}
           disabled={selectedTargetIds.length === 0 || !announcementText.trim()}
           className="flex-1"

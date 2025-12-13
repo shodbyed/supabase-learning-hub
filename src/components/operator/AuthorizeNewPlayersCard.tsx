@@ -319,21 +319,14 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
                   need authorization. Load player details to see game counts and set handicaps.
                 </p>
                 <Button
+                  loadingText="Loading game counts..."
+                  isLoading={isLoadingGameCounts}
                   onClick={handleLoadGameCounts}
                   disabled={isLoadingGameCounts}
                   className="w-full"
                 >
-                  {isLoadingGameCounts ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Loading game counts...
-                    </>
-                  ) : (
-                    <>
-                      <Search className="h-4 w-4 mr-2" />
-                      Load Players
-                    </>
-                  )}
+                  <Search className="h-4 w-4 mr-2" />
+                  Load Players
                 </Button>
               </div>
             ) : displayPlayers.length === 0 ? (
@@ -406,7 +399,7 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
                           <Eye className="h-4 w-4" />
                         </Button>
                       )}
-                      <Button size="sm" onClick={() => handleOpenModal(player)}>
+                      <Button loadingText="none" size="sm" onClick={() => handleOpenModal(player)}>
                         Set H/C
                       </Button>
                     </div>
@@ -471,8 +464,8 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
             <Button variant="outline" onClick={handleCloseModal}>
               Cancel
             </Button>
-            <Button onClick={handleModalSave} disabled={updateHandicapsMutation.isPending}>
-              {updateHandicapsMutation.isPending ? 'Saving...' : 'Set Handicaps'}
+            <Button loadingText="Saving..." isLoading={updateHandicapsMutation.isPending} onClick={handleModalSave} disabled={updateHandicapsMutation.isPending}>
+              Set Handicaps
             </Button>
           </DialogFooter>
         </DialogContent>

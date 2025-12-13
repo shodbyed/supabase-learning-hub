@@ -58,12 +58,14 @@ export function VacateModal({
             variant="outline"
             className="flex-1"
             onClick={onCancel}
+            loadingText="none"
           >
             Cancel
           </Button>
           <Button
             className="flex-1"
             onClick={onConfirm}
+            loadingText="none"
           >
             Request Vacate
           </Button>

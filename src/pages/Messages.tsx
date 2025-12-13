@@ -230,7 +230,7 @@ export function Messages() {
 
           {/* Exit Button - Only show on desktop */}
           <div className="hidden md:flex border-t bg-green-300 px-4 md:px-6 py-4 justify-end flex-shrink-0">
-            <Button onClick={() => navigate('/dashboard')}>
+            <Button onClick={() => navigate('/dashboard')} loadingText="none">
               Exit to Dashboard
             </Button>
           </div>

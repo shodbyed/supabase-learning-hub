@@ -228,8 +228,8 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900">Schedule</h2>
         {scheduleExists && (
-          <Button size="sm" onClick={handleViewSchedule} disabled={isNavigating}>
-            {isNavigating ? 'Loading...' : 'View Schedule'}
+          <Button size="sm" onClick={handleViewSchedule} disabled={isNavigating} isLoading={isNavigating} loadingText="Loading...">
+            View Schedule
           </Button>
         )}
       </div>
@@ -335,8 +335,8 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({ leagueId }) => {
         <div className="text-center py-8">
           <div className="text-4xl mb-3">🗓️</div>
           <p className="text-gray-600 mb-4">Ready to create your schedule</p>
-          <Button onClick={handleCreateSchedule} disabled={isNavigating}>
-            {isNavigating ? 'Loading...' : 'Create Schedule'}
+          <Button onClick={handleCreateSchedule} disabled={isNavigating} isLoading={isNavigating} loadingText="Loading...">
+            Create Schedule
           </Button>
         </div>
       )}

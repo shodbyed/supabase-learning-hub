@@ -92,6 +92,7 @@ export function LineupActions({
       <div className="space-y-2">
         {!locked ? (
           <Button
+            loadingText="Locking..."
             onClick={onLock}
             disabled={!canLock}
             className="w-full"
@@ -115,6 +116,7 @@ export function LineupActions({
         {/* Proceed to Scoring (only show when both teams locked) */}
         {locked && opponentStatus === 'ready' && onProceed && (
           <Button
+            loadingText="none"
             onClick={onProceed}
             className="w-full bg-green-600 hover:bg-green-700"
             size="lg"

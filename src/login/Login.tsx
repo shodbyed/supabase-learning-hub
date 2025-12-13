@@ -81,10 +81,12 @@ export const Login: React.FC = () => {
         <CardAction>
           <Button
             type="submit"
+            loadingText="Logging in..."
+            isLoading={loading}
             disabled={loading}
             message={message}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            Login
           </Button>
         </CardAction>
       </form>

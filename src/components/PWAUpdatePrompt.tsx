@@ -55,7 +55,7 @@ export function PWAUpdatePrompt() {
           <Button variant="outline" size="sm" onClick={close}>
             Later
           </Button>
-          <Button size="sm" onClick={() => updateServiceWorker(true)}>
+          <Button size="sm" onClick={() => updateServiceWorker(true)} loadingText="Updating...">
             Update Now
           </Button>
         </div>

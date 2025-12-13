@@ -89,20 +89,25 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
           {/* Choice Buttons - Only show if choices exist */}
           {choices.length > 0 && (
             <div className="flex gap-4">
-              {choices.map((choice) => (
-                <Button
-                  key={choice.value}
-                  variant={selectedValue === choice.value ? 'default' : (choice.variant || 'outline')}
-                  onClick={() => onSelect(choice.value)}
-                  className={`px-6 py-3 ${
-                    selectedValue === choice.value
-                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  {choice.label}
-                </Button>
-              ))}
+              {choices.map((choice) => {
+                const isSelected = selectedValue === choice.value;
+                const variant = isSelected ? 'default' : (choice.variant || 'outline');
+                return (
+                  <Button
+                    key={choice.value}
+                    variant={variant as 'default' | 'outline' | 'secondary'}
+                    loadingText="none"
+                    onClick={() => onSelect(choice.value)}
+                    className={`px-6 py-3 ${
+                      isSelected
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {choice.label}
+                  </Button>
+                );
+              })}
             </div>
           )}
 
@@ -128,11 +133,13 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
             </Button>
 
             <Button
+              loadingText={isLastQuestion ? 'Submitting...' : 'Loading...'}
+              isLoading={isSubmitting || isNavigating}
               onClick={onNext}
               disabled={!selectedValue || isSubmitting || isNavigating}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isSubmitting ? 'Submitting...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Submit Application' : 'Next'}
+              {isLastQuestion ? 'Submit Application' : 'Next'}
             </Button>
           </div>
         </div>

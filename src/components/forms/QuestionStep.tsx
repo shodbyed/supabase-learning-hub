@@ -174,10 +174,12 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
             </div>
 
             <Button
+              loadingText={isLastQuestion ? 'Submitting...' : 'Loading...'}
+              isLoading={isSubmitting || isNavigating}
               onClick={handleNext}
               disabled={!value.trim() || isSubmitting || isNavigating}
             >
-              {isSubmitting ? 'Submitting...' : isNavigating ? 'Loading...' : isLastQuestion ? 'Continue' : 'Next'}
+              {isLastQuestion ? 'Continue' : 'Next'}
             </Button>
           </div>
         </div>

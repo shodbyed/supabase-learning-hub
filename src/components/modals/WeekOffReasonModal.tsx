@@ -111,7 +111,7 @@ export const WeekOffReasonModal: React.FC<WeekOffReasonModalProps> = ({
           <Button variant="outline" onClick={handleCancel} className="flex-1">
             Cancel
           </Button>
-          <Button onClick={handleConfirm} className="flex-1">
+          <Button loadingText="none" onClick={handleConfirm} className="flex-1">
             Insert Week Off
           </Button>
         </div>

@@ -300,13 +300,13 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                 onClick={onSave}
                 disabled={isSaveDisabled}
                 className="w-full"
+                isLoading={isSaving}
+                loadingText="Saving..."
               >
                 <Save className="h-4 w-4 mr-2" />
-                {isSaving
-                  ? 'Saving...'
-                  : context === 'league'
-                    ? 'Save as League Configuration'
-                    : 'Save as Organization Default'}
+                {context === 'league'
+                  ? 'Save as League Configuration'
+                  : 'Save as Organization Default'}
               </Button>
               {/* Show "Save to Both" option when in league context and org has no default */}
               {canSaveToBoth && (
@@ -315,9 +315,11 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                   disabled={isSaveDisabled}
                   variant="outline"
                   className="w-full"
+                  isLoading={isSaving}
+                  loadingText="Saving..."
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isSaving ? 'Saving...' : 'Save as League + Organization Default'}
+                  Save as League + Organization Default
                 </Button>
               )}
             </div>
@@ -340,15 +342,15 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                   disabled={isSaving}
                   className="w-full mt-4"
                   variant="outline"
+                  isLoading={isSaving}
+                  loadingText="Saving..."
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isSaving
-                    ? 'Saving...'
-                    : context === 'league'
-                      ? 'Set as League Default'
-                      : hasSavedConfig
-                        ? 'Change Organization Default'
-                        : 'Set as Organization Default'}
+                  {context === 'league'
+                    ? 'Set as League Default'
+                    : hasSavedConfig
+                      ? 'Change Organization Default'
+                      : 'Set as Organization Default'}
                 </Button>
                 {/* Show "Save to Both" option when in league context and org has no default */}
                 {canSaveToBoth && (
@@ -357,9 +359,11 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                     disabled={isSaving}
                     variant="ghost"
                     className="w-full mt-2"
+                    isLoading={isSaving}
+                    loadingText="Saving..."
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    {isSaving ? 'Saving...' : 'Set as League + Organization Default'}
+                    Set as League + Organization Default
                   </Button>
                 )}
               </>

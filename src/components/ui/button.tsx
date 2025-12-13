@@ -1,6 +1,27 @@
+/**
+ * @fileoverview Button Component with Built-in Loading State
+ *
+ * Enhanced shadcn/ui Button with required loading state handling.
+ * Every button must explicitly declare its loading behavior to ensure
+ * developers consider async operations and user feedback.
+ *
+ * @example
+ * // Button with loading state
+ * <Button loadingText="Saving..." isLoading={isSaving} onClick={handleSave}>
+ *   Save
+ * </Button>
+ *
+ * @example
+ * // Button that doesn't need loading (e.g., Cancel, Close)
+ * <Button loadingText="none" onClick={handleCancel}>
+ *   Cancel
+ * </Button>
+ */
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -34,15 +55,65 @@ const buttonVariants = cva(
   }
 );
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<'button'> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean;
-      message?: string;
-    }
->(({ className, variant, size, asChild = false, message, ...props }, ref) => {
+/** Base props shared by all button variants */
+type ButtonBaseProps = React.ComponentProps<'button'> & {
+  asChild?: boolean;
+  message?: string;
+  /** Whether the button is currently in loading state */
+  isLoading?: boolean;
+};
+
+/** Props for action variants (default, destructive) - loadingText is REQUIRED */
+type ActionButtonProps = ButtonBaseProps & {
+  variant?: 'default' | 'destructive';
+  /** Text to display while loading, or "none" if no loading behavior needed. REQUIRED. */
+  loadingText: string;
+} & Omit<VariantProps<typeof buttonVariants>, 'variant'>;
+
+/** Props for non-action variants (outline, secondary, ghost, link) - loadingText is optional */
+type NonActionButtonProps = ButtonBaseProps & {
+  variant: 'outline' | 'secondary' | 'ghost' | 'link';
+  /** Text to display while loading. Optional - defaults to "none" for non-action variants. */
+  loadingText?: string;
+} & Omit<VariantProps<typeof buttonVariants>, 'variant'>;
+
+type ButtonProps = ActionButtonProps | NonActionButtonProps;
+
+/**
+ * Button component with built-in loading state support.
+ *
+ * Loading behavior is REQUIRED for action buttons (default, destructive variants).
+ * Other variants (outline, secondary, ghost, link) auto-default to no loading.
+ *
+ * @param loadingText - Text to show while loading, or "none" if no loading needed.
+ *                      REQUIRED for default/destructive variants.
+ *                      Optional for other variants (defaults to "none").
+ * @param isLoading - Boolean to toggle loading state.
+ * @param message - Optional error/info message to display below the button.
+ * @param asChild - If true, renders as a Slot for composition.
+ */
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, message, loadingText, isLoading = false, disabled, children, ...props }, ref) => {
   const Comp = asChild ? Slot : 'button';
+
+  // Action variants (default, destructive) require explicit loadingText
+  // Other variants (outline, secondary, ghost, link) default to "none"
+  const isActionVariant = variant === 'default' || variant === 'destructive' || variant === undefined;
+  const effectiveLoadingText = loadingText ?? (isActionVariant ? undefined : 'none');
+
+  // TypeScript will catch missing loadingText for action variants at compile time
+  // This runtime check is a safety net
+  if (isActionVariant && effectiveLoadingText === undefined) {
+    console.warn('Button: loadingText is required for default/destructive variants');
+  }
+
+  // Determine if loading behavior is enabled
+  const hasLoadingBehavior = effectiveLoadingText !== 'none' && effectiveLoadingText !== undefined;
+
+  // Show loading state only if loading behavior is enabled AND isLoading is true
+  const showLoading = hasLoadingBehavior && isLoading;
+
+  // Disable button when loading
+  const isDisabled = disabled || showLoading;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -50,8 +121,18 @@ const Button = React.forwardRef<
         data-slot="button"
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={isDisabled}
         {...props}
-      />
+      >
+        {showLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {effectiveLoadingText}
+          </>
+        ) : (
+          children
+        )}
+      </Comp>
       {message && <p className="text-sm text-red-500">{message}</p>}
     </div>
   );

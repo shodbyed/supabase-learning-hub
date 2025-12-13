@@ -197,15 +197,19 @@ export const SeasonSchedulePage: React.FC = () => {
               variant="destructive"
               onClick={handleClearSchedule}
               disabled={clearing || accepting}
+              isLoading={clearing}
+              loadingText="Clearing..."
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              {clearing ? 'Clearing...' : 'Clear Schedule'}
+              Clear Schedule
             </Button>
             <Button
               onClick={handleAcceptSchedule}
               disabled={accepting || clearing}
+              isLoading={accepting}
+              loadingText="Accepting..."
             >
-              {accepting ? 'Accepting...' : 'Accept Schedule & Complete Setup'}
+              Accept Schedule & Complete Setup
             </Button>
           </div>
         )}
@@ -338,8 +342,10 @@ export const SeasonSchedulePage: React.FC = () => {
                   navigate(`/league/${leagueId}/season/${seasonId}/schedule-setup`);
                 }}
                 disabled={isNavigating}
+                isLoading={isNavigating}
+                loadingText="Loading..."
               >
-                {isNavigating ? 'Loading...' : 'Generate Schedule'}
+                Generate Schedule
               </Button>
             </CardContent>
           </Card>

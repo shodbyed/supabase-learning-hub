@@ -187,10 +187,10 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button onClick={saveEmail} disabled={isSaving} size="sm">
+                <Button onClick={saveEmail} disabled={isSaving} size="sm" loadingText="Saving...">
                   {isSaving ? 'Saving...' : 'Save'}
                 </Button>
-                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm">
+                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm" loadingText="none">
                   Cancel
                 </Button>
               </div>
@@ -246,10 +246,10 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button onClick={savePhone} disabled={isSaving} size="sm">
+                <Button onClick={savePhone} disabled={isSaving} size="sm" loadingText="Saving...">
                   {isSaving ? 'Saving...' : 'Save'}
                 </Button>
-                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm">
+                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm" loadingText="none">
                   Cancel
                 </Button>
               </div>

@@ -58,15 +58,15 @@ export const FormatSettingsSection: React.FC<FormatSettingsSectionProps> = ({
           </InfoButton>
         </div>
         {!isEditing ? (
-          <Button onClick={onStartEditing} size="sm" variant="outline">
+          <Button onClick={onStartEditing} size="sm" variant="outline" loadingText="none">
             Edit
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button onClick={onSave} size="sm" disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
+            <Button onClick={onSave} size="sm" disabled={saving} isLoading={saving} loadingText="Saving...">
+              Save
             </Button>
-            <Button onClick={onCancel} size="sm" variant="outline">
+            <Button onClick={onCancel} size="sm" variant="outline" loadingText="none">
               Cancel
             </Button>
           </div>

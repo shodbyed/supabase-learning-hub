@@ -155,8 +155,8 @@ export const NewPlayerForm: React.FC = () => {
           </div>
         )}
 
-        <Button type="submit" disabled={state.isLoading}>
-          {state.isLoading ? 'Submitting Application...' : 'Submit Application'}
+        <Button type="submit" loadingText="Submitting Application..." isLoading={state.isLoading} disabled={state.isLoading}>
+          Submit Application
         </Button>
       </form>
     </LoginCard>

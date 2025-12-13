@@ -285,6 +285,8 @@ export const LeagueDetail: React.FC = () => {
               }
             </p>
             <Button
+              loadingText="Loading..."
+              isLoading={isNavigating}
               onClick={() => {
                 setIsNavigating(true);
                 navigate(seasonCount === 0 ? `/league/${league.id}/create-season` : `/league/${league.id}/manage-teams`);
@@ -292,7 +294,7 @@ export const LeagueDetail: React.FC = () => {
               disabled={isNavigating}
               size="lg"
             >
-              {isNavigating ? 'Loading...' : "Let's Go!"}
+              Let's Go!
             </Button>
           </div>
         </div>

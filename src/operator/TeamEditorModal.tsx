@@ -397,11 +397,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
             <Button variant="outline" onClick={onCancel} disabled={saving}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={saving}>
-              {saving
-                ? (isEditing ? 'Saving...' : 'Creating Team...')
-                : (isEditing ? 'Save Changes' : 'Create Team')
-              }
+            <Button
+              onClick={handleSubmit}
+              disabled={saving}
+              isLoading={saving}
+              loadingText={isEditing ? 'Saving...' : 'Creating Team...'}
+            >
+              {isEditing ? 'Save Changes' : 'Create Team'}
             </Button>
           </div>
         </div>

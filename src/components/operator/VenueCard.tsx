@@ -33,6 +33,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onEdit }) => {
         className="absolute top-4 right-4"
         aria-label="Edit venue"
         size="default"
+        loadingText="none"
       >
         <Pencil className="h-5 w-5" />
       </Button>

@@ -125,10 +125,10 @@ export function ScoringModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} loadingText="none">
             Cancel
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button onClick={handleConfirm} loadingText="none">
             Select Winner
           </Button>
         </DialogFooter>

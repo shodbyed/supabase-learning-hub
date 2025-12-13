@@ -95,7 +95,7 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
 
         {/* Footer */}
         <div className="px-6 pb-6 flex justify-end">
-          <Button onClick={onOk}>
+          <Button onClick={onOk} loadingText="none">
             {okText}
           </Button>
         </div>

@@ -410,8 +410,10 @@ export const TeamManagement: React.FC = () => {
                 navigate(organizationId ? `/operator-dashboard/${organizationId}` : '/operator-dashboard');
               }}
               disabled={isNavigating}
+              isLoading={isNavigating}
+              loadingText="Loading..."
             >
-              {isNavigating ? 'Loading...' : 'Back to Dashboard'}
+              Back to Dashboard
             </Button>
           </div>
         </div>
@@ -453,8 +455,10 @@ export const TeamManagement: React.FC = () => {
                   navigate(`/league/${leagueId}`);
                 }}
                 disabled={isNavigating}
+                isLoading={isNavigating}
+                loadingText="Loading..."
               >
-                {isNavigating ? 'Loading...' : 'Save & Exit'}
+                Save & Exit
               </Button>
               <Button
                 className="w-full"
@@ -464,8 +468,10 @@ export const TeamManagement: React.FC = () => {
                   navigate(`/league/${leagueId}/season/${seasonId}/playoffs-setup`);
                 }}
                 disabled={isNavigating}
+                isLoading={isNavigating}
+                loadingText="Loading..."
               >
-                {isNavigating ? 'Loading...' : 'Save & Continue →'}
+                Save & Continue →
                 </Button>
               </div>
             )}
@@ -568,6 +574,7 @@ export const TeamManagement: React.FC = () => {
                   size="sm"
                   onClick={() => setShowVenueCreation(true)}
                   disabled={!organizationId}
+                  loadingText="none"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Venue
@@ -612,13 +619,16 @@ export const TeamManagement: React.FC = () => {
                     variant="outline"
                     disabled={importingTeams || !seasonId}
                     onClick={handleImportTeams}
+                    isLoading={importingTeams}
+                    loadingText="Importing..."
                   >
-                    {importingTeams ? 'Importing...' : 'Import from Last Season'}
+                    Import from Last Season
                   </Button>
                 )}
                 <Button
                   disabled={leagueVenues.length === 0 || !seasonId || teams.length >= 48}
                   onClick={() => setShowTeamEditor(true)}
+                  loadingText="none"
                   title={
                     leagueVenues.length === 0
                       ? 'Assign at least one venue before adding teams'
@@ -681,8 +691,10 @@ export const TeamManagement: React.FC = () => {
                 navigate(`/league/${leagueId}`);
               }}
               disabled={isNavigating}
+              isLoading={isNavigating}
+              loadingText="Loading..."
             >
-              {isNavigating ? 'Loading...' : 'Save & Exit'}
+              Save & Exit
             </Button>
             <Button
               size="lg"
@@ -691,8 +703,10 @@ export const TeamManagement: React.FC = () => {
                 navigate(`/league/${leagueId}/season/${seasonId}/playoffs-setup`);
               }}
               disabled={isNavigating}
+              isLoading={isNavigating}
+              loadingText="Loading..."
             >
-              {isNavigating ? 'Loading...' : 'Save & Continue →'}
+              Save & Continue →
             </Button>
           </div>
         )}

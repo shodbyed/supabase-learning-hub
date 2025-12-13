@@ -76,7 +76,7 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Organization Staff</CardTitle>
-          <Button onClick={() => setShowAddStaff(true)} size="sm">
+          <Button onClick={() => setShowAddStaff(true)} size="sm" loadingText="none">
             <UserPlus className="h-4 w-4 mr-1" />
             Add Staff
           </Button>
@@ -142,12 +142,13 @@ export const OrganizationStaffCard: React.FC<OrganizationStaffCardProps> = ({
               defaultFilter="state"
             />
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowAddStaff(false)}>
+              <Button variant="outline" onClick={() => setShowAddStaff(false)} loadingText="none">
                 Cancel
               </Button>
               <Button
                 onClick={handleAddStaff}
                 disabled={!selectedMemberId || addStaffMutation.isPending}
+                loadingText="Adding..."
               >
                 {addStaffMutation.isPending ? 'Adding...' : 'Add as Admin'}
               </Button>

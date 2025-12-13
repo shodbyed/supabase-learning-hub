@@ -99,8 +99,8 @@ export const ResetPassword: React.FC = () => {
           />
         </div>
         <CardAction>
-          <Button type="submit" disabled={loading} message={message}>
-            {loading ? 'Updating...' : 'Update Password'}
+          <Button type="submit" loadingText="Updating..." isLoading={loading} disabled={loading} message={message}>
+            Update Password
           </Button>
         </CardAction>
       </form>

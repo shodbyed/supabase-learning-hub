@@ -31,7 +31,7 @@ export const ScheduleErrorState: React.FC<ScheduleErrorStateProps> = ({ error, o
           <CardContent className="p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error}</p>
-            <Button onClick={onBack}>Back to League</Button>
+            <Button onClick={onBack} loadingText="none">Back to League</Button>
           </CardContent>
         </Card>
       </div>

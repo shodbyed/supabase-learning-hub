@@ -151,7 +151,7 @@ export const DualDateStep: React.FC<DualDateStepProps> = ({
               </Button>
             )}
 
-            <Button type="button" onClick={handleNext} className="flex-1">
+            <Button type="button" loadingText="none" onClick={handleNext} className="flex-1">
               {isLastQuestion ? 'Finish' : 'Next'}
             </Button>
           </div>

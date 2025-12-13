@@ -133,7 +133,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error}</p>
             {onBack && (
-              <Button onClick={onBack}>
+              <Button onClick={onBack} loadingText="none">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
@@ -157,7 +157,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({
               from the schedule setup page.
             </p>
             {onBack && (
-              <Button onClick={onBack}>
+              <Button onClick={onBack} loadingText="none">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>

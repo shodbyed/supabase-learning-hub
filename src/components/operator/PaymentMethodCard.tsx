@@ -33,7 +33,7 @@ export const PaymentMethodCard: React.FC<PaymentMethodCardProps> = ({
           <p className="text-sm text-gray-500 mb-4">
             Credit card management will be available when Stripe integration is complete
           </p>
-          <Button disabled className="w-full cursor-not-allowed opacity-50">
+          <Button disabled className="w-full cursor-not-allowed opacity-50" loadingText="none">
             Coming Soon
           </Button>
           {/* TODO: Implement credit card update when Stripe integration is ready */}

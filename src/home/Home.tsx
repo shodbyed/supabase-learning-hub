@@ -22,7 +22,7 @@ export const Home: React.FC = () => {
         />
         <div className="w-full lg:max-w-2xl mx-auto p-6">
           <Link to="/login">
-            <Button>Go to Login</Button>
+            <Button loadingText="none">Go to Login</Button>
           </Link>
         </div>
       </div>
@@ -78,7 +78,7 @@ export const Home: React.FC = () => {
                 To access member features, please complete your player application.
               </p>
               <Link to="/new-player">
-                <Button>Complete Application</Button>
+                <Button loadingText="none">Complete Application</Button>
               </Link>
             </div>
           ) : (
@@ -88,7 +88,7 @@ export const Home: React.FC = () => {
                 View your member information and access league features.
               </p>
               <Link to="/dashboard">
-                <Button>Go to Dashboard</Button>
+                <Button loadingText="none">Go to Dashboard</Button>
               </Link>
             </div>
           )}

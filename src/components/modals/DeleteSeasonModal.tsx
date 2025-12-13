@@ -87,11 +87,13 @@ export const DeleteSeasonModal: React.FC<DeleteSeasonModalProps> = ({
             Cancel
           </Button>
           <Button
+            loadingText="Deleting..."
+            isLoading={isDeleting}
             onClick={onConfirm}
             disabled={isDeleting}
             className="flex-1 bg-red-600 hover:bg-red-700 text-white"
           >
-            {isDeleting ? 'Deleting...' : 'Delete Season'}
+            Delete Season
           </Button>
         </div>
       </div>

@@ -141,6 +141,14 @@ export interface Lineup {
   home_team_modifier: number; // Team standings modifier (bonus/penalty)
   locked: boolean;
   locked_at: string | null; // ISO timestamp when lineup was locked
+  // Lineup change request fields (pending swap awaiting opponent approval)
+  // swap_position being non-null indicates a pending request
+  // Old player is derived from player{swap_position}_id
+  // New player name is looked up from team roster at display time
+  swap_position?: number | null;
+  swap_new_player_id?: string | null;
+  swap_new_player_handicap?: number | null;
+  swap_requested_at?: string | null;
 }
 
 /**

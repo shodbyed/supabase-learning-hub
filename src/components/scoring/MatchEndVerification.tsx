@@ -564,6 +564,8 @@ export function MatchEndVerification({
                 disabled={userTeamVerified || isVerifying}
                 size="default"
                 className="w-full max-w-xs"
+                isLoading={isVerifying}
+                loadingText="Verifying..."
               >
                 {isVerifying
                   ? 'Verifying...'

@@ -145,10 +145,10 @@ export function ConfirmationDialog({
         </div>
 
         <DialogFooter className="flex flex-row justify-around gap-4">
-          <Button className="flex-1" onClick={handleConfirm}>
+          <Button className="flex-1" onClick={handleConfirm} loadingText="Confirming...">
             {isVacateRequest ? 'Agree - Vacate Winner' : 'Confirm'}
           </Button>
-          <Button variant="outline" className="flex-1" onClick={handleDeny}>
+          <Button variant="outline" className="flex-1" onClick={handleDeny} loadingText="none">
             {isVacateRequest ? 'Deny - Keep Winner' : 'Deny'}
           </Button>
         </DialogFooter>

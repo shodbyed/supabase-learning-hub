@@ -381,7 +381,7 @@ export const SeasonScheduleManager: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h3 className="text-red-600 text-lg font-semibold mb-4">Error</h3>
             <p className="text-gray-700 mb-4">{error}</p>
-            <Button onClick={() => navigate(`/league/${leagueId}`)}>
+            <Button onClick={() => navigate(`/league/${leagueId}`)} loadingText="none">
               Back to League
             </Button>
           </div>
@@ -409,10 +409,12 @@ export const SeasonScheduleManager: React.FC = () => {
           <Button
             onClick={handleSaveChanges}
             disabled={!hasChanges() || saving}
+            isLoading={saving}
+            loadingText="Saving..."
             className="flex items-center gap-2 w-full"
           >
             <Save className="h-4 w-4" />
-            {saving ? 'Saving...' : 'Save Changes'}
+            Save Changes
           </Button>
         </div>
       </PageHeader>

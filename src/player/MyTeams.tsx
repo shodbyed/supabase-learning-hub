@@ -280,6 +280,7 @@ function TeamAccordionItem({
                   window.location.href = `/team/${team.id}/schedule`;
                 }
               }}
+              loadingText="none"
             >
               View Schedule
             </Button>
@@ -372,6 +373,7 @@ function TeamAccordionItem({
               onClick={() => {
                 window.location.href = `/league/${team.season.league.id}/season/${team.season.id}/standings`;
               }}
+              loadingText="none"
             >
               Stats & Standings
             </Button>

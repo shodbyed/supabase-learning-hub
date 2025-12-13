@@ -28,7 +28,7 @@ export const EmptyScheduleState: React.FC<EmptyScheduleStateProps> = ({ onGenera
         <div className="text-6xl mb-4">📅</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">No Schedule Yet</h3>
         <p className="text-gray-600 mb-6">Generate your season schedule to see all matchups</p>
-        <Button onClick={onGenerateSchedule}>Generate Schedule</Button>
+        <Button onClick={onGenerateSchedule} loadingText="none">Generate Schedule</Button>
       </CardContent>
     </Card>
   );

@@ -140,6 +140,7 @@ export function MatchLineup() {
     })) || [];
 
   // Get calculated handicaps for all roster players
+  // Uses matchId for per-match caching - handicaps are calculated once per match and cached forever
   const { handicaps: playerHandicaps } = usePlayerHandicaps({
     playerIds: playersWithoutHandicaps.map(p => p.id),
     teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
@@ -147,6 +148,7 @@ export function MatchLineup() {
     gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
     leagueId: matchData?.league?.id,
     gameLimit: 200,
+    matchId: matchId, // Per-match cache scoping
   });
 
   // Merge players with their calculated handicaps
@@ -165,6 +167,7 @@ export function MatchLineup() {
     })) || [];
 
   // Get calculated handicaps for opponent roster players
+  // Uses matchId for per-match caching - handicaps are calculated once per match and cached forever
   const { handicaps: opponentPlayerHandicaps } = usePlayerHandicaps({
     playerIds: opponentPlayersWithoutHandicaps.map(p => p.id),
     teamFormat: (matchData?.league?.team_format || '5_man') as '5_man' | '8_man',
@@ -172,6 +175,7 @@ export function MatchLineup() {
     gameType: matchData?.league?.game_type as 'eight_ball' | 'nine_ball' | 'ten_ball',
     leagueId: matchData?.league?.id,
     gameLimit: 200,
+    matchId: matchId, // Per-match cache scoping
   });
 
   // Merge opponent players with their calculated handicaps

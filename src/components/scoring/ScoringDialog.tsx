@@ -139,10 +139,10 @@ export function ScoringDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} loadingText="none">
             Cancel
           </Button>
-          <Button onClick={onConfirm}>Select Winner</Button>
+          <Button onClick={onConfirm} loadingText="Saving...">Select Winner</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

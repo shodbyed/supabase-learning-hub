@@ -222,7 +222,7 @@ export function NewMessageModal({
         <Button variant="outline" onClick={onClose} className="flex-1">
           Cancel
         </Button>
-        <Button onClick={handleCreate} disabled={selectedUserIds.length === 0} className="flex-1">
+        <Button loadingText="Creating..." onClick={handleCreate} disabled={selectedUserIds.length === 0} className="flex-1">
           {selectedUserIds.length === 0
             ? 'Select People'
             : selectedUserIds.length === 1

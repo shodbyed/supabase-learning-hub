@@ -130,8 +130,8 @@ export const ForgotPassword: React.FC = () => {
           />
         </div>
         <CardAction>
-          <Button type="submit" disabled={loading} message={message}>
-            {loading ? 'Sending...' : 'Send Reset Link'}
+          <Button type="submit" loadingText="Sending..." isLoading={loading} disabled={loading} message={message}>
+            Send Reset Link
           </Button>
         </CardAction>
       </form>

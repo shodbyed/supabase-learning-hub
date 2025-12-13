@@ -82,6 +82,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
         onClick={handleClick}
         disabled={isNavigating}
         style={buttonColor ? { backgroundColor: buttonColor, color: 'white' } : undefined}
+        loadingText="Loading..."
       >
         {isNavigating ? 'Loading...' : buttonText}
       </Button>

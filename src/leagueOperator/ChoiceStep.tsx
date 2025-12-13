@@ -87,7 +87,7 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
               {choices.map((choice) => (
                 <Button
                   key={choice.value}
-                  variant={selectedValue === choice.value ? 'default' : (choice.variant || 'outline')}
+                  variant="outline"
                   onClick={() => onSelect(choice.value)}
                   className={`px-6 py-3 ${
                     selectedValue === choice.value
@@ -123,6 +123,7 @@ export const ChoiceStep: React.FC<ChoiceStepProps> = ({
             </Button>
 
             <Button
+              loadingText="none"
               onClick={onNext}
               disabled={!selectedValue}
               className="bg-blue-600 hover:bg-blue-700 text-white"

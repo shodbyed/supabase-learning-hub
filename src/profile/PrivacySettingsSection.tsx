@@ -102,6 +102,7 @@ export const PrivacySettingsSection: React.FC = () => {
               disabled={updateMutation.isPending}
               variant={shouldFilter ? 'destructive' : 'default'}
               size="sm"
+              loadingText="Saving..."
             >
               {updateMutation.isPending ? 'Saving...' : shouldFilter ? 'Disable' : 'Enable'}
             </Button>

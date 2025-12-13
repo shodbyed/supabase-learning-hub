@@ -166,6 +166,7 @@ export const PlayoffsCard: React.FC<PlayoffsCardProps> = ({ leagueId, seasonId }
           onClick={handleNavigate}
           disabled={isNavigating}
           size="sm"
+          loadingText="Loading..."
         >
           {isNavigating
             ? 'Loading...'

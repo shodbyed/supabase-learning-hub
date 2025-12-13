@@ -12,8 +12,7 @@ import { shouldGoldenBreakCount } from '@/utils/goldenBreakRules';
 import { getPlayerNicknameById } from '@/types/member';
 import { getTeamStats, getPlayerStats, getCompletedGamesCount, calculatePoints, TIEBREAKER_THRESHOLDS } from '@/types';
 import { useMatchWithLeagueSettings, useMatchLineups, useMatchGames } from '@/api/hooks/useMatches';
-import { useMembersByIds } from '@/api/hooks/useCurrentMember';
-import { useUserTeamInMatch } from '@/api/hooks/useTeams';
+import { useUserTeamInMatch, useTeamDetails } from '@/api/hooks/useTeams';
 import { useMatchRealtime } from '@/realtime/useMatchRealtime';
 import { logger } from '@/utils/logger';
 import type {
@@ -86,25 +85,18 @@ export function useMatchScoring({
     refetch: refetchGames,
   } = useMatchGames(matchId);
 
-  // Fetch player IDs from lineups for member lookup (supports both 3v3 and 5v5)
-  const playerIds = lineupsData ? [
-    lineupsData.homeLineup.player1_id,
-    lineupsData.homeLineup.player2_id,
-    lineupsData.homeLineup.player3_id,
-    lineupsData.homeLineup.player4_id,
-    lineupsData.homeLineup.player5_id,
-    lineupsData.awayLineup.player1_id,
-    lineupsData.awayLineup.player2_id,
-    lineupsData.awayLineup.player3_id,
-    lineupsData.awayLineup.player4_id,
-    lineupsData.awayLineup.player5_id,
-  ].filter(Boolean) as string[] : null;
-
-  // Fetch player names
+  // Fetch FULL team rosters (not just lineup players)
+  // This allows us to look up ANY player on either team, including swap candidates
+  // Team roster data is stable throughout the match - handicaps/names don't change mid-match
   const {
-    data: playersData = [],
-    isLoading: playersLoading
-  } = useMembersByIds(playerIds);
+    data: homeTeamData,
+    isLoading: homeTeamLoading
+  } = useTeamDetails(matchData?.home_team_id);
+
+  const {
+    data: awayTeamData,
+    isLoading: awayTeamLoading
+  } = useTeamDetails(matchData?.away_team_id);
 
   // ============================================================================
   // LOCAL STATE
@@ -140,12 +132,37 @@ export function useMatchScoring({
     return shouldGoldenBreakCount(gameType, matchData?.league.golden_break_counts_as_win);
   }, [gameType, matchData?.league.golden_break_counts_as_win]);
 
-  // Transform players array to Map for O(1) lookups (needs useMemo - expensive transformation)
+  // Build players Map from FULL team rosters (not just lineup players)
+  // This allows getPlayerDisplayName to find ANY player on either team, including swap candidates
   const players = useMemo(() => {
     const playerMap = new Map<string, Player>();
-    playersData.forEach(p => playerMap.set(p.id, p));
+
+    // Add all home team roster players
+    homeTeamData?.team_players?.forEach((tp: any) => {
+      if (tp.members) {
+        playerMap.set(tp.members.id, {
+          id: tp.members.id,
+          first_name: tp.members.first_name,
+          last_name: tp.members.last_name,
+          nickname: tp.members.nickname,
+        });
+      }
+    });
+
+    // Add all away team roster players
+    awayTeamData?.team_players?.forEach((tp: any) => {
+      if (tp.members) {
+        playerMap.set(tp.members.id, {
+          id: tp.members.id,
+          first_name: tp.members.first_name,
+          last_name: tp.members.last_name,
+          nickname: tp.members.nickname,
+        });
+      }
+    });
+
     return playerMap;
-  }, [playersData]);
+  }, [homeTeamData, awayTeamData]);
 
   // Transform games array to Map for O(1) lookups (needs useMemo - expensive transformation)
   const gameResults = useMemo(() => {
@@ -318,7 +335,7 @@ export function useMatchScoring({
     }
 
     // Check if any queries are loading
-    const isLoading = matchLoading || lineupsLoading || userTeamLoading || gamesLoading || playersLoading;
+    const isLoading = matchLoading || lineupsLoading || userTeamLoading || gamesLoading || homeTeamLoading || awayTeamLoading;
     setLoading(isLoading);
 
     // Handle errors
@@ -338,7 +355,8 @@ export function useMatchScoring({
     lineupsLoading,
     userTeamLoading,
     gamesLoading,
-    playersLoading,
+    homeTeamLoading,
+    awayTeamLoading,
     matchError,
     lineupsError,
     userTeamError,
@@ -355,6 +373,7 @@ export function useMatchScoring({
    */
   useMatchRealtime(matchId, {
     onMatchUpdate: refetchMatch,
+    onLineupUpdate: refetchLineups,
     onGamesUpdate: refetchGames,
     gameUpdateOptions: {
       match,
@@ -381,6 +400,10 @@ export function useMatchScoring({
     homeTeamHandicap,
     homeThresholds,
     awayThresholds,
+
+    // Full team rosters (for lineup changes - includes all players, not just lineup)
+    homeTeamRoster: homeTeamData?.team_players || [],
+    awayTeamRoster: awayTeamData?.team_players || [],
 
     // User context
     userTeamId,

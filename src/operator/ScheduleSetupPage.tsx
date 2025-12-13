@@ -108,6 +108,7 @@ export const ScheduleSetupPage: React.FC = () => {
                   navigate(`/league/${leagueId}`);
                 }}
                 disabled={isNavigating}
+                loadingText="Loading..."
               >
                 {isNavigating ? 'Loading...' : 'Back to League'}
               </Button>
@@ -118,6 +119,7 @@ export const ScheduleSetupPage: React.FC = () => {
                   navigate(`/league/${leagueId}/manage-teams`);
                 }}
                 disabled={isNavigating}
+                loadingText="Loading..."
               >
                 {isNavigating ? 'Loading...' : 'Manage Teams'}
               </Button>

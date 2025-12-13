@@ -134,7 +134,7 @@ export function OpponentSubstituteModal({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={!selectedPlayerId}>
+          <Button loadingText="Confirming..." onClick={handleConfirm} disabled={!selectedPlayerId}>
             Confirm Choice
           </Button>
         </div>

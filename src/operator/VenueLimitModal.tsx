@@ -244,8 +244,13 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
           <Button variant="outline" onClick={onCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save Changes'}
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            isLoading={saving}
+            loadingText="Saving..."
+          >
+            Save Changes
           </Button>
         </div>
       </div>

@@ -146,10 +146,10 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                 placeholder="Your Organization Name"
               />
               <div className="flex gap-2">
-                <Button onClick={saveName} disabled={isSaving} size="sm">
+                <Button onClick={saveName} disabled={isSaving} size="sm" loadingText="Saving...">
                   {isSaving ? 'Saving...' : 'Save'}
                 </Button>
-                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm">
+                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm" loadingText="none">
                   Cancel
                 </Button>
               </div>
@@ -217,10 +217,10 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                 />
               </div>
               <div className="flex gap-2">
-                <Button onClick={saveAddress} disabled={isSaving} size="sm">
+                <Button onClick={saveAddress} disabled={isSaving} size="sm" loadingText="Saving...">
                   {isSaving ? 'Saving...' : 'Save'}
                 </Button>
-                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm">
+                <Button variant="outline" onClick={cancelEditing} disabled={isSaving} size="sm" loadingText="none">
                   Cancel
                 </Button>
               </div>
