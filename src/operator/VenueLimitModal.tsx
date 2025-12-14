@@ -1,16 +1,21 @@
 /**
  * @fileoverview Venue Limit Modal
  *
- * Modal for adjusting the number of tables available for a specific venue
- * within a league. Allows operators to set how many bar-box and regulation
- * tables are actually available for league play (may be less than venue total).
+ * Modal for selecting which tables from a venue are available for a specific
+ * league. Displays the venue's tables and allows operators to configure
+ * which ones can be used for league play.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/supabaseClient';
-import { X, Plus, Minus } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import type { Venue, LeagueVenue } from '@/types/venue';
+import { Checkbox } from '@/components/ui/checkbox';
+import { NumberInput } from '@/components/ui/number-input';
+import { InfoButton } from '@/components/InfoButton';
+import { TableSizeLabel } from '@/components/TableSizeLabel';
+import { TableBadgePopover } from '@/components/operator/TableBadgePopover';
+import { TABLE_SIZES } from '@/constants/tables';
+import type { Venue, LeagueVenue, TableSizeKey } from '@/types/venue';
 import { logger } from '@/utils/logger';
 
 interface VenueLimitModalProps {
@@ -27,8 +32,8 @@ interface VenueLimitModalProps {
 /**
  * VenueLimitModal Component
  *
- * Allows operators to set table availability limits for a venue within a league.
- * Uses increment/decrement buttons for easy adjustment.
+ * Displays venue tables and allows operators to select which tables
+ * are available for league play.
  */
 export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
   venue,
@@ -36,69 +41,235 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
   onSuccess,
   onCancel
 }) => {
-  const [barBoxTables, setBarBoxTables] = useState(leagueVenue.available_bar_box_tables);
-  const [regulationTables, setRegulationTables] = useState(leagueVenue.available_regulation_tables);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Increment/decrement bar-box table count
-   */
-  const adjustBarBoxTables = (delta: number) => {
-    const newValue = barBoxTables + delta;
-    if (newValue >= 0 && newValue <= venue.bar_box_tables) {
-      setBarBoxTables(newValue);
-      setError(null);
+  // Table fill order: ascending, descending, or custom
+  type FillOrder = 'ascending' | 'descending' | 'custom';
+  const [fillOrder, setFillOrder] = useState<FillOrder>('ascending');
+
+  // Track custom order for tables (used when fillOrder === 'custom')
+  // Initialized with the existing order from leagueVenue, or empty if none
+  const [customOrder, setCustomOrder] = useState<number[]>(() => {
+    if (leagueVenue.available_table_numbers && leagueVenue.available_table_numbers.length > 0) {
+      return [...leagueVenue.available_table_numbers];
     }
+    return [];
+  });
+
+  // Capacity: max number of home teams allowed at this venue
+  // Defaults to available_table_numbers length, can be manually lowered
+  const [capacity, setCapacity] = useState<number>(() => {
+    // Use existing capacity if set, otherwise default to number of available tables
+    return leagueVenue.capacity ?? leagueVenue.available_table_numbers?.length ?? 0;
+  });
+
+  /**
+   * Get all table numbers from the venue grouped by size
+   */
+  const getAllVenueTableNumbers = () => {
+    const barBox = venue.bar_box_table_numbers ?? [];
+    const eightFoot = venue.eight_foot_table_numbers ?? [];
+    const regulation = venue.regulation_table_numbers ?? [];
+    return { barBox, eightFoot, regulation, all: [...barBox, ...eightFoot, ...regulation] };
+  };
+
+  const venueTableNumbers = getAllVenueTableNumbers();
+
+  // Track which table sizes are enabled
+  const [enabledSizes, setEnabledSizes] = useState<Record<TableSizeKey, boolean>>(() => {
+    // If we have existing available_table_numbers, initialize based on what's selected
+    if (leagueVenue.available_table_numbers && leagueVenue.available_table_numbers.length > 0) {
+      const available = new Set(leagueVenue.available_table_numbers);
+      return {
+        bar_box_tables: venueTableNumbers.barBox.some(n => available.has(n)),
+        eight_foot_tables: venueTableNumbers.eightFoot.some(n => available.has(n)),
+        regulation_tables: venueTableNumbers.regulation.some(n => available.has(n)),
+      };
+    }
+    // Otherwise, default to enabling all sizes that have tables
+    return {
+      bar_box_tables: venue.bar_box_tables > 0,
+      eight_foot_tables: venue.eight_foot_tables > 0,
+      regulation_tables: venue.regulation_tables > 0,
+    };
+  });
+
+  // Track individually blocked table numbers (tables that are unchecked)
+  const [blockedTables, setBlockedTables] = useState<Set<number>>(() => {
+    // If we have existing available_table_numbers, compute blocked tables
+    if (leagueVenue.available_table_numbers && leagueVenue.available_table_numbers.length > 0) {
+      const available = new Set(leagueVenue.available_table_numbers);
+      // Blocked tables are those NOT in the available list
+      return new Set(venueTableNumbers.all.filter(n => !available.has(n)));
+    }
+    // Otherwise, no tables are blocked initially
+    return new Set();
+  });
+
+  /**
+   * Toggle a table size on/off
+   * When toggling off, add all tables of that size to blocked
+   * When toggling on, remove all tables of that size from blocked
+   */
+  const toggleSize = (key: TableSizeKey) => {
+    const tableNumbers = (venue[`${key.replace('tables', 'table_numbers')}` as keyof Venue] as number[]) ?? [];
+
+    setEnabledSizes(prev => {
+      const newEnabled = !prev[key];
+
+      // Update blocked tables based on the new state
+      setBlockedTables(prevBlocked => {
+        const newBlocked = new Set(prevBlocked);
+        if (newEnabled) {
+          // Re-enable: remove these tables from blocked
+          tableNumbers.forEach(num => newBlocked.delete(num));
+        } else {
+          // Disable: add these tables to blocked
+          tableNumbers.forEach(num => newBlocked.add(num));
+        }
+        return newBlocked;
+      });
+
+      return {
+        ...prev,
+        [key]: newEnabled,
+      };
+    });
   };
 
   /**
-   * Increment/decrement regulation table count
+   * Toggle an individual table's availability
    */
-  const adjustRegulationTables = (delta: number) => {
-    const newValue = regulationTables + delta;
-    if (newValue >= 0 && newValue <= venue.regulation_tables) {
-      setRegulationTables(newValue);
-      setError(null);
-    }
+  const toggleTable = (tableNumber: number) => {
+    setBlockedTables(prev => {
+      const newBlocked = new Set(prev);
+      if (newBlocked.has(tableNumber)) {
+        newBlocked.delete(tableNumber);
+      } else {
+        newBlocked.add(tableNumber);
+      }
+      return newBlocked;
+    });
   };
 
   /**
-   * Validate table limits
+   * Get all venue tables as a flat list with their size info
    */
-  const validate = (): string | null => {
-    const totalTables = barBoxTables + regulationTables;
-    if (totalTables === 0) {
-      return 'At least one table must be available';
-    }
-    if (barBoxTables > venue.bar_box_tables) {
-      return `Bar-box tables cannot exceed ${venue.bar_box_tables}`;
-    }
-    if (regulationTables > venue.regulation_tables) {
-      return `Regulation tables cannot exceed ${venue.regulation_tables}`;
-    }
-    return null;
+  const getAllVenueTables = () => {
+    const tables: { number: number; sizeKey: TableSizeKey; label: string }[] = [];
+
+    TABLE_SIZES.forEach(({ key, label }) => {
+      const numbers = (venue[`${key.replace('tables', 'table_numbers')}` as keyof Venue] as number[]) ?? [];
+      numbers.forEach(num => {
+        tables.push({ number: num, sizeKey: key, label });
+      });
+    });
+
+    return tables.sort((a, b) => a.number - b.number);
   };
+
+  const allTables = getAllVenueTables();
+
+  // Filter to get available and unavailable tables
+  const availableTablesUnsorted = allTables.filter(t => enabledSizes[t.sizeKey] && !blockedTables.has(t.number));
+  const unavailableTables = allTables.filter(t => !enabledSizes[t.sizeKey] || blockedTables.has(t.number));
+
+  // Auto-update capacity when available tables change
+  // Capacity cannot exceed the number of available tables
+  useEffect(() => {
+    const maxCapacity = availableTablesUnsorted.length;
+    if (capacity > maxCapacity) {
+      setCapacity(maxCapacity);
+    }
+  }, [availableTablesUnsorted.length, capacity]);
+
+  /**
+   * Handle fill order change
+   * When switching to 'custom', preserve the current display order
+   */
+  const handleFillOrderChange = (newOrder: FillOrder) => {
+    if (newOrder === 'custom') {
+      // When switching to custom, capture the current sorted order
+      const currentOrder = fillOrder === 'ascending'
+        ? [...availableTablesUnsorted].sort((a, b) => a.number - b.number).map(t => t.number)
+        : fillOrder === 'descending'
+          ? [...availableTablesUnsorted].sort((a, b) => b.number - a.number).map(t => t.number)
+          : customOrder;
+      setCustomOrder(currentOrder);
+    }
+    setFillOrder(newOrder);
+  };
+
+  /**
+   * Move a table up in the custom order
+   */
+  const moveTableUp = (tableNumber: number) => {
+    setCustomOrder(prev => {
+      const index = prev.indexOf(tableNumber);
+      if (index <= 0) return prev; // Already at top or not found
+      const newOrder = [...prev];
+      // Swap with previous element
+      [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+      return newOrder;
+    });
+  };
+
+  /**
+   * Move a table down in the custom order
+   */
+  const moveTableDown = (tableNumber: number) => {
+    setCustomOrder(prev => {
+      const index = prev.indexOf(tableNumber);
+      if (index === -1 || index >= prev.length - 1) return prev; // At bottom or not found
+      const newOrder = [...prev];
+      // Swap with next element
+      [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+      return newOrder;
+    });
+  };
+
+  /**
+   * Sort available tables based on the selected fill order
+   */
+  const sortAvailableTables = () => {
+    if (fillOrder === 'ascending') {
+      return [...availableTablesUnsorted].sort((a, b) => a.number - b.number);
+    } else if (fillOrder === 'descending') {
+      return [...availableTablesUnsorted].sort((a, b) => b.number - a.number);
+    } else {
+      // Custom order: sort by position in customOrder array
+      return [...availableTablesUnsorted].sort((a, b) => {
+        const indexA = customOrder.indexOf(a.number);
+        const indexB = customOrder.indexOf(b.number);
+        // If not in custom order, put at the end (sorted ascending)
+        if (indexA === -1 && indexB === -1) return a.number - b.number;
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+      });
+    }
+  };
+
+  const availableTables = sortAvailableTables();
 
   /**
    * Save updated limits to database
+   * Saves the array of available table numbers
    */
   const handleSave = async () => {
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
     setSaving(true);
     setError(null);
 
     try {
+      // Build the array of available table numbers (order matters for custom fill order)
+      const availableTableNumbers = availableTables.map(t => t.number);
+
       const { data: updatedLeagueVenue, error: updateError } = await supabase
         .from('league_venues')
         .update({
-          available_bar_box_tables: barBoxTables,
-          available_regulation_tables: regulationTables
+          available_table_numbers: availableTableNumbers,
+          capacity: capacity,
         })
         .eq('id', leagueVenue.id)
         .select()
@@ -108,8 +279,10 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
 
       onSuccess(updatedLeagueVenue);
     } catch (err) {
-      logger.error('Error updating venue limits', { error: err instanceof Error ? err.message : String(err) });
-      setError(err instanceof Error ? err.message : 'Failed to update limits');
+      // Supabase errors have a message property directly on the object
+      const errorMessage = (err as { message?: string })?.message || String(err);
+      logger.error('Error updating venue limits', { error: errorMessage, fullError: JSON.stringify(err) });
+      setError(errorMessage || 'Failed to update limits');
     } finally {
       setSaving(false);
     }
@@ -123,8 +296,6 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
       onCancel();
     }
   };
-
-  const totalTables = barBoxTables + regulationTables;
 
   return (
     <div
@@ -160,83 +331,187 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
             </div>
           )}
 
-          {/* Bar-Box Tables */}
-          <div>
-            <Label className="mb-2 block">
-              Bar-Box Tables
-              <span className="text-gray-500 font-normal ml-2">
-                (max: {venue.bar_box_tables})
-              </span>
-            </Label>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => adjustBarBoxTables(-1)}
-                disabled={barBoxTables === 0}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <div className="flex-1 text-center">
-                <span className="text-2xl font-semibold text-gray-900">
-                  {barBoxTables}
-                </span>
-              </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => adjustBarBoxTables(1)}
-                disabled={barBoxTables === venue.bar_box_tables}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+          {/* Table Size Selection */}
+          <div className="space-y-3">
+            {/* Info header */}
+            <InfoButton title="Table Sizes Used" label="Table Sizes Used">
+              Choose which table sizes this league will use at this venue, or use all sizes available.
+            </InfoButton>
+
+            {/* Checkboxes */}
+            <div className="flex w-full justify-between">
+              {TABLE_SIZES.map(({ key }) => {
+                const hasTablesOfSize = venue[key] > 0;
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`size-${key}`}
+                      checked={enabledSizes[key]}
+                      onCheckedChange={() => toggleSize(key)}
+                      disabled={!hasTablesOfSize}
+                    />
+                    <label
+                      htmlFor={`size-${key}`}
+                      className={!hasTablesOfSize ? 'opacity-50' : ''}
+                    >
+                      <TableSizeLabel sizeKey={key} />
+                    </label>
+                    {hasTablesOfSize && (
+                      <span className="text-xs text-gray-500">({venue[key]})</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Regulation Tables */}
-          <div>
-            <Label className="mb-2 block">
-              Regulation Tables
-              <span className="text-gray-500 font-normal ml-2">
-                (max: {venue.regulation_tables})
-              </span>
-            </Label>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => adjustRegulationTables(-1)}
-                disabled={regulationTables === 0}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <div className="flex-1 text-center">
-                <span className="text-2xl font-semibold text-gray-900">
-                  {regulationTables}
-                </span>
+          {/* Table Fill Order */}
+          <div className="space-y-3">
+            <InfoButton title="Table Fill Order" label="Table Fill Order">
+              Decide the order in which teams will be assigned their tables. Each night the tables will be assigned in this order.
+            </InfoButton>
+
+            {/* Fill order options (radio-style checkboxes) */}
+            <div className="flex w-full justify-between">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="fill-ascending"
+                  checked={fillOrder === 'ascending'}
+                  onCheckedChange={() => handleFillOrderChange('ascending')}
+                />
+                <label htmlFor="fill-ascending" className="text-sm text-gray-700">
+                  Ascending
+                </label>
               </div>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={() => adjustRegulationTables(1)}
-                disabled={regulationTables === venue.regulation_tables}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="fill-descending"
+                  checked={fillOrder === 'descending'}
+                  onCheckedChange={() => handleFillOrderChange('descending')}
+                />
+                <label htmlFor="fill-descending" className="text-sm text-gray-700">
+                  Descending
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="fill-custom"
+                  checked={fillOrder === 'custom'}
+                  onCheckedChange={() => handleFillOrderChange('custom')}
+                />
+                <label htmlFor="fill-custom" className="text-sm text-gray-700">
+                  Custom
+                </label>
+              </div>
             </div>
           </div>
 
-          {/* Total Summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-blue-900">Total Available:</span>
-              <span className="text-lg font-bold text-blue-900">{totalTables} tables</span>
+          {/* Available Tables - clickable to remove */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-blue-800">
+                <strong>Available Tables:</strong> {availableTables.length}
+              </p>
             </div>
+
+            {availableTables.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {availableTables.map((table, index) => (
+                  <TableBadgePopover
+                    key={`available-${table.number}`}
+                    tableNumber={table.number}
+                    sizeLabel={table.label}
+                    isAvailable={true}
+                    onToggle={() => toggleTable(table.number)}
+                    isCustomOrder={fillOrder === 'custom'}
+                    isFirst={index === 0}
+                    isLast={index === availableTables.length - 1}
+                    onMoveUp={() => moveTableUp(table.number)}
+                    onMoveDown={() => moveTableDown(table.number)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-blue-600 italic">No tables selected</p>
+            )}
+
+            {availableTables.length > 0 && (
+              <div className="pt-2 border-t border-blue-200 space-y-2">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="capacity" className="text-xs text-blue-700 font-medium whitespace-nowrap">
+                    Max Home Teams:
+                  </label>
+                  <NumberInput
+                    id="capacity"
+                    value={capacity}
+                    onChange={setCapacity}
+                    min={1}
+                    max={availableTables.length}
+                    className="w-16 h-7 text-sm"
+                  />
+                  <span className="text-xs text-blue-600">
+                    (max {availableTables.length})
+                  </span>
+                </div>
+                <p className="text-xs text-blue-600">
+                  Capacity: {capacity} travel teams / {capacity * 2} in-house teams
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Unavailable Tables - clickable to restore */}
+          {unavailableTables.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+              <p className="text-sm text-red-800">
+                <strong>Unavailable Tables:</strong> {unavailableTables.length}
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                {unavailableTables.map((table) => (
+                  <TableBadgePopover
+                    key={`unavailable-${table.number}`}
+                    tableNumber={table.number}
+                    sizeLabel={table.label}
+                    isAvailable={false}
+                    isSizeDisabled={!enabledSizes[table.sizeKey]}
+                    onToggle={() => toggleTable(table.number)}
+                    onAddSingleTable={() => {
+                      // Enable the size category but block all OTHER tables of that size
+                      const allTableNumbersOfSize = (venue[`${table.sizeKey.replace('tables', 'table_numbers')}` as keyof Venue] as number[]) ?? [];
+
+                      // Enable the size
+                      setEnabledSizes(prev => ({
+                        ...prev,
+                        [table.sizeKey]: true,
+                      }));
+
+                      // Block all tables of this size EXCEPT the one being added
+                      setBlockedTables(prev => {
+                        const newBlocked = new Set(prev);
+                        allTableNumbersOfSize.forEach(num => {
+                          if (num === table.number) {
+                            // Remove this table from blocked (make it available)
+                            newBlocked.delete(num);
+                          } else {
+                            // Add other tables of this size to blocked
+                            newBlocked.add(num);
+                          }
+                        });
+                        return newBlocked;
+                      });
+                    }}
+                    onEnableSize={() => {
+                      // Re-enable the size category (this removes all tables of that size from blocked)
+                      if (!enabledSizes[table.sizeKey]) {
+                        toggleSize(table.sizeKey);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/utils/logger';
+import { VenueTableInputs } from './VenueTableInputs';
+import { generateDefaultTableNumbers } from '@/constants/tables';
 
 interface VenueCreationModalProps {
   /** Organization ID who is creating the venue */
@@ -53,8 +55,16 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     zip_code: existingVenue?.zip_code || '',
     phone: existingVenue?.phone || '',
     bar_box_tables: existingVenue?.bar_box_tables || 0,
+    eight_foot_tables: existingVenue?.eight_foot_tables || 0,
     regulation_tables: existingVenue?.regulation_tables || 0
   });
+
+  // Custom table numbers from Configure modal (optional - uses auto-numbering if not set)
+  const [customTableNumbers, setCustomTableNumbers] = useState<{
+    bar_box_tables: number[];
+    eight_foot_tables: number[];
+    regulation_tables: number[];
+  } | undefined>(undefined);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -83,12 +93,12 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     if (!formData.zip_code.trim()) return 'Zip code is required';
     if (!formData.phone.trim()) return 'Phone number is required';
 
-    const totalTables = formData.bar_box_tables + formData.regulation_tables;
+    const totalTables = formData.bar_box_tables + formData.eight_foot_tables + formData.regulation_tables;
     if (totalTables === 0) {
-      return 'Venue must have at least one table (bar-box or regulation)';
+      return 'Venue must have at least one table';
     }
 
-    if (formData.bar_box_tables < 0 || formData.regulation_tables < 0) {
+    if (formData.bar_box_tables < 0 || formData.eight_foot_tables < 0 || formData.regulation_tables < 0) {
       return 'Table counts cannot be negative';
     }
 
@@ -109,6 +119,13 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     setError(null);
 
     try {
+      // Get table numbers from custom config or generate defaults
+      const tableNumbers = customTableNumbers ?? generateDefaultTableNumbers({
+        bar_box_tables: formData.bar_box_tables,
+        eight_foot_tables: formData.eight_foot_tables,
+        regulation_tables: formData.regulation_tables,
+      });
+
       if (isEditing && existingVenue) {
         // UPDATE existing venue
         const venue = await updateVenueMutation.mutateAsync({
@@ -120,7 +137,11 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           zip_code: formData.zip_code.trim(),
           phone: formData.phone.trim(),
           bar_box_tables: formData.bar_box_tables,
+          eight_foot_tables: formData.eight_foot_tables,
           regulation_tables: formData.regulation_tables,
+          bar_box_table_numbers: tableNumbers.bar_box_tables,
+          eight_foot_table_numbers: tableNumbers.eight_foot_tables,
+          regulation_table_numbers: tableNumbers.regulation_tables,
         });
 
         onSuccess(venue);
@@ -135,7 +156,11 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           zip_code: formData.zip_code.trim(),
           phone: formData.phone.trim(),
           bar_box_tables: formData.bar_box_tables,
+          eight_foot_tables: formData.eight_foot_tables,
           regulation_tables: formData.regulation_tables,
+          bar_box_table_numbers: tableNumbers.bar_box_tables,
+          eight_foot_table_numbers: tableNumbers.eight_foot_tables,
+          regulation_table_numbers: tableNumbers.regulation_tables,
           // Optional fields - only include if provided
           proprietor_name: formData.proprietor_name?.trim() || undefined,
           proprietor_phone: formData.proprietor_phone?.trim() || undefined,
@@ -291,41 +316,16 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           </div>
 
           {/* Table Counts */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <Label>
-                Bar-Box Tables (7ft) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.bar_box_tables}
-                onChange={(e) => updateField('bar_box_tables', parseInt(e.target.value) || 0)}
-              />
-            </div>
-
-            <div>
-              <Label>
-                Regulation Tables (9ft) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                value={formData.regulation_tables}
-                onChange={(e) => updateField('regulation_tables', parseInt(e.target.value) || 0)}
-              />
-            </div>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
-              <strong>Total Tables:</strong> {formData.bar_box_tables + formData.regulation_tables}
-              <br />
-              <span className="text-xs">
-                Capacity: {formData.bar_box_tables + formData.regulation_tables} teams travel or {(formData.bar_box_tables + formData.regulation_tables) * 2} teams in-house
-              </span>
-            </p>
-          </div>
+          <VenueTableInputs
+            values={{
+              bar_box_tables: formData.bar_box_tables,
+              eight_foot_tables: formData.eight_foot_tables,
+              regulation_tables: formData.regulation_tables,
+            }}
+            onChange={(key, value) => updateField(key, value)}
+            customTableNumbers={customTableNumbers}
+            onTableNumbersChange={setCustomTableNumbers}
+          />
 
           <p className="text-sm text-gray-600">
             Additional details (contacts, website, hours) can be added later by editing the venue.

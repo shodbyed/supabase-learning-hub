@@ -23,7 +23,14 @@ export interface CreateVenueParams {
   zip_code: string;
   phone: string;
   bar_box_tables: number;
+  eight_foot_tables?: number;
   regulation_tables: number;
+  /** Array of table numbers for 7-foot tables. Example: [1, 2, 3] */
+  bar_box_table_numbers?: number[];
+  /** Array of table numbers for 8-foot tables. Example: [4, 5] */
+  eight_foot_table_numbers?: number[];
+  /** Array of table numbers for 9-foot tables. Example: [6, 7, 8] */
+  regulation_table_numbers?: number[];
   proprietor_name?: string | null;
   proprietor_phone?: string | null;
   league_contact_name?: string | null;
@@ -46,7 +53,14 @@ export interface UpdateVenueParams {
   zip_code: string;
   phone: string;
   bar_box_tables: number;
+  eight_foot_tables?: number;
   regulation_tables: number;
+  /** Array of table numbers for 7-foot tables. Example: [1, 2, 3] */
+  bar_box_table_numbers?: number[];
+  /** Array of table numbers for 8-foot tables. Example: [4, 5] */
+  eight_foot_table_numbers?: number[];
+  /** Array of table numbers for 9-foot tables. Example: [6, 7, 8] */
+  regulation_table_numbers?: number[];
   proprietor_name?: string | null;
   proprietor_phone?: string | null;
   league_contact_name?: string | null;
@@ -108,12 +122,12 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
     throw new Error('Phone number is required');
   }
 
-  const totalTables = params.bar_box_tables + params.regulation_tables;
+  const totalTables = params.bar_box_tables + (params.eight_foot_tables ?? 0) + params.regulation_tables;
   if (totalTables === 0) {
-    throw new Error('Venue must have at least one table (bar-box or regulation)');
+    throw new Error('Venue must have at least one table');
   }
 
-  if (params.bar_box_tables < 0 || params.regulation_tables < 0) {
+  if (params.bar_box_tables < 0 || (params.eight_foot_tables ?? 0) < 0 || params.regulation_tables < 0) {
     throw new Error('Table counts cannot be negative');
   }
 
@@ -126,7 +140,11 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
     zip_code: params.zip_code.trim(),
     phone: params.phone.trim(),
     bar_box_tables: params.bar_box_tables,
+    eight_foot_tables: params.eight_foot_tables ?? 0,
     regulation_tables: params.regulation_tables,
+    bar_box_table_numbers: params.bar_box_table_numbers ?? [],
+    eight_foot_table_numbers: params.eight_foot_table_numbers ?? [],
+    regulation_table_numbers: params.regulation_table_numbers ?? [],
     proprietor_name: params.proprietor_name?.trim() || null,
     proprietor_phone: params.proprietor_phone?.trim() || null,
     league_contact_name: params.league_contact_name?.trim() || null,
@@ -194,12 +212,12 @@ export async function updateVenue(params: UpdateVenueParams): Promise<Venue> {
     throw new Error('Phone number is required');
   }
 
-  const totalTables = params.bar_box_tables + params.regulation_tables;
+  const totalTables = params.bar_box_tables + (params.eight_foot_tables ?? 0) + params.regulation_tables;
   if (totalTables === 0) {
-    throw new Error('Venue must have at least one table (bar-box or regulation)');
+    throw new Error('Venue must have at least one table');
   }
 
-  if (params.bar_box_tables < 0 || params.regulation_tables < 0) {
+  if (params.bar_box_tables < 0 || (params.eight_foot_tables ?? 0) < 0 || params.regulation_tables < 0) {
     throw new Error('Table counts cannot be negative');
   }
 
@@ -211,7 +229,11 @@ export async function updateVenue(params: UpdateVenueParams): Promise<Venue> {
     zip_code: params.zip_code.trim(),
     phone: params.phone.trim(),
     bar_box_tables: params.bar_box_tables,
+    eight_foot_tables: params.eight_foot_tables ?? 0,
     regulation_tables: params.regulation_tables,
+    bar_box_table_numbers: params.bar_box_table_numbers ?? [],
+    eight_foot_table_numbers: params.eight_foot_table_numbers ?? [],
+    regulation_table_numbers: params.regulation_table_numbers ?? [],
     proprietor_name: params.proprietor_name?.trim() || null,
     proprietor_phone: params.proprietor_phone?.trim() || null,
     league_contact_name: params.league_contact_name?.trim() || null,
