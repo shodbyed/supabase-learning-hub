@@ -374,7 +374,7 @@ export const ScheduleSetup: React.FC<ScheduleSetupProps> = ({
                 min={1}
                 max={effectiveTeamCount}
                 value={team.schedule_position}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handlePositionChange(team.id, parseInt(e.target.value))
                 }
                 disabled={generating || shuffling || team.id === 'BYE'}

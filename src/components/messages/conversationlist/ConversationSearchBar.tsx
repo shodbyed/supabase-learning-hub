@@ -5,6 +5,7 @@
  * Auto-focuses when shown.
  */
 
+import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -22,7 +23,7 @@ export function ConversationSearchBar({ value, onChange }: ConversationSearchBar
           type="text"
           placeholder="Search conversations..."
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
           className="pl-9 md:pl-10 h-10 md:h-11"
           autoFocus
         />

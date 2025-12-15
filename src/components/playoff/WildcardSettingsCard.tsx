@@ -110,7 +110,7 @@ export const WildcardSettingsCard: React.FC<WildcardSettingsCardProps> = ({
               min={0}
               max={10}
               value={wildcardSpots}
-              onChange={(e) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 dispatch({ type: 'SET_WILDCARD_SPOTS', payload: parseInt(e.target.value) || 0 })
               }
               className="w-20 bg-white"

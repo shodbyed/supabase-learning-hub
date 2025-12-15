@@ -454,7 +454,7 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
                 min="0"
                 max="100"
                 value={modalHandicap5v5}
-                onChange={(e) => setModalHandicap5v5(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModalHandicap5v5(e.target.value)}
                 className="mt-1"
               />
             </div>

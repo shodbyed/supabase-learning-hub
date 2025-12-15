@@ -4,6 +4,7 @@
  * Reusable section for managing handicap preferences.
  * Used within PreferencesCard for both organization and league levels.
  */
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -130,7 +131,7 @@ export const HandicapSettingsSection: React.FC<HandicapSettingsSectionProps> = (
             <Input
               type="number"
               value={gameHistoryLimit}
-              onChange={(e) => onGameHistoryLimitChange(parseInt(e.target.value) || 200)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => onGameHistoryLimitChange(parseInt(e.target.value) || 200)}
               min={50}
               max={500}
             />

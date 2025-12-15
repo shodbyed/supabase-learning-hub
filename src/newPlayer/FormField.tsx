@@ -58,7 +58,7 @@ export const TextField: React.FC<TextFieldProps> = ({
         id={id}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
       />

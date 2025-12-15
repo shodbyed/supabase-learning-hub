@@ -10,7 +10,7 @@
  * - Touch-friendly spacing
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus, Settings, Megaphone, MessageSquare } from 'lucide-react';
@@ -143,7 +143,7 @@ export function ConversationList({
               type="text"
               placeholder="Search conversations..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               className="pl-9 md:pl-10 h-10 md:h-11"
               autoFocus
             />

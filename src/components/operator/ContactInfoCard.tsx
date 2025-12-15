@@ -8,7 +8,7 @@
  * Each section is independently editable with its own edit/save/cancel buttons.
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -169,7 +169,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   placeholder="contact@example.com"
                 />
               </div>
@@ -228,7 +228,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
                   id="phone"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
                 />
               </div>

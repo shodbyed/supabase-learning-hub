@@ -166,7 +166,7 @@ export const CapitalizeInput = React.forwardRef<
         id={id}
         type="text"
         value={internalValue}
-        onChange={(e) => handleChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disabled}
