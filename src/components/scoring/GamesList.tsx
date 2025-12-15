@@ -5,12 +5,24 @@
  * Format-agnostic - works for 3, 18, or 25 games automatically.
  * Shows game status (unscored, pending, confirmed) and handles user interactions.
  *
+ * Display Modes:
+ * - Break/Rack (default): Breaker on left, Racker on right
+ * - Home/Away: Home team always on left, Away team always on right
+ * User can toggle by clicking the column headers. Preference is saved to localStorage.
+ *
  * ALL game data comes directly from the database (gameResults Map).
  * No calculated or "on the fly" data is displayed.
  */
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { MatchGame } from '@/types';
+
+/** Display mode for game list columns */
+type DisplayMode = 'break-rack' | 'home-away';
+
+/** localStorage key for persisting display mode preference */
+const DISPLAY_MODE_KEY = 'rackem-games-display-mode';
 
 interface GamesListProps {
   gameResults: Map<number, MatchGame>;
@@ -47,6 +59,29 @@ export function GamesList({
   isHomeTeam,
 }: GamesListProps) {
   /**
+   * Display mode state - persisted to localStorage
+   * - 'break-rack': Breaker on left, Racker on right (default)
+   * - 'home-away': Home team on left, Away team on right
+   */
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(() => {
+    // Initialize from localStorage or default to 'break-rack'
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(DISPLAY_MODE_KEY);
+      if (saved === 'home-away') return 'home-away';
+    }
+    return 'break-rack';
+  });
+
+  /**
+   * Toggle display mode and persist to localStorage
+   */
+  const toggleDisplayMode = () => {
+    const newMode = displayMode === 'break-rack' ? 'home-away' : 'break-rack';
+    setDisplayMode(newMode);
+    localStorage.setItem(DISPLAY_MODE_KEY, newMode);
+  };
+
+  /**
    * Get completed games count
    */
   const getCompletedGamesCount = () => {
@@ -66,13 +101,17 @@ export function GamesList({
         <div className="text-sm font-semibold mb-4">
           Games Complete: <span className="text-lg">{getCompletedGamesCount()} / {totalGames}</span>
         </div>
-        {/* Column headers */}
-        <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2">
+        {/* Column headers - clickable to toggle display mode */}
+        <button
+          onClick={toggleDisplayMode}
+          className="w-full grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-xs text-gray-500 pb-2 hover:text-gray-700 transition-colors cursor-pointer"
+          title={`Click to switch to ${displayMode === 'break-rack' ? 'Home/Away' : 'Break/Rack'} view`}
+        >
           <div></div>
-          <div className="text-center">Break</div>
+          <div className="text-center">{displayMode === 'break-rack' ? 'Break' : 'Home'}</div>
           <div className="text-center font-semibold">vs</div>
-          <div className="text-center">Rack</div>
-        </div>
+          <div className="text-center">{displayMode === 'break-rack' ? 'Rack' : 'Away'}</div>
+        </button>
       </div>
 
       {/* Scrollable game list - DYNAMIC (works for any number of games) */}
@@ -100,17 +139,39 @@ export function GamesList({
             const breakerIsHome = gameResult.home_action === 'breaks';
             const rackerIsHome = gameResult.home_action === 'racks';
 
+            // Determine left/right positions based on display mode
+            // In 'break-rack' mode: breaker on left, racker on right
+            // In 'home-away' mode: home player on left, away player on right
+            const leftName = displayMode === 'break-rack' ? breakerName : homePlayerName;
+            const leftPlayerId = displayMode === 'break-rack' ? breakerPlayerId : homePlayerId;
+            const leftTeamId = displayMode === 'break-rack' ? breakerTeamId : homeTeamId;
+            const leftIsHome = displayMode === 'break-rack' ? breakerIsHome : true;
+            // In break-rack mode, left is always breaker; in home-away mode, check if home breaks
+            const leftIsBreaker = displayMode === 'break-rack' ? true : breakerIsHome;
+
+            const rightName = displayMode === 'break-rack' ? rackerName : awayPlayerName;
+            const rightPlayerId = displayMode === 'break-rack' ? rackerPlayerId : awayPlayerId;
+            const rightTeamId = displayMode === 'break-rack' ? rackerTeamId : awayTeamId;
+            const rightIsHome = displayMode === 'break-rack' ? rackerIsHome : false;
+            // In break-rack mode, right is always racker; in home-away mode, check if away breaks
+            const rightIsBreaker = displayMode === 'break-rack' ? false : !breakerIsHome;
+
+            // Display names with (B) or (R) prefix
+            const leftDisplayName = `(${leftIsBreaker ? 'B' : 'R'}) ${leftName}`;
+            const rightDisplayName = `(${rightIsBreaker ? 'B' : 'R'}) ${rightName}`;
+
             // Check game status
             const hasWinner = gameResult.winner_player_id;
             const isConfirmed = gameResult.confirmed_by_home && gameResult.confirmed_by_away;
             const isVacateRequested = !!(gameResult as any).vacate_requested_by;
             const isPending = hasWinner && !isConfirmed && !isVacateRequested;
 
+            // Determine left/right won status based on display mode
+            const leftWon = gameResult.winner_player_id === leftPlayerId;
+            const rightWon = gameResult.winner_player_id === rightPlayerId;
+
             // If game has a winner (pending or confirmed)
             if (hasWinner) {
-              const breakerWon = gameResult.winner_player_id === breakerPlayerId;
-              const rackerWon = gameResult.winner_player_id === rackerPlayerId;
-
               // Determine styling based on confirmation status
               const winnerClass = isConfirmed ? 'bg-green-200 font-semibold' : 'bg-yellow-100 font-semibold';
               const loserClass = 'bg-white text-gray-500';
@@ -127,11 +188,11 @@ export function GamesList({
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full ${breakerWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
+                      className={`w-full ${leftWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
                       disabled={iRequestedVacate}
-                      onClick={() => !iRequestedVacate && breakerPlayerId && onGameClick(gameResult.game_number, breakerPlayerId, breakerName, breakerTeamId)}
+                      onClick={() => !iRequestedVacate && leftPlayerId && onGameClick(gameResult.game_number, leftPlayerId, leftName, leftTeamId)}
                     >
-                      {breakerName}
+                      {leftDisplayName}
                     </Button>
                     <Button
                       variant="outline"
@@ -140,7 +201,7 @@ export function GamesList({
                       disabled={iRequestedVacate}
                       onClick={() => {
                         if (!iRequestedVacate && onVacateRequestClick) {
-                          onVacateRequestClick(gameResult.game_number, breakerWon ? breakerName : rackerName);
+                          onVacateRequestClick(gameResult.game_number, leftWon ? leftName : rightName);
                         }
                       }}
                     >
@@ -149,11 +210,11 @@ export function GamesList({
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full ${rackerWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
+                      className={`w-full ${rightWon ? 'bg-red-100 font-semibold' : 'bg-white text-gray-500'}`}
                       disabled={iRequestedVacate}
-                      onClick={() => !iRequestedVacate && rackerPlayerId && onGameClick(gameResult.game_number, rackerPlayerId, rackerName, rackerTeamId)}
+                      onClick={() => !iRequestedVacate && rightPlayerId && onGameClick(gameResult.game_number, rightPlayerId, rightName, rightTeamId)}
                     >
-                      {rackerName}
+                      {rightDisplayName}
                     </Button>
                   </div>
                 );
@@ -167,19 +228,19 @@ export function GamesList({
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full ${breakerWon ? winnerClass : loserClass}`}
-                      onClick={() => breakerPlayerId && onGameClick(gameResult.game_number, breakerPlayerId, breakerName, breakerTeamId)}
+                      className={`w-full ${leftWon ? winnerClass : loserClass}`}
+                      onClick={() => leftPlayerId && onGameClick(gameResult.game_number, leftPlayerId, leftName, leftTeamId)}
                     >
-                      {breakerName}
+                      {leftDisplayName}
                     </Button>
                     <div className="text-center font-semibold text-gray-400">vs</div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`w-full ${rackerWon ? winnerClass : loserClass}`}
-                      onClick={() => rackerPlayerId && onGameClick(gameResult.game_number, rackerPlayerId, rackerName, rackerTeamId)}
+                      className={`w-full ${rightWon ? winnerClass : loserClass}`}
+                      onClick={() => rightPlayerId && onGameClick(gameResult.game_number, rightPlayerId, rightName, rightTeamId)}
                     >
-                      {rackerName}
+                      {rightDisplayName}
                     </Button>
                   </div>
                 );
@@ -189,23 +250,23 @@ export function GamesList({
               return (
                 <div key={gameResult.game_number} className="grid grid-cols-[auto_1fr_auto_1fr] gap-2 items-center text-sm py-2 border-b">
                   <div className="font-semibold">{gameResult.game_number}.</div>
-                  <div className={`text-center p-2 rounded ${breakerWon ? winnerClass : loserClass}`}>
-                    {breakerWon && <span className="mr-1">🏆</span>}
-                    {breakerName}
+                  <div className={`text-center p-2 rounded ${leftWon ? winnerClass : loserClass}`}>
+                    {leftWon && <span className="mr-1">🏆</span>}
+                    {leftDisplayName}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     className="text-xs px-1"
                     onClick={() => {
-                      onVacateClick(gameResult.game_number, breakerWon ? breakerName : rackerName);
+                      onVacateClick(gameResult.game_number, leftWon ? leftName : rightName);
                     }}
                   >
                     Vacate
                   </Button>
-                  <div className={`text-center p-2 rounded ${rackerWon ? winnerClass : loserClass}`}>
-                    {rackerWon && <span className="mr-1">🏆</span>}
-                    {rackerName}
+                  <div className={`text-center p-2 rounded ${rightWon ? winnerClass : loserClass}`}>
+                    {rightWon && <span className="mr-1">🏆</span>}
+                    {rightDisplayName}
                   </div>
                 </div>
               );
@@ -219,10 +280,10 @@ export function GamesList({
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`w-full ${breakerIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
-                    onClick={() => breakerPlayerId && onGameClick(gameResult.game_number, breakerPlayerId, breakerName, breakerTeamId)}
+                    className={`w-full ${leftIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
+                    onClick={() => leftPlayerId && onGameClick(gameResult.game_number, leftPlayerId, leftName, leftTeamId)}
                   >
-                    {breakerName}
+                    {leftDisplayName}
                   </Button>
                 </div>
                 <div className="text-center font-semibold text-gray-400">vs</div>
@@ -230,10 +291,10 @@ export function GamesList({
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`w-full ${rackerIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
-                    onClick={() => rackerPlayerId && onGameClick(gameResult.game_number, rackerPlayerId, rackerName, rackerTeamId)}
+                    className={`w-full ${rightIsHome ? 'bg-blue-100 hover:bg-blue-200' : 'bg-orange-100 hover:bg-orange-200'}`}
+                    onClick={() => rightPlayerId && onGameClick(gameResult.game_number, rightPlayerId, rightName, rightTeamId)}
                   >
-                    {rackerName}
+                    {rightDisplayName}
                   </Button>
                 </div>
               </div>
