@@ -31,7 +31,7 @@ export function generateSchedule(
   playoffWeeks: number = 1
 ): WeekEntry[] {
   const schedule: WeekEntry[] = [];
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   let playWeekCount = 0;
 
   // Create a sorted set of blackout dates for efficient lookup

@@ -87,7 +87,7 @@ export const useProfilePhoneSchema = z.string().refine((val) => val === 'profile
 });
 export const leaguePhoneSchema = z.string()
   .min(10, 'Phone number must be at least 10 digits')
-  .regex(/^[\d\s\-\(\)\+\.]+$/, { message: 'Phone number can only contain digits, spaces, dashes, parentheses, plus sign, and dots' })
+  .regex(/^[\d\s().+-]+$/, { message: 'Phone number can only contain digits, spaces, dashes, parentheses, plus sign, and dots' })
   .trim();
 export const phoneVisibilitySchema = z.enum(contactVisibilityLevels, {
   message: 'Please select who can see your phone number'
