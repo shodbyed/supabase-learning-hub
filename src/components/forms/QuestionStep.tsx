@@ -4,8 +4,8 @@
  */
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
-import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { InfoButton } from '../InfoButton';
 
 interface QuestionStepProps {
@@ -59,38 +59,19 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
   isSubmitting,
   isNavigating
 }) => {
-  const capitalizeInputRef = useRef<{ getValue: () => string }>(null);
-
-  /**
-   * Default formatting function for auto-capitalization
-   * Capitalizes first letter of each word
-   */
-  const defaultFormat = (text: string): string => {
-    return text
-      .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
-      .trim();
-  };
-
-  // Use provided onFormat or default formatting
-  const formatFunction = onFormat || defaultFormat;
+  // Track the input ref for triggering blur before navigation
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleNext = () => {
-    // For text inputs, get the final value from CapitalizeInput
-    // (formatted if auto-capitalize is on, raw if off)
-    let finalValue = value;
-    if (inputType === 'text' && capitalizeInputRef.current) {
-      finalValue = capitalizeInputRef.current.getValue();
-      // Update parent state with final value
-      if (finalValue !== value) {
-        onChange(finalValue);
-      }
+    // For text inputs with titleCase, trigger blur to apply formatting before proceeding
+    if (inputType === 'text' && inputRef.current) {
+      inputRef.current.blur();
     }
 
-    // Pass the final value to parent
-    onNext(finalValue);
+    // Small delay to ensure blur formatting is applied before navigation
+    setTimeout(() => {
+      onNext(value);
+    }, 10);
   };
 
   return (
@@ -125,32 +106,28 @@ export const QuestionStep: React.FC<QuestionStepProps> = ({
               )}
             </div>
           ) : inputType === 'text' ? (
-            <CapitalizeInput
-              ref={capitalizeInputRef}
+            <Input
+              ref={inputRef}
               value={value}
-              onChange={onChange}
+              onChange={(val: string) => onChange(val)}
+              onKeyDown={onKeyDown}
               placeholder={placeholder}
-              error={!!error}
-              errorMessage={error}
-              formatFunction={formatFunction}
-              defaultCapitalize={true}
+              error={error}
+              titleCase
+              showCapitalizeCheckbox
+              formatFunction={onFormat}
+              className="text-lg py-3"
             />
           ) : (
-            <div>
-              <input
-                type={inputType}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={placeholder}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg ${
-                  error ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {error && (
-                <p className="text-red-500 text-sm mt-2">{error}</p>
-              )}
-            </div>
+            <Input
+              type={inputType}
+              value={value}
+              onChange={(val: string) => onChange(val)}
+              onKeyDown={onKeyDown}
+              placeholder={placeholder}
+              error={error}
+              className="text-lg py-3"
+            />
           )}
 
           <div className="flex justify-between items-center">
