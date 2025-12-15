@@ -259,7 +259,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
         </div>
       )}
 
-      {/* Formatting indicator when no checkbox but titleCase is enabled */}
+      {/* Formatting indicator when titleCase is enabled without checkbox */}
       {!showCapitalizeCheckbox && capitalizeEnabled && (
         <p className="text-xs text-gray-500 mt-1">Capitalizes on save</p>
       )}
