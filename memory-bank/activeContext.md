@@ -500,3 +500,23 @@ Schedule Generation → Schedule Display → Accept Schedule → League Dashboar
 ✅ **League Creation Flow**: End-to-end workflow complete
 🔄 **Season Week Storage**: Next - fix duplicate playoff week and clean week names
 🔜 **Mobile App**: Partner will mirror database operations for scorekeeping
+
+---
+
+## Parked Branches (Don't Forget!)
+
+### `mid-dec-cleanup` branch
+**Status**: Committed locally, NOT pushed
+**Contains**: Wide variety of cleanup changes
+**Why parked**: Waiting for another PR to merge first - will likely have conflicts
+**Action needed**: After other PR merges, come back to this branch and handle conflicts
+
+---
+
+## Planned Features (Not Yet Started)
+
+### Placeholder Players Feature
+**Status**: Planning complete, implementation not started
+**Plan document**: [PLAN-placeholder-players.md](./PLAN-placeholder-players.md)
+**Summary**: Allow creating "placeholder" players who can be on teams and have games scored without being registered users. When the real person registers, they can be connected via invite link or operator merge.
+**First step when ready**: Database migration to make phone/email/address/zip/dob nullable on members table
