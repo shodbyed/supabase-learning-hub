@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/supabaseClient';
 import { Calendar, MapPin, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,6 @@ function getWeekTypeStyle(weekType: string): { bgColor: string; badge: string; b
 export const SeasonSchedulePage: React.FC = () => {
   const { leagueId, seasonId } = useParams<{ leagueId: string; seasonId: string }>();
   const navigate = useNavigate();
-  const [_searchParams] = useSearchParams();
   const isOperator = useIsOperator();
   const { confirm, ConfirmDialogComponent } = useConfirmDialog();
 

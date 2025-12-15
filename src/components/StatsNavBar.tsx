@@ -7,8 +7,7 @@
  */
 
 import { useNavigate, useParams } from 'react-router-dom';
-import { Trophy, Target, Users, Award /* ArrowLeft, LayoutDashboard */ } from 'lucide-react';
-// import { useCurrentMember } from '@/api/hooks/useCurrentMember';
+import { Trophy, Target, Users, Award } from 'lucide-react';
 
 interface StatsNavBarProps {
   /** Current active page */
@@ -61,29 +60,6 @@ export function StatsNavBar({ activePage }: StatsNavBarProps) {
   return (
     <div className="bg-white lg:rounded-xl border-b border-gray-200 mb-6 -mx-4 px-4 overflow-x-auto">
       <nav className="flex gap-1 min-w-max">
-        {/* Exit to Teams Button 
-        <button
-          onClick={() => navigate('/my-teams')}
-          className="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm">My Teams</span>
-        </button>
-
-        {/* League Button (Operators Only) 
-        {isOperator && (
-          <button
-            onClick={() => navigate(`/league/${leagueId}`)}
-            className="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors whitespace-nowrap"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">League</span>
-          </button>
-        )}
-
-        {/* Divider 
-        <div className="border-l border-gray-300 my-2"></div>
-        */}
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activePage === item.id;

@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { createTestClient, getSingleResult } from '@/test/dbTestUtils';
+import { createTestClient } from '@/test/dbTestUtils';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database.types';
 
