@@ -2,9 +2,10 @@
  * @fileoverview League Operator Landing Page
  * Informational page explaining benefits and requirements of becoming a league operator
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/PageHeader';
 
 /**
  * League Operator Landing Page Component
@@ -21,35 +22,28 @@ import { Button } from '@/components/ui/button';
  * - Call-to-action to start application
  */
 export const BecomeLeagueOperator: React.FC = () => {
+  // Scroll to top on mount (fixes issue where page loads in middle)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Hero Section */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Become a League Operator
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              Start running your own pool leagues and earn revenue
-            </p>
-
-            {/* Quick Action Buttons */}
-            <div className="flex justify-center space-x-4">
-              <Link to="/league-operator-application">
-                <Button loadingText="none" size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-                  Start Application
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="px-8">
-                  Back to Dashboard
-                </Button>
-              </Link>
-            </div>
-          </div>
+      {/* Page Header */}
+      <PageHeader
+        backTo="/dashboard"
+        backLabel="Back to Dashboard"
+        title="Become a League Operator"
+        subtitle="Start running your own pool leagues and earn revenue"
+      >
+        <div className="mt-4">
+          <Link to="/league-operator-application">
+            <Button loadingText="none" size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
+              Start Application
+            </Button>
+          </Link>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -182,18 +176,11 @@ export const BecomeLeagueOperator: React.FC = () => {
             <p className="text-blue-100 mb-6 text-lg">
               Complete our simple application and start running your first league within days.
             </p>
-            <div className="flex justify-center space-x-4">
-              <Link to="/league-operator-application">
-                <Button loadingText="none" size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8">
-                  Start Application
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="border-white text-white bg-transparent hover:bg-white hover:text-blue-600 px-8">
-                  Back to Dashboard
-                </Button>
-              </Link>
-            </div>
+            <Link to="/league-operator-application">
+              <Button loadingText="none" size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8">
+                Start Application
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -21,7 +21,6 @@ import {
 } from '@/constants/infoContent/operatorApplicationInfoContent';
 import {
   formatLeagueName,
-  formatCity,
   formatZipCode,
   formatPhoneNumber,
 } from '../utils/formatters';
@@ -33,6 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { PaymentCardForm } from '@/components/PaymentCardForm';
 import { logger } from '@/utils/logger';
 
@@ -150,48 +151,37 @@ export const getQuestionDefinitions = (
             Enter Organization Address:
           </h4>
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Street Address
-              </label>
-              <input
-                type="text"
-                value={customAddress}
-                onChange={(e) => {
-                  setCustomAddress(e.target.value);
-                  dispatch({
-                    type: 'SET_ORGANIZATION_ADDRESS',
-                    payload: e.target.value,
-                  });
-                }}
-                placeholder="123 Main Street"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                City
-              </label>
-              <input
-                type="text"
-                value={customCity}
-                onChange={(e) => {
-                  const formatted = formatCity(e.target.value);
-                  setCustomCity(formatted);
-                  dispatch({
-                    type: 'SET_ORGANIZATION_CITY',
-                    payload: formatted,
-                  });
-                }}
-                placeholder="Springfield"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <Input
+              id="org-address"
+              label="Street Address"
+              value={customAddress}
+              onChange={(value: string) => {
+                setCustomAddress(value);
+                dispatch({
+                  type: 'SET_ORGANIZATION_ADDRESS',
+                  payload: value,
+                });
+              }}
+              placeholder="123 Main Street"
+              titleCase
+            />
+            <Input
+              id="org-city"
+              label="City"
+              value={customCity}
+              onChange={(value: string) => {
+                setCustomCity(value);
+                dispatch({
+                  type: 'SET_ORGANIZATION_CITY',
+                  payload: value,
+                });
+              }}
+              placeholder="Springfield"
+              titleCase
+            />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  State
-                </label>
+                <Label htmlFor="org-state">State</Label>
                 <Select
                   value={customState}
                   onValueChange={(value) => {
@@ -214,25 +204,20 @@ export const getQuestionDefinitions = (
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ZIP Code
-                </label>
-                <input
-                  type="text"
-                  value={customZip}
-                  onChange={(e) => {
-                    const formatted = formatZipCode(e.target.value);
-                    setCustomZip(formatted);
-                    dispatch({
-                      type: 'SET_ORGANIZATION_ZIP_CODE',
-                      payload: formatted,
-                    });
-                  }}
-                  placeholder="12345"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              <Input
+                id="org-zip"
+                label="ZIP Code"
+                value={customZip}
+                onChange={(value: string) => {
+                  const formatted = formatZipCode(value);
+                  setCustomZip(formatted);
+                  dispatch({
+                    type: 'SET_ORGANIZATION_ZIP_CODE',
+                    payload: formatted,
+                  });
+                }}
+                placeholder="12345"
+              />
             </div>
           </div>
         </div>
