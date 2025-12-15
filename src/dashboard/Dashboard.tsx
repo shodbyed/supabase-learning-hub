@@ -1,8 +1,14 @@
 /**
  * @fileoverview Dashboard Component
- * Mobile-first dashboard with navigation to player features
+ * Mobile-first dashboard with navigation to player features.
+ *
+ * Cache Reset Behavior:
+ * When the Dashboard mounts, all cached data is marked as stale (but not refetched).
+ * This ensures that when users navigate from Dashboard to other pages, they get fresh data.
+ * This provides a natural "reset point" for the app's data cache.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '../context/useUser';
 import { useUserProfile } from '@/api/hooks';
 import { useOrganizations } from '@/api/hooks/useOrganizations';
@@ -18,8 +24,29 @@ export const Dashboard: React.FC = () => {
   const { member, loading } = useUserProfile();
   const { organizations, loading: orgsLoading } = useOrganizations(member?.id);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   // Track which org button is loading during navigation
   const [navigatingOrgId, setNavigatingOrgId] = useState<string | null>(null);
+
+  /**
+   * Mark all cached data as stale when Dashboard mounts.
+   * This doesn't trigger any refetches - it just marks data as stale so that
+   * when users navigate to other pages, those pages will fetch fresh data.
+   * Excludes 'currentMember' and 'organizations' since we're using them on this page.
+   */
+  useEffect(() => {
+    queryClient.invalidateQueries({
+      // Mark all queries as stale
+      predicate: (query) => {
+        // Don't invalidate the queries we're actively using on Dashboard
+        const key = query.queryKey[0];
+        if (key === 'members' || key === 'organizations') return false;
+        return true;
+      },
+      // Don't refetch - just mark as stale
+      refetchType: 'none',
+    });
+  }, [queryClient]);
 
   if (loading || orgsLoading) {
     return (
