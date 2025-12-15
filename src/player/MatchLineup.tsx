@@ -519,14 +519,7 @@ export function MatchLineup() {
     return allPlayers.filter((_, index) => index + 1 !== position);
   };
 
-  // Early return for loading/error states - consolidated into single check
-  if (renderState) return renderState;
-
-  // After renderState check, all data is guaranteed to be defined
-  // TypeScript doesn't infer this, so we assert non-null
-  const match = matchData!;
-
-  // Get opponent status using custom hook
+  // Get opponent status using custom hook (must be called before any early returns)
   const {
     opponentTeam: opponent,
     status: opponentStatus,
@@ -539,6 +532,14 @@ export function MatchLineup() {
     allGames,
     playerCount, // Pass player count for 5v5 support
   });
+
+  // Early return for loading/error states - consolidated into single check
+  // NOTE: All hooks must be called ABOVE this line to satisfy Rules of Hooks
+  if (renderState) return renderState;
+
+  // After renderState check, all data is guaranteed to be defined
+  // TypeScript doesn't infer this, so we assert non-null
+  const match = matchData!;
 
   // Get my lineup (for tiebreaker mode player source)
   const myLineup = isHomeTeam

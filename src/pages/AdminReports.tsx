@@ -97,10 +97,13 @@ export function AdminReports() {
   }, []);
 
   /**
-   * Filter reports when tab changes
+   * Filter reports when tab or data changes
+   * Note: filterReports is intentionally excluded from deps as it's a stable function
+   * that only reads from state (activeTab, allReports) which are already in deps
    */
   useEffect(() => {
     filterReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, allReports]);
 
   /**

@@ -57,7 +57,9 @@
       "Bash(sort:*)",
       "Bash(pnpm tsc:*)",
       "Bash(pnpm exec tsc:*)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
