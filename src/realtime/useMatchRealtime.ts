@@ -120,6 +120,8 @@ export function useMatchRealtime(
   useEffect(() => {
     if (!matchId) return;
 
+    console.log(`[useMatchRealtime] Setting up subscription for match ${matchId}`);
+
     const channel = supabase
       .channel(`match_${matchId}`)
 
@@ -132,7 +134,8 @@ export function useMatchRealtime(
           table: 'matches',
           filter: `id=eq.${matchId}`,
         },
-        () => {
+        (payload) => {
+          console.log('[useMatchRealtime] Match update received:', payload.eventType);
           onMatchUpdateRef.current?.();
         }
       )
@@ -146,7 +149,8 @@ export function useMatchRealtime(
           table: 'match_lineups',
           filter: `match_id=eq.${matchId}`,
         },
-        () => {
+        (payload) => {
+          console.log('[useMatchRealtime] Lineup update received:', payload.eventType);
           onLineupUpdateRef.current?.();
         }
       )
@@ -161,6 +165,7 @@ export function useMatchRealtime(
           filter: `match_id=eq.${matchId}`,
         },
         async (payload) => {
+          console.log('[useMatchRealtime] Game update received:', payload.eventType);
           // Always refetch games
           onGamesUpdateRef.current?.();
 
@@ -239,9 +244,12 @@ export function useMatchRealtime(
           }
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[useMatchRealtime] Subscription status: ${status}`, err ? `Error: ${err.message}` : '');
+      });
 
     return () => {
+      console.log(`[useMatchRealtime] Cleaning up subscription for match ${matchId}`);
       supabase.removeChannel(channel);
     };
   }, [matchId, gameUpdateOptions]);

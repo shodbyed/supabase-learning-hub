@@ -4,6 +4,10 @@
  * Provides opponent team information and lineup status.
  * Calculates whether opponent is absent, choosing lineup, or ready.
  * Shows detailed player selection progress.
+ *
+ * Note: Lineups are auto-created by database trigger when match is inserted,
+ * so we determine "absent" by checking if opponent has selected any players,
+ * not by checking if lineup ID exists.
  */
 
 interface OpponentStatusParams {
@@ -36,9 +40,13 @@ interface OpponentStatusResult {
  * Hook to get opponent team information and lineup status
  *
  * Status meanings:
- * - absent: Opponent hasn't joined (no lineup ID)
- * - choosing: Opponent is selecting players (has lineup ID but not locked)
+ * - absent: Opponent hasn't selected any players yet (lineup exists but empty)
+ * - choosing: Opponent is selecting players (has at least 1 player but not locked)
  * - ready: Opponent has locked their lineup
+ *
+ * Note: Since lineups are auto-created by database trigger, we can't use
+ * lineup ID presence to determine if opponent has "joined". Instead we check
+ * if they've selected any players.
  *
  * @param params - Match data and opponent info
  * @returns Opponent team, status, and selection details
@@ -75,23 +83,46 @@ export function useOpponentStatus(params: OpponentStatusParams): OpponentStatusR
     : null;
 
   /**
-   * Calculate opponent status based on lineup_id and locked state
+   * Count how many players opponent has selected in their lineup
+   */
+  const countSelectedPlayers = (): number => {
+    if (!opponentLineup) return 0;
+
+    let count = 0;
+    if (opponentLineup.player1_id) count++;
+    if (opponentLineup.player2_id) count++;
+    if (opponentLineup.player3_id) count++;
+
+    // Add player4/5 for 5v5 matches
+    if (playerCount === 5) {
+      if (opponentLineup.player4_id) count++;
+      if (opponentLineup.player5_id) count++;
+    }
+
+    return count;
+  };
+
+  /**
+   * Calculate opponent status based on player selection and locked state
+   *
+   * Since lineups are auto-created by trigger, we check:
+   * 1. locked = ready
+   * 2. has any players selected = choosing
+   * 3. no players selected = absent (hasn't started choosing yet)
    */
   const getStatus = (): OpponentStatus => {
     if (!matchData) return 'absent';
 
-    const opponentLineupField = isHomeTeam
-      ? 'away_lineup_id'
-      : 'home_lineup_id';
-    const opponentLineupId = matchData[opponentLineupField as keyof typeof matchData];
-
-    // No lineup ID = opponent hasn't joined yet
-    if (!opponentLineupId) return 'absent';
-
-    // Has lineup ID, check if locked
+    // Check if lineup is locked first
     if (opponentLineup?.locked) return 'ready';
 
-    // Has lineup ID but not locked = choosing lineup
+    // Count selected players to determine if opponent has started
+    const selectedCount = countSelectedPlayers();
+
+    // No players selected = opponent hasn't joined/started yet
+    if (selectedCount === 0) return 'absent';
+
+    // Has some players = actively choosing
     return 'choosing';
   };
 
@@ -122,16 +153,8 @@ export function useOpponentStatus(params: OpponentStatusParams): OpponentStatusR
         }
       });
     } else {
-      // Normal mode - count from lineup (support both 3v3 and 5v5)
-      if (opponentLineup?.player1_id) selectedCount++;
-      if (opponentLineup?.player2_id) selectedCount++;
-      if (opponentLineup?.player3_id) selectedCount++;
-
-      // Add player4/5 for 5v5 matches
-      if (playerCount === 5) {
-        if (opponentLineup?.player4_id) selectedCount++;
-        if (opponentLineup?.player5_id) selectedCount++;
-      }
+      // Normal mode - use helper function
+      selectedCount = countSelectedPlayers();
     }
 
     if (selectedCount === 0) return 'Choosing lineup';

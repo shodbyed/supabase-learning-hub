@@ -291,9 +291,11 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
       away_games_to_win,
       away_games_to_tie,
       away_games_to_lose,
+      assigned_table_number,
       home_team:teams!matches_home_team_id_fkey(id, team_name),
       away_team:teams!matches_away_team_id_fkey(id, team_name),
       scheduled_venue:venues!matches_scheduled_venue_id_fkey(id, name, city, state),
+      actual_venue:venues!matches_actual_venue_id_fkey(id, name, city, state),
       season_week:season_weeks(scheduled_date),
       season:seasons!matches_season_id_fkey(
         league:leagues(
@@ -321,7 +323,8 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
 
   const homeTeam = Array.isArray(data.home_team) ? data.home_team[0] : data.home_team;
   const awayTeam = Array.isArray(data.away_team) ? data.away_team[0] : data.away_team;
-  const venue = Array.isArray(data.scheduled_venue) ? data.scheduled_venue[0] : data.scheduled_venue;
+  const scheduledVenue = Array.isArray(data.scheduled_venue) ? data.scheduled_venue[0] : data.scheduled_venue;
+  const actualVenue = Array.isArray(data.actual_venue) ? data.actual_venue[0] : data.actual_venue;
   const seasonWeek = Array.isArray(data.season_week) ? data.season_week[0] : data.season_week;
 
   return {
@@ -344,9 +347,11 @@ export async function getMatchWithLeagueSettings(matchId: string): Promise<Match
     away_games_to_win: data.away_games_to_win ?? null,
     away_games_to_tie: data.away_games_to_tie ?? null,
     away_games_to_lose: data.away_games_to_lose ?? null,
+    assigned_table_number: data.assigned_table_number ?? null,
     home_team: homeTeam as any,
     away_team: awayTeam as any,
-    scheduled_venue: venue as any || null,
+    scheduled_venue: scheduledVenue as any || null,
+    actual_venue: actualVenue as any || null,
     season_week: seasonWeek as any || null,
     league: {
       id: leagueData?.id || '',

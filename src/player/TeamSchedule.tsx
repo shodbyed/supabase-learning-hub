@@ -285,23 +285,45 @@ export function TeamSchedule() {
                           </span>
                         </div>
 
-                        {/* Venue */}
-                        {match.scheduled_venue && (
-                          <div>
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
-                              <MapPin className="h-4 w-4" />
-                              <span>Venue</span>
-                            </div>
-                            <div className="ml-6">
-                              <p className="text-base text-gray-900">
-                                {match.scheduled_venue.name}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {match.scheduled_venue.city}, {match.scheduled_venue.state}
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                        {/* Venue - Clickable to open Google Maps */}
+                        {/* Use actual_venue if set (overflow), otherwise scheduled_venue */}
+                        {(() => {
+                          const venue = match.actual_venue || match.scheduled_venue;
+                          const isOverflow = !!match.actual_venue;
+                          if (!venue) return null;
+                          return (
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                `${venue.name}, ${venue.street_address || ''}, ${venue.city}, ${venue.state}`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block hover:bg-gray-100 rounded-lg p-2 -m-2 transition-colors"
+                            >
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-1">
+                                <MapPin className="h-4 w-4 text-blue-600" />
+                                <span>Venue</span>
+                                {isOverflow && (
+                                  <span className="text-xs text-orange-600 font-medium">(overflow)</span>
+                                )}
+                                <span className="text-xs text-blue-600">(tap for directions)</span>
+                              </div>
+                              <div className="ml-6">
+                                <p className="text-base text-gray-900">
+                                  {venue.name}
+                                  {match.assigned_table_number && (
+                                    <span className="ml-2 text-sm font-medium text-blue-700">
+                                      Table {match.assigned_table_number}
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {venue.city}, {venue.state}
+                                </p>
+                              </div>
+                            </a>
+                          );
+                        })()}
 
                         {/* Action Button */}
                         {match.status === 'scheduled' && (
