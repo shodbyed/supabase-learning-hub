@@ -207,10 +207,13 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
               Venue Name <span className="text-red-500">*</span>
             </Label>
             <Input
+              id="venue-name"
               type="text"
               value={formData.name}
-              onChange={(e) => updateField('name', e.target.value)}
+              onChange={(value: string) => updateField('name', value)}
               placeholder="Sam's Billiards"
+              titleCase
+              showCapitalizeCheckbox
             />
           </div>
 
@@ -223,8 +226,9 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
               <Input
                 type="text"
                 value={formData.street_address}
-                onChange={(e) => updateField('street_address', e.target.value)}
+                onChange={(value: string) => updateField('street_address', value)}
                 placeholder="123 Main Street"
+                titleCase
               />
             </div>
 
@@ -235,8 +239,9 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
               <Input
                 type="text"
                 value={formData.city}
-                onChange={(e) => updateField('city', e.target.value)}
+                onChange={(value: string) => updateField('city', value)}
                 placeholder="Springfield"
+                titleCase
               />
             </div>
 
@@ -266,7 +271,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
                 <Input
                   type="text"
                   value={formData.zip_code}
-                  onChange={(e) => updateField('zip_code', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('zip_code', e.target.value)}
                   placeholder="62701"
                 />
               </div>
@@ -281,7 +286,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
             <Input
               type="tel"
               value={formData.phone}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const formatted = formatPhoneNumber(e.target.value);
                 updateField('phone', formatted);
               }}
@@ -300,7 +305,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
                 type="number"
                 min="0"
                 value={formData.bar_box_tables}
-                onChange={(e) => updateField('bar_box_tables', parseInt(e.target.value) || 0)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bar_box_tables', parseInt(e.target.value) || 0)}
               />
             </div>
 
@@ -312,7 +317,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
                 type="number"
                 min="0"
                 value={formData.regulation_tables}
-                onChange={(e) => updateField('regulation_tables', parseInt(e.target.value) || 0)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('regulation_tables', parseInt(e.target.value) || 0)}
               />
             </div>
           </div>

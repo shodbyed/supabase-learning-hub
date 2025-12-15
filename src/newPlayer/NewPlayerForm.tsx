@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { LoginCard } from '../login/LoginCard';
 import { US_STATES } from '../constants/states';
 import { formatPhoneNumber } from '../utils/formatters';
@@ -49,24 +50,26 @@ export const NewPlayerForm: React.FC = () => {
       description="Let's start with your basic information"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <TextField
+        <Input
           id="firstName"
           label="First Name"
           value={state.firstName}
-          onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'firstName', value })}
+          onChange={(value: string) => dispatch({ type: 'SET_FIELD', field: 'firstName', value })}
           placeholder="Enter first name"
           error={state.errors.firstName}
           required
+          titleCase
         />
 
-        <TextField
+        <Input
           id="lastName"
           label="Last Name"
           value={state.lastName}
-          onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'lastName', value })}
+          onChange={(value: string) => dispatch({ type: 'SET_FIELD', field: 'lastName', value })}
           placeholder="Enter last name"
           error={state.errors.lastName}
           required
+          titleCase
         />
 
         <TextField
@@ -99,24 +102,26 @@ export const NewPlayerForm: React.FC = () => {
 
         {/* Email is automatically pulled from auth user - no need to enter it */}
 
-        <TextField
+        <Input
           id="address"
           label="Address"
           value={state.address}
-          onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'address', value })}
+          onChange={(value: string) => dispatch({ type: 'SET_FIELD', field: 'address', value })}
           placeholder="Enter street address"
           error={state.errors.address}
           required
+          titleCase
         />
 
-        <TextField
+        <Input
           id="city"
           label="City"
           value={state.city}
-          onChange={(value) => dispatch({ type: 'SET_FIELD', field: 'city', value })}
+          onChange={(value: string) => dispatch({ type: 'SET_FIELD', field: 'city', value })}
           placeholder="Enter city"
           error={state.errors.city}
           required
+          titleCase
         />
 
         <SelectField
