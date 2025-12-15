@@ -391,6 +391,13 @@ export const TeamManagement: React.FC = () => {
   };
 
   /**
+   * Count teams that have a specific venue as their home
+   */
+  const getTeamsAtVenue = (venueId: string): number => {
+    return teams.filter(team => team.home_venue_id === venueId).length;
+  };
+
+  /**
    * Handle successful venue creation
    * Refreshes the venues list from the hook
    */
@@ -534,7 +541,7 @@ export const TeamManagement: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1.5">
                     <span className="text-gray-600">Teams:</span>
-                    <InfoButton title="Max Teams Explained">
+                    <InfoButton title="Max Teams Explained" size="sm">
                       {isInHouse ? (
                         <p>In-house leagues can have 2 teams per table since both teams play at the same venue.</p>
                       ) : (
@@ -603,7 +610,8 @@ export const TeamManagement: React.FC = () => {
                 {venues.map((venue) => {
                   const assigned = isVenueAssigned(venue.id);
                   const leagueVenue = leagueVenues.find(lv => lv.venue_id === venue.id);
-                  const availableTables = leagueVenue?.available_table_numbers?.length ?? venue.total_tables;
+                  const venueCapacity = leagueVenue?.capacity ?? leagueVenue?.available_table_numbers?.length;
+                  const teamsAtVenue = getTeamsAtVenue(venue.id);
 
                   return (
                     <VenueListItem
@@ -611,7 +619,8 @@ export const TeamManagement: React.FC = () => {
                       venue={venue}
                       isAssigned={assigned}
                       isToggling={assigningVenue === venue.id}
-                      availableTables={availableTables}
+                      capacity={venueCapacity}
+                      teamsAtVenue={teamsAtVenue}
                       onToggle={() => handleToggleVenue(venue)}
                       onLimitClick={() => handleOpenLimitModal(venue)}
                     />
@@ -734,6 +743,7 @@ export const TeamManagement: React.FC = () => {
           <VenueLimitModal
             venue={limitModalVenue.venue}
             leagueVenue={limitModalVenue.leagueVenue}
+            allLeagueVenues={leagueVenues}
             onSuccess={handleLimitUpdateSuccess}
             onCancel={() => setLimitModalVenue(null)}
           />

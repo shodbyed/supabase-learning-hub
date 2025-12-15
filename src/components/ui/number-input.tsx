@@ -86,10 +86,22 @@ const NumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
     };
 
     /**
-     * Handle change: allow free typing
+     * Handle change: update immediately for real-time feedback
+     * Still validates on blur for final clamping
      */
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value);
+      const newValue = e.target.value;
+      setInputValue(newValue);
+
+      // Parse and notify parent immediately for real-time UI updates
+      // (e.g., warnings that depend on the value)
+      const stripped = newValue.replace(/\D/g, '');
+      if (stripped !== '') {
+        const num = parseInt(stripped, 10);
+        if (!isNaN(num) && num !== value) {
+          onChange(num);
+        }
+      }
     };
 
     /**

@@ -23,6 +23,8 @@ interface VenueLimitModalProps {
   venue: Venue;
   /** The league_venue record with current limits */
   leagueVenue: LeagueVenue;
+  /** All league venues for capacity validation */
+  allLeagueVenues: LeagueVenue[];
   /** Called when limits are successfully updated */
   onSuccess: (updatedLeagueVenue: LeagueVenue) => void;
   /** Called when user cancels or closes modal */
@@ -38,6 +40,7 @@ interface VenueLimitModalProps {
 export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
   venue,
   leagueVenue,
+  allLeagueVenues,
   onSuccess,
   onCancel
 }) => {
@@ -63,6 +66,28 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
     // Use existing capacity if set, otherwise default to number of available tables
     return leagueVenue.capacity ?? leagueVenue.available_table_numbers?.length ?? 0;
   });
+
+  /**
+   * Calculate total tables across all league venues
+   * Each table can support 2 teams max (both teams play at same table)
+   */
+  const getTotalTablesAcrossAllVenues = (): number => {
+    return allLeagueVenues.reduce((sum, lv) => {
+      return sum + (lv.available_table_numbers?.length ?? 0);
+    }, 0);
+  };
+
+  /**
+   * Calculate current total capacity across all OTHER venues (excluding this one)
+   */
+  const getOtherVenuesCapacity = (): number => {
+    return allLeagueVenues
+      .filter(lv => lv.id !== leagueVenue.id)
+      .reduce((sum, lv) => sum + (lv.capacity ?? lv.available_table_numbers?.length ?? 0), 0);
+  };
+
+  const totalTables = getTotalTablesAcrossAllVenues();
+  const isInHouse = allLeagueVenues.length === 1;
 
   /**
    * Get all table numbers from the venue grouped by size
@@ -176,13 +201,18 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
   const unavailableTables = allTables.filter(t => !enabledSizes[t.sizeKey] || blockedTables.has(t.number));
 
   // Auto-update capacity when available tables change
-  // Capacity cannot exceed the number of available tables
+  // Enforce the hard max for this venue (different for in-house vs traveling)
   useEffect(() => {
-    const maxCapacity = availableTablesUnsorted.length;
-    if (capacity > maxCapacity) {
-      setCapacity(maxCapacity);
+    // Recalculate max based on current available tables
+    const currentVenueTables = availableTablesUnsorted.length;
+    const newMaxForThisVenue = isInHouse
+      ? (currentVenueTables * 2) + 1  // In-house: 2 per table + 1 bye
+      : (totalTables * 2) - getOtherVenuesCapacity();  // Traveling: league-wide pool
+
+    if (capacity > newMaxForThisVenue) {
+      setCapacity(newMaxForThisVenue);
     }
-  }, [availableTablesUnsorted.length, capacity]);
+  }, [availableTablesUnsorted.length, isInHouse, totalTables, capacity]);
 
   /**
    * Handle fill order change
@@ -252,6 +282,14 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
   };
 
   const availableTables = sortAvailableTables();
+
+  // Calculate max capacity for this venue based on league type
+  // Uses current edited table count (availableTables.length), not the original database value
+  // In-house (1 venue): 2 teams per table + 1 for optional bye team
+  // Traveling (multiple venues): league-wide pool, 2 teams per table total
+  const maxCapacityForThisVenue = isInHouse
+    ? (availableTables.length * 2) + 1  // In-house: 2 per table + 1 bye
+    : (totalTables * 2) - getOtherVenuesCapacity();  // Traveling: league-wide pool
 
   /**
    * Save updated limits to database
@@ -446,16 +484,32 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
                     value={capacity}
                     onChange={setCapacity}
                     min={1}
-                    max={availableTables.length}
+                    max={maxCapacityForThisVenue}
                     className="w-16 h-7 text-sm"
                   />
-                  <span className="text-xs text-blue-600">
-                    (max {availableTables.length})
-                  </span>
                 </div>
-                <p className="text-xs text-blue-600">
-                  Capacity: {capacity} travel teams / {capacity * 2} in-house teams
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="text-xs text-blue-600">
+                    {isInHouse
+                      ? `In-house max: ${maxCapacityForThisVenue} (${availableTables.length} tables × 2 + 1 bye)`
+                      : `Traveling max: ${maxCapacityForThisVenue} (includes all venues)`
+                    }
+                  </p>
+                  <InfoButton title="Max Capacity Warning" size="sm">
+                    <p>
+                      Setting capacity higher than the number of tables is not recommended.
+                      When all tables are occupied, home teams may be assigned to play at away venues instead.
+                    </p>
+                  </InfoButton>
+                </div>
+                {capacity > availableTables.length && (
+                  <div className="bg-orange-50 border border-orange-200 rounded p-2 mt-2">
+                    <p className="text-xs text-orange-700">
+                      <strong>Warning:</strong> Capacity exceeds this venue's tables ({capacity} teams &gt; {availableTables.length} tables).
+                      If all tables are occupied during scheduling, home matches may be assigned to a different venue with availability.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

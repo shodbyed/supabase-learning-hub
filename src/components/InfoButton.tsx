@@ -9,6 +9,8 @@ interface InfoButtonProps {
   children: React.ReactNode;
   label?: string;
   className?: string;
+  /** Size variant: 'sm' for smaller inline use, 'default' for standard size */
+  size?: 'sm' | 'default';
 }
 
 /**
@@ -20,12 +22,14 @@ interface InfoButtonProps {
  * @param children - Content to display in the info popup (can be JSX)
  * @param label - Optional text to display before the ? button
  * @param className - Additional CSS classes for the container
+ * @param size - Size variant: 'sm' (16px) or 'default' (24px)
  */
 export const InfoButton: React.FC<InfoButtonProps> = ({
   title,
   children,
   label,
-  className = ""
+  className = "",
+  size = 'default'
 }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [popupPosition, setPopupPosition] = useState<'left' | 'right' | 'center'>('center');
@@ -90,7 +94,9 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
         <button
           ref={buttonRef}
           onClick={togglePopup}
-          className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center text-sm font-bold"
+          className={`rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center font-bold ${
+            size === 'sm' ? 'w-4 h-4 text-xs' : 'w-6 h-6 text-sm'
+          }`}
           title="More information"
         >
           ?

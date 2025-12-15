@@ -298,6 +298,7 @@ export const VenueManagement: React.FC = () => {
           <VenueLimitModal
             venue={limitModalVenue.venue}
             leagueVenue={limitModalVenue.leagueVenue}
+            allLeagueVenues={leagueVenues}
             onSuccess={() => {
               setLimitModalVenue(null);
               refetchLeagueVenues();
