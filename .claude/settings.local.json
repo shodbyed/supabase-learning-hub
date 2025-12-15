@@ -58,9 +58,8 @@
       "Bash(pnpm tsc:*)",
       "Bash(pnpm exec tsc:*)",
       "Bash(docker ps:*)",
-      "Bash(git fetch:*)",
-      "Bash(git checkout:*)",
-      "Bash(git pull:*)"
+      "Bash(ls:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

@@ -240,6 +240,8 @@ export function ScoreMatch() {
   const prevAllGamesCompleteRef = useRef(allGamesComplete);
 
   // Save thresholds and handle verification when match completes/uncompletes
+  // Note: gameResults is intentionally excluded - we only want this to trigger on completion state changes,
+  // not on every game update. The gameResults check is a secondary validation for tiebreaker detection.
   useEffect(() => {
     const wasComplete = prevAllGamesCompleteRef.current;
     const isComplete = allGamesComplete;
@@ -287,6 +289,7 @@ export function ScoreMatch() {
 
     // Update ref for next comparison
     prevAllGamesCompleteRef.current = isComplete;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allGamesComplete, matchId, homeThresholds, awayThresholds]);
 
   /**
