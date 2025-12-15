@@ -29,7 +29,7 @@
  * <Input label="Name" titleCase showCapitalizeCheckbox value={value} onChange={handleChange} />
  */
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from "react"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -69,7 +69,7 @@ interface InputProps extends Omit<React.ComponentProps<"input">, 'onChange'> {
   onChange?: React.ChangeEventHandler<HTMLInputElement> | ((value: string) => void);
 }
 
-function Input({
+const Input = forwardRef<HTMLInputElement, InputProps>(({
   className,
   type,
   label,
@@ -87,7 +87,13 @@ function Input({
   id,
   disabled,
   ...props
-}: InputProps) {
+}, ref) => {
+  // Internal ref for the input element
+  const internalRef = useRef<HTMLInputElement>(null);
+
+  // Expose the internal ref to parent via forwardRef
+  useImperativeHandle(ref, () => internalRef.current as HTMLInputElement);
+
   // Track internal value for capitalization features
   const [internalValue, setInternalValue] = useState<string>(
     (value as string) ?? (defaultValue as string) ?? ''
@@ -183,6 +189,7 @@ function Input({
   if (!needsWrapper) {
     return (
       <input
+        ref={internalRef}
         type={type}
         data-slot="input"
         className={inputClasses}
@@ -217,6 +224,7 @@ function Input({
       )}
 
       <input
+        ref={internalRef}
         type={type}
         data-slot="input"
         className={inputClasses}
@@ -262,7 +270,9 @@ function Input({
       )}
     </div>
   );
-}
+});
+
+Input.displayName = 'Input';
 
 export { Input }
 export type { InputProps }
