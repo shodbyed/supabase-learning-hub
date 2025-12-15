@@ -287,7 +287,7 @@ export const DeleteLeagueModal: React.FC<DeleteLeagueModalProps> = ({
             <Input
               id="confirm-delete"
               value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmText(e.target.value)}
               placeholder="DELETE"
               className="mt-1"
               disabled={deleting}

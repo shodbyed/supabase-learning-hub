@@ -273,7 +273,7 @@ export const PlayoffTemplateSelector: React.FC<PlayoffTemplateSelectorProps> = (
                 <Input
                   id="config-name"
                   value={configName}
-                  onChange={(e) => onNameChange(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => onNameChange(e.target.value)}
                   placeholder="e.g., My League Playoffs"
                   maxLength={100}
                   className={nameMatchesGlobalTemplate ? 'border-red-500' : ''}

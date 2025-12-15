@@ -6,6 +6,7 @@
  * Only displayed when 2+ users selected.
  */
 
+import React from 'react';
 import { Input } from '@/components/ui/input';
 
 interface GroupNameInputProps {
@@ -21,7 +22,7 @@ export function GroupNameInput({ value, onChange, suggestedName }: GroupNameInpu
         type="text"
         placeholder={`Group name (e.g., "${suggestedName}")`}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
         className="bg-white"
       />
     </div>

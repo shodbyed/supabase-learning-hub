@@ -10,7 +10,7 @@
  * - Mobile-friendly character counter
  */
 
-import { useState, type KeyboardEvent } from 'react';
+import React, { useState, type KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
@@ -48,7 +48,7 @@ export function MessageInput({ onSend, disabled = false, maxLength = 2000 }: Mes
           type="text"
           placeholder="Type a message..."
           value={messageInput}
-          onChange={(e) => setMessageInput(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageInput(e.target.value)}
           onKeyDown={handleKeyPress}
           className="flex-1 h-11 md:h-10 text-base md:text-sm bg-white"
           disabled={sending || disabled}
