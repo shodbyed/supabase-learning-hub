@@ -4,7 +4,6 @@ import { useUserProfile } from '@/api/hooks';
 import { LogoutButton } from '../login/LogoutButton';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
-// import { CurrentSponsors } from '../components/SponsorLogos';
 
 export const Home: React.FC = () => {
   const { isLoggedIn, user } = useUser();
