@@ -158,7 +158,7 @@ export function ThreeVThreeScoreboard({
               if you get moved to a different one.
             </p>
             <p className="text-sm">
-              <strong>Game List:</strong> Each player shows (B) for breaker or (R) for racker. Tap the
+              <strong>Game List:</strong> Each player shows ⚡ for breaker or △ for racker. Tap the
               "Break vs Rack" header to switch between Break/Rack view and Home/Away view.
             </p>
           </InfoButton>

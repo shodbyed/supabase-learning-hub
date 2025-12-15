@@ -156,9 +156,9 @@ export function GamesList({
             // In break-rack mode, right is always racker; in home-away mode, check if away breaks
             const rightIsBreaker = displayMode === 'break-rack' ? false : !breakerIsHome;
 
-            // Display names with (B) or (R) prefix
-            const leftDisplayName = `(${leftIsBreaker ? 'B' : 'R'}) ${leftName}`;
-            const rightDisplayName = `(${rightIsBreaker ? 'B' : 'R'}) ${rightName}`;
+            // Display names with ⚡ (break) or △ (rack) prefix
+            const leftDisplayName = `${leftIsBreaker ? '⚡' : '△'} ${leftName}`;
+            const rightDisplayName = `${rightIsBreaker ? '⚡' : '△'} ${rightName}`;
 
             // Check game status
             const hasWinner = gameResult.winner_player_id;
