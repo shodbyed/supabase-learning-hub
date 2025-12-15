@@ -166,8 +166,10 @@ export default function RLSTestPage() {
         state: 'TX',
         zip_code: '12345',
         phone: '555-0100',
-        bar_box_tables: 4,
-        regulation_tables: 4,
+        // Table numbers as arrays - length = count, values = table numbers
+        bar_box_table_numbers: [1, 2, 3, 4],
+        eight_foot_table_numbers: [],
+        regulation_table_numbers: [5, 6, 7, 8],
       });
 
       result.insertSuccess = true;

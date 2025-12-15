@@ -437,6 +437,22 @@ export async function generateSchedule({
       };
     }
 
+    // Step 9: Assign table numbers for all weeks
+    // This assigns tables based on venue availability and fill order
+    const { error: tableAssignError } = await supabase.rpc('assign_tables_for_season', {
+      p_season_id: seasonId,
+    });
+
+    if (tableAssignError) {
+      // Log but don't fail - table assignment can be retried later
+      logger.warn('Table assignment failed (non-critical)', {
+        error: tableAssignError.message,
+        seasonId,
+      });
+    } else {
+      logger.info('Table assignment completed for season', { seasonId });
+    }
+
     logger.info('Schedule generated successfully', {
       regularMatches: regularMatches.length,
       playoffMatches: playoffMatches.length,

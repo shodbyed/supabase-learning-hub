@@ -101,6 +101,23 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
 
   const venueTableNumbers = getAllVenueTableNumbers();
 
+  /**
+   * Get the count of tables for a given size key
+   * Maps TableSizeKey to the corresponding array's length
+   */
+  const getTableCountForSize = (key: TableSizeKey): number => {
+    switch (key) {
+      case 'bar_box_tables':
+        return venueTableNumbers.barBox.length;
+      case 'eight_foot_tables':
+        return venueTableNumbers.eightFoot.length;
+      case 'regulation_tables':
+        return venueTableNumbers.regulation.length;
+      default:
+        return 0;
+    }
+  };
+
   // Track which table sizes are enabled
   const [enabledSizes, setEnabledSizes] = useState<Record<TableSizeKey, boolean>>(() => {
     // If we have existing available_table_numbers, initialize based on what's selected
@@ -113,10 +130,11 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
       };
     }
     // Otherwise, default to enabling all sizes that have tables
+    // Use array lengths as source of truth for table counts
     return {
-      bar_box_tables: venue.bar_box_tables > 0,
-      eight_foot_tables: venue.eight_foot_tables > 0,
-      regulation_tables: venue.regulation_tables > 0,
+      bar_box_tables: venueTableNumbers.barBox.length > 0,
+      eight_foot_tables: venueTableNumbers.eightFoot.length > 0,
+      regulation_tables: venueTableNumbers.regulation.length > 0,
     };
   });
 
@@ -379,7 +397,8 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
             {/* Checkboxes */}
             <div className="flex w-full justify-between">
               {TABLE_SIZES.map(({ key }) => {
-                const hasTablesOfSize = venue[key] > 0;
+                const tableCount = getTableCountForSize(key);
+                const hasTablesOfSize = tableCount > 0;
                 return (
                   <div key={key} className="flex items-center gap-2">
                     <Checkbox
@@ -395,7 +414,7 @@ export const VenueLimitModal: React.FC<VenueLimitModalProps> = ({
                       <TableSizeLabel sizeKey={key} />
                     </label>
                     {hasTablesOfSize && (
-                      <span className="text-xs text-gray-500">({venue[key]})</span>
+                      <span className="text-xs text-gray-500">({tableCount})</span>
                     )}
                   </div>
                 );

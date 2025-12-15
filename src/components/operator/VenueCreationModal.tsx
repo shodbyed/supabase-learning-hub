@@ -54,9 +54,10 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
     state: existingVenue?.state || '',
     zip_code: existingVenue?.zip_code || '',
     phone: existingVenue?.phone || '',
-    bar_box_tables: existingVenue?.bar_box_tables || 0,
-    eight_foot_tables: existingVenue?.eight_foot_tables || 0,
-    regulation_tables: existingVenue?.regulation_tables || 0
+    // Derive counts from array lengths (arrays are source of truth)
+    bar_box_tables: existingVenue?.bar_box_table_numbers?.length || 0,
+    eight_foot_tables: existingVenue?.eight_foot_table_numbers?.length || 0,
+    regulation_tables: existingVenue?.regulation_table_numbers?.length || 0
   });
 
   // Custom table numbers from Configure modal (optional - uses auto-numbering if not set)
@@ -120,6 +121,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
 
     try {
       // Get table numbers from custom config or generate defaults
+      // The array length IS the count - no separate count fields needed
       const tableNumbers = customTableNumbers ?? generateDefaultTableNumbers({
         bar_box_tables: formData.bar_box_tables,
         eight_foot_tables: formData.eight_foot_tables,
@@ -127,7 +129,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
       });
 
       if (isEditing && existingVenue) {
-        // UPDATE existing venue
+        // UPDATE existing venue - only pass array columns
         const venue = await updateVenueMutation.mutateAsync({
           venueId: existingVenue.id,
           name: formData.name.trim(),
@@ -136,9 +138,6 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           state: formData.state.trim().toUpperCase(),
           zip_code: formData.zip_code.trim(),
           phone: formData.phone.trim(),
-          bar_box_tables: formData.bar_box_tables,
-          eight_foot_tables: formData.eight_foot_tables,
-          regulation_tables: formData.regulation_tables,
           bar_box_table_numbers: tableNumbers.bar_box_tables,
           eight_foot_table_numbers: tableNumbers.eight_foot_tables,
           regulation_table_numbers: tableNumbers.regulation_tables,
@@ -146,7 +145,7 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
 
         onSuccess(venue);
       } else {
-        // INSERT new venue
+        // INSERT new venue - only pass array columns
         const venue = await createVenueMutation.mutateAsync({
           organizationId,
           name: formData.name.trim(),
@@ -155,9 +154,6 @@ export const VenueCreationModal: React.FC<VenueCreationModalProps> = ({
           state: formData.state.trim().toUpperCase(),
           zip_code: formData.zip_code.trim(),
           phone: formData.phone.trim(),
-          bar_box_tables: formData.bar_box_tables,
-          eight_foot_tables: formData.eight_foot_tables,
-          regulation_tables: formData.regulation_tables,
           bar_box_table_numbers: tableNumbers.bar_box_tables,
           eight_foot_table_numbers: tableNumbers.eight_foot_tables,
           regulation_table_numbers: tableNumbers.regulation_tables,
