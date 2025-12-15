@@ -145,10 +145,14 @@ export function FiveVFiveScoreboard({
           <div className="flex-1 text-center text-xs font-semibold text-blue-900">
             HOME
           </div>
-          <InfoButton title="Player Stats" className="mx-2">
-            <p className="text-sm">
-              Click either team name to view individual player stats for all
+          <InfoButton title="Scoring Tips" className="mx-2">
+            <p className="text-sm mb-2">
+              <strong>Player Stats:</strong> Click either team name to view individual player stats for all
               players in the lineup. Click again to close.
+            </p>
+            <p className="text-sm">
+              <strong>Table Number:</strong> Tap the blue table number bar above to change your assigned table
+              if you get moved to a different one.
             </p>
           </InfoButton>
           <div className="flex-1 text-center text-xs font-semibold text-green-900">

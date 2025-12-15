@@ -45,6 +45,7 @@ import { ThreeVThreeScoreboard } from '@/components/scoring/ThreeVThreeScoreboar
 import { FiveVFiveScoreboard } from '@/components/scoring/FiveVFiveScoreboard';
 import { TiebreakerScoreboard } from '@/components/scoring/TiebreakerScoreboard';
 import { GamesList } from '@/components/scoring/GamesList';
+import { TableNumberBar } from '@/components/scoring/TableNumberBar';
 import { queryKeys } from '@/api/queryKeys';
 import { calculateBCAPoints, getTeamStats, getPlayerStats as getPlayerStatsUtil } from '@/types';
 import { logger } from '@/utils/logger';
@@ -664,6 +665,12 @@ export function ScoreMatch() {
         </div>
       </div>
 
+      {/* Table Number Bar - clickable to change */}
+      <TableNumberBar
+        matchId={matchId!}
+        tableNumber={match.assigned_table_number}
+      />
+
       {/* Scoreboard - Fixed at top */}
       {isTiebreakerMode ? (
         <TiebreakerScoreboard
@@ -885,6 +892,7 @@ export function ScoreMatch() {
         onDeny={handleDenyLineupChange}
         isProcessing={approveLineupChangeMutation.isPending || denyLineupChangeMutation.isPending}
       />
+
     </div>
   );
 }
