@@ -204,3 +204,86 @@ For each table, we need to identify:
 2. Design RLS policies table-by-table
 3. Test each policy independently before applying all
 4. Create migration with ONLY the policies we've verified won't break things
+
+---
+
+## Proposed RLS Policies (Not Yet Implemented)
+
+### 12. `merge_requests` Table
+
+**Purpose:** Stores requests to merge placeholder players with registered users.
+
+**Operations Needed:**
+- ✅ **SELECT**:
+  - Users can view their own requests (requested_by or registered_member)
+  - League operators can view all requests for their organization
+- ✅ **INSERT**: Any authenticated user can create a merge request
+- ✅ **UPDATE**: League operators for their organization only
+- ❌ **DELETE**: Probably never (keep audit trail)
+
+**Proposed Policies:**
+
+```sql
+-- Anyone authenticated can create a merge request
+CREATE POLICY "Users can create merge requests"
+  ON merge_requests FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    requested_by_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+  );
+
+-- Users can view their own requests
+CREATE POLICY "Users can view their own merge requests"
+  ON merge_requests FOR SELECT
+  TO authenticated
+  USING (
+    requested_by_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+    OR
+    registered_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+  );
+
+-- League operators can view all requests for their organization
+CREATE POLICY "LOs can view org merge requests"
+  ON merge_requests FOR SELECT
+  TO authenticated
+  USING (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  );
+
+-- League operators can update requests for their organization
+CREATE POLICY "LOs can update org merge requests"
+  ON merge_requests FOR UPDATE
+  TO authenticated
+  USING (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  );
+```
+
+**Notes:**
+- No DELETE policy - merge requests should be kept for audit purposes
+- Status changes (pending → approved/rejected) handled via UPDATE
+- organization_id is derived from PP's team context when request is created

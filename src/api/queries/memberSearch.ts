@@ -3,10 +3,169 @@
  *
  * Server-side search for members with filtering and limits.
  * Prevents loading all members into memory for large datasets.
+ *
+ * Also includes fuzzy matching functions for placeholder player detection
+ * during registration (uses Postgres fuzzystrmatch and pg_trgm extensions).
  */
 
 import { supabase } from '@/supabaseClient';
 import type { PartialMember } from '@/types/member';
+
+// ============================================================================
+// PLACEHOLDER PLAYER MATCHING (for registration flow)
+// ============================================================================
+
+/**
+ * Result from fuzzy placeholder search
+ * Includes match scores to help user identify correct record
+ */
+export interface PlaceholderMatch {
+  id: string;
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+  city: string | null;
+  state: string | null;
+  system_player_number: number;
+  /** Soundex score 0-4 (4 = exact phonetic match) */
+  first_name_score: number;
+  /** Soundex score 0-4 (4 = exact phonetic match) */
+  last_name_score: number;
+  /** Trigram similarity 0-2 (higher = better) */
+  city_score: number;
+  /** Whether state matches exactly */
+  state_match: boolean;
+  /** Combined score used for ranking */
+  total_score: number;
+}
+
+/**
+ * Search for placeholder players that might match a registering user
+ *
+ * Uses fuzzy matching with:
+ * - Soundex for phonetic name similarity (catches Mike/Michael, Smith/Smythe)
+ * - Trigram similarity for city typos (catches Springfield/Sprigfield)
+ * - Exact state matching as anchor
+ *
+ * This is a "show candidates" approach - returns potential matches for user
+ * to confirm, not auto-matching. False positives are OK (user says "not me"),
+ * false negatives are bad (user's PP exists but we don't find it).
+ *
+ * @param firstName - User's entered first name
+ * @param lastName - User's entered last name
+ * @param city - User's entered city (optional, improves matching)
+ * @param state - User's entered state (optional, improves matching)
+ * @param limit - Max candidates to return (default 5)
+ * @param minScore - Minimum combined score threshold (default 5)
+ * @returns Array of potential placeholder matches sorted by score
+ *
+ * @example
+ * const matches = await searchPlaceholderMatches('Mike', 'Smith', 'Springfield', 'IL');
+ * // Returns PPs like "Michael Smith, Springfield, IL" with high scores
+ */
+export async function searchPlaceholderMatches(
+  firstName: string,
+  lastName: string,
+  city?: string | null,
+  state?: string | null,
+  limit: number = 5,
+  minScore: number = 5
+): Promise<PlaceholderMatch[]> {
+  const { data, error } = await supabase.rpc('search_placeholder_matches', {
+    p_first_name: firstName.trim(),
+    p_last_name: lastName.trim(),
+    p_city: city?.trim() || null,
+    p_state: state?.trim() || null,
+    p_limit: limit,
+    p_min_score: minScore,
+  });
+
+  if (error) {
+    console.error('Placeholder search failed:', error);
+    throw new Error(`Failed to search for placeholder matches: ${error.message}`);
+  }
+
+  return (data as PlaceholderMatch[]) || [];
+}
+
+/**
+ * Direct lookup of placeholder player by system number
+ *
+ * Used when fuzzy search fails but user knows their player number
+ * (given by captain or league operator).
+ *
+ * @param systemNumber - The P-##### number (just the digits)
+ * @returns The placeholder player if found, null otherwise
+ *
+ * @example
+ * // User enters "P-00147" or "147"
+ * const pp = await lookupPlaceholderBySystemNumber(147);
+ * if (pp) {
+ *   // Show confirmation: "Is this you? John Smith, Team Rack City"
+ * }
+ */
+export async function lookupPlaceholderBySystemNumber(
+  systemNumber: number
+): Promise<PlaceholderMatch | null> {
+  const { data, error } = await supabase.rpc('lookup_placeholder_by_system_number', {
+    p_system_number: systemNumber,
+  });
+
+  if (error) {
+    console.error('Placeholder lookup failed:', error);
+    throw new Error(`Failed to lookup placeholder: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  // The RPC returns a table, but should only have one row for this lookup
+  const row = data[0];
+  return {
+    id: row.id,
+    first_name: row.first_name,
+    last_name: row.last_name,
+    nickname: row.nickname,
+    city: row.city,
+    state: row.state,
+    system_player_number: row.system_player_number,
+    // Direct lookup doesn't have scores, set to max
+    first_name_score: 4,
+    last_name_score: 4,
+    city_score: 2,
+    state_match: true,
+    total_score: 12,
+  };
+}
+
+/**
+ * Parse system player number from user input
+ *
+ * Handles various formats users might enter:
+ * - "147" → 147
+ * - "P-00147" → 147
+ * - "#P-00147" → 147
+ * - "00147" → 147
+ *
+ * @param input - User's entered player number
+ * @returns Parsed number, or null if invalid
+ */
+export function parseSystemPlayerNumber(input: string): number | null {
+  // Remove common prefixes and formatting
+  const cleaned = input
+    .trim()
+    .toUpperCase()
+    .replace(/^#?P-?/i, '') // Remove #P-, P-, #P, P prefix
+    .replace(/^0+/, ''); // Remove leading zeros
+
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) || num <= 0 ? null : num;
+}
+
+// ============================================================================
+// STANDARD MEMBER SEARCH (existing functionality)
+// ============================================================================
 
 export type MemberSearchFilter = 'all' | 'my_org' | 'state' | 'staff';
 
