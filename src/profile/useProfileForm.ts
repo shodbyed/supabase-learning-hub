@@ -124,10 +124,10 @@ export const useProfileForm = () => {
           ...prev,
           isEditing: true,
           formData: {
-            address: member.address,
+            address: member.address ?? '',
             city: member.city,
             state: member.state,
-            zip_code: member.zip_code
+            zip_code: member.zip_code ?? ''
           },
           errors: {}
         }));
@@ -207,7 +207,7 @@ export const useProfileForm = () => {
             first_name: member.first_name,
             last_name: member.last_name,
             nickname: member.nickname || '',
-            date_of_birth: member.date_of_birth
+            date_of_birth: member.date_of_birth ?? ''
           },
           errors: {}
         }));
@@ -283,8 +283,8 @@ export const useProfileForm = () => {
           ...prev,
           isEditing: true,
           formData: {
-            email: member.email,
-            phone: member.phone
+            email: member.email ?? '',
+            phone: member.phone ?? ''
           },
           errors: {}
         }));

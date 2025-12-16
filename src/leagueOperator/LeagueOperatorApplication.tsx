@@ -200,14 +200,14 @@ export const LeagueOperatorApplication: React.FC = () => {
         created_by: member.id,
 
         // Address - copy from member profile or custom
-        organization_address: state.useProfileAddress ? member.address : state.organizationAddress || '',
+        organization_address: state.useProfileAddress ? (member.address ?? '') : state.organizationAddress || '',
         organization_city: state.useProfileAddress ? member.city : state.organizationCity || '',
         organization_state: state.useProfileAddress ? member.state : state.organizationState || '',
-        organization_zip_code: state.useProfileAddress ? member.zip_code : state.organizationZipCode || '',
+        organization_zip_code: state.useProfileAddress ? (member.zip_code ?? '') : state.organizationZipCode || '',
 
         // Contact information
-        organization_email: state.useProfileEmail ? member.email : state.leagueEmail || '',
-        organization_phone: state.useProfilePhone ? member.phone : state.leaguePhone || '',
+        organization_email: state.useProfileEmail ? (member.email ?? '') : state.leagueEmail || '',
+        organization_phone: state.useProfilePhone ? (member.phone ?? '') : state.leaguePhone || '',
 
         // Payment - use mock data for testing
         stripe_customer_id: mockPayment.stripe_customer_id,
