@@ -9,10 +9,13 @@
  */
 
 import { supabase } from '@/supabaseClient';
-import type { Venue, VenueInsertData } from '@/types/venue';
+import type { Venue } from '@/types/venue';
 
 /**
  * Parameters for creating a venue
+ *
+ * Note: Table counts are derived from the array lengths.
+ * The arrays store both count AND specific table numbers.
  */
 export interface CreateVenueParams {
   organizationId: string;
@@ -22,8 +25,12 @@ export interface CreateVenueParams {
   state: string;
   zip_code: string;
   phone: string;
-  bar_box_tables: number;
-  regulation_tables: number;
+  /** Array of table numbers for 7-foot (bar box) tables. Example: [1, 2, 3]. Length = count. */
+  bar_box_table_numbers: number[];
+  /** Array of table numbers for 8-foot tables. Example: [4, 5]. Length = count. */
+  eight_foot_table_numbers: number[];
+  /** Array of table numbers for 9-foot (regulation) tables. Example: [6, 7, 8]. Length = count. */
+  regulation_table_numbers: number[];
   proprietor_name?: string | null;
   proprietor_phone?: string | null;
   league_contact_name?: string | null;
@@ -36,6 +43,9 @@ export interface CreateVenueParams {
 
 /**
  * Parameters for updating a venue
+ *
+ * Note: Table counts are derived from the array lengths.
+ * The arrays store both count AND specific table numbers.
  */
 export interface UpdateVenueParams {
   venueId: string;
@@ -45,8 +55,12 @@ export interface UpdateVenueParams {
   state: string;
   zip_code: string;
   phone: string;
-  bar_box_tables: number;
-  regulation_tables: number;
+  /** Array of table numbers for 7-foot (bar box) tables. Example: [1, 2, 3]. Length = count. */
+  bar_box_table_numbers: number[];
+  /** Array of table numbers for 8-foot tables. Example: [4, 5]. Length = count. */
+  eight_foot_table_numbers: number[];
+  /** Array of table numbers for 9-foot (regulation) tables. Example: [6, 7, 8]. Length = count. */
+  regulation_table_numbers: number[];
   proprietor_name?: string | null;
   proprietor_phone?: string | null;
   league_contact_name?: string | null;
@@ -108,16 +122,18 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
     throw new Error('Phone number is required');
   }
 
-  const totalTables = params.bar_box_tables + params.regulation_tables;
+  // Total tables = sum of all array lengths
+  const totalTables =
+    params.bar_box_table_numbers.length +
+    params.eight_foot_table_numbers.length +
+    params.regulation_table_numbers.length;
+
   if (totalTables === 0) {
-    throw new Error('Venue must have at least one table (bar-box or regulation)');
+    throw new Error('Venue must have at least one table');
   }
 
-  if (params.bar_box_tables < 0 || params.regulation_tables < 0) {
-    throw new Error('Table counts cannot be negative');
-  }
-
-  const insertData: VenueInsertData = {
+  // Insert only the array columns - count is derived from array length
+  const insertData = {
     organization_id: params.organizationId,
     name: params.name.trim(),
     street_address: params.street_address.trim(),
@@ -125,8 +141,9 @@ export async function createVenue(params: CreateVenueParams): Promise<Venue> {
     state: params.state.trim().toUpperCase(),
     zip_code: params.zip_code.trim(),
     phone: params.phone.trim(),
-    bar_box_tables: params.bar_box_tables,
-    regulation_tables: params.regulation_tables,
+    bar_box_table_numbers: params.bar_box_table_numbers,
+    eight_foot_table_numbers: params.eight_foot_table_numbers,
+    regulation_table_numbers: params.regulation_table_numbers,
     proprietor_name: params.proprietor_name?.trim() || null,
     proprietor_phone: params.proprietor_phone?.trim() || null,
     league_contact_name: params.league_contact_name?.trim() || null,
@@ -194,15 +211,17 @@ export async function updateVenue(params: UpdateVenueParams): Promise<Venue> {
     throw new Error('Phone number is required');
   }
 
-  const totalTables = params.bar_box_tables + params.regulation_tables;
+  // Total tables = sum of all array lengths
+  const totalTables =
+    params.bar_box_table_numbers.length +
+    params.eight_foot_table_numbers.length +
+    params.regulation_table_numbers.length;
+
   if (totalTables === 0) {
-    throw new Error('Venue must have at least one table (bar-box or regulation)');
+    throw new Error('Venue must have at least one table');
   }
 
-  if (params.bar_box_tables < 0 || params.regulation_tables < 0) {
-    throw new Error('Table counts cannot be negative');
-  }
-
+  // Update only the array columns - count is derived from array length
   const updateData = {
     name: params.name.trim(),
     street_address: params.street_address.trim(),
@@ -210,8 +229,9 @@ export async function updateVenue(params: UpdateVenueParams): Promise<Venue> {
     state: params.state.trim().toUpperCase(),
     zip_code: params.zip_code.trim(),
     phone: params.phone.trim(),
-    bar_box_tables: params.bar_box_tables,
-    regulation_tables: params.regulation_tables,
+    bar_box_table_numbers: params.bar_box_table_numbers,
+    eight_foot_table_numbers: params.eight_foot_table_numbers,
+    regulation_table_numbers: params.regulation_table_numbers,
     proprietor_name: params.proprietor_name?.trim() || null,
     proprietor_phone: params.proprietor_phone?.trim() || null,
     league_contact_name: params.league_contact_name?.trim() || null,

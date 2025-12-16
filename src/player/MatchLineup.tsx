@@ -620,6 +620,8 @@ export function MatchLineup() {
           }
           isHomeTeam={isHomeTeam || false}
           venueId={match.scheduled_venue?.id || null}
+          actualVenueId={match.actual_venue?.id || null}
+          assignedTableNumber={match.assigned_table_number}
         />
 
         {/* Lineup Selection Card */}

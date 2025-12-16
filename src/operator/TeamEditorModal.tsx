@@ -93,8 +93,41 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     leagueVenues.some(lv => lv.venue_id === venue.id)
   );
 
+  /**
+   * Count how many teams have each venue as their home
+   * Excludes the current team being edited (so they can keep their venue)
+   */
+  const getTeamsAtVenue = (venueId: string): number => {
+    return allTeams.filter(team => {
+      // Don't count the current team being edited
+      if (existingTeam && team.id === existingTeam.id) return false;
+      return team.home_venue_id === venueId;
+    }).length;
+  };
+
+  /**
+   * Get capacity for a venue from league_venues
+   */
+  const getVenueCapacity = (venueId: string): number => {
+    const leagueVenue = leagueVenues.find(lv => lv.venue_id === venueId);
+    // Default to available_table_numbers length if capacity is null
+    return leagueVenue?.capacity ?? leagueVenue?.available_table_numbers?.length ?? 0;
+  };
+
+  /**
+   * Check if a venue is at capacity
+   */
+  const isVenueAtCapacity = (venueId: string): boolean => {
+    const teamsAtVenue = getTeamsAtVenue(venueId);
+    const capacity = getVenueCapacity(venueId);
+    return teamsAtVenue >= capacity && capacity > 0;
+  };
+
   // Auto-populate venue if there's only one available (e.g., in-house leagues)
-  const defaultVenueId = assignedVenues.length === 1 ? assignedVenues[0].id : '';
+  // But only if it's not at capacity
+  const defaultVenueId = assignedVenues.length === 1 && !isVenueAtCapacity(assignedVenues[0].id)
+    ? assignedVenues[0].id
+    : '';
 
   const [teamName, setTeamName] = useState(existingTeam?.team_name || defaultTeamName);
   const [captainId, setCaptainId] = useState(existingTeam?.captain_id || '');
@@ -254,12 +287,10 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onCancel}
       onKeyDown={handleKeyDown}
     >
       <div
         className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
@@ -325,13 +356,35 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                   <SelectValue placeholder="Select home venue..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {assignedVenues.map((venue) => (
-                    <SelectItem key={venue.id} value={venue.id}>
-                      {venue.name}
-                    </SelectItem>
-                  ))}
+                  {assignedVenues.map((venue) => {
+                    const teamsAtVenue = getTeamsAtVenue(venue.id);
+                    const capacity = getVenueCapacity(venue.id);
+                    const atCapacity = isVenueAtCapacity(venue.id);
+                    // Allow selection if: not at capacity OR this is the team's current venue
+                    const canSelect = !atCapacity || existingTeam?.home_venue_id === venue.id;
+
+                    return (
+                      <SelectItem
+                        key={venue.id}
+                        value={venue.id}
+                        disabled={!canSelect}
+                        className={atCapacity && canSelect ? 'text-orange-600' : ''}
+                      >
+                        {venue.name}
+                        <span className={`ml-2 text-xs ${atCapacity ? 'text-orange-600' : 'text-gray-500'}`}>
+                          ({teamsAtVenue}/{capacity} teams)
+                        </span>
+                        {atCapacity && !canSelect && (
+                          <span className="ml-1 text-xs text-red-500">- Full</span>
+                        )}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                Venues at capacity are disabled. Capacity is set in venue limits.
+              </p>
             </div>
           )}
 

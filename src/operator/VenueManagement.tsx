@@ -114,11 +114,17 @@ export const VenueManagement: React.FC = () => {
       }
     } else {
       // Add venue to league with all tables available by default
+      const allTableNumbers = [
+        ...(venue.bar_box_table_numbers ?? []),
+        ...(venue.eight_foot_table_numbers ?? []),
+        ...(venue.regulation_table_numbers ?? []),
+      ].sort((a, b) => a - b);
+
       await addLeagueVenueMutation.mutateAsync({
         leagueId,
         venueId: venue.id,
-        availableBarBoxTables: venue.bar_box_tables,
-        availableRegulationTables: venue.regulation_tables,
+        availableTableNumbers: allTableNumbers,
+        capacity: allTableNumbers.length,
       });
       refetchLeagueVenues();
     }
@@ -253,10 +259,9 @@ export const VenueManagement: React.FC = () => {
                       </div>
                       {assigned && leagueVenue && (
                         <div className="mt-2 text-xs text-green-700">
-                          {[
-                            leagueVenue.available_bar_box_tables > 0 && `${leagueVenue.available_bar_box_tables} bar-box`,
-                            leagueVenue.available_regulation_tables > 0 && `${leagueVenue.available_regulation_tables} regulation`,
-                          ].filter(Boolean).join(', ') || 'No tables assigned'}
+                          {leagueVenue.available_table_numbers?.length > 0
+                            ? `${leagueVenue.available_table_numbers.length} tables available`
+                            : 'No tables assigned'}
                         </div>
                       )}
                     </div>
@@ -293,6 +298,7 @@ export const VenueManagement: React.FC = () => {
           <VenueLimitModal
             venue={limitModalVenue.venue}
             leagueVenue={limitModalVenue.leagueVenue}
+            allLeagueVenues={leagueVenues}
             onSuccess={() => {
               setLimitModalVenue(null);
               refetchLeagueVenues();

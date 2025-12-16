@@ -18,20 +18,31 @@ interface MatchInfoCardProps {
     name: string;
   } | null;
   isHomeTeam: boolean;
+  /** Scheduled venue ID (home team's default venue) */
   venueId?: string | null;
+  /** Actual venue ID if different from scheduled (overflow) */
+  actualVenueId?: string | null;
+  /** Assigned table number at the venue */
+  assignedTableNumber?: number | null;
 }
 
 /**
  * Match information display card
  *
  * Shows match date, opponent, home/away status, and venue in a compact format.
+ * Uses actual_venue if set (overflow), otherwise scheduled_venue.
  */
 export function MatchInfoCard({
   scheduledDate,
   opponent,
   isHomeTeam,
   venueId,
+  actualVenueId,
+  assignedTableNumber,
 }: MatchInfoCardProps) {
+  // Use actual venue if set (overflow), otherwise scheduled venue
+  const displayVenueId = actualVenueId || venueId;
+  const isOverflow = !!actualVenueId;
   return (
     <Card>
       <CardContent className="px-4 py-0 space-y-1">
@@ -65,10 +76,18 @@ export function MatchInfoCard({
           <span className="font-medium">
             {isHomeTeam ? 'Home Game' : 'Away Game'}
           </span>
-          {venueId && (
+          {displayVenueId && (
             <>
               <span>@</span>
-              <VenueWithMaps venueId={venueId} className="text-sm" />
+              <VenueWithMaps venueId={displayVenueId} className="text-sm" />
+              {assignedTableNumber && (
+                <span className="font-medium text-blue-700">
+                  Table {assignedTableNumber}
+                </span>
+              )}
+              {isOverflow && (
+                <span className="text-xs text-orange-600 font-medium">(overflow)</span>
+              )}
             </>
           )}
         </div>

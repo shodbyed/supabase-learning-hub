@@ -53,6 +53,7 @@ export function usePlayerTeams(memberId: string | null | undefined) {
     queryFn: () => getPlayerTeams(memberId!),
     enabled: !!memberId,
     staleTime: STALE_TIME.TEAMS,
+    refetchOnMount: 'always', // Always refetch when navigating to My Teams page
     refetchOnWindowFocus: false,
   });
 }

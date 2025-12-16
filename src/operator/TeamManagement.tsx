@@ -102,12 +102,21 @@ export const TeamManagement: React.FC = () => {
         // Assign all venues
         const unassignedVenues = venues.filter(venue => !isVenueAssigned(venue.id));
 
-        const newLeagueVenues = unassignedVenues.map(venue => ({
-          league_id: leagueId,
-          venue_id: venue.id,
-          available_bar_box_tables: venue.bar_box_tables,
-          available_regulation_tables: venue.regulation_tables,
-        }));
+        const newLeagueVenues = unassignedVenues.map(venue => {
+          // Combine all table numbers from the venue into a single array
+          const allTableNumbers = [
+            ...(venue.bar_box_table_numbers ?? []),
+            ...(venue.eight_foot_table_numbers ?? []),
+            ...(venue.regulation_table_numbers ?? []),
+          ].sort((a, b) => a - b);
+
+          return {
+            league_id: leagueId,
+            venue_id: venue.id,
+            available_table_numbers: allTableNumbers,
+            capacity: allTableNumbers.length,
+          };
+        });
 
         const { error: insertError } = await supabase
           .from('league_venues')
@@ -160,13 +169,20 @@ export const TeamManagement: React.FC = () => {
         if (deleteError) throw deleteError;
       } else {
         // Assign: Insert into league_venues with all tables available by default
+        // Combine all table numbers from the venue into a single array
+        const allTableNumbers = [
+          ...(venue.bar_box_table_numbers ?? []),
+          ...(venue.eight_foot_table_numbers ?? []),
+          ...(venue.regulation_table_numbers ?? []),
+        ].sort((a, b) => a - b);
+
         const { error: insertError } = await supabase
           .from('league_venues')
           .insert([{
             league_id: leagueId,
             venue_id: venue.id,
-            available_bar_box_tables: venue.bar_box_tables,
-            available_regulation_tables: venue.regulation_tables,
+            available_table_numbers: allTableNumbers,
+            capacity: allTableNumbers.length,
           }])
           .select()
           .single();
@@ -375,6 +391,13 @@ export const TeamManagement: React.FC = () => {
   };
 
   /**
+   * Count teams that have a specific venue as their home
+   */
+  const getTeamsAtVenue = (venueId: string): number => {
+    return teams.filter(team => team.home_venue_id === venueId).length;
+  };
+
+  /**
    * Handle successful venue creation
    * Refreshes the venues list from the hook
    */
@@ -384,6 +407,18 @@ export const TeamManagement: React.FC = () => {
     // when the component re-renders
     window.location.reload(); // Simple refresh for now
   };
+
+  // Calculate max teams based on league type
+  // In-house (1 venue): 2 teams per table (both teams play at same venue)
+  // Traveling (multiple venues): 1 home team per table
+  const totalCapacity = leagueVenues.reduce(
+    (sum, lv) => sum + (lv.capacity ?? lv.available_table_numbers?.length ?? 0),
+    0
+  );
+  const isInHouse = leagueVenues.length === 1;
+  const isTraveling = leagueVenues.length > 1;
+  const maxTeams = isInHouse ? totalCapacity * 2 : totalCapacity;
+  const isAtMaxTeams = teams.length >= maxTeams && maxTeams > 0;
 
   const isLoading = loading;
 
@@ -490,7 +525,7 @@ export const TeamManagement: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Type:</span>
                   <span className="font-medium text-gray-900">
-                    {leagueVenues.length > 1 ? 'Traveling' : leagueVenues.length === 1 ? 'In-House' : 'Not Set'}
+                    {isTraveling ? 'Traveling' : isInHouse ? 'In-House' : 'Not Set'}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -500,33 +535,23 @@ export const TeamManagement: React.FC = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tables Available:</span>
                   <span className="font-medium text-gray-900">
-                    {leagueVenues.reduce((sum, lv) => sum + lv.available_total_tables, 0)}
+                    {leagueVenues.reduce((sum, lv) => sum + (lv.available_table_numbers?.length ?? 0), 0)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-gray-600">Max Teams:</span>
-                    <InfoButton title="Max Teams Explained">
-                      <p className="mb-2">
-                        With traveling leagues you can have more than the max, but home teams may have to play at a different venue.
-                      </p>
-                      <p>
-                        It's best to limit one home team per available table.
-                      </p>
+                    <span className="text-gray-600">Teams:</span>
+                    <InfoButton title="Max Teams Explained" size="sm">
+                      {isInHouse ? (
+                        <p>In-house leagues can have 2 teams per table since both teams play at the same venue.</p>
+                      ) : (
+                        <p>Traveling leagues are limited to 1 home team per table across all venues.</p>
+                      )}
                     </InfoButton>
                   </div>
-                  <span className="font-medium text-gray-900">
-                    {leagueVenues.length === 1
-                      ? `${leagueVenues[0].available_total_tables * 2}`
-                      : leagueVenues.length > 1
-                      ? `${leagueVenues.reduce((sum, lv) => sum + lv.available_total_tables, 0)} (approx)`
-                      : '0'
-                    }
+                  <span className={`font-medium ${isAtMaxTeams ? 'text-orange-600' : 'text-gray-900'}`}>
+                    {teams.length}/{maxTeams}
                   </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Teams Created:</span>
-                  <span className="font-medium text-gray-900">{teams.length}</span>
                 </div>
               </div>
             </div>
@@ -585,7 +610,8 @@ export const TeamManagement: React.FC = () => {
                 {venues.map((venue) => {
                   const assigned = isVenueAssigned(venue.id);
                   const leagueVenue = leagueVenues.find(lv => lv.venue_id === venue.id);
-                  const availableTables = leagueVenue?.available_total_tables ?? venue.total_tables;
+                  const venueCapacity = leagueVenue?.capacity ?? leagueVenue?.available_table_numbers?.length;
+                  const teamsAtVenue = getTeamsAtVenue(venue.id);
 
                   return (
                     <VenueListItem
@@ -593,7 +619,8 @@ export const TeamManagement: React.FC = () => {
                       venue={venue}
                       isAssigned={assigned}
                       isToggling={assigningVenue === venue.id}
-                      availableTables={availableTables}
+                      capacity={venueCapacity}
+                      teamsAtVenue={teamsAtVenue}
                       onToggle={() => handleToggleVenue(venue)}
                       onLimitClick={() => handleOpenLimitModal(venue)}
                     />
@@ -626,7 +653,7 @@ export const TeamManagement: React.FC = () => {
                   </Button>
                 )}
                 <Button
-                  disabled={leagueVenues.length === 0 || !seasonId || teams.length >= 48}
+                  disabled={leagueVenues.length === 0 || !seasonId || isAtMaxTeams}
                   onClick={() => setShowTeamEditor(true)}
                   loadingText="none"
                   title={
@@ -634,8 +661,8 @@ export const TeamManagement: React.FC = () => {
                       ? 'Assign at least one venue before adding teams'
                       : !seasonId
                       ? 'Create a season before adding teams'
-                      : teams.length >= 48
-                      ? 'Maximum of 48 teams reached'
+                      : isAtMaxTeams
+                      ? `Maximum of ${maxTeams} teams reached`
                       : ''
                   }
                 >
@@ -716,6 +743,7 @@ export const TeamManagement: React.FC = () => {
           <VenueLimitModal
             venue={limitModalVenue.venue}
             leagueVenue={limitModalVenue.leagueVenue}
+            allLeagueVenues={leagueVenues}
             onSuccess={handleLimitUpdateSuccess}
             onCancel={() => setLimitModalVenue(null)}
           />

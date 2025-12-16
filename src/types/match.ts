@@ -54,6 +54,7 @@ export interface MatchWithLeagueSettings {
   away_games_to_win: number | null;
   away_games_to_tie: number | null;
   away_games_to_lose: number | null;
+  assigned_table_number: number | null;
   home_team: {
     id: string;
     team_name: string;
@@ -63,6 +64,12 @@ export interface MatchWithLeagueSettings {
     team_name: string;
   };
   scheduled_venue: {
+    id: string;
+    name: string;
+    city: string;
+    state: string;
+  } | null;
+  actual_venue: {
     id: string;
     name: string;
     city: string;

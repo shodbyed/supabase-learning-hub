@@ -5,7 +5,8 @@
  * These functions are wrapped by TanStack Query mutation hooks.
  *
  * League venues represent the many-to-many relationship between leagues and venues.
- * Each assignment tracks how many tables from the venue are available for that league.
+ * Each assignment tracks which specific table numbers from the venue are available
+ * for that league, plus an optional capacity limit for max home teams.
  *
  * @see api/hooks/useLeagueVenueMutations.ts - Mutation hooks that wrap these functions
  */
@@ -19,8 +20,10 @@ import type { LeagueVenue, LeagueVenueInsertData } from '@/types/venue';
 export interface AddLeagueVenueParams {
   leagueId: string;
   venueId: string;
-  availableBarBoxTables: number;
-  availableRegulationTables: number;
+  /** Array of table numbers available for this league */
+  availableTableNumbers: number[];
+  /** Max home teams (defaults to table count if not specified) */
+  capacity?: number | null;
 }
 
 /**
@@ -28,8 +31,10 @@ export interface AddLeagueVenueParams {
  */
 export interface UpdateLeagueVenueParams {
   leagueVenueId: string;
-  availableBarBoxTables: number;
-  availableRegulationTables: number;
+  /** Array of table numbers available for this league */
+  availableTableNumbers: number[];
+  /** Max home teams (defaults to table count if not specified) */
+  capacity?: number | null;
 }
 
 /**
@@ -42,7 +47,7 @@ export interface RemoveLeagueVenueParams {
 /**
  * Add a venue to a league
  *
- * Creates the league-venue relationship with specified table limits.
+ * Creates the league-venue relationship with specified table numbers and capacity.
  *
  * @param params - League venue creation parameters
  * @returns The newly created league-venue relationship
@@ -50,24 +55,15 @@ export interface RemoveLeagueVenueParams {
  */
 export async function addLeagueVenue(params: AddLeagueVenueParams): Promise<LeagueVenue> {
   // Validation
-  if (params.availableBarBoxTables < 0) {
-    throw new Error('Available bar-box tables cannot be negative');
-  }
-
-  if (params.availableRegulationTables < 0) {
-    throw new Error('Available regulation tables cannot be negative');
-  }
-
-  const totalTables = params.availableBarBoxTables + params.availableRegulationTables;
-  if (totalTables === 0) {
+  if (params.availableTableNumbers.length === 0) {
     throw new Error('At least one table must be available');
   }
 
   const insertData: LeagueVenueInsertData = {
     league_id: params.leagueId,
     venue_id: params.venueId,
-    available_bar_box_tables: params.availableBarBoxTables,
-    available_regulation_tables: params.availableRegulationTables,
+    available_table_numbers: params.availableTableNumbers,
+    capacity: params.capacity ?? params.availableTableNumbers.length,
   };
 
   const { data: newLeagueVenue, error } = await supabase
@@ -86,7 +82,7 @@ export async function addLeagueVenue(params: AddLeagueVenueParams): Promise<Leag
 /**
  * Update league-venue table limits
  *
- * Updates how many tables from this venue are available for the league.
+ * Updates which tables from this venue are available for the league.
  *
  * @param params - League venue update parameters
  * @returns The updated league-venue relationship
@@ -94,24 +90,15 @@ export async function addLeagueVenue(params: AddLeagueVenueParams): Promise<Leag
  */
 export async function updateLeagueVenue(params: UpdateLeagueVenueParams): Promise<LeagueVenue> {
   // Validation
-  if (params.availableBarBoxTables < 0) {
-    throw new Error('Available bar-box tables cannot be negative');
-  }
-
-  if (params.availableRegulationTables < 0) {
-    throw new Error('Available regulation tables cannot be negative');
-  }
-
-  const totalTables = params.availableBarBoxTables + params.availableRegulationTables;
-  if (totalTables === 0) {
+  if (params.availableTableNumbers.length === 0) {
     throw new Error('At least one table must be available');
   }
 
   const { data: updatedLeagueVenue, error } = await supabase
     .from('league_venues')
     .update({
-      available_bar_box_tables: params.availableBarBoxTables,
-      available_regulation_tables: params.availableRegulationTables,
+      available_table_numbers: params.availableTableNumbers,
+      capacity: params.capacity ?? params.availableTableNumbers.length,
     })
     .eq('id', params.leagueVenueId)
     .select()

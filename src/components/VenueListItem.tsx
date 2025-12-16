@@ -16,8 +16,10 @@ interface VenueListItemProps {
   isAssigned: boolean;
   /** Whether the toggle action is in progress */
   isToggling: boolean;
-  /** Available tables (may be limited) */
-  availableTables: number;
+  /** Max home teams capacity for this venue */
+  capacity?: number;
+  /** Number of teams currently using this as home venue */
+  teamsAtVenue?: number;
   /** Called when checkbox is toggled */
   onToggle: () => void;
   /** Called when limit button is clicked */
@@ -30,7 +32,7 @@ interface VenueListItemProps {
  * Renders a single venue in an assignment list with:
  * - Checkbox for toggling assignment
  * - Venue name
- * - Table count (if assigned)
+ * - Team capacity count (if assigned)
  * - Limit button (if assigned)
  *
  * @example
@@ -38,7 +40,8 @@ interface VenueListItemProps {
  *   venue={venue}
  *   isAssigned={true}
  *   isToggling={false}
- *   availableTables={4}
+ *   capacity={3}
+ *   teamsAtVenue={2}
  *   onToggle={handleToggle}
  *   onLimitClick={handleLimit}
  * />
@@ -47,10 +50,14 @@ export const VenueListItem: React.FC<VenueListItemProps> = ({
   venue,
   isAssigned,
   isToggling,
-  availableTables,
+  capacity,
+  teamsAtVenue,
   onToggle,
   onLimitClick,
 }) => {
+  // Check if venue is at capacity
+  const isAtCapacity = capacity !== undefined && teamsAtVenue !== undefined && teamsAtVenue >= capacity && capacity > 0;
+
   return (
     <div className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
       <input
@@ -66,9 +73,11 @@ export const VenueListItem: React.FC<VenueListItemProps> = ({
       </div>
       {isAssigned && (
         <>
-          <span className="text-xs text-gray-600">
-            {availableTables} of {venue.total_tables}
-          </span>
+          {capacity !== undefined && teamsAtVenue !== undefined && (
+            <span className={`text-xs ${isAtCapacity ? 'text-orange-600 font-medium' : 'text-gray-600'}`}>
+              {teamsAtVenue}/{capacity} teams
+            </span>
+          )}
           <Button size="sm" variant="outline" onClick={onLimitClick}>
             Limit
           </Button>
