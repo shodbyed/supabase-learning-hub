@@ -147,7 +147,7 @@ export const VenueTableInputs: React.FC<VenueTableInputsProps> = ({
                 className="w-16 text-center"
                 value={values[key] === 0 ? '' : values[key]}
                 placeholder="0"
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   const val = e.target.value.replace(/\D/g, '');
                   onChange(key, val === '' ? 0 : parseInt(val, 10));
                 }}

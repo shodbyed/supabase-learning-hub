@@ -443,7 +443,7 @@ export function RegisterPlayerModal({
                   type="email"
                   placeholder="your@email.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   disabled={isSubmitting}
                   autoComplete="email"
                   autoFocus
@@ -458,7 +458,7 @@ export function RegisterPlayerModal({
                   type="password"
                   placeholder="Create a password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   disabled={isSubmitting}
                   autoComplete="new-password"
                 />
@@ -472,7 +472,7 @@ export function RegisterPlayerModal({
                   type="password"
                   placeholder="Confirm your password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                   disabled={isSubmitting}
                   autoComplete="new-password"
                 />

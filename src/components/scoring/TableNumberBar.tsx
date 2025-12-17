@@ -110,7 +110,7 @@ export function TableNumberBar({ matchId, tableNumber }: TableNumberBarProps) {
                   type="number"
                   min="1"
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value)}
                   placeholder="Enter table number"
                   autoFocus
                   onKeyDown={(e) => {
