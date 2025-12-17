@@ -4,16 +4,16 @@ MVP LIST
 
 Minimum needed
 
-1. create next season flow
+1.  create next season flow
+2.  rules \*\*
+3.  invite system \*\*
+4.  schedule management (league operator) - view/modify schedule, match ups, and table assignments
 
 IMPORTANT FEATURES
 
 1.  messaging system \*\*
-2.  rules \*\*
-3.  invite system \*\*
-4.  payout calculator
-5.  scorecard dispute page (league operator)
-6.  schedule management (league operator) - view/modify schedule, matchups, and table assignments
+2.  payout calculator
+3.  scorecard dispute page (league operator)
 
 FUTURE FEATURES
 
@@ -30,16 +30,19 @@ FUTURE FEATURES
 **Concept**: When creating a Placeholder Player, optionally collect email and send invite link.
 
 **Tech Stack**:
+
 - **Resend** (email API): Free tier = 3,000 emails/month, 100/day. No credit card required.
 - **Supabase Edge Functions**: Server-side TypeScript to call Resend API.
 - Docs: https://supabase.com/docs/guides/functions/examples/send-emails
 - Resend + Supabase guide: https://resend.com/docs/send-with-supabase-edge-functions
 
 **Requirements**:
+
 - Own domain for sending (e.g., `invites@rackem-leagues.com`)
 - Store `RESEND_API_KEY` in Edge Function secrets
 
 **Flow**:
+
 ```
 Captain creates PP with optional email
   → Edge Function sends invite with /register?claim={memberId}
