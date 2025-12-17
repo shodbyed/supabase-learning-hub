@@ -92,3 +92,58 @@ Placeholder players have:
   ```sql
   UPDATE auth.users SET email_confirmed_at = NOW() WHERE id = '{user_id}';
   ```
+
+---
+
+## TODO: PP Manual Merge & Registration Flow
+
+This TODO list covers the remaining work for this branch: detecting when a registering user might be a placeholder player, and allowing merge requests.
+
+### Phase 1: Public Home Page
+- [x] **1.1** Redesign `/` (Home.tsx) to show public content
+  - Simple landing page with app description
+  - "Browse Leagues" link (can be placeholder for now)
+  - "Sign Up" and "Login" CTAs
+  - Logged-in users redirect to `/dashboard`
+
+### Phase 2: Short Registration Form
+- [x] **2.1** Create new short profile form (`/complete-profile`)
+  - Fields: First Name, Last Name, Nickname, City, State
+  - Migration: `20251216140000_allow_nullable_member_fields.sql`
+  - Schema: `src/schemas/shortProfileSchema.ts`
+  - Component: `src/completeProfile/CompleteProfileForm.tsx`
+  - ProtectedRoute now redirects to `/complete-profile`
+- [ ] **2.2** Add "Are you already on a team in our system?" (Yes/No) question
+- [ ] **2.3** If "Yes" → trigger PP detection flow
+
+### Phase 3: PP Detection During Registration
+- [ ] **3.1** Run fuzzy search using `searchPlaceholderMatches()` (already built)
+- [ ] **3.2** Show matching candidates as cards for user to confirm
+  - Display: Name, City/State, System Number (P-#####)
+  - "That's me" button → creates merge request
+  - "None of these" → continue with fresh registration
+- [ ] **3.3** Add "Know your player number?" fallback input
+  - Uses `lookupPlaceholderBySystemNumber()` (already built)
+  - Direct lookup if fuzzy search fails
+
+### Phase 4: Merge Request Creation
+- [ ] **4.1** Create TypeScript types for `MergeRequest`
+- [ ] **4.2** Create mutation: `createMergeRequest()`
+- [ ] **4.3** After merge request created, show confirmation message
+  - "Request sent to league operator for approval"
+  - User still gets a member record (fresh) and can use the app
+  - Merge happens later when LO approves
+
+### Phase 5: LO Merge Request Management (Future)
+- [ ] **5.1** Add "Pending Merge Requests" section to LO dashboard
+- [ ] **5.2** Create merge request review UI
+- [ ] **5.3** Implement actual merge logic (transfer data, delete duplicate)
+
+### Completed Items
+- [x] Database migration for fuzzy matching extensions (fuzzystrmatch, pg_trgm)
+- [x] `search_placeholder_matches()` Postgres function
+- [x] `lookup_placeholder_by_system_number()` Postgres function
+- [x] TypeScript queries: `searchPlaceholderMatches()`, `lookupPlaceholderBySystemNumber()`
+- [x] `merge_requests` table schema
+- [x] RLS policies documented (not yet applied)
+- [x] Performance indexes for fuzzy search

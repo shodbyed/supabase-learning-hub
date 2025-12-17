@@ -54,6 +54,27 @@
 - **Note**: This removes the file from git without deleting it locally
 - **Priority**: Should be done before pushing to any public/shared repository
 
+## 10. PP Manual Merge - Confidence Thresholds Review
+- **Context**: `/register-existing` page allows existing players (Placeholder Players) to find their record without a registration link
+- **Feature**: Users fill out optional fields (up to 16) and we search for matching PP records
+- **Proposed Grading System**:
+  - **Grade A (6+ matches)**: Auto-merge - redirect straight to `/register?claim={ppId}`
+  - **Grade B (4-5 matches)**: LO Review Required - create pending claim for operator approval
+  - **Grade C (<4 matches)**: No Match - tell user to get a registration link from captain/LO
+- **Fields being matched** (all optional):
+  - League Operator: First Name, Last Name, Player Number
+  - Captain: First Name, Last Name, Player Number
+  - User's System Info: First Name, Last Name, Player Number, Nickname
+  - Team/Location: Team Name, Play Night, City, State
+  - Security: Last Opponent First/Last Name OR "Haven't played yet" checkbox
+- **Questions for Jack**:
+  1. Are 6+/4-5/<4 the right thresholds?
+  2. Should some fields be weighted more heavily? (e.g., player number match = 2 points?)
+  3. For Grade B (LO Review), should we create a `claim_requests` table or just tell user to contact LO?
+  4. If multiple PP candidates match with similar scores, show a list or require more specificity?
+- **File**: `/src/login/RegisterExisting.tsx`
+- **Edge Function needed**: `search-placeholder-player` for multi-table confidence scoring
+
 ---
 
-*Last Updated: 2025-12-15*
+*Last Updated: 2025-12-16*

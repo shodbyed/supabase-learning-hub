@@ -1,34 +1,63 @@
+/**
+ * @fileoverview Public Home Page
+ *
+ * Landing page for Rack'em Leagues. Shows public content that anyone can browse,
+ * whether logged in or not. This is a discovery page for the app.
+ *
+ * Public features (coming soon):
+ * - Browse leagues/organizations
+ * - View live scoreboards
+ * - Check standings
+ * - Find a league near you
+ */
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '@/api/hooks';
-import { LogoutButton } from '../login/LogoutButton';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PageHeader } from '@/components/PageHeader';
+import { Building2, Trophy, Radio, MapPin, LogOut } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { toast } from 'sonner';
+
+/**
+ * Feature card for the public home page
+ * Shows a clickable card with icon, title, and description
+ * Currently shows "Coming Soon" toast on click
+ */
+interface FeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+function FeatureCard({ icon, title, description }: FeatureCardProps) {
+  const handleClick = () => {
+    toast.info('Coming Soon', {
+      description: `${title} will be available in a future update.`,
+    });
+  };
+
+  return (
+    <Card
+      className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+      onClick={handleClick}
+    >
+      <CardHeader className="flex flex-row items-center gap-4">
+        <div className="p-2 bg-primary/10 rounded-lg text-primary">{icon}</div>
+        <div>
+          <CardTitle className="text-lg">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+      </CardHeader>
+    </Card>
+  );
+}
 
 export const Home: React.FC = () => {
-  const { isLoggedIn, user } = useUser();
-  const { member, loading, needsToCompleteApplication } = useUserProfile();
+  const { isLoggedIn, loading: authLoading } = useUser();
 
-  if (!isLoggedIn) {
-    return (
-      <div>
-        <PageHeader
-          backTo="/about"
-          backLabel="About Us"
-          preTitle="Welcome to"
-          title="Rack'em Leagues"
-          subtitle="Please log in to access your account and member features."
-        />
-        <div className="w-full lg:max-w-2xl mx-auto p-6">
-          <Link to="/login">
-            <Button loadingText="none">Go to Login</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
+  // Show loading while checking auth status
+  if (authLoading) {
     return (
       <div>
         <PageHeader
@@ -38,63 +67,103 @@ export const Home: React.FC = () => {
           title="Rack'em Leagues"
         />
         <div className="max-w-2xl mx-auto p-6">
-          <p>Loading your account information...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
   }
 
+  // Auth buttons for top-right of header
+  const authButtons = isLoggedIn ? (
+    <div className="flex items-center gap-2">
+      <Link to="/dashboard">
+        <Button variant="ghost" size="sm" loadingText="none">
+          Dashboard
+        </Button>
+      </Link>
+      <Button
+        variant="outline"
+        size="sm"
+        loadingText="none"
+        onClick={async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/';
+        }}
+      >
+        <LogOut className="mr-1 h-4 w-4" />
+        Log Out
+      </Button>
+    </div>
+  ) : (
+    <div className="flex flex-col items-end gap-1">
+      <Link to="/login">
+        <Button variant="ghost" size="sm" loadingText="none">
+          Login
+        </Button>
+      </Link>
+      <Link to="/register">
+        <Button variant="ghost" size="sm" loadingText="none">
+          Sign Up
+        </Button>
+      </Link>
+    </div>
+  );
+
+  // Public home page - available to everyone (logged in or not)
   return (
     <div>
       <PageHeader
         backTo="/about"
         backLabel="About Us"
+        preTitle="Welcome to"
         title="Rack'em Leagues"
-        subtitle="Welcome"
+        subtitle="Pool league management made simple"
+        rightContent={authButtons}
       />
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="mb-6">
-          <p className="text-lg mb-2">
-            Hello <strong>{user?.email}</strong>!
-          </p>
 
-          {member ? (
-            <p className="text-green-600 font-medium">
-              Welcome back, {member.first_name}! You're all set up as a member.
-            </p>
-          ) : (
-            <p className="text-orange-600 font-medium">
-              You're logged in but haven't completed your member application yet.
-            </p>
-          )}
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Feature cards */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-center text-muted-foreground">
+            Explore
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FeatureCard
+              icon={<Building2 className="h-6 w-6" />}
+              title="Browse Leagues"
+              description="View leagues and organizations in your area"
+            />
+
+            <FeatureCard
+              icon={<Radio className="h-6 w-6" />}
+              title="Live Scoreboards"
+              description="Watch matches in progress in real-time"
+            />
+
+            <FeatureCard
+              icon={<Trophy className="h-6 w-6" />}
+              title="Standings"
+              description="Check current season standings and stats"
+            />
+
+            <FeatureCard
+              icon={<MapPin className="h-6 w-6" />}
+              title="Find a League"
+              description="Search for leagues near you to join"
+            />
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {needsToCompleteApplication() ? (
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <h3 className="font-semibold text-orange-800 mb-2">Complete Your Application</h3>
-              <p className="text-orange-700 mb-3">
-                To access member features, please complete your player application.
-              </p>
-              <Link to="/new-player">
-                <Button loadingText="none">Complete Application</Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-semibold text-green-800 mb-2">Access Your Dashboard</h3>
-              <p className="text-green-700 mb-3">
-                View your member information and access league features.
-              </p>
-              <Link to="/dashboard">
-                <Button loadingText="none">Go to Dashboard</Button>
-              </Link>
-            </div>
-          )}
-
-          <div className="flex justify-end items-center pt-4 border-t">
-            <LogoutButton />
-          </div>
+        {/* Brief description */}
+        <div className="text-center text-muted-foreground space-y-2 pt-4 border-t">
+          <p>
+            Rack'em Leagues helps pool league operators manage their leagues,
+            track scores, and keep players connected.
+          </p>
+          <p className="text-sm">
+            Players can view schedules, score matches, and keep up with their stats and standings all in one place.
+          </p>
         </div>
       </div>
     </div>

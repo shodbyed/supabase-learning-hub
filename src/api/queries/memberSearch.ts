@@ -16,7 +16,7 @@ import type { PartialMember } from '@/types/member';
 // ============================================================================
 
 /**
- * Result from fuzzy placeholder search
+ * Result from fuzzy placeholder search (original simple version)
  * Includes match scores to help user identify correct record
  */
 export interface PlaceholderMatch {
@@ -37,6 +37,60 @@ export interface PlaceholderMatch {
   state_match: boolean;
   /** Combined score used for ranking */
   total_score: number;
+}
+
+/**
+ * Search criteria for enhanced placeholder player search
+ * All fields are optional - more fields = higher confidence
+ */
+export interface PlaceholderSearchCriteria {
+  // League Operator info
+  operatorFirstName?: string;
+  operatorLastName?: string;
+  operatorPlayerNumber?: number;
+
+  // Captain info
+  captainFirstName?: string;
+  captainLastName?: string;
+  captainPlayerNumber?: number;
+
+  // User's system info
+  systemFirstName?: string;
+  systemLastName?: string;
+  systemPlayerNumber?: number;
+  systemNickname?: string;
+
+  // Team/Location info
+  teamName?: string;
+  playNight?: string;
+  city?: string;
+  state?: string;
+
+  // Last opponent (security verification)
+  lastOpponentFirstName?: string;
+  lastOpponentLastName?: string;
+  hasNotPlayedYet?: boolean;
+}
+
+/**
+ * Result from enhanced placeholder search (v2)
+ * Includes grade (A/B/C) for confidence-based decision making
+ */
+export interface EnhancedPlaceholderMatch {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+  city: string | null;
+  state: string | null;
+  system_player_number: number;
+  team_name: string | null;
+  captain_name: string | null;
+  operator_name: string | null;
+  total_score: number;
+  matched_fields: string[];
+  /** Grade based on confidence: A (6+), B (4-5), C (<4) */
+  grade: 'A' | 'B' | 'C';
 }
 
 /**
@@ -161,6 +215,119 @@ export function parseSystemPlayerNumber(input: string): number | null {
 
   const num = parseInt(cleaned, 10);
   return isNaN(num) || num <= 0 ? null : num;
+}
+
+/**
+ * Enhanced placeholder player search with full verification fields
+ *
+ * Used by the /register-existing page to find placeholder players
+ * based on multiple optional verification fields. Returns candidates
+ * with confidence grades (A/B/C) for decision making.
+ *
+ * Grade A (6+ matches): High confidence - can auto-merge
+ * Grade B (4-5 matches): Medium confidence - LO review required
+ * Grade C (<4 matches): Low confidence - no match found
+ *
+ * @param criteria - Search criteria with optional fields
+ * @param limit - Max candidates to return (default 10)
+ * @returns Array of potential matches with scores and grades
+ *
+ * @example
+ * const matches = await searchPlaceholderMatchesEnhanced({
+ *   systemFirstName: 'Mike',
+ *   systemLastName: 'Smith',
+ *   teamName: 'Rack City',
+ *   captainFirstName: 'John',
+ *   city: 'Springfield',
+ *   state: 'IL'
+ * });
+ * // Returns PPs with grade based on how many fields match
+ */
+export async function searchPlaceholderMatchesEnhanced(
+  criteria: PlaceholderSearchCriteria,
+  limit: number = 10
+): Promise<EnhancedPlaceholderMatch[]> {
+  const { data, error } = await supabase.rpc('search_placeholder_matches_v2', {
+    p_operator_first_name: criteria.operatorFirstName?.trim() || null,
+    p_operator_last_name: criteria.operatorLastName?.trim() || null,
+    p_operator_player_number: criteria.operatorPlayerNumber || null,
+    p_captain_first_name: criteria.captainFirstName?.trim() || null,
+    p_captain_last_name: criteria.captainLastName?.trim() || null,
+    p_captain_player_number: criteria.captainPlayerNumber || null,
+    p_system_first_name: criteria.systemFirstName?.trim() || null,
+    p_system_last_name: criteria.systemLastName?.trim() || null,
+    p_system_player_number: criteria.systemPlayerNumber || null,
+    p_system_nickname: criteria.systemNickname?.trim() || null,
+    p_team_name: criteria.teamName?.trim() || null,
+    p_play_night: criteria.playNight?.trim() || null,
+    p_city: criteria.city?.trim() || null,
+    p_state: criteria.state?.trim() || null,
+    p_last_opponent_first_name: criteria.lastOpponentFirstName?.trim() || null,
+    p_last_opponent_last_name: criteria.lastOpponentLastName?.trim() || null,
+    p_has_not_played_yet: criteria.hasNotPlayedYet || null,
+    p_limit: limit,
+  });
+
+  if (error) {
+    console.error('Enhanced placeholder search failed:', error);
+    throw new Error(`Failed to search for placeholder matches: ${error.message}`);
+  }
+
+  return (data as EnhancedPlaceholderMatch[]) || [];
+}
+
+/**
+ * Team verification option for Grade B verification challenge
+ */
+export interface TeamVerificationOption {
+  team_name: string;
+  is_correct: boolean;
+}
+
+/**
+ * Get team verification options for Grade B challenge
+ *
+ * Returns the member's actual teams plus random decoy teams.
+ * The user must identify their correct team to pass verification.
+ *
+ * @param memberId - The placeholder player's member_id
+ * @param decoyCount - Number of decoy (wrong) teams to include (default 3)
+ * @returns Array of team options, shuffled (correct teams + decoys)
+ *
+ * @example
+ * const options = await getTeamVerificationOptions('uuid-here');
+ * // Returns: [{ team_name: 'Team A', is_correct: true }, { team_name: 'Team B', is_correct: false }, ...]
+ * // Display these shuffled to user, check if their selection is_correct
+ */
+export async function getTeamVerificationOptions(
+  memberId: string,
+  decoyCount: number = 3
+): Promise<TeamVerificationOption[]> {
+  const { data, error } = await supabase.rpc('get_team_verification_options', {
+    p_member_id: memberId,
+    p_decoy_count: decoyCount,
+  });
+
+  if (error) {
+    console.error('Team verification options fetch failed:', error);
+    throw new Error(`Failed to get team verification options: ${error.message}`);
+  }
+
+  // Shuffle the results so correct answers aren't always first
+  const options = (data as TeamVerificationOption[]) || [];
+  return shuffleArray(options);
+}
+
+/**
+ * Fisher-Yates shuffle algorithm for randomizing array order
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }
 
 // ============================================================================

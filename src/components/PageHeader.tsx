@@ -30,6 +30,8 @@ interface PageHeaderProps {
   subtitle?: string;
   /** Optional organization ID to display organization context */
   organizationId?: string;
+  /** Optional content to render in the top-right corner (e.g., auth buttons) */
+  rightContent?: React.ReactNode;
   /** Optional children to render below title/subtitle (e.g., action buttons) */
   children?: React.ReactNode;
 }
@@ -48,12 +50,18 @@ interface PageHeaderProps {
  *   organizationId="org-uuid" // Shows org name badge
  * />
  */
-export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, preTitle, title, subtitle, organizationId, children }: PageHeaderProps) {
+export function PageHeader({ backTo, backLabel, onBackClick, hideBack = false, preTitle, title, subtitle, organizationId, rightContent, children }: PageHeaderProps) {
   const { organization } = useOrganization(organizationId);
 
   return (
     <header className="bg-white border-b sticky top-0 z-10">
-      <div className="px-4 py-3">
+      <div className="px-4 py-3 relative">
+        {/* Right content (e.g., auth buttons) - positioned top right */}
+        {rightContent && (
+          <div className="absolute top-3 right-4">
+            {rightContent}
+          </div>
+        )}
         {!hideBack && backLabel && (
           onBackClick ? (
             <button
