@@ -332,7 +332,7 @@ export const TableConfigureModal: React.FC<TableConfigureModalProps> = ({
               value={skipInput}
               placeholder="#"
               onFocus={handleInputFocus}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const val = e.target.value.replace(/\D/g, '');
                 setSkipInput(val);
               }}
@@ -408,7 +408,7 @@ export const TableConfigureModal: React.FC<TableConfigureModalProps> = ({
                     }`}
                     value={table.number}
                     onFocus={handleInputFocus}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const val = e.target.value.replace(/\D/g, '');
                       if (val !== '') {
                         changeNumber(index, parseInt(val, 10));

@@ -169,7 +169,7 @@ export function CreatePlaceholderModal({
               <Input
                 id="firstName"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
                 placeholder="John"
                 autoFocus
               />
@@ -181,7 +181,7 @@ export function CreatePlaceholderModal({
               <Input
                 id="lastName"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
                 placeholder="Smith"
               />
             </div>
@@ -197,7 +197,7 @@ export function CreatePlaceholderModal({
               <Input
                 id="nickname"
                 value={nickname}
-                onChange={(e) => setNickname(e.target.value.slice(0, 12))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value.slice(0, 12))}
                 placeholder="Auto-generated if empty"
                 maxLength={12}
               />
@@ -209,7 +209,7 @@ export function CreatePlaceholderModal({
               <Input
                 id="city"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
                 placeholder="Austin"
               />
             </div>
@@ -256,7 +256,7 @@ export function CreatePlaceholderModal({
                   min="0"
                   max="100"
                   value={handicap5v5}
-                  onChange={(e) => setHandicap5v5(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHandicap5v5(e.target.value)}
                 />
               </div>
             </div>
