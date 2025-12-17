@@ -1,9 +1,17 @@
 /**
  * @fileoverview Send Invite Edge Function
  *
- * Phase 2-4: Sends an email with a registration link to a placeholder player.
- * First checks if the email already exists in auth.users.
- * Creates an invite_token record to track the invite.
+ * Phase 2-5: Sends an email invitation to a placeholder player.
+ * Handles TWO scenarios based on whether email exists in auth.users:
+ *
+ *   Scenario 1 (New User): Email NOT in auth.users
+ *     -> Creates invite_token
+ *     -> Sends registration invite email with link to /register
+ *
+ *   Scenario 2 (Existing User): Email IS in auth.users
+ *     -> Creates invite_token
+ *     -> Sends claim invite email with link to /claim-player
+ *     -> User logs in and merges PP into their account
  *
  * Request body:
  *   - memberId: UUID of the placeholder player
@@ -13,10 +21,6 @@
  *   - teamName: Name of the team (for email content)
  *   - captainName: Name of the captain sending the invite
  *   - baseUrl: The app's base URL (e.g., https://app.rackemleagues.com)
- *
- * Behavior:
- *   - If email NOT in auth.users -> creates invite_token and sends registration invite email
- *   - If email IS in auth.users -> returns error (user already registered)
  *
  * Note: The PP may be on multiple teams. The teamId is just for context (who sent the invite).
  * When the user claims the invite, they link to the PP's member record which already has
@@ -131,19 +135,8 @@ serve(async (req) => {
       (u: { email?: string }) => u.email?.toLowerCase() === emailLower
     );
 
-    if (existingUser) {
-      // User already exists - return error for now (Phase 5 will handle this differently)
-      return new Response(
-        JSON.stringify({
-          error: "User already registered",
-          message: "This email is already associated with a registered account.",
-          existingUserId: existingUser.id
-        }),
-        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // Email not in auth - create invite token and send email
+    // Determine which flow: new user registration or existing user claim
+    const isExistingUser = !!existingUser;
 
     // Check if there's already a pending invite for this member+email
     const { data: existingInvite } = await supabaseAdmin
@@ -186,55 +179,112 @@ serve(async (req) => {
       console.log("Created new invite token for member:", memberId);
     }
 
-    // Build the registration link with token
-    const registrationLink = `${baseUrl}/register?claim=${memberId}&token=${token}`;
+    // Build the appropriate link based on user type
+    // New users go to /register, existing users go to /claim-player
+    const linkPath = isExistingUser ? "/claim-player" : "/register";
+    const actionLink = `${baseUrl}${linkPath}?claim=${memberId}&token=${token}`;
 
-    // Build the email HTML
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Join ${teamName || "the team"} on Rack'em Leagues</title>
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #1a1a1a; margin-bottom: 10px;">You're Invited!</h1>
-          </div>
+    // Build email content based on user type
+    let emailSubject: string;
+    let emailHtml: string;
 
-          <p style="font-size: 16px;">
-            ${captainName ? `<strong>${captainName}</strong> has` : "Your team captain has"}
-            added you to <strong>${teamName || "their team"}</strong> on Rack'em Leagues.
-          </p>
+    if (isExistingUser) {
+      // Existing user - claim player email
+      emailSubject = `Claim your player history on ${teamName || "Rack'em Leagues"}`;
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Claim Your Player History</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1a1a1a; margin-bottom: 10px;">Claim Your Player History</h1>
+            </div>
 
-          <p style="font-size: 16px;">
-            Click the button below to create your account and join the team:
-          </p>
+            <p style="font-size: 16px;">
+              ${captainName ? `<strong>${captainName}</strong> has` : "Your team captain has"}
+              linked you to <strong>${teamName || "their team"}</strong> on Rack'em Leagues.
+            </p>
 
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${registrationLink}"
-               style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
-              Join Team
-            </a>
-          </div>
+            <p style="font-size: 16px;">
+              We noticed you already have an account! Click the button below to claim your player history and join the team:
+            </p>
 
-          <p style="font-size: 14px; color: #666;">
-            Or copy and paste this link into your browser:
-          </p>
-          <p style="font-size: 14px; color: #2563eb; word-break: break-all;">
-            ${registrationLink}
-          </p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${actionLink}"
+                 style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                Claim Player History
+              </a>
+            </div>
 
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            <p style="font-size: 14px; color: #666;">
+              Or copy and paste this link into your browser:
+            </p>
+            <p style="font-size: 14px; color: #2563eb; word-break: break-all;">
+              ${actionLink}
+            </p>
 
-          <p style="font-size: 12px; color: #999; text-align: center;">
-            This invite was sent via Rack'em Leagues. If you didn't expect this email, you can safely ignore it.
-            <br>This link expires in 7 days.
-          </p>
-        </body>
-      </html>
-    `;
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+            <p style="font-size: 12px; color: #999; text-align: center;">
+              This will merge your existing game history into your account.
+              <br>This link expires in 7 days.
+            </p>
+          </body>
+        </html>
+      `;
+    } else {
+      // New user - registration email
+      emailSubject = `Join ${teamName || "the team"} on Rack'em Leagues`;
+      emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Join ${teamName || "the team"} on Rack'em Leagues</title>
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #1a1a1a; margin-bottom: 10px;">You're Invited!</h1>
+            </div>
+
+            <p style="font-size: 16px;">
+              ${captainName ? `<strong>${captainName}</strong> has` : "Your team captain has"}
+              added you to <strong>${teamName || "their team"}</strong> on Rack'em Leagues.
+            </p>
+
+            <p style="font-size: 16px;">
+              Click the button below to create your account and join the team:
+            </p>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${actionLink}"
+                 style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                Join Team
+              </a>
+            </div>
+
+            <p style="font-size: 14px; color: #666;">
+              Or copy and paste this link into your browser:
+            </p>
+            <p style="font-size: 14px; color: #2563eb; word-break: break-all;">
+              ${actionLink}
+            </p>
+
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+
+            <p style="font-size: 12px; color: #999; text-align: center;">
+              This invite was sent via Rack'em Leagues. If you didn't expect this email, you can safely ignore it.
+              <br>This link expires in 7 days.
+            </p>
+          </body>
+        </html>
+      `;
+    }
 
     // Send email via Resend
     const res = await fetch("https://api.resend.com/emails", {
@@ -246,7 +296,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "onboarding@resend.dev", // TODO: Change to invites@rackemleagues.com after domain verification
         to: email,
-        subject: `Join ${teamName || "the team"} on Rack'em Leagues`,
+        subject: emailSubject,
         html: emailHtml,
       }),
     });
@@ -264,7 +314,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Invite email sent!",
+        message: isExistingUser
+          ? "Claim invite email sent to existing user!"
+          : "Registration invite email sent!",
+        inviteType: isExistingUser ? "claim" : "register",
         token: token,  // Return token for testing/debugging
         data
       }),

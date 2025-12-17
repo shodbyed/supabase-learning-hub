@@ -59,7 +59,9 @@
       "Bash(pnpm exec tsc:*)",
       "Bash(docker ps:*)",
       "Bash(ls:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
