@@ -454,21 +454,26 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 const currentMember = currentPlayerId ? allMembers.find(m => m.id === currentPlayerId) : null;
                 const isCurrentPlaceholder = isPlaceholderMember(currentMember);
 
-                // Captain viewing a placeholder slot - show clickable row that opens removal modal
+                // Captain viewing a placeholder slot - show player name with separate manage button
+                // Don't wrap entire row in button - PlayerNameLink needs to remain clickable for registration
                 if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
                   return (
                     <div key={index}>
-                      <button
-                        type="button"
-                        onClick={() => setClickedPlaceholder(currentMember)}
-                        className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer text-left"
-                      >
+                      <div className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100">
                         <PlayerNameLink
                           playerId={currentMember.id}
                           playerName={getPlayerDisplayName(currentMember)}
                         />
-                        <span className="text-xs text-amber-600">Click to manage</span>
-                      </button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setClickedPlaceholder(currentMember)}
+                          className="h-6 px-2 text-xs text-amber-600 hover:text-amber-700"
+                        >
+                          Manage
+                        </Button>
+                      </div>
                     </div>
                   );
                 }

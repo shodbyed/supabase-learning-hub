@@ -250,6 +250,14 @@ If PP is removed AND **has email**:
 - ✅ TeamEditorModal updated (clickable PP rows)
 - 🔄 Need to add game count check and conditional removal
 
+**UI Corrections Needed:**
+1. **Don't make entire row clickable** - This breaks PlayerNameLink which enables registration flow
+   - Keep PlayerNameLink as-is (clickable player name)
+   - Add separate "Manage" button on the row
+2. **Add email to existing PP** - Allow captains to add email to a PP that doesn't have one
+   - In PlaceholderRemovalModal OR in player profile popover
+   - This "upgrades" a single-team PP to multi-team capable
+
 ---
 
 ## Tech Stack
