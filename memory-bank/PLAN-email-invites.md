@@ -1,8 +1,8 @@
 # Email Invites for Placeholder Players - Implementation Plan
 
-> **Status:** Planning
+> **Status:** Backend Complete ✅ | Frontend In Progress 🔄
 > **Created:** 2025-12-17
-> **Branch:** `email-invites`
+> **Branch:** `pp-manual-merging`
 
 ## Overview
 
@@ -15,7 +15,7 @@ Enable captains/operators to send email invites to placeholder players. The emai
 Captain enters email for PP "John Smith"
   → Edge Function checks auth.users for email → NOT FOUND
   → Sends invite email: "Join [Team Name] on Rack'em Leagues"
-  → Link: /register?claim={token}
+  → Link: /register?claim={memberId}&token={token}
   → John clicks link → registers → auto-linked to PP record
 ```
 
@@ -23,9 +23,9 @@ Captain enters email for PP "John Smith"
 ```
 Captain enters email for PP "Jane Doe"
   → Edge Function checks auth.users for email → FOUND
-  → Sends different email: "Captain [Name] added you to [Team]"
-  → Link: /confirm-join?token={token}
-  → Jane clicks link → confirms → PP merged into her existing member record
+  → Sends different email: "Claim Your Player History on [Team]"
+  → Link: /claim-player?claim={memberId}&token={token}
+  → Jane clicks link → logs in → PP merged into her existing member record
   → All PP references (games, lineups, etc.) transferred to Jane's member_id
 ```
 
@@ -33,133 +33,180 @@ Captain enters email for PP "Jane Doe"
 
 ## Implementation Phases
 
-### Phase 1: Send Test Email
+### Phase 1: Send Test Email ✅ COMPLETE
 **Goal:** Prove we can send emails from local Supabase Edge Functions
 
 **Tasks:**
-1. Sign up for Resend (free tier)
-2. Create `/supabase/functions/send-test-email/index.ts`
-3. Set RESEND_API_KEY secret locally
-4. Run `supabase functions serve`
-5. Call function, receive test email
+- [x] Sign up for Resend (free tier)
+- [x] Create `/supabase/functions/send-test-email/index.ts`
+- [x] Set RESEND_API_KEY secret locally
+- [x] Run `supabase functions serve`
+- [x] Call function, receive test email
 
-**Verification:** You receive a test email
+**Verification:** ✅ Test email received
 
 ---
 
-### Phase 2: Send Email with Register Link
-**Goal:** Send email containing the existing `/register?claim={memberId}` link
+### Phase 2: Send Email with Register Link ✅ COMPLETE
+**Goal:** Send email containing the registration link with claim param
 
 **Tasks:**
-1. Modify Edge Function to accept `{ memberId, email, teamName, captainName }`
-2. Build email with registration link
-3. Send via Resend
+- [x] Modify Edge Function to accept `{ memberId, email, teamId, invitedByMemberId, teamName, captainName, baseUrl }`
+- [x] Build email with registration link
+- [x] Send via Resend
 
-**Verification:** Click link in email → goes to registration page with claim param
+**Verification:** ✅ Click link in email → goes to registration page with claim param
 
 ---
 
-### Phase 3: Check Auth Before Sending
+### Phase 3: Check Auth Before Sending ✅ COMPLETE
 **Goal:** Before sending, detect if email already exists in auth.users
 
 **Tasks:**
-1. Query auth.users for email in Edge Function
-2. If NOT found → send registration email (Phase 2 flow)
-3. If FOUND → return error/alert "This email is already registered"
-4. Don't send email to existing users yet (handled in Phase 5+)
+- [x] Query auth.users for email in Edge Function
+- [x] If NOT found → send registration email (Phase 2 flow)
+- [x] If FOUND → send claim email (Phase 5 flow)
 
-**Verification:**
-- Email not in auth → email sent
-- Email in auth → error returned, no email sent
+**Verification:** ✅ Different email templates sent based on auth status
 
 ---
 
-### Phase 4: Invite Tokens Table
+### Phase 4: Invite Tokens Table ✅ COMPLETE
 **Goal:** Store tokens for tracking invites
 
-**Migration creates:**
+**Migration:** `20251217144653_invite_tokens.sql`
+
+**Schema:**
 ```sql
 CREATE TABLE invite_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  token VARCHAR(64) UNIQUE NOT NULL,
-  placeholder_member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
   email VARCHAR(255) NOT NULL,
   invited_by_member_id UUID NOT NULL REFERENCES members(id),
   team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
 
   -- Status tracking
-  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'expired')),
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'expired', 'cancelled')),
 
-  -- For existing users (Scenario 2)
-  existing_user_id UUID REFERENCES auth.users(id),
+  -- For audit trail (who claimed this invite)
+  claimed_by_user_id UUID REFERENCES auth.users(id),
 
   -- Timestamps
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days'),
   claimed_at TIMESTAMPTZ
 );
 ```
 
-**Tasks:**
-1. Create migration
-2. Update Edge Function to generate token and insert record
-3. Include token in email link
+**Functions Created:**
+- `get_invite_details(p_token)` - Safe lookup for /register page (SECURITY DEFINER, anon access)
+- `claim_invite_token(p_token, p_user_id)` - Link PP to user on registration (SECURITY DEFINER)
+- `get_my_pending_invites()` - Returns pending/expired invites for authenticated user at login
 
-**Verification:**
-- Send invite → token appears in invite_tokens table
-- Link contains token
+**Verification:** ✅ Tokens created, tracked, and claimable
 
 ---
 
-### Phase 5: Merge System for Existing Auth Users
+### Phase 5: Merge System for Existing Auth Users ✅ COMPLETE
 **Goal:** Handle case where email IS in auth.users
 
 **Tasks:**
-1. When auth user found, create token with `existing_user_id` set
-2. Send different email: "You've been added to [Team]"
-3. Create `/confirm-join?token={token}` page
-4. Build schema-aware merge function:
-   - Query information_schema for all FK refs to members(id)
-   - Exclude `league_operators`
-   - Update all PP references to existing member_id
-   - Delete PP record
-5. User clicks confirm → merge executes
+- [x] Create schema-aware `merge_placeholder_into_member()` function
+- [x] Dynamically finds ALL FK refs to members(id) via information_schema
+- [x] Special handling for team_players (row transfer with stats)
+- [x] Preserve invite_tokens.member_id for audit trail
+- [x] Create `/supabase/functions/claim-placeholder/index.ts` Edge Function
+- [x] **Security fix:** Verify authenticated user's email matches invite email
 
-**Verification:**
-- Create PP with games/lineups
-- Send invite to existing user's email
-- User confirms
-- All PP data now under existing user's member_id
+**Migration:** `20251217152629_merge_placeholder_player.sql`
+
+**Security:**
+```typescript
+// Verify the authenticated user's email matches the invite email
+// Prevents stolen links from being used by unauthorized users
+if (userEmail !== inviteEmail) {
+  return 403 "Email mismatch"
+}
+```
+
+**Verification:** ✅ PP data merges into existing user's member record
 
 ---
 
-### Phase 6: UI - Captain Invite Flow
+### Phase 6: Login Notification System ✅ COMPLETE (Backend)
+**Goal:** Check for pending invites when user logs in
+
+**Migration:** `20251217170000_check_pending_invites.sql`
+
+**Function:** `get_my_pending_invites()`
+- Returns pending AND expired invites for authenticated user's email
+- Includes `is_expired` boolean flag
+- Pending invites → show "Claim" button (direct claim, no email link needed)
+- Expired invites → show "Ask captain to resend" message
+
+**Frontend Needed:** 🔄 See Phase 7
+
+---
+
+### Phase 7: Frontend - Claim Pages & Notifications 🔄 IN PROGRESS
+**Goal:** Build UI for claiming invites and notifications
+
+**Tasks:**
+- [ ] **`/claim-player` page** - For existing users clicking email link
+  - Shows PP name, team name, captain name
+  - "Claim History" button calls claim-placeholder Edge Function
+  - Success → redirect to dashboard or team page
+  - Error handling for expired/invalid tokens
+
+- [ ] **Login notification component**
+  - Call `get_my_pending_invites()` after login
+  - Display notification banner/toast for pending invites
+  - "Claim" button (no email link needed - user is already authenticated)
+  - "Expired" state shows "Ask captain to resend" message
+  - Button text: "Join [Team Name]" with captain name context
+
+- [ ] **Invite status indicator on PP cards**
+  - "Invite Sent" badge for PPs with pending invites
+  - "Invite Expired" badge for expired invites
+
+---
+
+### Phase 8: Frontend - Captain Invite Flow 🔄 TODO
 **Goal:** UI for captain to enter email and send invite
 
 **Location:** Wherever PP is displayed (team roster, player popover)
 
-**UI Flow:**
-1. Captain clicks PP name → popover/modal
-2. Shows "Send Invite" button
-3. Opens modal with email input
-4. Captain enters email, clicks Send
-5. Calls Edge Function
-6. Shows success/error feedback
-7. PP card shows "Invite Sent" indicator
+**Two Options:**
+1. **"Send Email Invite"** - Full flow via Edge Function
+   - Captain enters email
+   - Creates token + sends email
+   - PP gets branded email with link
 
-**Verification:** Full flow works from UI
+2. **"Create Invite Link"** - Link-only option
+   - Captain enters email (for token tracking/security)
+   - Creates token WITHOUT sending email
+   - Direct insert to `invite_tokens` table
+   - Captain can share link manually (QR code, text, etc.)
+
+**UI Components Needed:**
+- [ ] `InvitePlayerModal.tsx` - Modal with email input
+- [ ] Two buttons: "Send Email" vs "Create Link Only"
+- [ ] Success feedback with copyable link (for option 2)
+- [ ] Integration with existing PP card/popover UI
 
 ---
 
-### Phase 7: Edge Cases & Polish
-**Goal:** Handle edge cases, add indicators
+### Phase 9: Edge Cases & Polish 📋 TODO
+**Goal:** Handle edge cases, add polish
 
 **Tasks:**
-- Token expiration handling (7 days? 30 days?)
-- Resend invite functionality
-- "Invite Pending" indicator on PP cards
-- Error handling for all failure modes
-- Cancel/revoke invite capability
+- [ ] Resend invite functionality (existing UI can reuse same flow)
+- [ ] Cancel/revoke invite capability
+- [ ] "Invite Pending" indicator shows invite date
+- [ ] Handle multiple pending invites gracefully
+- [ ] Error handling for all failure modes
+- [ ] Email template improvements (better branding)
 
 ---
 
@@ -169,52 +216,68 @@ CREATE TABLE invite_tokens (
 |-----------|------------|
 | Email API | Resend (free tier: 3k/month) |
 | Server-side logic | Supabase Edge Functions (Deno/TypeScript) |
-| Email domain | invites@rackemleagues.com |
-| Token generation | crypto.randomUUID() or similar |
+| Email domain | invites@rackemleagues.com (TODO: verify domain) |
+| Token generation | gen_random_uuid() in PostgreSQL |
 
-## Files to Create
+## Files Created
 
 ```
 /supabase
   /functions
     /send-test-email
-      index.ts          (Phase 1)
+      index.ts                    ✅ Phase 1
     /send-invite
-      index.ts          (Phase 2-3, evolves)
-    /merge-placeholder
-      index.ts          (Phase 5)
+      index.ts                    ✅ Phase 2-3
+    /claim-placeholder
+      index.ts                    ✅ Phase 5
 
+/supabase/migrations
+  20251217144653_invite_tokens.sql        ✅ Phase 4
+  20251217152629_merge_placeholder_player.sql  ✅ Phase 5
+  20251217170000_check_pending_invites.sql     ✅ Phase 6
+```
+
+## Files to Create (Frontend)
+
+```
 /src
   /components
     /player
-      InvitePlayerModal.tsx   (Phase 6)
-  /pages (or wherever routes live)
-    ConfirmJoinPage.tsx       (Phase 5)
-
-/supabase/migrations
-  YYYYMMDD_invite_tokens_table.sql  (Phase 4)
+      InvitePlayerModal.tsx           📋 Phase 8
+    /notifications
+      PendingInvitesBanner.tsx        📋 Phase 7
+  /pages (or routes)
+    ClaimPlayerPage.tsx               📋 Phase 7
 ```
 
-## Questions for Partner
+## RLS Policies
 
-1. **CI/CD for Edge Functions:** Is GitHub Actions set up to deploy Edge Functions, or just SQL migrations?
-2. **Resend Account:** Do we have a Resend account? Need to get API key.
-3. **Domain Verification:** Is `rackemleagues.com` verified in Resend for sending?
-4. **Staging vs Prod:** How do we manage different Resend API keys for staging/production?
+**Status:** RLS disabled for now (documented in RLS_ANALYSIS.md)
+
+Proposed policies documented in `/RLS_ANALYSIS.md` section 13 for when RLS is enabled:
+- Team captains can view/create/update invites for their teams
+- Organization operators can manage invites for teams in their org
+- No DELETE policy (keep audit trail)
 
 ## Success Criteria
 
-- [ ] Captain can send invite to any email
-- [ ] New users register via link and are auto-linked to PP
-- [ ] Existing users confirm via link and PP data merges to their account
-- [ ] All PP game history, lineups, stats transfer correctly
-- [ ] Works for any future tables that reference members(id)
+- [x] ✅ Captain can send invite to any email
+- [x] ✅ New users register via link and are auto-linked to PP
+- [x] ✅ Existing users can claim via link and PP data merges to their account
+- [x] ✅ All PP game history, lineups, stats transfer correctly
+- [x] ✅ Works for any future tables that reference members(id)
+- [x] ✅ Security: Email verification prevents stolen link attacks
+- [ ] 🔄 Login notification shows pending/expired invites
+- [ ] 🔄 Users can claim directly without clicking email link
+- [ ] 📋 UI for captains to send invites with 2 options (email vs link-only)
 
 ---
 
 ## Notes
 
-- This replaces the abandoned `pp-manual-merging` branch approach
-- No fuzzy matching needed - email is the definitive link
+- This replaces the abandoned fuzzy matching approach
+- Email is the definitive link between PP and user
 - Schema-aware merge means we don't hardcode table names
-- Edge Functions are new to this project - document deployment for team
+- Edge Functions now established in this project
+- Direct claim works because authenticated user's email is verified against invite email
+- 3 databases (local, staging, production) all need migrations applied
