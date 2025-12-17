@@ -30,6 +30,24 @@ export interface CreateMemberParams {
 }
 
 /**
+ * Parameters for creating a placeholder member
+ * Placeholder members are real people who haven't registered yet.
+ * They can be on teams and have games scored, then later connect
+ * when they register.
+ */
+export interface CreatePlaceholderMemberParams {
+  first_name: string;
+  last_name: string;
+  nickname: string;
+  city: string;
+  state: string;
+  /** Starting handicap for 8-ball/3v3 formats (0-100). Default: 0 */
+  starting_handicap_3v3?: number;
+  /** Starting handicap for 5v5 formats (0-100). Default: 40 */
+  starting_handicap_5v5?: number;
+}
+
+/**
  * Parameters for deleting a member
  */
 export interface DeleteMemberParams {
@@ -311,4 +329,74 @@ export async function updateMemberRole(
   if (error) {
     throw new Error(`Failed to update member role: ${error.message}`);
   }
+}
+
+/**
+ * Create a placeholder member
+ *
+ * Creates a member record for someone who hasn't registered yet.
+ * Placeholder members have user_id = NULL and minimal info (name, city, state).
+ * They can be added to teams and have games scored. When the real person
+ * registers, they can be connected via invite link or operator merge.
+ *
+ * @param params - Placeholder member creation parameters
+ * @returns Created member record with id and system_player_number
+ * @throws Error if validation fails or database error occurs
+ *
+ * @example
+ * const member = await createPlaceholderMember({
+ *   first_name: 'John',
+ *   last_name: 'Doe',
+ *   nickname: 'John D',
+ *   city: 'Austin',
+ *   state: 'TX'
+ * });
+ */
+export async function createPlaceholderMember(
+  params: CreatePlaceholderMemberParams
+): Promise<{ id: string; first_name: string; last_name: string; system_player_number: number }> {
+  // Validation
+  if (!params.first_name.trim()) {
+    throw new Error('First name is required');
+  }
+  if (!params.last_name.trim()) {
+    throw new Error('Last name is required');
+  }
+  if (!params.nickname.trim()) {
+    throw new Error('Nickname is required');
+  }
+  if (!params.city.trim()) {
+    throw new Error('City is required');
+  }
+  if (!params.state.trim()) {
+    throw new Error('State is required');
+  }
+
+  const { data, error } = await supabase
+    .from('members')
+    .insert([{
+      first_name: params.first_name.trim(),
+      last_name: params.last_name.trim(),
+      nickname: params.nickname.trim(),
+      city: params.city.trim(),
+      state: params.state.trim().toUpperCase(),
+      // Starting handicaps (defaults: 0 for 3v3, 40 for 5v5)
+      starting_handicap_3v3: params.starting_handicap_3v3 ?? 0,
+      starting_handicap_5v5: params.starting_handicap_5v5 ?? 40,
+      // These fields are now nullable - set to null for placeholders
+      user_id: null,
+      phone: null,
+      email: null,
+      address: null,
+      zip_code: null,
+      date_of_birth: null,
+    }])
+    .select('id, first_name, last_name, system_player_number')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create placeholder member: ${error.message} (${error.code})`);
+  }
+
+  return data;
 }

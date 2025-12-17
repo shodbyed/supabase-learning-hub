@@ -8,7 +8,7 @@
  * - If operator has profanity_filter_enabled, team names are validated for profanity
  * - Team names containing profanity will be rejected with an error message
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { useCreateTeam, useUpdateTeam } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
@@ -17,11 +17,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { MemberCombobox } from '@/components/MemberCombobox';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { InfoButton } from '@/components/InfoButton';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
 import { containsProfanity } from '@/utils/profanityFilter';
 import type { PartialMember } from '@/types/member';
+import { isPlaceholderMember, getPlayerDisplayName } from '@/types/member';
 import type { Venue, LeagueVenue } from '@/types/venue';
 import type { TeamFormat } from '@/types/league';
 import { logger } from '@/utils/logger';
@@ -133,6 +135,25 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   const [captainId, setCaptainId] = useState(existingTeam?.captain_id || '');
   const [homeVenueId, setHomeVenueId] = useState(existingTeam?.home_venue_id || defaultVenueId);
   const [error, setError] = useState<string | null>(null);
+
+  // Track newly created placeholder members so they appear immediately in dropdowns
+  const [newPlaceholders, setNewPlaceholders] = useState<PartialMember[]>([]);
+
+  // Merge members from props with newly created placeholders
+  const allMembers = useMemo(() => {
+    // Filter out any duplicates (in case the query refetches and includes the new member)
+    const existingIds = new Set(members.map(m => m.id));
+    const uniqueNewPlaceholders = newPlaceholders.filter(p => !existingIds.has(p.id));
+    return [...members, ...uniqueNewPlaceholders];
+  }, [members, newPlaceholders]);
+
+  /**
+   * Handle when a new placeholder member is created
+   * Adds to local state so it appears immediately in dropdowns
+   */
+  const handlePlaceholderCreated = (newMember: PartialMember) => {
+    setNewPlaceholders(prev => [...prev, newMember]);
+  };
 
   // Mutation hooks
   const createTeamMutation = useCreateTeam();
@@ -405,11 +426,13 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           ) : (
             <MemberCombobox
               label="Captain"
-              members={members}
+              members={allMembers}
               value={captainId}
               onValueChange={setCaptainId}
               placeholder="Select team captain..."
               excludeIds={[...excludedPlayerIds, ...playerIds.filter(id => id)]}
+              allowCreatePlaceholder={true}
+              onPlaceholderCreated={handlePlaceholderCreated}
             />
           )}
 
@@ -422,17 +445,43 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
               Captain is automatically added to the roster. You can add up to {rosterSize - 1} additional players.
             </p>
             <div className="space-y-3">
-              {Array.from({ length: rosterSize - 1 }).map((_, index) => (
-                <MemberCombobox
-                  key={index}
-                  members={members}
-                  value={playerIds[index]}
-                  onValueChange={(memberId) => handlePlayerChange(index, memberId)}
-                  placeholder={`Player ${index + 2} (optional)`}
-                  showClear={true}
-                  excludeIds={getExcludedIdsForSlot(index)}
-                />
-              ))}
+              {Array.from({ length: rosterSize - 1 }).map((_, index) => {
+                const currentPlayerId = playerIds[index];
+                const currentMember = currentPlayerId ? allMembers.find(m => m.id === currentPlayerId) : null;
+                const isCurrentPlaceholder = isPlaceholderMember(currentMember);
+
+                // Captain viewing a placeholder slot - show read-only label with clickable player link
+                if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
+                  return (
+                    <div key={index}>
+                      <div className="flex h-9 w-full items-center px-3 rounded-md border border-input bg-gray-100">
+                        <PlayerNameLink
+                          playerId={currentMember.id}
+                          playerName={getPlayerDisplayName(currentMember)}
+                        />
+                      </div>
+                      <p className="text-xs text-amber-600 mt-1">
+                        Placeholder players can only be removed by the league operator
+                      </p>
+                    </div>
+                  );
+                }
+
+                // Normal combobox for operators or non-placeholder slots
+                return (
+                  <MemberCombobox
+                    key={index}
+                    members={allMembers}
+                    value={currentPlayerId}
+                    onValueChange={(memberId) => handlePlayerChange(index, memberId)}
+                    placeholder={`Player ${index + 2} (optional)`}
+                    showClear={true}
+                    excludeIds={getExcludedIdsForSlot(index)}
+                    allowCreatePlaceholder={true}
+                    onPlaceholderCreated={handlePlaceholderCreated}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

@@ -212,9 +212,9 @@ export async function getIsCaptain(memberId: string): Promise<boolean> {
 export async function getAllMembers(excludeMemberId?: string): Promise<PartialMember[]> {
   let query = supabase
     .from('members')
-    .select('id, first_name, last_name, system_player_number, bca_member_number')
-    // TODO: Re-enable user_id filter for production: .not('user_id', 'is', null)
-    // Temporarily disabled to allow testing with seeded members
+    .select('id, first_name, last_name, system_player_number, bca_member_number, user_id')
+    // Note: user_id is included to detect placeholder players (user_id = null)
+    // Placeholder players are real people who haven't registered yet
     .order('last_name', { ascending: true });
 
   if (excludeMemberId) {

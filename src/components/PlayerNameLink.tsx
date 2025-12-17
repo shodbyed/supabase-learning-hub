@@ -23,6 +23,7 @@ import { User, MessageSquare, Flag, Ban, DollarSign, UserCog } from 'lucide-reac
 import { cn } from '@/lib/utils';
 import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked, useUserProfile } from '@/api/hooks';
 import { ReportUserModal } from '@/components/ReportUserModal';
+import { RegisterPlayerModal } from '@/components/RegisterPlayerModal';
 import { ConfirmDialog } from '@/components/shared';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -75,6 +76,7 @@ export function PlayerNameLink({
 
   const [open, setOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
@@ -88,21 +90,27 @@ export function PlayerNameLink({
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
-  // Fetch player's full name (always when popover is open)
-  const { data: playerFullName } = useQuery({
-    queryKey: ['playerFullName', playerId],
+  // Fetch player's full name and placeholder status (always when popover is open)
+  const { data: playerBasicData } = useQuery({
+    queryKey: ['playerBasicData', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('members')
-        .select('first_name, last_name')
+        .select('first_name, last_name, user_id')
         .eq('id', playerId)
         .single();
       if (error) throw error;
-      return `${data.first_name} ${data.last_name}`;
+      return {
+        fullName: `${data.first_name} ${data.last_name}`,
+        isPlaceholder: data.user_id === null,
+      };
     },
     enabled: open && !!playerId,
     staleTime: 60000, // 1 minute - names don't change often
   });
+
+  const playerFullName = playerBasicData?.fullName;
+  const isPlaceholder = playerBasicData?.isPlaceholder ?? false;
 
   // Fetch player's membership status and handicaps (only when popover is open and user is operator)
   const { data: playerData } = useQuery({
@@ -367,7 +375,26 @@ export function PlayerNameLink({
               <div className="font-semibold text-gray-900">
                 {playerFullName || playerName}
               </div>
+              {isPlaceholder && (
+                <div className="text-xs text-amber-600 mt-1">
+                  Unregistered
+                </div>
+              )}
             </div>
+
+            {/* Register Player - Only for placeholder/unregistered users */}
+            {isPlaceholder && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  setShowRegisterModal(true);
+                }}
+                className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
+              >
+                <User className="h-4 w-4 text-gray-600" />
+                <span>Register Player</span>
+              </button>
+            )}
 
             {/* View Profile */}
             <button
@@ -378,34 +405,38 @@ export function PlayerNameLink({
               <span>View Profile</span>
             </button>
 
-            {/* Send Message */}
-            <button
-              onClick={handleSendMessage}
-              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
-            >
-              <MessageSquare className="h-4 w-4 text-gray-600" />
-              <span>Send Message</span>
-            </button>
+            {/* Send Message - Only for registered users */}
+            {!isPlaceholder && (
+              <button
+                onClick={handleSendMessage}
+                className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left"
+              >
+                <MessageSquare className="h-4 w-4 text-gray-600" />
+                <span>Send Message</span>
+              </button>
+            )}
 
             <div className="border-t" />
 
-            {/* Report User */}
+            {/* Report Player - Available for all users */}
             <button
               onClick={handleReportUser}
               className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-orange-600"
             >
               <Flag className="h-4 w-4" />
-              <span>Report User</span>
+              <span>Report Player</span>
             </button>
 
-            {/* Block/Unblock User */}
-            <button
-              onClick={handleBlockToggle}
-              className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-red-600"
-            >
-              <Ban className="h-4 w-4" />
-              <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
-            </button>
+            {/* Block/Unblock User - Only for registered users */}
+            {!isPlaceholder && (
+              <button
+                onClick={handleBlockToggle}
+                className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-red-600"
+              >
+                <Ban className="h-4 w-4" />
+                <span>{isBlocked ? 'Unblock User' : 'Block User'}</span>
+              </button>
+            )}
 
             {/* Operator-Only Actions */}
             {isOperator && (
@@ -575,6 +606,14 @@ export function PlayerNameLink({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Register Player Modal */}
+      <RegisterPlayerModal
+        open={showRegisterModal}
+        onOpenChange={setShowRegisterModal}
+        playerId={playerId}
+        playerName={playerFullName || playerName}
+      />
     </>
   );
 }

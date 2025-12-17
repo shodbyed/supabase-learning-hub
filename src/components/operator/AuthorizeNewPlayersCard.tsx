@@ -256,9 +256,17 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
     <>
       <Card className="rounded-none lg:rounded-xl">
         <CardHeader className="p-4 lg:p-6 pb-3">
-          <button
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-full text-left"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsOpen(!isOpen);
+              }
+            }}
+            className="flex items-center justify-between w-full text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-amber-100 rounded-lg">
@@ -297,7 +305,7 @@ export const AuthorizeNewPlayersCard: React.FC<AuthorizeNewPlayersCardProps> = (
             ) : (
               <ChevronDown className="h-5 w-5 text-gray-400" />
             )}
-          </button>
+          </div>
         </CardHeader>
         {isOpen && (
           <CardContent className="p-4 lg:p-6 pt-0">

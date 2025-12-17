@@ -11,20 +11,24 @@ export type UserRole = 'player' | 'league_operator' | 'developer';
 /**
  * Member interface representing a user's profile data stored in Supabase
  * This maps to the 'members' table in the database
+ *
+ * Note: Several fields are nullable to support "placeholder" players -
+ * real people who haven't registered yet but can be on teams and have games scored.
+ * Placeholder members have user_id = NULL.
  */
 export interface Member {
   id: string;
-  user_id: string; // References Supabase auth.users.id
+  user_id: string | null; // References Supabase auth.users.id - NULL for placeholder players
   first_name: string;
   last_name: string;
-  nickname?: string;
-  phone: string;
-  email: string;
-  address: string;
+  nickname?: string | null;
+  phone: string | null; // NULL for placeholder players
+  email: string | null; // NULL for placeholder players
+  address: string | null; // NULL for placeholder players
   city: string;
   state: string;
-  zip_code: string;
-  date_of_birth: string; // ISO date string
+  zip_code: string | null; // NULL for placeholder players
+  date_of_birth: string | null; // ISO date string - NULL for placeholder players
   role: UserRole;
   system_player_number: number; // System-generated player ID (always assigned)
   bca_member_number: string | null; // Official BCA member number (null until assigned)
@@ -59,8 +63,12 @@ export function getPlayerDisplayName(member: Member | PartialMember): string {
 /**
  * Partial member object from database queries (captain/roster lookups)
  * Only includes fields needed for display purposes
+ * Includes user_id to detect placeholder players (user_id = null)
  */
-export type PartialMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'system_player_number' | 'bca_member_number'>;
+export type PartialMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'system_player_number' | 'bca_member_number'> & {
+  /** Optional user_id - NULL indicates a placeholder player */
+  user_id?: string | null;
+};
 
 /**
  * Member subset used for messaging features
@@ -76,6 +84,20 @@ export type MemberForMessaging = Pick<Member, 'id' | 'first_name' | 'last_name' 
 export function formatPartialMemberNumber(member: PartialMember): string {
   // Reuse the main getPlayerDisplayNumber logic
   return getPlayerDisplayNumber(member as Member);
+}
+
+/**
+ * Check if a member is a placeholder (not registered)
+ * Placeholder members have user_id = null
+ *
+ * @param member - Member or PartialMember object
+ * @returns true if the member is a placeholder (user_id is null)
+ */
+export function isPlaceholderMember(member: PartialMember | Member | null | undefined): boolean {
+  if (!member) return false;
+  // Check if user_id exists and is null (placeholder)
+  // If user_id is undefined, we can't determine - treat as not placeholder
+  return 'user_id' in member && member.user_id === null;
 }
 
 /**
