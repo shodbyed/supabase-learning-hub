@@ -1,8 +1,8 @@
 # Email Invites for Placeholder Players - Implementation Plan
 
-> **Status:** Backend Complete ✅ | Frontend In Progress 🔄
+> **Status:** Backend Complete ✅ | Frontend Complete ✅ | Polish TODO 📋
 > **Created:** 2025-12-17
-> **Branch:** `pp-manual-merging`
+> **Branch:** `email-invites`
 
 ## Overview
 
@@ -176,28 +176,42 @@ if (userEmail !== inviteEmail) {
 
 ---
 
-### Phase 8: Frontend - Captain Invite Flow 🔄 TODO
+### Phase 8: Frontend - Captain Invite Flow ✅ COMPLETE
 **Goal:** UI for captain to enter email and send invite
 
-**Location:** Wherever PP is displayed (team roster, player popover)
+**Location:** PlayerNameLink component (opens modal when clicking PP name)
 
-**Two Options:**
-1. **"Send Email Invite"** - Full flow via Edge Function
-   - Captain enters email
-   - Creates token + sends email
-   - PP gets branded email with link
+**Implemented Features:**
+1. **Email Management**
+   - [x] Email input with Save button (saves to PP record)
+   - [x] Display mode when email already exists (with Edit button)
+   - [x] Email saved to `members.email` for identity anchoring
 
-2. **"Create Invite Link"** - Link-only option
-   - Captain enters email (for token tracking/security)
-   - Creates token WITHOUT sending email
-   - Direct insert to `invite_tokens` table
-   - Captain can share link manually (QR code, text, etc.)
+2. **"Send Email Invite"** - Full flow via Edge Function
+   - [x] Captain enters/confirms email
+   - [x] Creates token + sends branded email
+   - [x] Toast confirmation on success
 
-**UI Components Needed:**
-- [ ] `InvitePlayerModal.tsx` - Modal with email input
-- [ ] Two buttons: "Send Email" vs "Create Link Only"
-- [ ] Success feedback with copyable link (for option 2)
-- [ ] Integration with existing PP card/popover UI
+3. **"In-App Message"** - Placeholder for future
+   - [x] Button exists (disabled, coming soon)
+
+4. **"Device Handoff"** - In-person registration
+   - [x] Captain hands device to player
+   - [x] Player enters email/password
+   - [x] Creates auth account + links to PP
+   - [x] Success screen with instructions
+
+5. **"Share Registration Link"** - Manual sharing
+   - [x] Copyable link with copy button
+   - [x] QR code option (collapsible)
+   - [x] Staging environment warning
+
+**Files Created:**
+- `src/components/InvitePlayerModal.tsx` - Main modal component
+- `src/components/ui/scroll-area.tsx` - Added via shadcn (for modal scrolling)
+
+**Integration:**
+- `src/components/PlayerNameLink.tsx` - Updated to open InvitePlayerModal for PPs
 
 ---
 
@@ -294,16 +308,15 @@ If PP is removed AND **has email**:
   /login
     ClaimPlayer.tsx                   ✅ Phase 7 - Claim page for existing users
   /components
+    InvitePlayerModal.tsx             ✅ Phase 8 - Captain invite modal
+    PlayerNameLink.tsx                ✅ Phase 8 - Updated to open InvitePlayerModal for PPs
     /modals
       PendingInvitesModal.tsx         ✅ Phase 7 - Login notification modal
+    /ui
+      scroll-area.tsx                 ✅ Phase 8 - Radix scroll area component
   /api
     /hooks
       usePendingInvites.ts            ✅ Phase 7 - TanStack Query hook for pending invites
-
-Files to Create:
-  /components
-    /player
-      InvitePlayerModal.tsx           📋 Phase 8
 ```
 
 ## RLS Policies
@@ -325,7 +338,10 @@ Proposed policies documented in `/RLS_ANALYSIS.md` section 13 for when RLS is en
 - [x] ✅ Security: Email verification prevents stolen link attacks
 - [x] ✅ Login notification shows pending/expired invites (modal on Dashboard)
 - [x] ✅ Users can claim directly without clicking email link (modal → claim page)
-- [ ] 📋 UI for captains to send invites with 2 options (email vs link-only)
+- [x] ✅ UI for captains to send invites (InvitePlayerModal with multiple options)
+- [x] ✅ Email saved to PP record as identity anchor
+- [x] ✅ Device handoff flow for in-person registration
+- [x] ✅ Share link with QR code option
 
 ---
 
