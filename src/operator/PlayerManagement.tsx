@@ -618,7 +618,7 @@ export const PlayerManagement: React.FC = () => {
                             min="0"
                             max="100"
                             value={handicap5v5}
-                            onChange={(e) => setHandicap5v5(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHandicap5v5(e.target.value)}
                             className="mt-1"
                           />
                         </div>

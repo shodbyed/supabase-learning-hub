@@ -75,7 +75,7 @@ export const buildLeagueName = (
   if (startDate) {
     try {
       dayDisplay = typeof startDate === 'string' ? getDayOfWeekName(startDate) : getDayOfWeek(startDate);
-    } catch (e) {
+    } catch {
       dayDisplay = '[Day]';
     }
   }
@@ -89,7 +89,7 @@ export const buildLeagueName = (
       const date = typeof startDate === 'string' ? parseLocalDate(startDate) : startDate;
       seasonDisplay = getTimeOfYear(date);
       yearDisplay = date.getFullYear().toString();
-    } catch (e) {
+    } catch {
       seasonDisplay = '[Season]';
       yearDisplay = '[Year]';
     }

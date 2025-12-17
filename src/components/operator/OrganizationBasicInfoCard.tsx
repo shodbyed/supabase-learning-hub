@@ -5,7 +5,7 @@
  * Each section is independently editable with its own edit/save/cancel buttons.
  */
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -142,7 +142,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
             <div className="space-y-3">
               <Input
                 value={organizationName}
-                onChange={(e) => setOrganizationName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOrganizationName(e.target.value)}
                 placeholder="Your Organization Name"
               />
               <div className="flex gap-2">
@@ -181,7 +181,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                 <Input
                   id="address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)}
                   placeholder="123 Main St"
                 />
               </div>
@@ -191,7 +191,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                   <Input
                     id="city"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
                     placeholder="City"
                   />
                 </div>
@@ -200,7 +200,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                   <Input
                     id="state"
                     value={state}
-                    onChange={(e) => setState(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setState(e.target.value)}
                     placeholder="State"
                     maxLength={2}
                   />
@@ -211,7 +211,7 @@ export const OrganizationBasicInfoCard: React.FC<OrganizationBasicInfoCardProps>
                 <Input
                   id="zipCode"
                   value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setZipCode(e.target.value)}
                   placeholder="12345"
                   maxLength={10}
                 />

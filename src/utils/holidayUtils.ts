@@ -109,7 +109,7 @@ export function extractLeagueNights(
   let weekNumber = 1;
 
   // Find first league night in range
-  let currentDate = new Date(start);
+  const currentDate = new Date(start);
   const startDay = currentDate.getDay();
 
   // Calculate days until first league night

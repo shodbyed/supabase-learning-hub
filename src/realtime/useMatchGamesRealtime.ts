@@ -191,5 +191,5 @@ export function useMatchGamesRealtime(
       //console.log('Cleaning up real-time subscription for match games:', matchId);
       supabase.removeChannel(channel);
     };
-  }, [matchId, match, userTeamId, players, myVacateRequests, addToConfirmationQueue, onUpdate, editingGame, autoConfirm, confirmOpponentScore]);
+  }, [matchId, match, userTeamId, players, myVacateRequests, addToConfirmationQueue, onUpdate, onMatchUpdate, editingGame, autoConfirm, confirmOpponentScore]);
 }

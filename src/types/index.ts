@@ -87,3 +87,12 @@ export type {
   GeneratePlayoffResult,
   CreatePlayoffMatchesResult
 } from './playoff';
+
+// Common React event handler types for convenience
+// Usage: onChange={(e: InputChange) => handleChange(e)}
+export type InputChange = React.ChangeEvent<HTMLInputElement>;
+export type TextAreaChange = React.ChangeEvent<HTMLTextAreaElement>;
+export type SelectChange = React.ChangeEvent<HTMLSelectElement>;
+export type FormSubmit = React.FormEvent<HTMLFormElement>;
+export type ButtonClick = React.MouseEvent<HTMLButtonElement>;
+export type KeyDown = React.KeyboardEvent<HTMLInputElement>;

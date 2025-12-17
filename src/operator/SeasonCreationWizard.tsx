@@ -672,7 +672,7 @@ export const SeasonCreationWizard: React.FC = () => {
                 min={currentStepData.min}
                 max={currentStepData.max}
                 value={currentStepData.getValue()}
-                onChange={(e) => {
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   currentStepData.setValue(e.target.value);
                   dispatch({ type: 'SET_VALIDATION_ERROR', payload: null }); // Clear error on input change
                 }}

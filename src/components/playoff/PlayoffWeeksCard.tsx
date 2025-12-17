@@ -179,7 +179,7 @@ export const PlayoffWeeksCard: React.FC<PlayoffWeeksCardProps> = ({
                 min={1}
                 max={10}
                 value={weeksToAdd}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   dispatch({ type: 'SET_WEEKS_TO_ADD', payload: parseInt(e.target.value) || 1 })
                 }
                 className="w-32"

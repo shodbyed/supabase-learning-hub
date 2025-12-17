@@ -24,6 +24,7 @@ import { ChoiceStep } from '@/components/forms/ChoiceStep';
 import { ApplicationPreview } from '@/components/previews/ApplicationPreview';
 import { SecurityDisclaimerModal } from '@/components/modals/SecurityDisclaimerModal';
 import { SetupGuideModal } from '@/components/modals/SetupGuideModal';
+import { PageHeader } from '@/components/PageHeader';
 import { useApplicationForm } from './useApplicationForm';
 import { useUserProfile } from '@/api/hooks';
 import { useCreateOrganization } from '@/api/hooks/useOrganizationMutations';
@@ -49,6 +50,11 @@ import { toast } from 'sonner';
 export const LeagueOperatorApplication: React.FC = () => {
   // Navigation hook for redirecting after completion
   const navigate = useNavigate();
+
+  // Scroll to top on mount (fixes issue where page loads in middle)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Track submission state to prevent double-clicks
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -287,16 +293,25 @@ export const LeagueOperatorApplication: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-2">
-            <span className="text-sm text-gray-500">
-              Step {currentStep + 1} of {questions.length}
-            </span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Page Header with escape route */}
+      <PageHeader
+        backLabel="Exit Application"
+        onBackClick={() => {
+          // Clear saved progress when user exits
+          try {
+            localStorage.removeItem('leagueOperatorApplication');
+            localStorage.removeItem('leagueOperatorApplication_currentStep');
+          } catch (error) {
+            logger.warn('Failed to clear saved progress on exit', { error: error instanceof Error ? error.message : String(error) });
+          }
+          navigate('/dashboard');
+        }}
+        title="Become a League Operator"
+        subtitle={`Step ${currentStep + 1} of ${questions.length}`}
+      />
+
+      <div className="container mx-auto px-4 max-w-6xl py-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Question Area (2/3 width on large screens) */}

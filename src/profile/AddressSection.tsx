@@ -59,36 +59,28 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
         // Edit Mode
         <div className="space-y-4">
           {/* Street Address */}
-          <div>
-            <Label htmlFor="address">Street Address</Label>
-            <Input
-              id="address"
-              type="text"
-              value={form.formData.address}
-              onChange={(e) => handlers.updateForm('address', e.target.value)}
-              placeholder="123 Main Street"
-              className={form.errors.address ? 'border-red-500' : ''}
-            />
-            {form.errors.address && (
-              <p className="text-red-500 text-sm mt-1">{form.errors.address}</p>
-            )}
-          </div>
+          <Input
+            id="address"
+            label="Street Address"
+            value={form.formData.address}
+            onChange={(value: string) => handlers.updateForm('address', value)}
+            placeholder="123 Main Street"
+            error={form.errors.address}
+            titleCase
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* City */}
             <div className="md:col-span-1">
-              <Label htmlFor="city">City</Label>
               <Input
                 id="city"
-                type="text"
+                label="City"
                 value={form.formData.city}
-                onChange={(e) => handlers.updateForm('city', e.target.value)}
+                onChange={(value: string) => handlers.updateForm('city', value)}
                 placeholder="Springfield"
-                className={form.errors.city ? 'border-red-500' : ''}
+                error={form.errors.city}
+                titleCase
               />
-              {form.errors.city && (
-                <p className="text-red-500 text-sm mt-1">{form.errors.city}</p>
-              )}
             </div>
 
             {/* State */}
@@ -115,20 +107,14 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
             </div>
 
             {/* ZIP Code */}
-            <div>
-              <Label htmlFor="zip_code">ZIP Code</Label>
-              <Input
-                id="zip_code"
-                type="text"
-                value={form.formData.zip_code}
-                onChange={(e) => handlers.updateForm('zip_code', e.target.value)}
-                placeholder="12345"
-                className={form.errors.zip_code ? 'border-red-500' : ''}
-              />
-              {form.errors.zip_code && (
-                <p className="text-red-500 text-sm mt-1">{form.errors.zip_code}</p>
-              )}
-            </div>
+            <Input
+              id="zip_code"
+              label="ZIP Code"
+              value={form.formData.zip_code}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handlers.updateForm('zip_code', e.target.value)}
+              placeholder="12345"
+              error={form.errors.zip_code}
+            />
           </div>
 
           {/* Action Buttons */}

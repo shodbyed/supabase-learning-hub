@@ -5,6 +5,7 @@
  * Includes icon and auto-focus for better UX.
  */
 
+import React from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -22,7 +23,7 @@ export function UserSearchInput({ value, onChange }: UserSearchInputProps) {
           type="text"
           placeholder="Search by name or member number..."
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
           className="pl-10"
           autoFocus
         />

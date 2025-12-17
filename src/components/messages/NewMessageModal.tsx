@@ -10,7 +10,7 @@
  * - Creates DM (1 person) or Group (2+ people)
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -157,7 +157,7 @@ export function NewMessageModal({
                   type="text"
                   placeholder={`Group name (e.g., "${suggestedGroupName}")`}
                   value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGroupName(e.target.value)}
                   className="bg-white"
                 />
               </div>
@@ -173,7 +173,7 @@ export function NewMessageModal({
               type="text"
               placeholder="Search by name or member number..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               className="pl-10"
               autoFocus
             />

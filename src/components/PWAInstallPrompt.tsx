@@ -37,10 +37,6 @@ export function PWAInstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Dev mode preview - shows the component even without the browser event
-  const isDev = import.meta.env.DEV;
-  const showDevPreview = isDev && !isInstallable && !isInstalled && !isDismissed;
-
   useEffect(() => {
     // Check if already installed (standalone mode)
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -78,10 +74,6 @@ export function PWAInstallPrompt() {
    */
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // In dev mode without the event, just show an alert
-      if (isDev) {
-        alert('Install prompt would appear here in production (requires HTTPS)');
-      }
       return;
     }
 
@@ -106,8 +98,8 @@ export function PWAInstallPrompt() {
     setIsDismissed(true);
   };
 
-  // Don't show anything if already installed, dismissed, or not installable (unless dev preview)
-  if (isInstalled || isDismissed || (!isInstallable && !showDevPreview)) {
+  // Don't show anything if already installed, dismissed, or not installable
+  if (isInstalled || isDismissed || !isInstallable) {
     return null;
   }
 
@@ -123,9 +115,6 @@ export function PWAInstallPrompt() {
               <div>
                 <h3 className="font-semibold text-gray-900 text-sm">
                   Install Rackem Leagues
-                  {showDevPreview && (
-                    <span className="ml-2 text-xs text-orange-600 font-normal">(Dev Preview)</span>
-                  )}
                 </h3>
                 <p className="text-xs text-gray-600 mt-0.5">
                   Add to your home screen for quick access

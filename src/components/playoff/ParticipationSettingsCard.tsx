@@ -168,7 +168,7 @@ export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps>
                 min={2}
                 max={40}
                 value={fixedTeamCount}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   dispatch({ type: 'SET_FIXED_TEAM_COUNT', payload: parseInt(e.target.value) || 2 })
                 }
                 className="w-20 bg-white"
@@ -211,7 +211,7 @@ export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps>
                   min={2}
                   max={40}
                   value={percentageMin}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     dispatch({ type: 'SET_PERCENTAGE_MIN', payload: parseInt(e.target.value) || 2 })
                   }
                   className="w-20 bg-white"
@@ -228,7 +228,7 @@ export const ParticipationSettingsCard: React.FC<ParticipationSettingsCardProps>
                   max={40}
                   value={percentageMax ?? ''}
                   placeholder="No limit"
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const val = parseInt(e.target.value);
                     dispatch({ type: 'SET_PERCENTAGE_MAX', payload: isNaN(val) ? null : val });
                   }}
