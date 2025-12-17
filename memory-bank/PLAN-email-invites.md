@@ -214,6 +214,44 @@ if (userEmail !== inviteEmail) {
 
 ---
 
+### Phase 10: PP Removal Rules 📋 IN PROGRESS
+**Goal:** Allow captains to remove PPs under safe conditions
+
+**Problem:**
+Currently captains cannot remove PPs from teams. This is overly restrictive - if a PP has no games,
+there's nothing to protect and captains should be able to remove them.
+
+**Proposed Rules:**
+Captains CAN remove a PP from team IF:
+1. PP has **zero games played** (no match_games referencing this member)
+
+If PP has games → Only league operator can remove (protecting game history)
+
+**Additional cleanup rule:**
+If PP is removed AND has **no email**:
+- Delete the entire member record (orphan PP with no identity anchor)
+- This prevents accumulation of abandoned PP records
+
+If PP is removed AND **has email**:
+- Keep member record (may be claimed later or added to another team)
+- Email serves as identity anchor
+
+**Implementation:**
+- [ ] Create `get_pp_game_count(member_id)` RPC function to check if PP has games
+- [ ] Frontend: Query game count when displaying PP in roster editor
+- [ ] If no games: Show "Remove" button for captains
+- [ ] If has games: Show current modal explaining LO must remove
+- [ ] Create `remove_pp_from_team(member_id, team_id)` function with cleanup logic
+- [ ] If removed + no email: cascade delete member record
+- [ ] If removed + has email: only remove from team_players
+
+**Current Status:**
+- ✅ PlaceholderRemovalModal created (shows "contact LO" message)
+- ✅ TeamEditorModal updated (clickable PP rows)
+- 🔄 Need to add game count check and conditional removal
+
+---
+
 ## Tech Stack
 
 | Component | Technology |

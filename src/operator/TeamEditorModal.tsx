@@ -19,6 +19,7 @@ import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { InfoButton } from '@/components/InfoButton';
+import { PlaceholderRemovalModal } from '@/components/modals/PlaceholderRemovalModal';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
 import { containsProfanity } from '@/utils/profanityFilter';
@@ -138,6 +139,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
 
   // Track newly created placeholder members so they appear immediately in dropdowns
   const [newPlaceholders, setNewPlaceholders] = useState<PartialMember[]>([]);
+
+  // Track which placeholder player was clicked (for showing removal modal)
+  const [clickedPlaceholder, setClickedPlaceholder] = useState<PartialMember | null>(null);
 
   // Merge members from props with newly created placeholders
   const allMembers = useMemo(() => {
@@ -450,19 +454,21 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 const currentMember = currentPlayerId ? allMembers.find(m => m.id === currentPlayerId) : null;
                 const isCurrentPlaceholder = isPlaceholderMember(currentMember);
 
-                // Captain viewing a placeholder slot - show read-only label with clickable player link
+                // Captain viewing a placeholder slot - show clickable row that opens removal modal
                 if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
                   return (
                     <div key={index}>
-                      <div className="flex h-9 w-full items-center px-3 rounded-md border border-input bg-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => setClickedPlaceholder(currentMember)}
+                        className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer text-left"
+                      >
                         <PlayerNameLink
                           playerId={currentMember.id}
                           playerName={getPlayerDisplayName(currentMember)}
                         />
-                      </div>
-                      <p className="text-xs text-amber-600 mt-1">
-                        Placeholder players can only be removed by the league operator
-                      </p>
+                        <span className="text-xs text-amber-600">Click to manage</span>
+                      </button>
                     </div>
                   );
                 }
@@ -510,6 +516,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Placeholder Removal Modal - shown when captain clicks on a placeholder player */}
+      <PlaceholderRemovalModal
+        isOpen={!!clickedPlaceholder}
+        onClose={() => setClickedPlaceholder(null)}
+        playerName={clickedPlaceholder ? getPlayerDisplayName(clickedPlaceholder) : ''}
+        teamName={teamName}
+        leagueId={leagueId}
+      />
     </div>
   );
 };
