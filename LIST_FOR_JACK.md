@@ -75,6 +75,18 @@
 - **File**: `/src/login/RegisterExisting.tsx`
 - **Edge Function needed**: `search-placeholder-player` for multi-table confidence scoring
 
+## 11. Navbar Invite Indicator
+- **Context**: When navbar is implemented, add an invite notification indicator
+- **Design**: Similar to messages - icon with badge showing count of pending invites
+- **Functionality**:
+  - Shows number of pending (unclaimed) invites for the logged-in user
+  - Clicking opens dropdown with list of pending invites
+  - Each invite shows: Team name, Captain name, "Claim" button
+  - Expired invites show "Ask captain to resend" message
+- **Backend ready**: `get_my_pending_invites()` function returns pending/expired invites
+- **Integration**: When user claims, badge count decrements
+- **Related**: Pairs with login modal notification (implemented separately)
+
 ---
 
-*Last Updated: 2025-12-16*
+*Last Updated: 2025-12-17*

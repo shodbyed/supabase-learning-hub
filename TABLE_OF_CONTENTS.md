@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-12-05 (added WildcardSettingsCard component in /components/playoff/)
+> **Last Updated**: 2025-12-17 (added PendingInvitesModal.tsx, usePendingInvites.ts for invite notification system)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -370,6 +370,8 @@
 #### Auth Pages (`/login/`)
 - `Login.tsx` - Login page
 - `Register.tsx` - Registration page
+- `RegisterExisting.tsx` - Find existing placeholder player during registration
+- `ClaimPlayer.tsx` - Claim placeholder player for existing authenticated users
 - `ForgotPassword.tsx` - Password recovery
 - `ResetPassword.tsx` - Password reset
 - `EmailConfirmation.tsx` - Email confirmation
@@ -536,6 +538,7 @@ Reusable wizard/form step components
 - `DayOfWeekWarningModal.tsx` - Day of week warning
 - `DeleteLeagueModal.tsx` - League deletion confirmation
 - `DeleteSeasonModal.tsx` - Season deletion confirmation
+- `PendingInvitesModal.tsx` - Modal showing pending placeholder player invites to users after login
 - `SecurityDisclaimerModal.tsx` - Security disclaimer
 - `SetupGuideModal.tsx` - Setup guide
 - `WeekOffReasonModal.tsx` - Week off reason
@@ -695,6 +698,7 @@ High-level business logic services
 *React-specific wrappers combining queries with useQuery/useMutation*
 
 - `useCurrentMember.ts` - **✅ Current member hook** (replaces old version, 30min cache)
+- `usePendingInvites.ts` - **✅ Pending invites hook** (fetches placeholder player invites via get_my_pending_invites RPC)
 - `useUserProfile.ts` - **✅ User profile hook** (full member data + role utilities)
 - `useOperatorId.ts` - **✅ Operator ID hook** (operator lookup with caching)
 - `index.ts` - Central export point for all hooks

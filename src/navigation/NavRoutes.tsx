@@ -17,6 +17,7 @@ import { Home } from '../home/Home';
 import { Login } from '../login/Login';
 import { Register } from '../login/Register';
 import { RegisterExisting } from '../login/RegisterExisting';
+import { ClaimPlayer } from '../login/ClaimPlayer';
 import { ForgotPassword } from '../login/ForgotPassword';
 import { ResetPassword } from '../login/ResetPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
@@ -141,6 +142,7 @@ export const router = createBrowserRouter([
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
       { path: 'register-existing', element: <RegisterExisting /> },
+      { path: 'claim-player', element: <ClaimPlayer /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'confirm', element: <EmailConfirmation /> },

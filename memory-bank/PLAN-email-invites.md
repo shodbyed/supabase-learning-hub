@@ -149,22 +149,26 @@ if (userEmail !== inviteEmail) {
 
 ---
 
-### Phase 7: Frontend - Claim Pages & Notifications 🔄 IN PROGRESS
+### Phase 7: Frontend - Claim Pages & Notifications ✅ COMPLETE
 **Goal:** Build UI for claiming invites and notifications
 
 **Tasks:**
-- [ ] **`/claim-player` page** - For existing users clicking email link
+- [x] **`/claim-player` page** - For existing users clicking email link
   - Shows PP name, team name, captain name
   - "Claim History" button calls claim-placeholder Edge Function
-  - Success → redirect to dashboard or team page
-  - Error handling for expired/invalid tokens
+  - Success → redirect to dashboard with merge stats
+  - Error handling for expired/invalid/already-claimed tokens
+  - Email mismatch detection (wrong account logged in)
+  - **File:** `src/login/ClaimPlayer.tsx`
 
-- [ ] **Login notification component**
-  - Call `get_my_pending_invites()` after login
-  - Display notification banner/toast for pending invites
-  - "Claim" button (no email link needed - user is already authenticated)
+- [x] **Login notification modal**
+  - Call `get_my_pending_invites()` after login via Dashboard
+  - Display modal for pending invites
+  - "Claim" button navigates to /claim-player with token
   - "Expired" state shows "Ask captain to resend" message
   - Button text: "Join [Team Name]" with captain name context
+  - Dismissible (session state tracks dismissal)
+  - **Files:** `src/components/modals/PendingInvitesModal.tsx`, `src/api/hooks/usePendingInvites.ts`
 
 - [ ] **Invite status indicator on PP cards**
   - "Invite Sent" badge for PPs with pending invites
@@ -237,17 +241,23 @@ if (userEmail !== inviteEmail) {
   20251217170000_check_pending_invites.sql     ✅ Phase 6
 ```
 
-## Files to Create (Frontend)
+## Files Created (Frontend)
 
 ```
 /src
+  /login
+    ClaimPlayer.tsx                   ✅ Phase 7 - Claim page for existing users
+  /components
+    /modals
+      PendingInvitesModal.tsx         ✅ Phase 7 - Login notification modal
+  /api
+    /hooks
+      usePendingInvites.ts            ✅ Phase 7 - TanStack Query hook for pending invites
+
+Files to Create:
   /components
     /player
       InvitePlayerModal.tsx           📋 Phase 8
-    /notifications
-      PendingInvitesBanner.tsx        📋 Phase 7
-  /pages (or routes)
-    ClaimPlayerPage.tsx               📋 Phase 7
 ```
 
 ## RLS Policies
@@ -267,9 +277,79 @@ Proposed policies documented in `/RLS_ANALYSIS.md` section 13 for when RLS is en
 - [x] ✅ All PP game history, lineups, stats transfer correctly
 - [x] ✅ Works for any future tables that reference members(id)
 - [x] ✅ Security: Email verification prevents stolen link attacks
-- [ ] 🔄 Login notification shows pending/expired invites
-- [ ] 🔄 Users can claim directly without clicking email link
+- [x] ✅ Login notification shows pending/expired invites (modal on Dashboard)
+- [x] ✅ Users can claim directly without clicking email link (modal → claim page)
 - [ ] 📋 UI for captains to send invites with 2 options (email vs link-only)
+
+---
+
+## Edge Case: PP Cross-Contamination 🔄 DISCUSSION
+
+### The Problem
+
+Two scenarios where PPs can be incorrectly shared:
+
+**Scenario A: Same PP, Multiple Teams (Accidental)**
+```
+Captain A creates PP "John Smith" → adds to Team A → invites john@example.com
+Captain B searches, finds "John Smith" PP → adds to Team B → invites different email
+Now two different people might claim the same PP record
+```
+
+**Scenario B: Same PP, Same Person, Multiple Teams (Intentional but messy)**
+```
+Captain A creates PP "John Smith" → invites john@example.com
+Captain B (different org) also has John → uses same PP → invites john@example.com
+Both invites go to same person, but when claimed, all data merges
+User may not want to be on both teams
+```
+
+### Current Mitigation (Implemented)
+
+Member search now excludes PPs that are already on any team:
+- **File:** `src/api/queries/memberSearch.ts`
+- PPs with `user_id IS NULL` AND exist in `team_players` → hidden from search
+- Prevents Captain B from accidentally "adopting" Captain A's PP
+
+### Proposed Enhancement: Email-Protected PPs
+
+**Idea:** Store player's email on PP record at creation time, use it as identity anchor.
+
+**Flow:**
+```
+Captain A creates PP "John Smith" with email john@example.com
+  → Email stored on members.email (even though user_id is null)
+  → PP is "protected" by that email
+
+Captain B searches, finds "John Smith" PP (if we allow it)
+  → Tries to add to their team
+  → System prompts: "Enter this player's email to verify"
+  → Captain B enters john@example.com → Success (same person confirmed!)
+  → Captain B enters wrong@example.com → Denied
+
+When inviting:
+  → Email already on record, just click "Send Invite"
+  → Same email across teams = confirmed same person = safe to merge all
+```
+
+**Benefits:**
+1. **PP ownership verification** - Can't adopt PP without knowing player's email
+2. **Email becomes identity anchor** - Same email = same person across teams
+3. **Simplifies invite flow** - Email already on record
+4. **Enables intentional multi-team PPs** - If both captains have correct email, they have the right person
+
+**PPs without email:**
+- Can only be on ONE team (current restriction)
+- Or: Require email entry when adding to another team
+
+**Questions to resolve:**
+- [ ] Should we allow PPs in search if they have email? (with verification prompt)
+- [ ] Or keep current "hide assigned PPs" and require email at PP creation?
+- [ ] What if PP email is wrong? (Captain entered wrong email initially)
+
+**Schema change needed:**
+- `members.email` already exists but may be null for PPs
+- Could add `email_verified_by` to track which captain provided the email?
 
 ---
 

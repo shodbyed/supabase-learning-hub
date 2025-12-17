@@ -272,3 +272,6 @@ export {
   useUpdatePreference,
   useDeletePreference,
 } from './usePreferenceMutations';
+
+// Invite hooks
+export { usePendingInvites } from './usePendingInvites';
