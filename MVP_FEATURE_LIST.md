@@ -7,7 +7,8 @@ Minimum needed
 1.  create next season flow
 2.  rules \*\*
 3.  invite system \*\*
-4.  schedule management (league operator) - view/modify schedule, match ups, and table assignments
+4.  schedule management (league operator) - view/modify schedule match ups, and table assignments
+5.  score match/ match dispute (league operator) interface to manually change and score matches.
 
 IMPORTANT FEATURES
 

@@ -275,3 +275,5 @@ export {
 
 // Invite hooks
 export { usePendingInvites } from './usePendingInvites';
+export { useInviteStatuses } from './useInviteStatuses';
+export type { InviteStatus } from './useInviteStatuses';

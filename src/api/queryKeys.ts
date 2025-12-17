@@ -287,6 +287,12 @@ export const queryKeys = {
 
     /** Pending invites for the current user */
     pending: () => [...queryKeys.invites.all, 'pending'] as const,
+
+    /** Invite status for a specific member */
+    byMember: (memberId: string) => [...queryKeys.invites.all, 'member', memberId] as const,
+
+    /** Invite statuses for multiple members (batch query) */
+    byMembers: (memberIds: string[]) => [...queryKeys.invites.all, 'members', memberIds.sort().join(',')] as const,
   },
 } as const;
 

@@ -75,6 +75,22 @@
 - **File**: `/src/login/RegisterExisting.tsx`
 - **Edge Function needed**: `search-placeholder-player` for multi-table confidence scoring
 
+## 12. MemberCombobox Invite Status Badge Integration
+- **Context**: When operators edit teams, placeholder players (PPs) with pending/expired invites should show a status badge
+- **Current State**: Badge floats outside the combobox (between combobox and X clear button), looks awkward
+- **Problem**: MemberCombobox has internal layout with combobox + clear button, no slot for badge between them
+- **Desired Behavior**: Badge should appear inline with the selected value, between the name and the clear X button
+- **Options**:
+  1. Add a `suffix` prop to MemberCombobox to render content between combobox and clear button
+  2. Modify the trigger button to accept a badge element after the selected name
+  3. Show badge inside the combobox trigger (after selected member name, before chevron)
+- **Files involved**:
+  - `src/components/MemberCombobox.tsx` - needs suffix slot or trigger modification
+  - `src/operator/TeamEditorModal.tsx` - passes badge to combobox
+  - `src/components/InviteStatusBadge.tsx` - existing badge component
+- **Note**: Captain view already works well (static row with PlayerNameLink + Badge + Manage button)
+- **Priority**: Low - visual polish only
+
 ## 11. Navbar Invite Indicator
 - **Context**: When navbar is implemented, add an invite notification indicator
 - **Design**: Similar to messages - icon with badge showing count of pending invites

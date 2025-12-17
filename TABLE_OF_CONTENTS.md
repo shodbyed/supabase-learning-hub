@@ -1,6 +1,6 @@
 # Complete Project Table of Contents
 
-> **Last Updated**: 2025-12-17 (added PendingInvitesModal.tsx, usePendingInvites.ts for invite notification system)
+> **Last Updated**: 2025-12-17 (added InviteStatusBadge.tsx, useInviteStatuses.ts for Phase 9 invite status indicators)
 > **Purpose**: Comprehensive index of EVERY file in this project for quick navigation and organization analysis
 > **Maintenance**: Update this file whenever you create, move, rename, or delete ANY file or folder
 
@@ -558,10 +558,12 @@ Reusable wizard/form step components
 - `AlertDialog.tsx` - Alert/info dialog with OK button (success/warning/error/info)
 - `ConfirmDialog.tsx` - Confirmation dialog with Cancel/Confirm buttons
 - `InfoButton.tsx` - Info button with tooltip
-- `MatchCard.tsx` - Match card ⚠️ **DUPLICATE**
+- `InvitePlayerModal.tsx` - **✅ Phase 8** Captain invite modal for placeholder players
+- `InviteStatusBadge.tsx` - **✅ Phase 9** Badge showing invite status on PP cards
+- `MatchCard.tsx` - Match card
 - `MemberCombobox.tsx` - Member selection combobox
 - `PaymentCardForm.tsx` - Payment card form
-- `PlayerNameLink.tsx` - Player name link
+- `PlayerNameLink.tsx` - Player name link (opens InvitePlayerModal for PPs)
 - `ProtectedRoute.tsx` - Route protection HOC
 - `ReportUserModal.tsx` - User reporting modal
 - `SponsorLogos.tsx` - Sponsor logo display
@@ -699,6 +701,7 @@ High-level business logic services
 
 - `useCurrentMember.ts` - **✅ Current member hook** (replaces old version, 30min cache)
 - `usePendingInvites.ts` - **✅ Pending invites hook** (fetches placeholder player invites via get_my_pending_invites RPC)
+- `useInviteStatuses.ts` - **✅ Invite statuses hook** (batch fetch invite statuses for PP cards in TeamEditorModal)
 - `useUserProfile.ts` - **✅ User profile hook** (full member data + role utilities)
 - `useOperatorId.ts` - **✅ Operator ID hook** (operator lookup with caching)
 - `index.ts` - Central export point for all hooks

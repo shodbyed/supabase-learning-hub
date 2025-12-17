@@ -10,7 +10,7 @@
  */
 import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
-import { useCreateTeam, useUpdateTeam } from '@/api/hooks';
+import { useCreateTeam, useUpdateTeam, useInviteStatuses } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,7 @@ import { MemberCombobox } from '@/components/MemberCombobox';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { InfoButton } from '@/components/InfoButton';
 import { PlaceholderRemovalModal } from '@/components/modals/PlaceholderRemovalModal';
+import { InviteStatusBadge } from '@/components/InviteStatusBadge';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
 import { containsProfanity } from '@/utils/profanityFilter';
@@ -183,6 +184,24 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     allTeams,
     seasonId,
   });
+
+  // Get all placeholder player IDs from the roster for invite status lookup
+  // Both operators and captains can see invite status badges
+  const placeholderPlayerIds = useMemo(() => {
+    return playerIds
+      .map(playerId => {
+        if (!playerId) return null;
+        const member = allMembers.find(m => m.id === playerId);
+        if (member && isPlaceholderMember(member)) {
+          return member.id;
+        }
+        return null;
+      })
+      .filter((id): id is string => id !== null);
+  }, [playerIds, allMembers]);
+
+  // Fetch invite statuses for placeholder players
+  const { getInviteStatus } = useInviteStatuses(placeholderPlayerIds);
 
   /**
    * Get all player IDs from other teams in this season
@@ -457,13 +476,17 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 // Captain viewing a placeholder slot - show player name with separate manage button
                 // Don't wrap entire row in button - PlayerNameLink needs to remain clickable for registration
                 if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
+                  const inviteStatus = getInviteStatus(currentMember.id);
                   return (
                     <div key={index}>
                       <div className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100">
-                        <PlayerNameLink
-                          playerId={currentMember.id}
-                          playerName={getPlayerDisplayName(currentMember)}
-                        />
+                        <div className="flex items-center gap-2">
+                          <PlayerNameLink
+                            playerId={currentMember.id}
+                            playerName={getPlayerDisplayName(currentMember)}
+                          />
+                          <InviteStatusBadge status={inviteStatus} />
+                        </div>
                         <Button
                           type="button"
                           variant="ghost"

@@ -20,7 +20,7 @@
  * - PP with email can be on multiple teams
  */
 import { useState, useMemo, useEffect } from 'react';
-import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil } from 'lucide-react';
+import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -36,6 +36,8 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/supabaseClient';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
+import { useInviteStatuses } from '@/api/hooks';
+import { queryKeys } from '@/api/queryKeys';
 
 /** Modes for the modal */
 type ModalMode = 'options' | 'handoff' | 'success';
@@ -98,6 +100,12 @@ export function InvitePlayerModal({
   captainMemberId,
 }: InvitePlayerModalProps) {
   const queryClient = useQueryClient();
+
+  // Fetch existing invite status for this player
+  const { getInviteStatus, refetch: refetchInviteStatus } = useInviteStatuses([playerId]);
+  const existingInvite = getInviteStatus(playerId);
+  const hasExistingInvite = existingInvite !== null && existingInvite.status === 'pending';
+  const hasExpiredInvite = existingInvite !== null && (existingInvite.status === 'expired' || existingInvite.isExpired);
 
   // Modal mode state
   const [mode, setMode] = useState<ModalMode>('options');
@@ -243,8 +251,13 @@ export function InvitePlayerModal({
         return;
       }
 
-      toast.success(`Invite sent to ${email}`);
-      logger.info('Email invite sent', { memberId: playerId, email: email.trim() });
+      const isResend = hasExistingInvite || hasExpiredInvite;
+      toast.success(isResend ? `Invite resent to ${email}` : `Invite sent to ${email}`);
+      logger.info('Email invite sent', { memberId: playerId, email: email.trim(), isResend });
+
+      // Invalidate invite queries so status updates
+      refetchInviteStatus();
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.byMembers([playerId]) });
 
       // Close modal after successful send
       handleClose(false);
@@ -489,6 +502,29 @@ export function InvitePlayerModal({
                   </p>
                 </div>
 
+                {/* Show existing invite status if applicable */}
+                {(hasExistingInvite || hasExpiredInvite) && existingInvite && (
+                  <div className={`p-3 rounded-lg border ${hasExpiredInvite ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+                    <div className="flex items-center gap-2 text-sm">
+                      {hasExpiredInvite ? (
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      ) : (
+                        <Mail className="h-4 w-4 text-green-600" />
+                      )}
+                      <span className={hasExpiredInvite ? 'text-amber-800' : 'text-green-800'}>
+                        {hasExpiredInvite
+                          ? 'Previous invite has expired'
+                          : `Invite sent ${new Date(existingInvite.createdAt).toLocaleDateString()}`}
+                      </span>
+                    </div>
+                    {hasExistingInvite && (
+                      <p className="text-xs text-green-700 mt-1">
+                        Expires {new Date(existingInvite.expiresAt || '').toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex gap-2">
                   <Button
                     type="button"
@@ -499,8 +535,17 @@ export function InvitePlayerModal({
                     isLoading={isSendingInvite}
                     loadingText="Sending..."
                   >
-                    <Mail className="h-4 w-4" />
-                    Send Email
+                    {hasExistingInvite || hasExpiredInvite ? (
+                      <>
+                        <RefreshCw className="h-4 w-4" />
+                        Resend Email
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4" />
+                        Send Email
+                      </>
+                    )}
                   </Button>
                   <Button
                     type="button"

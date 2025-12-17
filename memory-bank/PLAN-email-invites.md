@@ -1,6 +1,6 @@
 # Email Invites for Placeholder Players - Implementation Plan
 
-> **Status:** Backend Complete ✅ | Frontend Complete ✅ | Polish TODO 📋
+> **Status:** Backend Complete ✅ | Frontend Complete ✅ | Polish Complete ✅ | Phase 10 TODO 📋
 > **Created:** 2025-12-17
 > **Branch:** `email-invites`
 
@@ -215,13 +215,21 @@ if (userEmail !== inviteEmail) {
 
 ---
 
-### Phase 9: Edge Cases & Polish 📋 TODO
+### Phase 9: Edge Cases & Polish ✅ COMPLETE
 **Goal:** Handle edge cases, add polish
 
-**Tasks:**
-- [ ] Resend invite functionality (existing UI can reuse same flow)
-- [ ] Cancel/revoke invite capability
-- [ ] "Invite Pending" indicator shows invite date
+**Completed Tasks:**
+- [x] **Invite status indicators on PP cards** - TeamEditorModal shows "Invited" (green) or "Expired" (amber) badge
+- [x] **Resend invite functionality** - InvitePlayerModal shows previous invite status and "Resend Email" button
+- [x] **"Invite Pending" indicator shows invite date** - Modal shows when invite was sent and when it expires
+
+**Files Created:**
+- `src/components/InviteStatusBadge.tsx` - Badge component for PP cards
+- `src/api/hooks/useInviteStatuses.ts` - TanStack Query hook for batch fetching invite statuses
+- Updated `src/api/queryKeys.ts` - Added `invites.byMember` and `invites.byMembers` keys
+
+**Remaining for Future:**
+- [ ] Cancel/revoke invite capability (moved to Phase 10 with destructive operations)
 - [ ] Handle multiple pending invites gracefully
 - [ ] Error handling for all failure modes
 - [ ] Email template improvements (better branding)
@@ -308,7 +316,8 @@ If PP is removed AND **has email**:
   /login
     ClaimPlayer.tsx                   ✅ Phase 7 - Claim page for existing users
   /components
-    InvitePlayerModal.tsx             ✅ Phase 8 - Captain invite modal
+    InvitePlayerModal.tsx             ✅ Phase 8 - Captain invite modal (updated Phase 9 for resend)
+    InviteStatusBadge.tsx             ✅ Phase 9 - Badge component for PP cards
     PlayerNameLink.tsx                ✅ Phase 8 - Updated to open InvitePlayerModal for PPs
     /modals
       PendingInvitesModal.tsx         ✅ Phase 7 - Login notification modal
@@ -317,6 +326,10 @@ If PP is removed AND **has email**:
   /api
     /hooks
       usePendingInvites.ts            ✅ Phase 7 - TanStack Query hook for pending invites
+      useInviteStatuses.ts            ✅ Phase 9 - TanStack Query hook for batch invite statuses
+    queryKeys.ts                      ✅ Phase 9 - Added invites.byMember and invites.byMembers keys
+  /operator
+    TeamEditorModal.tsx               ✅ Phase 9 - Updated to show invite status badges on PP cards
 ```
 
 ## RLS Policies
