@@ -258,7 +258,7 @@ export const RegisterExisting: React.FC = () => {
                 id="operatorFirstName"
                 placeholder="Operator first name"
                 value={operatorFirstName}
-                onChange={(e) => setOperatorFirstName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOperatorFirstName(e.target.value)}
               />
             </div>
             <div>
@@ -267,7 +267,7 @@ export const RegisterExisting: React.FC = () => {
                 id="operatorLastName"
                 placeholder="Operator last name"
                 value={operatorLastName}
-                onChange={(e) => setOperatorLastName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOperatorLastName(e.target.value)}
               />
             </div>
           </div>
@@ -277,7 +277,7 @@ export const RegisterExisting: React.FC = () => {
               id="operatorPlayerNumber"
               placeholder="e.g., P-12345"
               value={operatorPlayerNumber}
-              onChange={(e) => setOperatorPlayerNumber(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOperatorPlayerNumber(e.target.value)}
             />
           </div>
         </div>
@@ -292,7 +292,7 @@ export const RegisterExisting: React.FC = () => {
                 id="captainFirstName"
                 placeholder="Captain first name"
                 value={captainFirstName}
-                onChange={(e) => setCaptainFirstName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCaptainFirstName(e.target.value)}
               />
             </div>
             <div>
@@ -301,7 +301,7 @@ export const RegisterExisting: React.FC = () => {
                 id="captainLastName"
                 placeholder="Captain last name"
                 value={captainLastName}
-                onChange={(e) => setCaptainLastName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCaptainLastName(e.target.value)}
               />
             </div>
           </div>
@@ -311,7 +311,7 @@ export const RegisterExisting: React.FC = () => {
               id="captainPlayerNumber"
               placeholder="e.g., P-12345"
               value={captainPlayerNumber}
-              onChange={(e) => setCaptainPlayerNumber(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCaptainPlayerNumber(e.target.value)}
             />
           </div>
         </div>
@@ -326,7 +326,7 @@ export const RegisterExisting: React.FC = () => {
                 id="systemFirstName"
                 placeholder="Your first name"
                 value={systemFirstName}
-                onChange={(e) => setSystemFirstName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSystemFirstName(e.target.value)}
               />
             </div>
             <div>
@@ -335,7 +335,7 @@ export const RegisterExisting: React.FC = () => {
                 id="systemLastName"
                 placeholder="Your last name"
                 value={systemLastName}
-                onChange={(e) => setSystemLastName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSystemLastName(e.target.value)}
               />
             </div>
           </div>
@@ -346,7 +346,7 @@ export const RegisterExisting: React.FC = () => {
                 id="systemPlayerNumber"
                 placeholder="e.g., P-12345"
                 value={systemPlayerNumber}
-                onChange={(e) => setSystemPlayerNumber(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSystemPlayerNumber(e.target.value)}
               />
             </div>
             <div>
@@ -355,7 +355,7 @@ export const RegisterExisting: React.FC = () => {
                 id="systemNickname"
                 placeholder="Your nickname"
                 value={systemNickname}
-                onChange={(e) => setSystemNickname(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSystemNickname(e.target.value)}
               />
             </div>
           </div>
@@ -371,7 +371,7 @@ export const RegisterExisting: React.FC = () => {
                 id="teamName"
                 placeholder="Your team name"
                 value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTeamName(e.target.value)}
               />
             </div>
             <div>
@@ -391,7 +391,7 @@ export const RegisterExisting: React.FC = () => {
                 id="city"
                 placeholder="City"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCity(e.target.value)}
               />
             </div>
             <div>
@@ -441,7 +441,7 @@ export const RegisterExisting: React.FC = () => {
                   id="lastOpponentFirstName"
                   placeholder="First name"
                   value={lastOpponentFirstName}
-                  onChange={(e) => setLastOpponentFirstName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastOpponentFirstName(e.target.value)}
                 />
               </div>
               <div>
@@ -450,7 +450,7 @@ export const RegisterExisting: React.FC = () => {
                   id="lastOpponentLastName"
                   placeholder="Last name"
                   value={lastOpponentLastName}
-                  onChange={(e) => setLastOpponentLastName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastOpponentLastName(e.target.value)}
                 />
               </div>
             </div>
