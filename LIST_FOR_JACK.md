@@ -91,6 +91,31 @@
 - **Note**: Captain view already works well (static row with PlayerNameLink + Badge + Manage button)
 - **Priority**: Low - visual polish only
 
+## 13. League Creation Wizard Step 4 - Radio Choice Styling
+- **Issue**: Selected radio button choice div is too busy and congested
+- **Context**: Step 4 "What team format will this league use?" has two choices (5-Man and 8-Man)
+- **Problem**: When a choice is selected, the expanded card with description becomes visually cluttered
+- **File**: `/src/components/forms/SimpleRadioChoice.tsx` (lines 91-149 handle selected state)
+- **Design Request**: Refine the look of the selected choice cards to be cleaner and less congested
+- **Priority**: Low - visual polish
+
+## 14. League Creation Wizard - Overall UX Refinement
+- **Issue**: Several UI/UX elements feel wonky and could use refinement
+- **Cancel/Clear Form redundancy**:
+  - "Cancel" button appears in the navigation buttons at each step (bottom of wizard)
+  - "Clear Form" link appears at the top of the page in the header
+  - Both essentially do the same thing (abandon wizard progress)
+  - Cancel: Shows confirmation dialog, clears localStorage, navigates to operator dashboard
+  - Clear Form: Shows confirmation dialog, clears localStorage, reloads the page
+  - **Request**: Decide on the best UX approach - keep one, combine them, or redesign how users exit the wizard
+- **General UI polish**: Some elements look a little wonky - walk through the wizard and refine as needed
+- **Files**:
+  - `/src/operator/LeagueCreationWizard.tsx` (main wizard component)
+  - `/src/components/forms/RadioChoiceStep.tsx` (renders Cancel button)
+  - `/src/components/forms/SimpleRadioChoice.tsx` (choice cards)
+  - `/src/components/forms/QuestionStep.tsx` (input steps)
+- **Priority**: Low - UX polish
+
 ## 11. Navbar Invite Indicator
 - **Context**: When navbar is implemented, add an invite notification indicator
 - **Design**: Similar to messages - icon with badge showing count of pending invites
@@ -105,4 +130,4 @@
 
 ---
 
-*Last Updated: 2025-12-17*
+*Last Updated: 2025-12-18*
