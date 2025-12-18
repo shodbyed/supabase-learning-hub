@@ -78,7 +78,14 @@
 - **Design Request**: Refine the look of the selected choice cards to be cleaner and less congested
 - **Priority**: Low - visual polish
 
-## 14. League Creation Wizard - Overall UX Refinement
+## 14. Complete Profile Page - Info Button Refinement
+- **Issue**: Info button on the "Complete Your Profile" page needs refinement
+- **Context**: Nickname field has an info button that shows explanation of how nicknames work
+- **File**: `/src/completeProfile/CompleteProfileForm.tsx` uses `nicknameInfo` from `/src/constants/infoContent/profileInfoContent.tsx`
+- **Request**: Review the info button styling/placement and make it look cleaner
+- **Priority**: Low - visual polish
+
+## 15. League Creation Wizard - Overall UX Refinement
 - **Issue**: Several UI/UX elements feel wonky and could use refinement
 - **Cancel/Clear Form redundancy**:
   - "Cancel" button appears in the navigation buttons at each step (bottom of wizard)
