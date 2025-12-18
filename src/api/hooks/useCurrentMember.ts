@@ -204,20 +204,17 @@ export function useMembersByIds(memberIds: string[] | undefined | null) {
 /**
  * Hook to get member's profanity filter settings
  *
- * Fetches date of birth and profanity filter preference for current user.
- * Used to calculate age-based filter enforcement:
- * - Users under 18: Filter forced ON, cannot toggle
- * - Users 18+: Filter based on preference, can toggle
+ * Fetches profanity filter preference for current user.
+ * All users can toggle their filter preference.
  *
  * Caches for 30 minutes. Profile data doesn't change frequently.
  *
  * @param userId - Supabase auth user ID (optional)
- * @returns Query result with { date_of_birth, profanity_filter_enabled }
+ * @returns Query result with { profanity_filter_enabled }
  *
  * @example
  * const { data: settings } = useMemberProfanitySettings(user?.id);
- * const isAdult = isEighteenOrOlder(settings.date_of_birth);
- * const shouldFilter = isAdult ? settings.profanity_filter_enabled : true;
+ * const shouldFilter = settings.profanity_filter_enabled;
  */
 export function useMemberProfanitySettings(userId: string | null | undefined) {
   return useQuery({
