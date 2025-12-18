@@ -3,12 +3,17 @@
  *
  * Displays a list of all players assigned to any team in the league.
  * Shows players alphabetically by last name with their player number.
+ * Player names are clickable links that open a popover with actions.
+ * Placeholder players show invite status badges (Invited/Expired).
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { TeamWithQueryDetails } from '@/types/team';
 import type { Member } from '@/types/member';
 import { formatPartialMemberNumber } from '@/types/member';
+import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { InviteStatusBadge } from '@/components/InviteStatusBadge';
+import { useInviteStatuses } from '@/api/hooks';
 
 interface AllPlayersRosterCardProps {
   /** All teams with their rosters */
@@ -22,6 +27,8 @@ interface PlayerInfo {
   playerNumber: string;
   teamName: string;
   isCaptain: boolean;
+  /** True if this is a placeholder player (no user_id) */
+  isPlaceholder: boolean;
 }
 
 /**
@@ -40,19 +47,21 @@ export const AllPlayersRosterCard: React.FC<AllPlayersRosterCardProps> = ({ team
   /**
    * Extract all players from all teams and sort alphabetically
    */
-  const getAllPlayers = (): PlayerInfo[] => {
+  const players = useMemo((): PlayerInfo[] => {
     const playersMap = new Map<string, PlayerInfo>();
 
     teams.forEach((team) => {
       // Add captain
       if (team.captain) {
+        const captain = team.captain as Member;
         playersMap.set(team.captain_id, {
           memberId: team.captain_id,
-          firstName: team.captain.first_name,
-          lastName: team.captain.last_name,
-          playerNumber: formatPartialMemberNumber(team.captain),
+          firstName: captain.first_name,
+          lastName: captain.last_name,
+          playerNumber: formatPartialMemberNumber(captain),
           teamName: team.team_name,
           isCaptain: true,
+          isPlaceholder: captain.user_id === null,
         });
       }
 
@@ -67,6 +76,7 @@ export const AllPlayersRosterCard: React.FC<AllPlayersRosterCardProps> = ({ team
             playerNumber: formatPartialMemberNumber(member),
             teamName: team.team_name,
             isCaptain: tp.is_captain ?? false,
+            isPlaceholder: member.user_id === null,
           });
         }
       });
@@ -78,9 +88,15 @@ export const AllPlayersRosterCard: React.FC<AllPlayersRosterCardProps> = ({ team
       if (lastNameCompare !== 0) return lastNameCompare;
       return a.firstName.localeCompare(b.firstName);
     });
-  };
+  }, [teams]);
 
-  const players = getAllPlayers();
+  // Get placeholder player IDs for invite status lookup
+  const placeholderPlayerIds = useMemo(() => {
+    return players.filter(p => p.isPlaceholder).map(p => p.memberId);
+  }, [players]);
+
+  // Fetch invite statuses for placeholder players
+  const { getInviteStatus } = useInviteStatuses(placeholderPlayerIds);
 
   if (players.length === 0) {
     return (
@@ -103,16 +119,28 @@ export const AllPlayersRosterCard: React.FC<AllPlayersRosterCardProps> = ({ team
             className="flex items-center justify-between py-1.5 px-2 hover:bg-gray-50 rounded text-sm"
           >
             <div className="flex items-center gap-2">
-              <span className="text-gray-900">
-                {player.lastName}, {player.firstName}
-              </span>
+              <PlayerNameLink
+                playerId={player.memberId}
+                playerName={`${player.lastName}, ${player.firstName}`}
+              />
               {player.isCaptain && (
                 <span
-                  className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded"
-                  title="Team Captain"
+                  className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded cursor-help"
+                  title="Captain"
                 >
                   C
                 </span>
+              )}
+              {player.isPlaceholder && (
+                <>
+                  <span
+                    className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded cursor-help"
+                    title="Unregistered"
+                  >
+                    U
+                  </span>
+                  <InviteStatusBadge status={getInviteStatus(player.memberId)} />
+                </>
               )}
             </div>
             <span className="text-gray-600 text-xs">{player.playerNumber}</span>

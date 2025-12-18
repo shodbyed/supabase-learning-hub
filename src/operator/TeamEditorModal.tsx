@@ -10,7 +10,7 @@
  */
 import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
-import { useCreateTeam, useUpdateTeam } from '@/api/hooks';
+import { useCreateTeam, useUpdateTeam, useInviteStatuses } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,8 @@ import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { InfoButton } from '@/components/InfoButton';
+import { PlaceholderRemovalModal } from '@/components/modals/PlaceholderRemovalModal';
+import { InviteStatusBadge } from '@/components/InviteStatusBadge';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
 import { containsProfanity } from '@/utils/profanityFilter';
@@ -139,6 +141,9 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   // Track newly created placeholder members so they appear immediately in dropdowns
   const [newPlaceholders, setNewPlaceholders] = useState<PartialMember[]>([]);
 
+  // Track which placeholder player was clicked (for showing removal modal)
+  const [clickedPlaceholder, setClickedPlaceholder] = useState<PartialMember | null>(null);
+
   // Merge members from props with newly created placeholders
   const allMembers = useMemo(() => {
     // Filter out any duplicates (in case the query refetches and includes the new member)
@@ -179,6 +184,24 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
     allTeams,
     seasonId,
   });
+
+  // Get all placeholder player IDs from the roster for invite status lookup
+  // Both operators and captains can see invite status badges
+  const placeholderPlayerIds = useMemo(() => {
+    return playerIds
+      .map(playerId => {
+        if (!playerId) return null;
+        const member = allMembers.find(m => m.id === playerId);
+        if (member && isPlaceholderMember(member)) {
+          return member.id;
+        }
+        return null;
+      })
+      .filter((id): id is string => id !== null);
+  }, [playerIds, allMembers]);
+
+  // Fetch invite statuses for placeholder players
+  const { getInviteStatus } = useInviteStatuses(placeholderPlayerIds);
 
   /**
    * Get all player IDs from other teams in this season
@@ -450,19 +473,30 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 const currentMember = currentPlayerId ? allMembers.find(m => m.id === currentPlayerId) : null;
                 const isCurrentPlaceholder = isPlaceholderMember(currentMember);
 
-                // Captain viewing a placeholder slot - show read-only label with clickable player link
+                // Captain viewing a placeholder slot - show player name with separate manage button
+                // Don't wrap entire row in button - PlayerNameLink needs to remain clickable for registration
                 if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
+                  const inviteStatus = getInviteStatus(currentMember.id);
                   return (
                     <div key={index}>
-                      <div className="flex h-9 w-full items-center px-3 rounded-md border border-input bg-gray-100">
-                        <PlayerNameLink
-                          playerId={currentMember.id}
-                          playerName={getPlayerDisplayName(currentMember)}
-                        />
+                      <div className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100">
+                        <div className="flex items-center gap-2">
+                          <PlayerNameLink
+                            playerId={currentMember.id}
+                            playerName={getPlayerDisplayName(currentMember)}
+                          />
+                          <InviteStatusBadge status={inviteStatus} />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setClickedPlaceholder(currentMember)}
+                          className="h-6 px-2 text-xs text-amber-600 hover:text-amber-700"
+                        >
+                          Manage
+                        </Button>
                       </div>
-                      <p className="text-xs text-amber-600 mt-1">
-                        Placeholder players can only be removed by the league operator
-                      </p>
                     </div>
                   );
                 }
@@ -510,6 +544,15 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Placeholder Removal Modal - shown when captain clicks on a placeholder player */}
+      <PlaceholderRemovalModal
+        isOpen={!!clickedPlaceholder}
+        onClose={() => setClickedPlaceholder(null)}
+        playerName={clickedPlaceholder ? getPlayerDisplayName(clickedPlaceholder) : ''}
+        teamName={teamName}
+        leagueId={leagueId}
+      />
     </div>
   );
 };

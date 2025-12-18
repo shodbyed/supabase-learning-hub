@@ -6,27 +6,37 @@
  * When the Dashboard mounts, all cached data is marked as stale (but not refetched).
  * This ensures that when users navigate from Dashboard to other pages, they get fresh data.
  * This provides a natural "reset point" for the app's data cache.
+ *
+ * Pending Invites:
+ * On mount, checks for any pending placeholder player invites for the current user.
+ * If found, displays a modal allowing them to claim their player profile or dismiss.
  */
 import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '../context/useUser';
-import { useUserProfile } from '@/api/hooks';
+import { useUserProfile, usePendingInvites } from '@/api/hooks';
 import { useOrganizations } from '@/api/hooks/useOrganizations';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { PendingInvitesModal } from '@/components/modals/PendingInvitesModal';
 import { Users, MessageSquare, Trophy, Building2, Settings } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { user } = useUser();
   const { member, loading } = useUserProfile();
   const { organizations, loading: orgsLoading } = useOrganizations(member?.id);
+  const { pendingInvites, hasPendingInvites, loading: invitesLoading } = usePendingInvites();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // Track which org button is loading during navigation
   const [navigatingOrgId, setNavigatingOrgId] = useState<string | null>(null);
+  // Track whether the pending invites modal has been dismissed this session
+  const [invitesModalDismissed, setInvitesModalDismissed] = useState(false);
+  // Show modal when invites are loaded and there are pending invites
+  const showInvitesModal = !invitesLoading && hasPendingInvites && !invitesModalDismissed;
 
   /**
    * Mark all cached data as stale when Dashboard mounts.
@@ -66,6 +76,13 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Pending Invites Modal - shown when user has unclaimed invites */}
+      <PendingInvitesModal
+        isOpen={showInvitesModal}
+        onClose={() => setInvitesModalDismissed(true)}
+        invites={pendingInvites}
+      />
+
       <PageHeader
         backTo="/"
         backLabel="Home"

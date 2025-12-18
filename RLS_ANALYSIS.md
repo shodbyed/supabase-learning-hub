@@ -204,3 +204,192 @@ For each table, we need to identify:
 2. Design RLS policies table-by-table
 3. Test each policy independently before applying all
 4. Create migration with ONLY the policies we've verified won't break things
+
+---
+
+## Proposed RLS Policies (Not Yet Implemented)
+
+### 12. `merge_requests` Table
+
+**Purpose:** Stores requests to merge placeholder players with registered users.
+
+**Operations Needed:**
+- ✅ **SELECT**:
+  - Users can view their own requests (requested_by or registered_member)
+  - League operators can view all requests for their organization
+- ✅ **INSERT**: Any authenticated user can create a merge request
+- ✅ **UPDATE**: League operators for their organization only
+- ❌ **DELETE**: Probably never (keep audit trail)
+
+**Proposed Policies:**
+
+```sql
+-- Anyone authenticated can create a merge request
+CREATE POLICY "Users can create merge requests"
+  ON merge_requests FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    requested_by_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+  );
+
+-- Users can view their own requests
+CREATE POLICY "Users can view their own merge requests"
+  ON merge_requests FOR SELECT
+  TO authenticated
+  USING (
+    requested_by_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+    OR
+    registered_member_id IN (
+      SELECT id FROM members WHERE user_id = auth.uid()
+    )
+  );
+
+-- League operators can view all requests for their organization
+CREATE POLICY "LOs can view org merge requests"
+  ON merge_requests FOR SELECT
+  TO authenticated
+  USING (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  );
+
+-- League operators can update requests for their organization
+CREATE POLICY "LOs can update org merge requests"
+  ON merge_requests FOR UPDATE
+  TO authenticated
+  USING (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    organization_id IN (
+      SELECT lo.organization_id
+      FROM league_operators lo
+      JOIN members m ON lo.member_id = m.id
+      WHERE m.user_id = auth.uid()
+    )
+  );
+```
+
+**Notes:**
+- No DELETE policy - merge requests should be kept for audit purposes
+- Status changes (pending → approved/rejected) handled via UPDATE
+- organization_id is derived from PP's team context when request is created
+
+---
+
+### 13. `invite_tokens` Table
+
+**Purpose:** Stores email invite tokens for placeholder players. Captains send invites, users click link to register and claim their PP record.
+
+**Operations Needed:**
+- ✅ **SELECT**:
+  - Team captains can view invites for their teams
+  - Organization operators can view invites for teams in their org
+- ✅ **INSERT**:
+  - Team captains can create invites for their team members
+  - Organization operators can create invites for any team in their org
+- ✅ **UPDATE**:
+  - Team captains can update/cancel invites for their teams
+  - Organization operators can update/cancel invites for teams in their org
+- ❌ **DELETE**: Never (keep audit trail)
+
+**Proposed Policies:**
+
+```sql
+-- Captains and operators can view invites for their teams
+CREATE POLICY "Team captains and operators can view team invites"
+  ON invite_tokens
+  FOR SELECT
+  USING (
+    -- User is the captain of the team
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN members m ON m.id = t.captain_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+    )
+    OR
+    -- User is an operator of the organization that owns the league
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN seasons s ON s.id = t.season_id
+      JOIN leagues l ON l.id = s.league_id
+      JOIN organization_staff os ON os.organization_id = l.organization_id
+      JOIN members m ON m.id = os.member_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+        AND os.position IN ('owner', 'admin')
+    )
+  );
+
+-- Captains and operators can create invites for their teams
+CREATE POLICY "Team captains and operators can create invites"
+  ON invite_tokens
+  FOR INSERT
+  WITH CHECK (
+    -- User is the captain of the team
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN members m ON m.id = t.captain_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+    )
+    OR
+    -- User is an operator of the organization
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN seasons s ON s.id = t.season_id
+      JOIN leagues l ON l.id = s.league_id
+      JOIN organization_staff os ON os.organization_id = l.organization_id
+      JOIN members m ON m.id = os.member_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+        AND os.position IN ('owner', 'admin')
+    )
+  );
+
+-- Captains and operators can cancel invites for their teams
+CREATE POLICY "Team captains and operators can update invites"
+  ON invite_tokens
+  FOR UPDATE
+  USING (
+    -- User is the captain of the team
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN members m ON m.id = t.captain_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+    )
+    OR
+    -- User is an operator of the organization
+    EXISTS (
+      SELECT 1 FROM teams t
+      JOIN seasons s ON s.id = t.season_id
+      JOIN leagues l ON l.id = s.league_id
+      JOIN organization_staff os ON os.organization_id = l.organization_id
+      JOIN members m ON m.id = os.member_id
+      WHERE t.id = invite_tokens.team_id
+        AND m.user_id = auth.uid()
+        AND os.position IN ('owner', 'admin')
+    )
+  );
+```
+
+**Notes:**
+- No DELETE policy - invite tokens should be kept for audit purposes
+- Token claiming is done via `claim_invite_token()` function with SECURITY DEFINER (service role)
+- Token details lookup done via `get_invite_details()` function with SECURITY DEFINER (safe for anon)
+- Status changes (pending -> claimed/expired/cancelled) handled via UPDATE or functions

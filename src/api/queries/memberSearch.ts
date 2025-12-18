@@ -3,10 +3,336 @@
  *
  * Server-side search for members with filtering and limits.
  * Prevents loading all members into memory for large datasets.
+ *
+ * Also includes fuzzy matching functions for placeholder player detection
+ * during registration (uses Postgres fuzzystrmatch and pg_trgm extensions).
  */
 
 import { supabase } from '@/supabaseClient';
 import type { PartialMember } from '@/types/member';
+
+// ============================================================================
+// PLACEHOLDER PLAYER MATCHING (for registration flow)
+// ============================================================================
+
+/**
+ * Result from fuzzy placeholder search (original simple version)
+ * Includes match scores to help user identify correct record
+ */
+export interface PlaceholderMatch {
+  id: string;
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+  city: string | null;
+  state: string | null;
+  system_player_number: number;
+  /** Soundex score 0-4 (4 = exact phonetic match) */
+  first_name_score: number;
+  /** Soundex score 0-4 (4 = exact phonetic match) */
+  last_name_score: number;
+  /** Trigram similarity 0-2 (higher = better) */
+  city_score: number;
+  /** Whether state matches exactly */
+  state_match: boolean;
+  /** Combined score used for ranking */
+  total_score: number;
+}
+
+/**
+ * Search criteria for enhanced placeholder player search
+ * All fields are optional - more fields = higher confidence
+ */
+export interface PlaceholderSearchCriteria {
+  // League Operator info
+  operatorFirstName?: string;
+  operatorLastName?: string;
+  operatorPlayerNumber?: number;
+
+  // Captain info
+  captainFirstName?: string;
+  captainLastName?: string;
+  captainPlayerNumber?: number;
+
+  // User's system info
+  systemFirstName?: string;
+  systemLastName?: string;
+  systemPlayerNumber?: number;
+  systemNickname?: string;
+
+  // Team/Location info
+  teamName?: string;
+  playNight?: string;
+  city?: string;
+  state?: string;
+
+  // Last opponent (security verification)
+  lastOpponentFirstName?: string;
+  lastOpponentLastName?: string;
+  hasNotPlayedYet?: boolean;
+}
+
+/**
+ * Result from enhanced placeholder search (v2)
+ * Includes grade (A/B/C) for confidence-based decision making
+ */
+export interface EnhancedPlaceholderMatch {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  nickname: string | null;
+  city: string | null;
+  state: string | null;
+  system_player_number: number;
+  team_name: string | null;
+  captain_name: string | null;
+  operator_name: string | null;
+  total_score: number;
+  matched_fields: string[];
+  /** Grade based on confidence: A (6+), B (4-5), C (<4) */
+  grade: 'A' | 'B' | 'C';
+}
+
+/**
+ * Search for placeholder players that might match a registering user
+ *
+ * Uses fuzzy matching with:
+ * - Soundex for phonetic name similarity (catches Mike/Michael, Smith/Smythe)
+ * - Trigram similarity for city typos (catches Springfield/Sprigfield)
+ * - Exact state matching as anchor
+ *
+ * This is a "show candidates" approach - returns potential matches for user
+ * to confirm, not auto-matching. False positives are OK (user says "not me"),
+ * false negatives are bad (user's PP exists but we don't find it).
+ *
+ * @param firstName - User's entered first name
+ * @param lastName - User's entered last name
+ * @param city - User's entered city (optional, improves matching)
+ * @param state - User's entered state (optional, improves matching)
+ * @param limit - Max candidates to return (default 5)
+ * @param minScore - Minimum combined score threshold (default 5)
+ * @returns Array of potential placeholder matches sorted by score
+ *
+ * @example
+ * const matches = await searchPlaceholderMatches('Mike', 'Smith', 'Springfield', 'IL');
+ * // Returns PPs like "Michael Smith, Springfield, IL" with high scores
+ */
+export async function searchPlaceholderMatches(
+  firstName: string,
+  lastName: string,
+  city?: string | null,
+  state?: string | null,
+  limit: number = 5,
+  minScore: number = 5
+): Promise<PlaceholderMatch[]> {
+  const { data, error } = await supabase.rpc('search_placeholder_matches', {
+    p_first_name: firstName.trim(),
+    p_last_name: lastName.trim(),
+    p_city: city?.trim() || null,
+    p_state: state?.trim() || null,
+    p_limit: limit,
+    p_min_score: minScore,
+  });
+
+  if (error) {
+    console.error('Placeholder search failed:', error);
+    throw new Error(`Failed to search for placeholder matches: ${error.message}`);
+  }
+
+  return (data as PlaceholderMatch[]) || [];
+}
+
+/**
+ * Direct lookup of placeholder player by system number
+ *
+ * Used when fuzzy search fails but user knows their player number
+ * (given by captain or league operator).
+ *
+ * @param systemNumber - The P-##### number (just the digits)
+ * @returns The placeholder player if found, null otherwise
+ *
+ * @example
+ * // User enters "P-00147" or "147"
+ * const pp = await lookupPlaceholderBySystemNumber(147);
+ * if (pp) {
+ *   // Show confirmation: "Is this you? John Smith, Team Rack City"
+ * }
+ */
+export async function lookupPlaceholderBySystemNumber(
+  systemNumber: number
+): Promise<PlaceholderMatch | null> {
+  const { data, error } = await supabase.rpc('lookup_placeholder_by_system_number', {
+    p_system_number: systemNumber,
+  });
+
+  if (error) {
+    console.error('Placeholder lookup failed:', error);
+    throw new Error(`Failed to lookup placeholder: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  // The RPC returns a table, but should only have one row for this lookup
+  const row = data[0];
+  return {
+    id: row.id,
+    first_name: row.first_name,
+    last_name: row.last_name,
+    nickname: row.nickname,
+    city: row.city,
+    state: row.state,
+    system_player_number: row.system_player_number,
+    // Direct lookup doesn't have scores, set to max
+    first_name_score: 4,
+    last_name_score: 4,
+    city_score: 2,
+    state_match: true,
+    total_score: 12,
+  };
+}
+
+/**
+ * Parse system player number from user input
+ *
+ * Handles various formats users might enter:
+ * - "147" → 147
+ * - "P-00147" → 147
+ * - "#P-00147" → 147
+ * - "00147" → 147
+ *
+ * @param input - User's entered player number
+ * @returns Parsed number, or null if invalid
+ */
+export function parseSystemPlayerNumber(input: string): number | null {
+  // Remove common prefixes and formatting
+  const cleaned = input
+    .trim()
+    .toUpperCase()
+    .replace(/^#?P-?/i, '') // Remove #P-, P-, #P, P prefix
+    .replace(/^0+/, ''); // Remove leading zeros
+
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) || num <= 0 ? null : num;
+}
+
+/**
+ * Enhanced placeholder player search with full verification fields
+ *
+ * Used by the /register-existing page to find placeholder players
+ * based on multiple optional verification fields. Returns candidates
+ * with confidence grades (A/B/C) for decision making.
+ *
+ * Grade A (6+ matches): High confidence - can auto-merge
+ * Grade B (4-5 matches): Medium confidence - LO review required
+ * Grade C (<4 matches): Low confidence - no match found
+ *
+ * @param criteria - Search criteria with optional fields
+ * @param limit - Max candidates to return (default 10)
+ * @returns Array of potential matches with scores and grades
+ *
+ * @example
+ * const matches = await searchPlaceholderMatchesEnhanced({
+ *   systemFirstName: 'Mike',
+ *   systemLastName: 'Smith',
+ *   teamName: 'Rack City',
+ *   captainFirstName: 'John',
+ *   city: 'Springfield',
+ *   state: 'IL'
+ * });
+ * // Returns PPs with grade based on how many fields match
+ */
+export async function searchPlaceholderMatchesEnhanced(
+  criteria: PlaceholderSearchCriteria,
+  limit: number = 10
+): Promise<EnhancedPlaceholderMatch[]> {
+  const { data, error } = await supabase.rpc('search_placeholder_matches_v2', {
+    p_operator_first_name: criteria.operatorFirstName?.trim() || null,
+    p_operator_last_name: criteria.operatorLastName?.trim() || null,
+    p_operator_player_number: criteria.operatorPlayerNumber || null,
+    p_captain_first_name: criteria.captainFirstName?.trim() || null,
+    p_captain_last_name: criteria.captainLastName?.trim() || null,
+    p_captain_player_number: criteria.captainPlayerNumber || null,
+    p_system_first_name: criteria.systemFirstName?.trim() || null,
+    p_system_last_name: criteria.systemLastName?.trim() || null,
+    p_system_player_number: criteria.systemPlayerNumber || null,
+    p_system_nickname: criteria.systemNickname?.trim() || null,
+    p_team_name: criteria.teamName?.trim() || null,
+    p_play_night: criteria.playNight?.trim() || null,
+    p_city: criteria.city?.trim() || null,
+    p_state: criteria.state?.trim() || null,
+    p_last_opponent_first_name: criteria.lastOpponentFirstName?.trim() || null,
+    p_last_opponent_last_name: criteria.lastOpponentLastName?.trim() || null,
+    p_has_not_played_yet: criteria.hasNotPlayedYet || null,
+    p_limit: limit,
+  });
+
+  if (error) {
+    console.error('Enhanced placeholder search failed:', error);
+    throw new Error(`Failed to search for placeholder matches: ${error.message}`);
+  }
+
+  return (data as EnhancedPlaceholderMatch[]) || [];
+}
+
+/**
+ * Team verification option for Grade B verification challenge
+ */
+export interface TeamVerificationOption {
+  team_name: string;
+  is_correct: boolean;
+}
+
+/**
+ * Get team verification options for Grade B challenge
+ *
+ * Returns the member's actual teams plus random decoy teams.
+ * The user must identify their correct team to pass verification.
+ *
+ * @param memberId - The placeholder player's member_id
+ * @param decoyCount - Number of decoy (wrong) teams to include (default 3)
+ * @returns Array of team options, shuffled (correct teams + decoys)
+ *
+ * @example
+ * const options = await getTeamVerificationOptions('uuid-here');
+ * // Returns: [{ team_name: 'Team A', is_correct: true }, { team_name: 'Team B', is_correct: false }, ...]
+ * // Display these shuffled to user, check if their selection is_correct
+ */
+export async function getTeamVerificationOptions(
+  memberId: string,
+  decoyCount: number = 3
+): Promise<TeamVerificationOption[]> {
+  const { data, error } = await supabase.rpc('get_team_verification_options', {
+    p_member_id: memberId,
+    p_decoy_count: decoyCount,
+  });
+
+  if (error) {
+    console.error('Team verification options fetch failed:', error);
+    throw new Error(`Failed to get team verification options: ${error.message}`);
+  }
+
+  // Shuffle the results so correct answers aren't always first
+  const options = (data as TeamVerificationOption[]) || [];
+  return shuffleArray(options);
+}
+
+/**
+ * Fisher-Yates shuffle algorithm for randomizing array order
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// ============================================================================
+// STANDARD MEMBER SEARCH (existing functionality)
+// ============================================================================
 
 export type MemberSearchFilter = 'all' | 'my_org' | 'state' | 'staff';
 
@@ -15,6 +341,11 @@ export type MemberSearchFilter = 'all' | 'my_org' | 'state' | 'staff';
  *
  * Returns top 50 matches based on search query and filter.
  * Searches by name (first/last) and player number.
+ *
+ * IMPORTANT: Excludes placeholder players (user_id IS NULL) that are already
+ * assigned to a team. This prevents captains from "adopting" other teams' PPs,
+ * which could cause data integrity issues when the real person registers.
+ * Only orphan PPs (not yet on any team) are shown for selection.
  *
  * @param searchQuery - Text to search (name or player number)
  * @param filter - Which subset of members to search
@@ -35,6 +366,21 @@ export async function searchMembers(
   userState: string | null,
   limit: number = 50
 ): Promise<PartialMember[]> {
+  // First, get IDs of placeholder players already on teams (to exclude them)
+  // These PPs belong to specific teams and shouldn't be "adopted" by other captains
+  const { data: assignedPPs, error: ppError } = await supabase
+    .from('team_players')
+    .select('member_id, members!inner(user_id)')
+    .is('members.user_id', null);
+
+  if (ppError) {
+    console.error('Failed to fetch assigned PPs:', ppError);
+    // Continue without exclusion rather than fail entirely
+  }
+
+  // Extract unique PP member IDs that are already on teams
+  const assignedPPIds = [...new Set(assignedPPs?.map(tp => tp.member_id) || [])];
+
   // Handle 'my_org' filter separately since it requires a subquery
   if (filter === 'my_org' && organizationId) {
     // Get members who are on teams in my organization's leagues
@@ -55,9 +401,10 @@ export async function searchMembers(
     }
 
     // Now query members table with these IDs
+    // Include email to filter PPs without email (they can only be on one team)
     let query = supabase
       .from('members')
-      .select('id, first_name, last_name, system_player_number, bca_member_number, state')
+      .select('id, first_name, last_name, system_player_number, bca_member_number, state, user_id, email')
       .in('id', memberIds)
       .limit(limit);
 
@@ -81,13 +428,29 @@ export async function searchMembers(
       throw new Error(`Failed to search members: ${error.message}`);
     }
 
-    return data as PartialMember[];
+    // Filter out PPs based on rules:
+    // - PPs without email: only allowed if NOT already on a team (single-team only)
+    // - PPs with email: allowed regardless of team assignment (verified identity)
+    // - Real members (user_id not null): always allowed
+    const filteredData = (data || []).filter(member => {
+      // Keep real members (have user_id)
+      if (member.user_id !== null) return true;
+      // For PPs (user_id is null):
+      // - If they have email, allow (email-protected PP can be on multiple teams)
+      if (member.email) return true;
+      // - If no email, exclude if already on a team (single-team restriction)
+      return !assignedPPIds.includes(member.id);
+    });
+
+    // Remove user_id and email from response (not needed by caller)
+    return filteredData.map(({ user_id: _unused, email: _email, ...rest }) => rest) as PartialMember[];
   }
 
   // Standard filters (state, staff, all)
+  // Include email to filter PPs without email (they can only be on one team)
   let query = supabase
     .from('members')
-    .select('id, first_name, last_name, system_player_number, bca_member_number, state')
+    .select('id, first_name, last_name, system_player_number, bca_member_number, state, user_id, email')
     .limit(limit);
 
   if (filter === 'state' && userState) {
@@ -121,5 +484,20 @@ export async function searchMembers(
     throw new Error(`Failed to search members: ${error.message}`);
   }
 
-  return data as PartialMember[];
+  // Filter out PPs based on rules:
+  // - PPs without email: only allowed if NOT already on a team (single-team only)
+  // - PPs with email: allowed regardless of team assignment (verified identity)
+  // - Real members (user_id not null): always allowed
+  const filteredData = (data || []).filter(member => {
+    // Keep real members (have user_id)
+    if (member.user_id !== null) return true;
+    // For PPs (user_id is null):
+    // - If they have email, allow (email-protected PP can be on multiple teams)
+    if (member.email) return true;
+    // - If no email, exclude if already on a team (single-team restriction)
+    return !assignedPPIds.includes(member.id);
+  });
+
+  // Remove user_id and email from response (not needed by caller)
+  return filteredData.map(({ user_id: _unused, email: _email, ...rest }) => rest) as PartialMember[];
 }

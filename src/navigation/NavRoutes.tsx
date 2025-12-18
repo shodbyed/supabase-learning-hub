@@ -16,12 +16,15 @@ import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { Home } from '../home/Home';
 import { Login } from '../login/Login';
 import { Register } from '../login/Register';
+import { RegisterExisting } from '../login/RegisterExisting';
+import { ClaimPlayer } from '../login/ClaimPlayer';
 import { ForgotPassword } from '../login/ForgotPassword';
 import { ResetPassword } from '../login/ResetPassword';
 import { EmailConfirmation } from '../login/EmailConfirmation';
 import { About } from '../about/About';
 import { Pricing } from '../about/Pricing';
 import { NewPlayerForm } from '../newPlayer/NewPlayerForm';
+import { CompleteProfileForm } from '../completeProfile';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Profile } from '../profile/Profile';
 import { MyTeams } from '../player/MyTeams';
@@ -138,6 +141,8 @@ export const router = createBrowserRouter([
       { path: 'pricing', element: <Pricing /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
+      { path: 'register-existing', element: <RegisterExisting /> },
+      { path: 'claim-player', element: <ClaimPlayer /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'confirm', element: <EmailConfirmation /> },
@@ -150,6 +155,7 @@ export const router = createBrowserRouter([
       { path: 'dev/rls-tests', element: <DevOnly><RLSTestPage /></DevOnly> },
 
       // === Auth Routes (require login) ===
+      { path: 'complete-profile', element: withAuth(<CompleteProfileForm />) },
       { path: 'new-player', element: withAuth(<NewPlayerForm />) },
       { path: 'become-league-operator', element: withAuth(<BecomeLeagueOperator />) },
       { path: 'league-operator-application', element: withAuth(<LeagueOperatorApplication />) },

@@ -45,6 +45,12 @@ export interface CreatePlaceholderMemberParams {
   starting_handicap_3v3?: number;
   /** Starting handicap for 5v5 formats (0-100). Default: 40 */
   starting_handicap_5v5?: number;
+  /**
+   * Optional email for the placeholder player.
+   * If provided, allows the PP to be used on multiple teams (same person verified by email).
+   * If not provided, PP can only be on a single team.
+   */
+  email?: string;
 }
 
 /**
@@ -383,10 +389,11 @@ export async function createPlaceholderMember(
       // Starting handicaps (defaults: 0 for 3v3, 40 for 5v5)
       starting_handicap_3v3: params.starting_handicap_3v3 ?? 0,
       starting_handicap_5v5: params.starting_handicap_5v5 ?? 40,
-      // These fields are now nullable - set to null for placeholders
+      // These fields are now nullable - set to null for placeholders (except email if provided)
       user_id: null,
       phone: null,
-      email: null,
+      // Email is optional - if provided, allows PP to be on multiple teams (verified identity)
+      email: params.email?.trim() || null,
       address: null,
       zip_code: null,
       date_of_birth: null,

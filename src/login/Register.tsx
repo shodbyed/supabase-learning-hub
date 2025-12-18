@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CardAction, CardFooter } from '@/components/ui/card';
 import { LoginCard } from './LoginCard';
-import { Mail, AlertTriangle, UserCheck } from 'lucide-react';
+import { Mail, AlertTriangle, UserCheck, Users } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
 /** Data about the placeholder being claimed */
@@ -335,6 +335,23 @@ export const Register: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Prominent "Already on a team" button - only show when not claiming */}
+      {!claimData?.isValid && (
+        <Link to="/register-existing" className="block mb-6">
+          <div className="p-4 border-2 border-primary/50 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+            <div className="flex items-center gap-3">
+              <Users className="h-6 w-6 text-primary" />
+              <div>
+                <p className="font-semibold text-primary">I'm already on a team</p>
+                <p className="text-sm text-muted-foreground">
+                  Your captain may have already added you to the system
+                </p>
+              </div>
+            </div>
+          </div>
+        </Link>
       )}
 
       <form onSubmit={handleRegister}>

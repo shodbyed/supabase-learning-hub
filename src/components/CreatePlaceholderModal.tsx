@@ -72,6 +72,7 @@ export function CreatePlaceholderModal({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
   const [city, setCity] = useState(defaultCity);
   const [state, setState] = useState(defaultState);
   const [handicap3v3, setHandicap3v3] = useState('0');
@@ -83,6 +84,7 @@ export function CreatePlaceholderModal({
       setFirstName('');
       setLastName('');
       setNickname('');
+      setEmail('');
       setCity(defaultCity);
       setState(defaultState);
       setHandicap3v3('0');
@@ -147,6 +149,8 @@ export function CreatePlaceholderModal({
       state,
       starting_handicap_3v3: parseInt(handicap3v3, 10) || 0,
       starting_handicap_5v5: parseInt(handicap5v5, 10) || 40,
+      // Optional email - if provided, allows PP to be on multiple teams
+      email: email.trim() || undefined,
     });
   };
 
@@ -155,9 +159,14 @@ export function CreatePlaceholderModal({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Placeholder Player</DialogTitle>
-          <DialogDescription>
-            Create a player who hasn&apos;t registered yet. They can be added to teams
-            and have games scored. When they register, they&apos;ll be connected to this record.
+          <DialogDescription className="space-y-2">
+            <span className="block">
+              Create a representation of a real person playing in your league who has not yet registered.
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              Without an email, this player can only be on a single team. Add their email to allow
+              them to be on multiple teams and enable easier account linking when they register.
+            </span>
           </DialogDescription>
         </DialogHeader>
 
@@ -201,6 +210,26 @@ export function CreatePlaceholderModal({
                 placeholder="Auto-generated if empty"
                 maxLength={12}
               />
+            </div>
+
+            {/* Email (optional - for multi-team verification) */}
+            <div className="grid gap-2">
+              <Label htmlFor="email">
+                Email
+                <span className="ml-2 text-xs text-muted-foreground">
+                  (optional)
+                </span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                placeholder="player@example.com"
+              />
+              <p className="text-xs text-muted-foreground">
+                Required if this player will be on multiple teams.
+              </p>
             </div>
 
             {/* City */}
@@ -259,6 +288,15 @@ export function CreatePlaceholderModal({
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHandicap5v5(e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* Important notice about PP management */}
+            <div className="rounded-md bg-muted p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground mb-1">Important:</p>
+              <p>
+                Captains may not be able to remove placeholder players from teams.
+                Contact your league operator if a placeholder player needs to be removed.
+              </p>
             </div>
           </div>
 

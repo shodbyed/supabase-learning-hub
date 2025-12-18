@@ -23,7 +23,7 @@ import { User, MessageSquare, Flag, Ban, DollarSign, UserCog } from 'lucide-reac
 import { cn } from '@/lib/utils';
 import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked, useUserProfile } from '@/api/hooks';
 import { ReportUserModal } from '@/components/ReportUserModal';
-import { RegisterPlayerModal } from '@/components/RegisterPlayerModal';
+import { InvitePlayerModal } from '@/components/InvitePlayerModal';
 import { ConfirmDialog } from '@/components/shared';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -90,19 +90,20 @@ export function PlayerNameLink({
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
-  // Fetch player's full name and placeholder status (always when popover is open)
+  // Fetch player's full name, email, and placeholder status (always when popover is open)
   const { data: playerBasicData } = useQuery({
     queryKey: ['playerBasicData', playerId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('members')
-        .select('first_name, last_name, user_id')
+        .select('first_name, last_name, user_id, email')
         .eq('id', playerId)
         .single();
       if (error) throw error;
       return {
         fullName: `${data.first_name} ${data.last_name}`,
         isPlaceholder: data.user_id === null,
+        email: data.email,
       };
     },
     enabled: open && !!playerId,
@@ -111,6 +112,7 @@ export function PlayerNameLink({
 
   const playerFullName = playerBasicData?.fullName;
   const isPlaceholder = playerBasicData?.isPlaceholder ?? false;
+  const playerEmail = playerBasicData?.email;
 
   // Fetch player's membership status and handicaps (only when popover is open and user is operator)
   const { data: playerData } = useQuery({
@@ -607,12 +609,13 @@ export function PlayerNameLink({
         </DialogContent>
       </Dialog>
 
-      {/* Register Player Modal */}
-      <RegisterPlayerModal
+      {/* Invite Player Modal - For placeholder players */}
+      <InvitePlayerModal
         open={showRegisterModal}
         onOpenChange={setShowRegisterModal}
         playerId={playerId}
         playerName={playerFullName || playerName}
+        playerEmail={playerEmail}
       />
     </>
   );

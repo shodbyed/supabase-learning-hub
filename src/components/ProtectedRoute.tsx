@@ -74,7 +74,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Third check: Application completion requirement
   if (requireApprovedApplication && !member) {
-    return <Navigate to="/new-player" replace />; // Send to application form
+    return <Navigate to="/complete-profile" replace />; // Send to short profile form
   }
 
   // All checks passed - render the protected content
