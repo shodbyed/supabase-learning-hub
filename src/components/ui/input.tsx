@@ -95,17 +95,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(({
   useImperativeHandle(ref, () => internalRef.current as HTMLInputElement);
 
   // Track internal value for capitalization features
-  const [internalValue, setInternalValue] = useState<string>(
-    (value as string) ?? (defaultValue as string) ?? ''
-  );
+  // Ensure we always have a string, even if a non-string value is passed
+  const [internalValue, setInternalValue] = useState<string>(() => {
+    if (typeof value === 'string') return value;
+    if (typeof defaultValue === 'string') return defaultValue;
+    return '';
+  });
 
   // Track if user wants auto-capitalize (when checkbox is shown)
   const [capitalizeEnabled, setCapitalizeEnabled] = useState(titleCase);
 
   // Sync internal value when controlled value changes from parent
   useEffect(() => {
-    if (value !== undefined) {
-      setInternalValue(value as string);
+    if (value !== undefined && typeof value === 'string') {
+      setInternalValue(value);
     }
   }, [value]);
 

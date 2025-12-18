@@ -53,7 +53,21 @@ export const loadApplicationState = (): ApplicationData => {
     if (savedState) {
       const parsed = JSON.parse(savedState);
       // Merge with default state to handle any new fields that might have been added
-      return { ...defaultInitialState, ...parsed };
+      const mergedState = { ...defaultInitialState, ...parsed };
+
+      // Validate string fields to prevent [object Object] crashes
+      // If any string field got corrupted to an object, reset it to default
+      if (typeof mergedState.leagueName !== 'string') {
+        mergedState.leagueName = '';
+      }
+      if (typeof mergedState.leagueEmail !== 'string') {
+        mergedState.leagueEmail = '';
+      }
+      if (typeof mergedState.leaguePhone !== 'string') {
+        mergedState.leaguePhone = '';
+      }
+
+      return mergedState;
     }
   } catch (error) {
     logger.warn('Failed to load saved application state', { error });
