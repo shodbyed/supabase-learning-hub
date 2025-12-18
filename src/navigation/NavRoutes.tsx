@@ -16,7 +16,6 @@ import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { Home } from '../home/Home';
 import { Login } from '../login/Login';
 import { Register } from '../login/Register';
-import { RegisterExisting } from '../login/RegisterExisting';
 import { ClaimPlayer } from '../login/ClaimPlayer';
 import { ForgotPassword } from '../login/ForgotPassword';
 import { ResetPassword } from '../login/ResetPassword';
@@ -141,7 +140,6 @@ export const router = createBrowserRouter([
       { path: 'pricing', element: <Pricing /> },
       { path: 'login', element: <Login /> },
       { path: 'register', element: <Register /> },
-      { path: 'register-existing', element: <RegisterExisting /> },
       { path: 'claim-player', element: <ClaimPlayer /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
