@@ -179,7 +179,7 @@ export const router = createBrowserRouter([
       // === Operator Routes (require league_operator role) ===
       { path: 'operator-welcome', element: withOperator(OperatorWelcome) },
       { path: 'operator-dashboard/:orgId', element: withOperator(OperatorDashboard) },
-      { path: 'operator-reports', element: withOperator(ReportsManagement) },
+      { path: 'operator-reports/:orgId', element: withOperator(ReportsManagement) },
       { path: 'manage-players/:orgId', element: withOperator(PlayerManagement) },
       { path: 'create-league/:orgId', element: withOperator(LeagueCreationWizard) },
       { path: 'operator-settings/:orgId', element: withOperator(OrganizationSettings) },

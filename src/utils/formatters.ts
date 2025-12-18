@@ -21,6 +21,9 @@ export const formatPhoneNumber = (input: string): string => {
  * Capitalize words - shared utility for names, addresses, etc.
  */
 export const capitalizeWords = (input: string): string => {
+  // Handle non-string values gracefully
+  if (typeof input !== 'string') return '';
+
   return input
     .trim()
     .split(' ')
