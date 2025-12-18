@@ -65,7 +65,7 @@ export const RadioChoiceStep: React.FC<RadioChoiceStepProps> = ({
   isSubmitting,
   isNavigating
 }) => {
-  const canProceed = selectedValue && selectedValue.trim() !== '';
+  const canProceed = selectedValue && typeof selectedValue === 'string' && selectedValue.trim() !== '';
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-4">
