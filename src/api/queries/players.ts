@@ -492,10 +492,19 @@ export async function batchAutoAuthorizeEstablishedPlayers(
 }
 
 /**
- * Check if a player is authorized (has non-NULL starting handicaps)
+ * Check if a player has starting handicaps set (manual authorization)
+ *
+ * IMPORTANT: Authorization vs Established distinction:
+ * - AUTHORIZED: Player has starting handicaps set by an operator (for restricted leagues)
+ * - ESTABLISHED: Player has 15+ games played (system calculates handicap automatically)
+ * - If a player is ESTABLISHED (15+ games), they are automatically AUTHORIZED
+ *
+ * This function only checks for manual authorization (starting handicaps set).
+ * The calling code should also check if player is established (gameCounts.total >= 15)
+ * and treat established players as authorized.
  *
  * @param player - Player object with starting_handicap_3v3 and starting_handicap_5v5
- * @returns true if player is authorized (both handicaps are set)
+ * @returns true if player has starting handicaps set (manually authorized)
  */
 export function isPlayerAuthorized(player: {
   starting_handicap_3v3: number | null;

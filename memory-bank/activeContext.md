@@ -487,6 +487,20 @@ Schedule Generation → Schedule Display → Accept Schedule → League Dashboar
 
 ---
 
+## TODOs for Jack
+
+### Player Information Card - Grid Layout Fix
+**File**: `src/operator/PlayerManagement.tsx` (line ~408)
+**Issue**: The 2-column grid for player info fields (Name, Nickname, Phone, Email, etc.) has too aggressive a breakpoint. Currently using `min-[320px]:grid-cols-2` but it still wraps to 1 column when there's visually enough space for 2.
+**Goal**: Make it stay 2 columns longer on narrow screens, but still wrap to 1 column when content would be truncated/hidden.
+**Current CSS**: `grid grid-cols-1 min-[320px]:grid-cols-2 gap-x-2 gap-y-3`
+**Notes**:
+- Ed wants max 2 columns, min 1 column
+- The gap is already tight (8px horizontal)
+- May need CSS container queries or a different approach
+
+---
+
 ## Current Status Summary
 
 ✅ **Database Schema**: Complete, tested, production-ready

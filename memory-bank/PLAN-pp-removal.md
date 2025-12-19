@@ -1,9 +1,26 @@
 # Placeholder Player Removal Rules - Implementation Plan
 
-> **Status:** Planning 📋
+> **⚠️ DO NOT RUN `supabase db reset` - user has live test data**
+
+> **Status:** In Progress 🚧
 > **Created:** 2025-12-17
-> **Branch:** `email-invites` (continuation)
+> **Branch:** `pp-remove-disinvite`
 > **Predecessor:** PLAN-email-invites.md (archived)
+
+---
+
+## 🎯 CURRENT TASK: Redesign PlayerManagement Page
+
+Before implementing PP removal, the PlayerManagement page needs restructuring to support the feature properly. PP removal will happen in the **TeamEditorModal**, not a separate card.
+
+**Goal:** Clean up PlayerManagement page layout so it provides a clear foundation for PP management features.
+
+**Status:** In Progress
+
+### Immediate Task
+- [ ] Fix membership paid / membership fee portion of Player Information card
+
+---
 
 ## Overview
 

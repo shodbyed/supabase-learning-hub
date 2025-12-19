@@ -30,18 +30,16 @@ import { InfoButton } from '@/components/InfoButton';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { AuthorizeNewPlayersCard } from '@/components/operator/AuthorizeNewPlayersCard';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { Users, DollarSign, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
 import { logger } from '@/utils/logger';
 import {
-  fetchOperatorPlayerCount,
   fetchPlayerDetails,
   updatePlayerStartingHandicaps,
-  markMembershipPaid,
-  updateMembershipPaidDate,
   isPlayerAuthorized,
 } from '@/api/queries/players';
+import { supabase } from '@/supabaseClient';
 
 /**
  * PlayerManagement Component
@@ -60,7 +58,7 @@ export const PlayerManagement: React.FC = () => {
   const [handicap3v3, setHandicap3v3] = useState<string>('0');
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
-  const { confirm, ConfirmDialogComponent } = useConfirmDialog();
+  const { ConfirmDialogComponent } = useConfirmDialog();
 
   // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
   const operatorId = impersonatedOperatorId || orgId;
@@ -72,10 +70,21 @@ export const PlayerManagement: React.FC = () => {
     enabled: isDeveloper,
   });
 
-  // Fetch player count - still needed for display
-  const { data: playerCount = 0 } = useQuery({
-    queryKey: ['operatorPlayerCount', operatorId, false],
-    queryFn: () => fetchOperatorPlayerCount(operatorId!, false),
+  // Fetch player stats using RPC
+  const { data: playerStats } = useQuery({
+    queryKey: ['operatorPlayerStats', operatorId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_operator_player_stats', {
+        p_org_id: operatorId,
+      });
+      if (error) throw error;
+      return data as {
+        total_players: number;
+        active_players: number;
+        placeholders: number;
+        identified_placeholders: number;
+      };
+    },
     enabled: !!operatorId,
   });
 
@@ -90,13 +99,21 @@ export const PlayerManagement: React.FC = () => {
 
   const playerDetails = playerDetailsData?.data;
 
-  // Check if player is authorized (has non-NULL starting handicaps)
-  const playerIsAuthorized = playerDetails
-    ? isPlayerAuthorized(playerDetails)
-    : true;
+  /**
+   * Authorization vs Established:
+   * - AUTHORIZED: Player has starting handicaps set by an operator (manual approval for restricted leagues)
+   * - ESTABLISHED: Player has 15+ games played (system can calculate handicap automatically)
+   * - If ESTABLISHED, player is automatically AUTHORIZED (no manual approval needed)
+   *
+   * The warning card only shows for players who are NEITHER established NOR have starting handicaps set.
+   */
   const isEstablishedPlayer = playerDetails
     ? playerDetails.gameCounts.total >= 15
     : false;
+
+  const playerIsAuthorized = playerDetails
+    ? isPlayerAuthorized(playerDetails) || isEstablishedPlayer
+    : true;
 
   // Update starting handicaps mutation
   const updateHandicapsMutation = useMutation({
@@ -127,42 +144,6 @@ export const PlayerManagement: React.FC = () => {
         error: error instanceof Error ? error.message : String(error),
       });
       toast.error('Failed to update starting handicaps. Please try again.');
-    },
-  });
-
-  // Mark membership as paid mutation
-  const markMembershipPaidMutation = useMutation({
-    mutationFn: (playerId: string) => markMembershipPaid(playerId),
-    onSuccess: () => {
-      // Invalidate player details query to refetch
-      queryClient.invalidateQueries({
-        queryKey: ['playerDetails', selectedPlayerId, operatorId],
-      });
-      toast.success('Membership marked as paid!');
-    },
-    onError: (error) => {
-      logger.error('Error marking membership as paid', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      toast.error('Failed to update membership status. Please try again.');
-    },
-  });
-
-  // Reverse membership mutation
-  const reverseMembershipMutation = useMutation({
-    mutationFn: (playerId: string) => updateMembershipPaidDate(playerId, null),
-    onSuccess: () => {
-      // Invalidate player details query to refetch
-      queryClient.invalidateQueries({
-        queryKey: ['playerDetails', selectedPlayerId, operatorId],
-      });
-      toast.success('Membership reversed!');
-    },
-    onError: (error) => {
-      logger.error('Error reversing membership', {
-        error: error instanceof Error ? error.message : String(error),
-      });
-      toast.error('Failed to reverse membership. Please try again.');
     },
   });
 
@@ -198,73 +179,6 @@ export const PlayerManagement: React.FC = () => {
       h5v5,
     });
   };
-
-  // Handle marking membership as paid
-  const handleMarkMembershipPaid = async () => {
-    if (!selectedPlayerId || !playerDetails) return;
-
-    const confirmed = await confirm({
-      title: 'Mark Membership as Paid',
-      message: `Confirm that ${playerDetails.first_name} ${
-        playerDetails.last_name
-      } has paid their membership fee for ${new Date().getFullYear()}. Their membership will be valid through December 31, ${new Date().getFullYear()}. Do not accept payments for ${
-        new Date().getFullYear() + 1
-      } until next calendar year.`,
-      confirmText: 'Confirm Payment',
-      confirmVariant: 'default',
-    });
-
-    if (confirmed) {
-      markMembershipPaidMutation.mutate(selectedPlayerId);
-    }
-  };
-
-  // Handle reversing membership
-  const handleReverseMembership = async () => {
-    if (!playerDetails) return;
-
-    const confirmed = await confirm({
-      title: 'Reverse Membership Payment',
-      message: `Confirm that ${playerDetails.first_name} ${
-        playerDetails.last_name
-      } has not paid the membership fees for ${new Date().getFullYear()}. This will mark their membership as unpaid.`,
-      confirmText: 'Reverse Payment',
-      confirmVariant: 'destructive',
-    });
-
-    if (confirmed) {
-      reverseMembershipMutation.mutate(selectedPlayerId);
-    }
-  };
-
-  // Get membership action based on payment status
-  const getMembershipAction = () => {
-    if (!playerDetails) return null;
-
-    if (!playerDetails.membership_paid_date) {
-      return {
-        label: 'Received Membership Fee',
-        icon: <DollarSign className="h-4 w-4 text-green-600" />,
-        onClick: handleMarkMembershipPaid,
-        className:
-          'flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-green-600',
-        buttonText: 'Received Membership Fee',
-        buttonClassName: 'text-sm text-blue-600 hover:text-blue-800 underline',
-      };
-    } else {
-      return {
-        label: 'Reverse Membership',
-        icon: <DollarSign className="h-4 w-4 text-red-600" />,
-        onClick: handleReverseMembership,
-        className:
-          'flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-100 transition-colors text-left text-red-600',
-        buttonText: 'Reverse Membership',
-        buttonClassName: 'text-sm text-red-600 hover:text-red-800 underline',
-      };
-    }
-  };
-
-  const membershipAction = getMembershipAction();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -308,22 +222,45 @@ export const PlayerManagement: React.FC = () => {
           </Card>
         )}
         {/* Player Count & Selection Card */}
-        <Card className="rounded-none lg:rounded-xl">
+        <Card className="rounded-none lg:rounded-xl relative">
+          <div className="absolute top-3 right-3">
+            <InfoButton title="Player Statistics" align="right">
+              <div className="space-y-2">
+                <p><strong>Active Players:</strong> Players currently on teams in active or upcoming seasons.</p>
+                <p><strong>Total:</strong> All players who have ever been on a team in your organization.</p>
+                <p><strong>Alias:</strong> Placeholder players created by captains or operators who have not yet registered an account.</p>
+                <p><strong>ID'd:</strong> Alias players who have an email address on file and can receive an invite to register.</p>
+              </div>
+            </InfoButton>
+          </div>
           <CardContent className="p-4 lg:p-6">
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Player Count */}
-              <div className="flex flex-col gap-3">
-                {/* Player Count Display */}
+              {/* Player Stats */}
+              <div className="flex items-center gap-6">
+                {/* Main stat: Active Players */}
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-green-100 rounded-lg">
                     <Users className="h-8 w-8 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Total Players</p>
-                    <p className="text-3xl font-bold">{playerCount}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Use filters in dropdown to refine search
-                    </p>
+                    <p className="text-sm text-gray-600">Active Players</p>
+                    <p className="text-3xl font-bold">{playerStats?.active_players ?? '-'}</p>
+                  </div>
+                </div>
+
+                {/* Secondary stats */}
+                <div className="border-l pl-6 grid grid-cols-3 gap-x-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Total</p>
+                    <p className="text-xl font-bold">{playerStats?.total_players ?? '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Alias</p>
+                    <p className="text-xl font-bold text-amber-600">{playerStats?.placeholders ?? '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">ID'd</p>
+                    <p className="text-xl font-bold text-blue-600">{playerStats?.identified_placeholders ?? '-'}</p>
                   </div>
                 </div>
               </div>
@@ -346,14 +283,6 @@ export const PlayerManagement: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Authorize New Players Card (handles its own state and modal) */}
-        {operatorId && (
-          <AuthorizeNewPlayersCard
-            operatorId={operatorId}
-            onSelectPlayer={setSelectedPlayerId}
-          />
-        )}
-
         {/* Player Details */}
         {selectedPlayerId && (
           <>
@@ -371,7 +300,7 @@ export const PlayerManagement: React.FC = () => {
                     <CardTitle>Player Information</CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 lg:p-6 pt-0">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 min-[320px]:grid-cols-2 gap-x-2 gap-y-3">
                       {/* Name */}
                       <div>
                         <p className="text-xs text-gray-500 uppercase mb-1">
@@ -381,9 +310,6 @@ export const PlayerManagement: React.FC = () => {
                           playerId={playerDetails.id}
                           playerName={`${playerDetails.first_name} ${playerDetails.last_name}`}
                           className="font-medium"
-                          customActions={
-                            membershipAction ? [membershipAction] : []
-                          }
                         />
                       </div>
 
@@ -412,7 +338,7 @@ export const PlayerManagement: React.FC = () => {
                         <p className="text-xs text-gray-500 uppercase mb-1">
                           Email
                         </p>
-                        <p className="font-medium text-gray-900 truncate">
+                        <p className="font-medium text-gray-900 break-all">
                           {playerDetails.email}
                         </p>
                       </div>
@@ -447,39 +373,40 @@ export const PlayerManagement: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* Membership Paid Date */}
+                      {/* Membership Status
+                          BCA charges an annual membership fee. Players pay once per calendar year
+                          (Jan 1 - Dec 31). We only accept payment for the current year, not future years.
+
+                          Statuses:
+                          - "Never Paid" = no membership_paid_date exists
+                          - "Paid 2025" = paid date is in current year (active member)
+                          - "Expired 2024" = paid date is from previous year (needs renewal)
+                      */}
                       <div>
                         <p className="text-xs text-gray-500 uppercase mb-1">
-                          Membership Paid
+                          Membership Status
                         </p>
-                        <p className="font-medium text-gray-900">
-                          {playerDetails.membership_paid_date
-                            ? new Date(
-                                playerDetails.membership_paid_date
-                              ).toLocaleDateString()
-                            : '-'}
+                        <p className={`font-medium ${
+                          !playerDetails.membership_paid_date
+                            ? 'text-gray-500'
+                            : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
+                              ? 'text-green-600'
+                              : 'text-amber-600'
+                        }`}>
+                          {!playerDetails.membership_paid_date
+                            ? 'Never Paid'
+                            : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
+                              ? `Paid ${new Date(playerDetails.membership_paid_date).getFullYear()}`
+                              : `Expired ${new Date(playerDetails.membership_paid_date).getFullYear()}`
+                          }
                         </p>
                       </div>
                     </div>
 
-                    {/* Divider */}
-                    <div className="border-t border-gray-200 my-4"></div>
-
-                    {/* Membership Actions */}
-                    {membershipAction && (
-                      <div className="flex justify-center gap-4">
-                        <button
-                          onClick={membershipAction.onClick}
-                          className={membershipAction.buttonClassName}
-                        >
-                          {membershipAction.buttonText}
-                        </button>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
 
-                {/* Unauthorized Player Warning */}
+                {/* Unauthorized Player Warning - only show for players who need manual authorization */}
                 {!playerIsAuthorized && (
                   <Card className="rounded-none lg:rounded-xl border-amber-300 bg-amber-50">
                     <CardContent className="p-4 lg:p-6">
@@ -487,12 +414,10 @@ export const PlayerManagement: React.FC = () => {
                         <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
                         <div>
                           <p className="font-medium text-amber-800">
-                            Player Not Established
+                            Player Not Authorized
                           </p>
                           <p className="text-sm text-amber-700 mt-1">
-                            {isEstablishedPlayer
-                              ? 'This player has 15+ games and is established in the system. Set their starting handicaps below to authorize them.'
-                              : `This player has ${playerDetails.gameCounts.total} of 15 games needed to be established in the system. Set their starting handicaps below to authorize them for use in a restricted league match.`}
+                            This player has {playerDetails.gameCounts.total} of 15 games needed to be established in the system. Set their starting handicaps below to authorize them for use in a restricted league match.
                           </p>
                         </div>
                       </div>
@@ -753,6 +678,14 @@ export const PlayerManagement: React.FC = () => {
               </Card>
             )}
           </>
+        )}
+
+        {/* Authorize New Players Card (handles its own state and modal) */}
+        {operatorId && (
+          <AuthorizeNewPlayersCard
+            operatorId={operatorId}
+            onSelectPlayer={setSelectedPlayerId}
+          />
         )}
       </div>
 

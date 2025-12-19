@@ -40,7 +40,6 @@
       "Bash(mv:*)",
       "Bash(psql:*)",
       "Bash(supabase migration new:*)",
-      "Bash(supabase db reset:*)",
       "Bash(docker volume inspect:*)",
       "Bash(supabase db dump:*)",
       "Bash(supabase stop:*)",
