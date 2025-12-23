@@ -59,6 +59,126 @@ interface PlayerNameLinkProps {
 
 ---
 
+## 2. Consolidate ALL Queries - Return Full Records
+
+**Branch needed:** `consolidate-queries`
+
+**Problem:** We have multiple query functions for the same entities that each fetch different subsets of fields. This leads to:
+- Code duplication across queries
+- Inconsistent data shapes in different parts of the app
+- Need to add fields to multiple places when requirements change (like we just did with `user_id` for members)
+- Components making multiple fetches to get different pieces of the same record
+- Query cache fragmentation (same entity cached multiple times with different shapes)
+
+**This applies to ALL our entities, not just members:**
+- Members/Players
+- Teams
+- Leagues
+- Seasons
+- Matches
+- Venues
+- Organizations
+- etc.
+
+**Current anti-pattern (example with members):**
+- `fetchPlayerDetails()` in `players.ts` - fetches specific fields for operator page
+- `useMemberById()` in `useCurrentMember.ts` - fetches different fields
+- Various inline fetches in components
+- Each query has its own field list that drifts out of sync
+
+**Solution:** For each entity type, create ONE canonical query that returns the full record every time.
+
+**Proposed approach:**
+1. For each entity, create a single `use[Entity](id)` hook that returns the complete record
+2. Define canonical types with ALL fields for each entity
+3. All components use these hooks - they just use the fields they need
+4. Queries are cached by entity ID, so multiple components share the cache
+
+**Benefits:**
+- DRY - one query function per entity, one type per entity
+- Consistent data shape everywhere
+- Adding a new field = one place to update
+- Better cache utilization (one cached record vs multiple partial records)
+- Components never need to refetch because "this query doesn't have that field"
+- Easier to reason about data flow
+
+**Pattern to follow:**
+```tsx
+// One type per entity with ALL fields
+interface Member { /* all fields */ }
+interface Team { /* all fields */ }
+interface League { /* all fields */ }
+interface Season { /* all fields */ }
+// etc.
+
+// One hook per entity
+const { data: member } = useMember(memberId);
+const { data: team } = useTeam(teamId);
+const { data: league } = useLeague(leagueId);
+// etc.
+
+// Components just use what they need
+<div>{member.first_name}</div>
+<div>{team.team_name}</div>
+```
+
+**Files to audit and consolidate:**
+- `src/api/queries/*.ts` - all query files
+- `src/api/hooks/*.ts` - all hook files
+- Inline fetches scattered in components
+
+**Priority order:**
+1. Members (most fragmented currently)
+2. Teams
+3. Leagues/Seasons
+4. Everything else
+
+**Mutation strategy - always stay up to date:**
+
+Every mutation should either:
+1. **Optimistic updates** - Update the cache immediately, rollback on error
+2. **Invalidate & refetch** - Invalidate the relevant query keys so data is refetched
+
+Never leave stale data in the UI after a mutation. Pick the approach based on UX needs:
+- Use optimistic for instant feedback (toggling, simple updates)
+- Use invalidate for complex updates where server response matters
+
+```tsx
+// Option 1: Optimistic update
+const mutation = useMutation({
+  mutationFn: updateMember,
+  onMutate: async (newData) => {
+    await queryClient.cancelQueries({ queryKey: ['member', id] });
+    const previous = queryClient.getQueryData(['member', id]);
+    queryClient.setQueryData(['member', id], newData);
+    return { previous };
+  },
+  onError: (err, newData, context) => {
+    queryClient.setQueryData(['member', id], context.previous);
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ['member', id] });
+  },
+});
+
+// Option 2: Invalidate & refetch (simpler, always correct)
+const mutation = useMutation({
+  mutationFn: updateMember,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['member', id] });
+    // Also invalidate any lists that include this entity
+    queryClient.invalidateQueries({ queryKey: ['members'] });
+  },
+});
+```
+
+**Current problem areas:**
+- Some mutations don't invalidate queries at all
+- Some invalidate partial query keys but miss related queries
+- No consistent pattern across the codebase
+
+---
+
 ## Future Items
 
 (Add more items here as needed)

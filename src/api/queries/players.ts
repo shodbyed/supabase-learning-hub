@@ -161,6 +161,7 @@ export async function fetchOperatorPlayers(
  */
 export interface PlayerDetails {
   id: string;
+  user_id: string | null;
   first_name: string;
   last_name: string;
   nickname: string | null;
@@ -218,7 +219,7 @@ export async function fetchPlayerDetails(
   // Fetch player basic info and starting handicaps
   const { data: player, error: playerError } = await supabase
     .from('members')
-    .select('id, first_name, last_name, nickname, system_player_number, bca_member_number, role, phone, email, membership_paid_date, starting_handicap_3v3, starting_handicap_5v5')
+    .select('id, user_id, first_name, last_name, nickname, system_player_number, bca_member_number, role, phone, email, membership_paid_date, starting_handicap_3v3, starting_handicap_5v5')
     .eq('id', playerId)
     .single();
 

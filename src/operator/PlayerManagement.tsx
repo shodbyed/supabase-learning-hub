@@ -28,7 +28,9 @@ import {
 } from '@/components/ui/select';
 import { InfoButton } from '@/components/InfoButton';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
+import { TeamNameLink } from '@/components/TeamNameLink';
 import { AuthorizeNewPlayersCard } from '@/components/operator/AuthorizeNewPlayersCard';
+import { RecordDuesModal } from '@/components/RecordDuesModal';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Users, AlertCircle } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
@@ -58,6 +60,7 @@ export const PlayerManagement: React.FC = () => {
   const [handicap3v3, setHandicap3v3] = useState<string>('0');
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
+  const [showDuesModal, setShowDuesModal] = useState<boolean>(false);
   const { ConfirmDialogComponent } = useConfirmDialog();
 
   // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
@@ -301,6 +304,26 @@ export const PlayerManagement: React.FC = () => {
                   </CardHeader>
                   <CardContent className="p-4 lg:p-6 pt-0">
                     <div className="grid grid-cols-1 min-[320px]:grid-cols-2 gap-x-2 gap-y-3">
+                      {/* Status - indicates if player is registered or an alias (spans full width) */}
+                      <div className="col-span-full">
+                        <p className="text-xs text-gray-500 uppercase mb-1">
+                          Status
+                        </p>
+                        <p className={`font-medium ${
+                          playerDetails.user_id
+                            ? 'text-green-600'
+                            : playerDetails.email
+                              ? 'text-blue-600'
+                              : 'text-gray-500'
+                        }`}>
+                          {playerDetails.user_id
+                            ? 'Registered'
+                            : playerDetails.email
+                              ? "Alias (ID'd)"
+                              : 'Alias'}
+                        </p>
+                      </div>
+
                       {/* Name */}
                       <div>
                         <p className="text-xs text-gray-500 uppercase mb-1">
@@ -381,49 +404,37 @@ export const PlayerManagement: React.FC = () => {
                           - "Never Paid" = no membership_paid_date exists
                           - "Paid 2025" = paid date is in current year (active member)
                           - "Expired 2024" = paid date is from previous year (needs renewal)
+
+                          Click to open the dues recording modal.
                       */}
                       <div>
-                        <p className="text-xs text-gray-500 uppercase mb-1">
-                          Membership Status
-                        </p>
-                        <p className={`font-medium ${
-                          !playerDetails.membership_paid_date
-                            ? 'text-gray-500'
-                            : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
-                              ? 'text-green-600'
-                              : 'text-amber-600'
-                        }`}>
-                          {!playerDetails.membership_paid_date
-                            ? 'Never Paid'
-                            : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
-                              ? `Paid ${new Date(playerDetails.membership_paid_date).getFullYear()}`
-                              : `Expired ${new Date(playerDetails.membership_paid_date).getFullYear()}`
-                          }
-                        </p>
+                        <button
+                          onClick={() => setShowDuesModal(true)}
+                          className="text-left w-full hover:bg-gray-50 -m-2 p-2 rounded transition-colors"
+                        >
+                          <p className="text-xs text-blue-600 hover:text-blue-800 uppercase mb-1">
+                            Membership Status
+                          </p>
+                          <p className={`font-medium ${
+                            !playerDetails.membership_paid_date
+                              ? 'text-gray-500'
+                              : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
+                                ? 'text-green-600'
+                                : 'text-amber-600'
+                          }`}>
+                            {!playerDetails.membership_paid_date
+                              ? 'Never Paid'
+                              : new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()
+                                ? `Paid ${new Date(playerDetails.membership_paid_date).getFullYear()}`
+                                : `Expired ${new Date(playerDetails.membership_paid_date).getFullYear()}`
+                            }
+                          </p>
+                        </button>
                       </div>
                     </div>
 
                   </CardContent>
                 </Card>
-
-                {/* Unauthorized Player Warning - only show for players who need manual authorization */}
-                {!playerIsAuthorized && (
-                  <Card className="rounded-none lg:rounded-xl border-amber-300 bg-amber-50">
-                    <CardContent className="p-4 lg:p-6">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-                        <div>
-                          <p className="font-medium text-amber-800">
-                            Player Not Authorized
-                          </p>
-                          <p className="text-sm text-amber-700 mt-1">
-                            This player has {playerDetails.gameCounts.total} of 15 games needed to be established in the system. Set their starting handicaps below to authorize them for use in a restricted league match.
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
 
                 {/* Teams */}
                 <Card className="rounded-none lg:rounded-xl">
@@ -448,9 +459,10 @@ export const PlayerManagement: React.FC = () => {
                             </div>
                             {/* Team Name */}
                             <div>
-                              <p className="font-medium text-gray-900">
-                                {team.team_name}
-                              </p>
+                              <TeamNameLink
+                                teamId={team.id}
+                                teamName={team.team_name}
+                              />
                             </div>
                           </div>
                         ))}
@@ -458,6 +470,25 @@ export const PlayerManagement: React.FC = () => {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Unauthorized Player Warning - only show for players who need manual authorization */}
+                {!playerIsAuthorized && (
+                  <Card className="rounded-none lg:rounded-xl border-amber-300 bg-amber-50">
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-medium text-amber-800">
+                            Player Not Authorized
+                          </p>
+                          <p className="text-sm text-amber-700 mt-1">
+                            This player has {playerDetails.gameCounts.total} of 15 games needed to be established in the system. Set their starting handicaps below to authorize them for use in a restricted league match.
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Game History & Handicaps */}
                 <Card className="rounded-none lg:rounded-xl">
@@ -690,6 +721,17 @@ export const PlayerManagement: React.FC = () => {
       </div>
 
       {ConfirmDialogComponent}
+
+      {/* Record Dues Modal */}
+      {selectedPlayerId && playerDetails && (
+        <RecordDuesModal
+          open={showDuesModal}
+          onOpenChange={setShowDuesModal}
+          playerId={selectedPlayerId}
+          playerName={`${playerDetails.first_name} ${playerDetails.last_name}`}
+          hasPaid={!!playerDetails.membership_paid_date && new Date(playerDetails.membership_paid_date).getFullYear() === new Date().getFullYear()}
+        />
+      )}
     </div>
   );
 };
