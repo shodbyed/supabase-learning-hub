@@ -32,9 +32,10 @@ import { TeamNameLink } from '@/components/TeamNameLink';
 import { AuthorizeNewPlayersCard } from '@/components/operator/AuthorizeNewPlayersCard';
 import { RecordDuesModal } from '@/components/RecordDuesModal';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { Users, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
+import { useOrganizationInvites } from '@/api/hooks/useOrganizationInvites';
 import { logger } from '@/utils/logger';
 import {
   fetchPlayerDetails,
@@ -61,10 +62,20 @@ export const PlayerManagement: React.FC = () => {
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
   const [showDuesModal, setShowDuesModal] = useState<boolean>(false);
+  const [showInvitesList, setShowInvitesList] = useState<boolean>(false);
   const { ConfirmDialogComponent } = useConfirmDialog();
 
   // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
   const operatorId = impersonatedOperatorId || orgId;
+
+  // Fetch organization invites
+  const {
+    pendingInvites,
+    pendingCount,
+    expiredCount,
+    claimedCount,
+    loading: invitesLoading,
+  } = useOrganizationInvites(operatorId);
 
   // Fetch all league operators (for developer impersonation)
   const { data: allOperators } = useQuery({
@@ -313,7 +324,7 @@ export const PlayerManagement: React.FC = () => {
                           playerDetails.user_id
                             ? 'text-green-600'
                             : playerDetails.email
-                              ? 'text-blue-600'
+                              ? 'text-amber-600'
                               : 'text-gray-500'
                         }`}>
                           {playerDetails.user_id
@@ -362,7 +373,7 @@ export const PlayerManagement: React.FC = () => {
                           Email
                         </p>
                         <p className="font-medium text-gray-900 break-all">
-                          {playerDetails.email}
+                          {playerDetails.email || '-'}
                         </p>
                       </div>
 
@@ -717,6 +728,93 @@ export const PlayerManagement: React.FC = () => {
             operatorId={operatorId}
             onSelectPlayer={setSelectedPlayerId}
           />
+        )}
+
+        {/* Organization Invites Card */}
+        {operatorId && (
+          <Card className="rounded-none lg:rounded-xl">
+            <CardHeader className="p-4 lg:p-6 pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <CardTitle>Invites</CardTitle>
+                </div>
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-600">{pendingCount}</p>
+                    <p className="text-xs text-gray-500">Pending</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-amber-600">{expiredCount}</p>
+                    <p className="text-xs text-gray-500">Expired</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">{claimedCount}</p>
+                    <p className="text-xs text-gray-500">Claimed</p>
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 lg:p-6 pt-0">
+              {invitesLoading ? (
+                <p className="text-sm text-gray-500">Loading invites...</p>
+              ) : pendingCount === 0 ? (
+                <p className="text-sm text-gray-500">No pending invites</p>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowInvitesList(!showInvitesList)}
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    {showInvitesList ? (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Hide Pending Invites
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Show Pending Invites ({pendingCount})
+                      </>
+                    )}
+                  </Button>
+
+                  {showInvitesList && (
+                    <div className="mt-4 space-y-2">
+                      {pendingInvites.map((invite) => (
+                        <div
+                          key={invite.id}
+                          className="p-3 bg-gray-50 rounded-md border border-gray-200"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {invite.member_first_name} {invite.member_last_name}
+                              </p>
+                              <p className="text-sm text-gray-600">{invite.email}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Team: {invite.team_name}
+                              </p>
+                            </div>
+                            <div className="text-right text-xs text-gray-500">
+                              <p>Sent {new Date(invite.created_at).toLocaleDateString()}</p>
+                              {invite.expires_at && (
+                                <p>Expires {new Date(invite.expires_at).toLocaleDateString()}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
 

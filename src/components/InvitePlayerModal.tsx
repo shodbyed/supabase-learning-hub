@@ -107,6 +107,10 @@ export function InvitePlayerModal({
   const hasExistingInvite = existingInvite !== null && existingInvite.status === 'pending';
   const hasExpiredInvite = existingInvite !== null && (existingInvite.status === 'expired' || existingInvite.isExpired);
 
+  // Check if we have the required context for sending email invites
+  // teamId and captainMemberId are required by the edge function
+  const hasTeamContext = !!teamId && !!captainMemberId;
+
   // Modal mode state
   const [mode, setMode] = useState<ModalMode>('options');
 
@@ -502,8 +506,23 @@ export function InvitePlayerModal({
                   </p>
                 </div>
 
+                {/* Show warning if team context is missing */}
+                {!hasTeamContext && (
+                  <div className="p-3 rounded-lg border bg-gray-50 border-gray-200">
+                    <div className="flex items-center gap-2 text-sm">
+                      <AlertTriangle className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600">
+                        Email invites must be sent from a team context.
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      To send an email invite, open this player from Team Management.
+                    </p>
+                  </div>
+                )}
+
                 {/* Show existing invite status if applicable */}
-                {(hasExistingInvite || hasExpiredInvite) && existingInvite && (
+                {hasTeamContext && (hasExistingInvite || hasExpiredInvite) && existingInvite && (
                   <div className={`p-3 rounded-lg border ${hasExpiredInvite ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
                     <div className="flex items-center gap-2 text-sm">
                       {hasExpiredInvite ? (
@@ -531,7 +550,7 @@ export function InvitePlayerModal({
                     variant="default"
                     className="flex-1 gap-2"
                     onClick={handleSendEmailInvite}
-                    disabled={!email.trim() || isSendingInvite}
+                    disabled={!email.trim() || isSendingInvite || !hasTeamContext}
                     isLoading={isSendingInvite}
                     loadingText="Sending..."
                   >

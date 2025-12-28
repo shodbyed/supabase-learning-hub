@@ -293,6 +293,9 @@ export const queryKeys = {
 
     /** Invite statuses for multiple members (batch query) */
     byMembers: (memberIds: string[]) => [...queryKeys.invites.all, 'members', memberIds.sort().join(',')] as const,
+
+    /** Invites for an organization (via team -> season -> league) */
+    byOrganization: (organizationId: string) => [...queryKeys.invites.all, 'organization', organizationId] as const,
   },
 } as const;
 
