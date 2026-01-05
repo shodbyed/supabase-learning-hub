@@ -20,9 +20,9 @@
  * - PP with email can be on multiple teams
  */
 import { useState, useMemo, useEffect } from 'react';
-import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw, Key } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Check, Smartphone, AlertTriangle, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw, Key } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { DeviceHandoffForm, InviteSuccessView, ShareLinkSection } from './invite';
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/supabaseClient';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
-import { useInviteStatuses } from '@/api/hooks';
+import { useInviteStatuses, usePlayerTeamCount } from '@/api/hooks';
 import { queryKeys } from '@/api/queryKeys';
 
 /** Modes for the modal */
@@ -129,17 +129,11 @@ export function InvitePlayerModal({
   const [isEditingEmail, setIsEditingEmail] = useState(!initialEmail);
 
   // Options mode state
-  const [copied, setCopied] = useState(false);
-  const [showQrCode, setShowQrCode] = useState(false);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [isCreatingToken, setIsCreatingToken] = useState(false);
 
-  // Handoff form state
+  // Handoff success state - stores email for success view
   const [handoffEmail, setHandoffEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Detect current environment (for staging warning)
   const environment = useMemo(() => getEnvironment(), []);
@@ -148,8 +142,8 @@ export function InvitePlayerModal({
   // Generate the registration link
   const registrationLink = `${window.location.origin}/register?claim=${playerId}`;
 
-  // Track how many teams this PP is on (for informational display)
-  const [teamCount, setTeamCount] = useState<number>(0);
+  // Fetch team count for display (how many teams this PP is on)
+  const { teamCount } = usePlayerTeamCount(playerId, open);
 
   // Reset email state when modal opens with new player
   useEffect(() => {
@@ -160,36 +154,11 @@ export function InvitePlayerModal({
     }
   }, [open, initialEmail]);
 
-  // Fetch team count when modal opens
-  useEffect(() => {
-    if (!open || !playerId) {
-      setTeamCount(0);
-      return;
-    }
-
-    const fetchTeamCount = async () => {
-      const { count, error } = await supabase
-        .from('team_players')
-        .select('*', { count: 'exact', head: true })
-        .eq('member_id', playerId);
-
-      if (!error && count !== null) {
-        setTeamCount(count);
-      }
-    };
-
-    fetchTeamCount();
-  }, [open, playerId]);
-
   /**
    * Reset all form state when modal closes or mode changes
    */
   const resetForm = () => {
     setHandoffEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError(null);
-    setIsSubmitting(false);
   };
 
   /**
@@ -200,8 +169,6 @@ export function InvitePlayerModal({
       // Reset everything when closing
       setMode('options');
       resetForm();
-      setShowQrCode(false);
-      setCopied(false);
     }
     onOpenChange(newOpen);
   };
@@ -376,27 +343,6 @@ export function InvitePlayerModal({
   };
 
   /**
-   * Copy registration link to clipboard
-   */
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(registrationLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for browsers that don't support clipboard API
-      const textArea = document.createElement('textarea');
-      textArea.value = registrationLink;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  /**
    * Start device handoff flow - switch to handoff mode
    */
   const handleDeviceHandoff = () => {
@@ -412,97 +358,6 @@ export function InvitePlayerModal({
   const handleBackToOptions = () => {
     resetForm();
     setMode('options');
-  };
-
-  /**
-   * Handle handoff form submission
-   * Creates auth account and links to placeholder member
-   */
-  const handleHandoffSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    // Validation
-    if (!handoffEmail.trim()) {
-      setError('Email is required');
-      return;
-    }
-    if (!password) {
-      setError('Password is required');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Step 1: Create auth account (does NOT log anyone in)
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: handoffEmail.trim(),
-        password,
-      });
-
-      if (authError) {
-        logger.error('Handoff signUp failed', { error: authError.message });
-        setError(authError.message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError('Failed to create account - no user returned');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const newUserId = authData.user.id;
-      logger.info('Auth account created for handoff', { userId: newUserId, email: handoffEmail.trim() });
-
-      // Step 2: Link the new user_id to the placeholder member record
-      // Also save the email to the member record
-      const { error: updateError } = await supabase
-        .from('members')
-        .update({
-          user_id: newUserId,
-          email: handoffEmail.trim(),
-        })
-        .eq('id', playerId)
-        .is('user_id', null); // Only update if still a placeholder
-
-      if (updateError) {
-        logger.error('Failed to link user to placeholder', { error: updateError.message });
-        // Account was created but linking failed - this is a problem
-        // The user can still confirm email and log in, but they won't be linked
-        setError('Account created but failed to link to profile. Contact support.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      logger.info('Successfully linked user to placeholder member', {
-        userId: newUserId,
-        memberId: playerId
-      });
-
-      // Success! Show success state
-      setMode('success');
-      setIsSubmitting(false);
-
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-      queryClient.invalidateQueries({ queryKey: ['member', playerId] });
-
-    } catch (err) {
-      logger.error('Unexpected error during handoff', { error: err });
-      setError('An unexpected error occurred. Please try again.');
-      setIsSubmitting(false);
-    }
   };
 
   return (
@@ -753,84 +608,11 @@ export function InvitePlayerModal({
                 </div>
               </div>
 
-              {/* Option 3: Share Link */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Share Registration Link</Label>
-                <p className="text-xs text-gray-600">
-                  Copy the link to share via text, social media, or other messaging apps.
-                </p>
-
-                {/* Environment Warning - staging only */}
-                {isStaging && (
-                  <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <AlertTriangle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="text-xs text-blue-800">
-                      <p className="font-medium">Staging Environment</p>
-                      <p>This link points to the staging site, not production.</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <Input
-                    readOnly
-                    value={registrationLink}
-                    className="flex-1 text-sm bg-gray-50"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCopyLink}
-                    className="shrink-0"
-                    title="Copy link"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                {copied && (
-                  <p className="text-xs text-green-600">Link copied to clipboard!</p>
-                )}
-              </div>
-
-              {/* Option 4: QR Code */}
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setShowQrCode(!showQrCode)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <QrCode className="h-4 w-4 text-gray-600" />
-                    <Label className="text-sm font-medium cursor-pointer">Show QR Code</Label>
-                  </div>
-                  {showQrCode ? (
-                    <ChevronUp className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
-
-                {showQrCode && (
-                  <div className="space-y-3">
-                    <p className="text-xs text-gray-600">
-                      Have the player scan this code with their phone to register.
-                    </p>
-                    <div className="flex justify-center p-4 bg-white rounded-lg border">
-                      <QRCodeSVG
-                        value={registrationLink}
-                        size={180}
-                        level="M"
-                        includeMargin={true}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Option 3 & 4: Share Link & QR Code */}
+              <ShareLinkSection
+                registrationLink={registrationLink}
+                isStaging={isStaging}
+              />
               </div>
             </div>
           </>
@@ -856,86 +638,16 @@ export function InvitePlayerModal({
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleHandoffSubmit} className="space-y-4">
-              {/* Instructions for the person registering */}
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Hi {playerName.split(' ')[0]}!</span> Enter your email and create a password to claim your player profile.
-                </p>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-email">Email</Label>
-                <Input
-                  id="handoff-email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={handoffEmail}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHandoffEmail(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="email"
-                  autoFocus
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-password">Password</Label>
-                <Input
-                  id="handoff-password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-confirm">Confirm Password</Label>
-                <Input
-                  id="handoff-confirm"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* Error message */}
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-
-              {/* Submit button */}
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBackToOptions}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Creating account..."
-                  className="flex-1"
-                >
-                  Create Account
-                </Button>
-              </div>
-            </form>
+            <DeviceHandoffForm
+              playerId={playerId}
+              playerName={playerName}
+              initialEmail={email}
+              onSuccess={(successEmail) => {
+                setHandoffEmail(successEmail);
+                setMode('success');
+              }}
+              onBack={handleBackToOptions}
+            />
           </>
         )}
 
@@ -946,40 +658,11 @@ export function InvitePlayerModal({
               <DialogTitle>Account Created!</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {/* Success icon */}
-              <div className="flex justify-center">
-                <div className="p-4 bg-green-100 rounded-full">
-                  <Mail className="h-8 w-8 text-green-600" />
-                </div>
-              </div>
-
-              {/* Success message */}
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-900">
-                  A confirmation email has been sent to <span className="font-medium">{handoffEmail}</span>
-                </p>
-                <p className="text-xs text-gray-600">
-                  {playerName.split(' ')[0]} should check their email and click the confirmation link to complete setup.
-                  They can then log in on their own device.
-                </p>
-              </div>
-
-              {/* Important note */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs text-amber-800">
-                  <span className="font-medium">Important:</span> Please hand the device back to the league operator now.
-                  Your session is safe and you are not logged in as {playerName.split(' ')[0]}.
-                </p>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex justify-end">
-              <Button variant="default" loadingText="none" onClick={() => handleClose(false)}>
-                Done
-              </Button>
-            </div>
+            <InviteSuccessView
+              playerName={playerName}
+              email={handoffEmail}
+              onClose={() => handleClose(false)}
+            />
           </>
         )}
       </DialogContent>

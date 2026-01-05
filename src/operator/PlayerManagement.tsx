@@ -30,9 +30,10 @@ import { InfoButton } from '@/components/InfoButton';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { TeamNameLink } from '@/components/TeamNameLink';
 import { AuthorizeNewPlayersCard } from '@/components/operator/AuthorizeNewPlayersCard';
+import { PendingInvitesList } from '@/components/operator/PendingInvitesList';
 import { RecordDuesModal } from '@/components/RecordDuesModal';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { Users, AlertCircle, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, AlertCircle, Mail } from 'lucide-react';
 import { useIsDeveloper } from '@/api/hooks/useUserProfile';
 import { getAllLeagueOperators } from '@/api/queries/operators';
 import { useOrganizationInvites } from '@/api/hooks/useOrganizationInvites';
@@ -62,7 +63,6 @@ export const PlayerManagement: React.FC = () => {
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
   const [isHandicapOpen, setIsHandicapOpen] = useState<boolean>(false);
   const [showDuesModal, setShowDuesModal] = useState<boolean>(false);
-  const [showInvitesList, setShowInvitesList] = useState<boolean>(false);
   const { ConfirmDialogComponent } = useConfirmDialog();
 
   // Use impersonated operator ID if developer has selected one, otherwise use orgId from URL
@@ -762,69 +762,12 @@ export const PlayerManagement: React.FC = () => {
             <CardContent className="p-4 lg:p-6 pt-0">
               {invitesLoading ? (
                 <p className="text-sm text-gray-500">Loading invites...</p>
-              ) : pendingCount === 0 ? (
-                <p className="text-sm text-gray-500">No pending invites</p>
               ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowInvitesList(!showInvitesList)}
-                    className="w-full flex items-center justify-center gap-2"
-                  >
-                    {showInvitesList ? (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        Hide Pending Invites
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        Show Pending Invites ({pendingCount})
-                      </>
-                    )}
-                  </Button>
-
-                  {showInvitesList && (
-                    <div className="mt-4 space-y-2">
-                      {pendingInvites.map((invite) => (
-                        <div
-                          key={invite.id}
-                          className="p-3 bg-gray-50 rounded-md border border-gray-200"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900">
-                                {invite.member_first_name} {invite.member_last_name}
-                              </p>
-                              <p className="text-sm text-gray-600">{invite.email}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Invited by: {invite.team_name}
-                              </p>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <div className="text-right text-xs text-gray-500">
-                                <p>Sent {new Date(invite.created_at).toLocaleDateString()}</p>
-                                {invite.expires_at && (
-                                  <p>Expires {new Date(invite.expires_at).toLocaleDateString()}</p>
-                                )}
-                              </div>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => cancelInvite(invite.id)}
-                                disabled={isCancelling}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                              >
-                                Remove Invite
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
+                <PendingInvitesList
+                  invites={pendingInvites}
+                  onCancelInvite={cancelInvite}
+                  isCancelling={isCancelling}
+                />
               )}
             </CardContent>
           </Card>
