@@ -75,6 +75,8 @@ export const PlayerManagement: React.FC = () => {
     expiredCount,
     claimedCount,
     loading: invitesLoading,
+    cancelInvite,
+    isCancelling,
   } = useOrganizationInvites(operatorId);
 
   // Fetch all league operators (for developer impersonation)
@@ -791,20 +793,31 @@ export const PlayerManagement: React.FC = () => {
                           className="p-3 bg-gray-50 rounded-md border border-gray-200"
                         >
                           <div className="flex justify-between items-start">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="font-medium text-gray-900">
                                 {invite.member_first_name} {invite.member_last_name}
                               </p>
                               <p className="text-sm text-gray-600">{invite.email}</p>
                               <p className="text-xs text-gray-500 mt-1">
-                                Team: {invite.team_name}
+                                Invited by: {invite.team_name}
                               </p>
                             </div>
-                            <div className="text-right text-xs text-gray-500">
-                              <p>Sent {new Date(invite.created_at).toLocaleDateString()}</p>
-                              {invite.expires_at && (
-                                <p>Expires {new Date(invite.expires_at).toLocaleDateString()}</p>
-                              )}
+                            <div className="flex flex-col items-end gap-2">
+                              <div className="text-right text-xs text-gray-500">
+                                <p>Sent {new Date(invite.created_at).toLocaleDateString()}</p>
+                                {invite.expires_at && (
+                                  <p>Expires {new Date(invite.expires_at).toLocaleDateString()}</p>
+                                )}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => cancelInvite(invite.id)}
+                                disabled={isCancelling}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                              >
+                                Remove Invite
+                              </Button>
                             </div>
                           </div>
                         </div>

@@ -11,9 +11,10 @@
  * const { invites, pendingCount, loading } = useOrganizationInvites(orgId);
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/supabaseClient';
 import { queryKeys } from '../queryKeys';
+import { toast } from 'sonner';
 
 /**
  * Invite details for display in the organization invites list
@@ -153,18 +154,56 @@ async function fetchOrganizationInvites(organizationId: string): Promise<Organiz
 }
 
 /**
+ * Cancel an invite by setting its status to 'cancelled'
+ * This unlocks the email field on the PP and allows a new invite to be sent
+ */
+async function cancelInvite(inviteId: string): Promise<void> {
+  const { error } = await supabase
+    .from('invite_tokens')
+    .update({ status: 'cancelled' })
+    .eq('id', inviteId);
+
+  if (error) {
+    console.error('Error cancelling invite:', error);
+    throw error;
+  }
+}
+
+/**
  * Hook to get all invites for an organization
  *
  * @param organizationId - The organization ID to fetch invites for
  * @returns Object with invites list, counts, and loading state
  */
 export function useOrganizationInvites(organizationId: string | undefined) {
+  const queryClient = useQueryClient();
+
   const query = useQuery({
     queryKey: queryKeys.invites.byOrganization(organizationId || ''),
     queryFn: () => fetchOrganizationInvites(organizationId!),
     enabled: !!organizationId,
     staleTime: 1000 * 60 * 2, // 2 minutes
     refetchOnWindowFocus: false,
+  });
+
+  // Mutation for cancelling invites
+  const cancelInviteMutation = useMutation({
+    mutationFn: cancelInvite,
+    onSuccess: () => {
+      toast.success('Invite cancelled');
+      // Invalidate organization invites
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.invites.byOrganization(organizationId || ''),
+      });
+      // Also invalidate member-specific invite queries (used by InvitePlayerModal)
+      queryClient.invalidateQueries({
+        queryKey: ['inviteStatuses'],
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to cancel invite:', error);
+      toast.error('Failed to cancel invite. Please try again.');
+    },
   });
 
   const invites = query.data || [];
@@ -193,5 +232,9 @@ export function useOrganizationInvites(organizationId: string | undefined) {
     error: query.error,
     /** Refetch function */
     refetch: query.refetch,
+    /** Cancel an invite by ID */
+    cancelInvite: cancelInviteMutation.mutate,
+    /** Whether a cancel is in progress */
+    isCancelling: cancelInviteMutation.isPending,
   };
 }
