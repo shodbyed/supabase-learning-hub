@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabaseClient';
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
@@ -34,6 +35,7 @@ import {
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { useUser } from '@/context/useUser';
+import { queryKeys } from '@/api/queryKeys';
 
 /** Data returned from get_invite_details() */
 interface InviteDetails {
@@ -80,6 +82,7 @@ const ClaimButton: React.FC<{
 export const ClaimPlayer: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: userLoading } = useUser();
 
   const claimId = searchParams.get('claim');
@@ -235,6 +238,12 @@ export const ClaimPlayer: React.FC = () => {
         memberId: inviteDetails.member_id,
         stats: result.stats,
       });
+
+      // Invalidate pending invites query so Dashboard doesn't show the modal again
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.pending() });
+      // Also invalidate member queries since user now has a linked member
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['currentMember'] });
 
       setMergeStats(result.stats);
       setClaimState('success');

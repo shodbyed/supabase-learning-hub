@@ -20,7 +20,7 @@
  * - PP with email can be on multiple teams
  */
 import { useState, useMemo, useEffect } from 'react';
-import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw } from 'lucide-react';
+import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw, Key } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -72,6 +72,8 @@ interface InvitePlayerModalProps {
   playerName: string;
   /** The player's current email (if already set on PP record) */
   playerEmail?: string | null;
+  /** The player's user_id if they are registered (null for placeholder players) */
+  playerUserId?: string | null;
   /** Team ID for invite context */
   teamId?: string;
   /** Team name for email content */
@@ -94,6 +96,7 @@ export function InvitePlayerModal({
   playerId,
   playerName,
   playerEmail: initialEmail,
+  playerUserId,
   teamId,
   teamName,
   captainName,
@@ -111,6 +114,10 @@ export function InvitePlayerModal({
   // teamId and captainMemberId are required by the edge function
   const hasTeamContext = !!teamId && !!captainMemberId;
 
+  // Check if the player is a registered user (has a user_id)
+  // In-app messaging is only available for registered users
+  const isRegisteredUser = !!playerUserId;
+
   // Modal mode state
   const [mode, setMode] = useState<ModalMode>('options');
 
@@ -125,6 +132,7 @@ export function InvitePlayerModal({
   const [copied, setCopied] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [isCreatingToken, setIsCreatingToken] = useState(false);
 
   // Handoff form state
   const [handoffEmail, setHandoffEmail] = useState('');
@@ -271,6 +279,75 @@ export function InvitePlayerModal({
       toast.error('An unexpected error occurred');
     } finally {
       setIsSendingInvite(false);
+    }
+  };
+
+  /**
+   * Create an invite token without sending an email
+   * Useful when the operator wants to track the invite but will communicate
+   * the link through other means (phone, in-person, etc.)
+   */
+  const handleCreateToken = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter and save an email address first');
+      return;
+    }
+
+    // Save email first if not already saved
+    if (!emailSaved) {
+      await handleSaveEmail();
+    }
+
+    if (!hasTeamContext) {
+      toast.error('Team context required to create invite token');
+      return;
+    }
+
+    setIsCreatingToken(true);
+
+    try {
+      // Insert directly into invite_tokens table
+      const { data: newInvite, error: insertError } = await supabase
+        .from('invite_tokens')
+        .insert({
+          member_id: playerId,
+          email: email.trim().toLowerCase(),
+          team_id: teamId,
+          invited_by_member_id: captainMemberId,
+          status: 'pending',
+        })
+        .select('token')
+        .single();
+
+      if (insertError) {
+        // Check if it's a duplicate - there might already be a pending invite
+        if (insertError.code === '23505') {
+          toast.error('An invite token already exists for this player');
+        } else {
+          logger.error('Failed to create invite token', { error: insertError.message });
+          toast.error('Failed to create invite token. Please try again.');
+        }
+        return;
+      }
+
+      toast.success('Invite token created! Share the registration link with the player.');
+      logger.info('Invite token created (no email sent)', {
+        memberId: playerId,
+        email: email.trim(),
+        token: newInvite.token
+      });
+
+      // Invalidate invite queries so status updates
+      refetchInviteStatus();
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.byMembers([playerId]) });
+
+      // Don't close modal - user may want to copy the link
+
+    } catch (err) {
+      logger.error('Unexpected error creating invite token', { error: err });
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsCreatingToken(false);
     }
   };
 
@@ -544,39 +621,56 @@ export function InvitePlayerModal({
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex justify-between gap-2">
                   <Button
                     type="button"
                     variant="default"
-                    className="flex-1 gap-2"
+                    className="gap-1 px-3"
                     onClick={handleSendEmailInvite}
                     disabled={!email.trim() || isSendingInvite || !hasTeamContext}
                     isLoading={isSendingInvite}
-                    loadingText="Sending..."
+                    loadingText="..."
                   >
                     {hasExistingInvite || hasExpiredInvite ? (
                       <>
                         <RefreshCw className="h-4 w-4" />
-                        Resend Email
+                        <span className="hidden sm:inline">Resend</span> Email
                       </>
                     ) : (
                       <>
                         <Mail className="h-4 w-4" />
-                        Send Email
+                        Email
                       </>
                     )}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1 gap-2"
-                    disabled={!email.trim()}
-                    title="Coming soon"
+                    className="gap-1 px-3"
+                    disabled={!email.trim() || !isRegisteredUser}
+                    title={!isRegisteredUser ? 'Only available for registered users' : 'Coming soon'}
                   >
                     <MessageSquare className="h-4 w-4" />
-                    In-App Message
+                    Message
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-1 px-3"
+                    onClick={handleCreateToken}
+                    disabled={!email.trim() || isCreatingToken || !hasTeamContext || hasExistingInvite}
+                    isLoading={isCreatingToken}
+                    loadingText="..."
+                    title={hasExistingInvite ? 'Invite already sent' : 'Create invite without sending notification'}
+                  >
+                    <Key className="h-4 w-4" />
+                    {hasExistingInvite ? 'Invited' : 'Invite Only'}
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500">
+                  "Invite Only" creates the invite without sending a notification. Share the link below manually.
+                </p>
+
                 {!email.trim() && (
                   <p className="text-xs text-amber-600">Enter and save an email above to enable these options.</p>
                 )}

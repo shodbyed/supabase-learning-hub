@@ -54,6 +54,14 @@ interface PlayerNameLinkProps {
   playerId: string;
   playerName: string;
   className?: string;
+  /** Team ID for invite context (required for email invites) */
+  teamId?: string;
+  /** Team name for invite email content */
+  teamName?: string;
+  /** Captain's name for invite email content */
+  captainName?: string;
+  /** Captain's member ID for tracking who sent the invite */
+  captainMemberId?: string;
   onSendMessage?: (playerId: string) => void;
   onReportUser?: (playerId: string) => void;
   onBlockUser?: (playerId: string) => void;
@@ -64,6 +72,10 @@ export function PlayerNameLink({
   playerId,
   playerName,
   className,
+  teamId,
+  teamName,
+  captainName,
+  captainMemberId,
   onSendMessage,
   onReportUser,
   onBlockUser,
@@ -525,6 +537,11 @@ export function PlayerNameLink({
         playerId={playerId}
         playerName={playerFullName || playerName}
         playerEmail={playerEmail}
+        playerUserId={memberData?.user_id}
+        teamId={teamId}
+        teamName={teamName}
+        captainName={captainName}
+        captainMemberId={captainMemberId}
       />
     </>
   );

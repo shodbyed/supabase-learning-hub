@@ -19,7 +19,6 @@ import { CapitalizeInput } from '@/components/ui/capitalize-input';
 import { MemberCombobox } from '@/components/MemberCombobox';
 import { PlayerNameLink } from '@/components/PlayerNameLink';
 import { InfoButton } from '@/components/InfoButton';
-import { PlaceholderRemovalModal } from '@/components/modals/PlaceholderRemovalModal';
 import { InviteStatusBadge } from '@/components/InviteStatusBadge';
 import { useRosterEditor } from '@/hooks/useRosterEditor';
 import { useOperatorProfanityFilter } from '@/hooks/useOperatorProfanityFilter';
@@ -141,8 +140,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
   // Track newly created placeholder members so they appear immediately in dropdowns
   const [newPlaceholders, setNewPlaceholders] = useState<PartialMember[]>([]);
 
-  // Track which placeholder player was clicked (for showing removal modal)
-  const [clickedPlaceholder, setClickedPlaceholder] = useState<PartialMember | null>(null);
 
   // Merge members from props with newly created placeholders
   const allMembers = useMemo(() => {
@@ -473,35 +470,61 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                 const currentMember = currentPlayerId ? allMembers.find(m => m.id === currentPlayerId) : null;
                 const isCurrentPlaceholder = isPlaceholderMember(currentMember);
 
-                // Captain viewing a placeholder slot - show player name with separate manage button
-                // Don't wrap entire row in button - PlayerNameLink needs to remain clickable for registration
-                if (isCaptainVariant && isCurrentPlaceholder && currentMember) {
+                // Get captain info for invite context
+                const captainMember = captainId ? allMembers.find(m => m.id === captainId) : null;
+                const captainDisplayName = captainMember
+                  ? `${captainMember.first_name} ${captainMember.last_name}`
+                  : undefined;
+
+                // Determine if player can be removed from roster
+                // - Operators can remove anyone
+                // - Captains cannot remove placeholder players (extensible for more rules later)
+                const canRemovePlayer = (): boolean => {
+                  if (!isCaptainVariant) return true; // Operators can remove anyone
+                  if (isCurrentPlaceholder) return false; // Captains cannot remove PPs
+                  return true; // Captains can remove registered players
+                };
+
+                // FILLED SLOT: Show player as label with optional X button
+                if (currentMember) {
                   const inviteStatus = getInviteStatus(currentMember.id);
+                  const showRemoveButton = canRemovePlayer();
+
                   return (
                     <div key={index}>
-                      <div className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-100">
+                      <div className="flex h-9 w-full items-center justify-between px-3 rounded-md border border-input bg-gray-50">
                         <div className="flex items-center gap-2">
                           <PlayerNameLink
                             playerId={currentMember.id}
                             playerName={getPlayerDisplayName(currentMember)}
+                            teamId={existingTeam?.id}
+                            teamName={teamName}
+                            captainName={captainDisplayName}
+                            captainMemberId={captainId}
                           />
-                          <InviteStatusBadge status={inviteStatus} />
+                          {isCurrentPlaceholder && <InviteStatusBadge status={inviteStatus} />}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setClickedPlaceholder(currentMember)}
-                          className="h-6 px-2 text-xs text-amber-600 hover:text-amber-700"
-                        >
-                          Manage
-                        </Button>
+                        {showRemoveButton ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handlePlayerChange(index, '')}
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-600"
+                            aria-label={`Remove ${getPlayerDisplayName(currentMember)}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          // Show info for captains who can't remove PPs
+                          <span className="text-xs text-gray-400">Contact operator to remove</span>
+                        )}
                       </div>
                     </div>
                   );
                 }
 
-                // Normal combobox for operators or non-placeholder slots
+                // EMPTY SLOT: Show dropdown to add a player
                 return (
                   <MemberCombobox
                     key={index}
@@ -509,7 +532,7 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
                     value={currentPlayerId}
                     onValueChange={(memberId) => handlePlayerChange(index, memberId)}
                     placeholder={`Player ${index + 2} (optional)`}
-                    showClear={true}
+                    showClear={false}
                     excludeIds={getExcludedIdsForSlot(index)}
                     allowCreatePlaceholder={true}
                     onPlaceholderCreated={handlePlaceholderCreated}
@@ -545,14 +568,6 @@ export const TeamEditorModal: React.FC<TeamEditorModalProps> = ({
         </div>
       </div>
 
-      {/* Placeholder Removal Modal - shown when captain clicks on a placeholder player */}
-      <PlaceholderRemovalModal
-        isOpen={!!clickedPlaceholder}
-        onClose={() => setClickedPlaceholder(null)}
-        playerName={clickedPlaceholder ? getPlayerDisplayName(clickedPlaceholder) : ''}
-        teamName={teamName}
-        leagueId={leagueId}
-      />
     </div>
   );
 };
