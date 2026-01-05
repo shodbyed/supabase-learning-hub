@@ -148,6 +148,9 @@ export function InvitePlayerModal({
   // Generate the registration link
   const registrationLink = `${window.location.origin}/register?claim=${playerId}`;
 
+  // Track how many teams this PP is on (for informational display)
+  const [teamCount, setTeamCount] = useState<number>(0);
+
   // Reset email state when modal opens with new player
   useEffect(() => {
     if (open) {
@@ -156,6 +159,27 @@ export function InvitePlayerModal({
       setIsEditingEmail(!initialEmail); // Show input if no email, show display if email exists
     }
   }, [open, initialEmail]);
+
+  // Fetch team count when modal opens
+  useEffect(() => {
+    if (!open || !playerId) {
+      setTeamCount(0);
+      return;
+    }
+
+    const fetchTeamCount = async () => {
+      const { count, error } = await supabase
+        .from('team_players')
+        .select('*', { count: 'exact', head: true })
+        .eq('member_id', playerId);
+
+      if (!error && count !== null) {
+        setTeamCount(count);
+      }
+    };
+
+    fetchTeamCount();
+  }, [open, playerId]);
 
   /**
    * Reset all form state when modal closes or mode changes
@@ -508,21 +532,39 @@ export function InvitePlayerModal({
                         <Mail className="h-4 w-4 text-gray-500 shrink-0" />
                         <span className="text-sm truncate">{email}</span>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsEditingEmail(true)}
-                        className="shrink-0 h-7 px-2"
-                      >
-                        <Pencil className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
+                      {/* Only allow editing if there's no pending invite */}
+                      {!hasExistingInvite && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingEmail(true)}
+                          className="shrink-0 h-7 px-2"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Email on file - ready to send invite
-                    </p>
+                    {/* Show different message based on invite status */}
+                    {hasExistingInvite ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-amber-600 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          Email locked. League Operator must cancel invite to change email.
+                        </p>
+                        {teamCount > 1 && (
+                          <p className="text-xs text-gray-500">
+                            This player is on {teamCount} teams. Accepting the invite will link all teams to their account.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Email on file - ready to send invite
+                      </p>
+                    )}
                   </div>
                 ) : (
                   /* Edit mode - no email or user clicked edit */
