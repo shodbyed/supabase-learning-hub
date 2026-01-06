@@ -1,0 +1,11 @@
+-- Fixed match_lineups data
+-- Renamed team_handicap to home_team_modifier
+
+INSERT INTO "public"."match_lineups" ("id", "match_id", "team_id", "player1_id", "player1_handicap", "player2_id", "player2_handicap", "player3_id", "player3_handicap", "locked", "locked_at", "created_at", "updated_at", "home_team_modifier") VALUES
+	('41e0dc71-2293-4ca9-8ad3-375cb880aad7', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 1.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, '6cc52642-7166-4c36-8583-1639a27abc42', 2.0, true, NULL, '2025-11-05 04:05:56.148438+00', '2025-11-05 04:05:56.148438+00', 0),
+	('f5ceff94-3c06-4432-8b6f-73312c907ece', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', -1.0, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', -1.0, 'c11dab77-aa0a-421c-b879-586934302382', -1.0, true, NULL, '2025-11-05 04:06:21.755021+00', '2025-11-05 04:06:21.755021+00', 0),
+	('48861cd4-d6ff-40d1-92d0-c4136d79a607', 'd73dd97f-da42-4725-b8f9-434f5d85d904', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 0.0, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 0.0, '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 0.0, true, NULL, '2025-11-05 04:45:31.149785+00', '2025-11-05 04:45:31.149785+00', 0),
+	('9eb180cd-3bda-4b7e-93a8-fe64935163c1', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 0.0, '6cc52642-7166-4c36-8583-1639a27abc42', 0.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, true, NULL, '2025-11-05 04:45:34.604977+00', '2025-11-05 04:45:34.604977+00', 0),
+	('aaef90ba-0f6b-4f1a-8dbc-a82f708e416e', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', '1812e7c3-7688-4462-964e-5e9869579d4d', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 0.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, '41321be8-dbb8-472c-b785-4f6a21939094', 0.0, true, NULL, '2025-11-05 20:18:29.818538+00', '2025-11-05 20:18:29.818538+00', 0),
+	('8e1db8c7-45e4-4bac-9b59-e7d249cd4c47', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '926c4fda-8206-4ebd-b5c2-850701465090', 1.0, 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', 0.0, 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', 0.0, true, NULL, '2025-11-05 20:18:33.258645+00', '2025-11-05 20:18:33.258645+00', 0);
+

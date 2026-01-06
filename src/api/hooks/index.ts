@@ -277,3 +277,5 @@ export {
 export { usePendingInvites } from './usePendingInvites';
 export { useInviteStatuses } from './useInviteStatuses';
 export type { InviteStatus } from './useInviteStatuses';
+export { usePlayerTeamCount } from './usePlayerTeamCount';
+export type { PlayerTeam } from './usePlayerTeamCount';

@@ -20,9 +20,9 @@
  * - PP with email can be on multiple teams
  */
 import { useState, useMemo, useEffect } from 'react';
-import { Copy, Check, Smartphone, AlertTriangle, QrCode, ChevronDown, ChevronUp, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
+import { Check, Smartphone, AlertTriangle, ArrowLeft, Mail, Save, MessageSquare, Pencil, RefreshCw, Key } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { DeviceHandoffForm, InviteSuccessView, ShareLinkSection } from './invite';
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/supabaseClient';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
-import { useInviteStatuses } from '@/api/hooks';
+import { useInviteStatuses, usePlayerTeamCount } from '@/api/hooks';
 import { queryKeys } from '@/api/queryKeys';
 
 /** Modes for the modal */
@@ -72,6 +72,8 @@ interface InvitePlayerModalProps {
   playerName: string;
   /** The player's current email (if already set on PP record) */
   playerEmail?: string | null;
+  /** The player's user_id if they are registered (null for placeholder players) */
+  playerUserId?: string | null;
   /** Team ID for invite context */
   teamId?: string;
   /** Team name for email content */
@@ -94,6 +96,7 @@ export function InvitePlayerModal({
   playerId,
   playerName,
   playerEmail: initialEmail,
+  playerUserId,
   teamId,
   teamName,
   captainName,
@@ -107,6 +110,14 @@ export function InvitePlayerModal({
   const hasExistingInvite = existingInvite !== null && existingInvite.status === 'pending';
   const hasExpiredInvite = existingInvite !== null && (existingInvite.status === 'expired' || existingInvite.isExpired);
 
+  // Check if we have the required context for sending email invites
+  // teamId and captainMemberId are required by the edge function
+  const hasTeamContext = !!teamId && !!captainMemberId;
+
+  // Check if the player is a registered user (has a user_id)
+  // In-app messaging is only available for registered users
+  const isRegisteredUser = !!playerUserId;
+
   // Modal mode state
   const [mode, setMode] = useState<ModalMode>('options');
 
@@ -118,16 +129,11 @@ export function InvitePlayerModal({
   const [isEditingEmail, setIsEditingEmail] = useState(!initialEmail);
 
   // Options mode state
-  const [copied, setCopied] = useState(false);
-  const [showQrCode, setShowQrCode] = useState(false);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [isCreatingToken, setIsCreatingToken] = useState(false);
 
-  // Handoff form state
+  // Handoff success state - stores email for success view
   const [handoffEmail, setHandoffEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Detect current environment (for staging warning)
   const environment = useMemo(() => getEnvironment(), []);
@@ -135,6 +141,9 @@ export function InvitePlayerModal({
 
   // Generate the registration link
   const registrationLink = `${window.location.origin}/register?claim=${playerId}`;
+
+  // Fetch team count for display (how many teams this PP is on)
+  const { teamCount } = usePlayerTeamCount(playerId, open);
 
   // Reset email state when modal opens with new player
   useEffect(() => {
@@ -150,10 +159,6 @@ export function InvitePlayerModal({
    */
   const resetForm = () => {
     setHandoffEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setError(null);
-    setIsSubmitting(false);
   };
 
   /**
@@ -164,8 +169,6 @@ export function InvitePlayerModal({
       // Reset everything when closing
       setMode('options');
       resetForm();
-      setShowQrCode(false);
-      setCopied(false);
     }
     onOpenChange(newOpen);
   };
@@ -271,23 +274,71 @@ export function InvitePlayerModal({
   };
 
   /**
-   * Copy registration link to clipboard
+   * Create an invite token without sending an email
+   * Useful when the operator wants to track the invite but will communicate
+   * the link through other means (phone, in-person, etc.)
    */
-  const handleCopyLink = async () => {
+  const handleCreateToken = async () => {
+    if (!email.trim()) {
+      toast.error('Please enter and save an email address first');
+      return;
+    }
+
+    // Save email first if not already saved
+    if (!emailSaved) {
+      await handleSaveEmail();
+    }
+
+    if (!hasTeamContext) {
+      toast.error('Team context required to create invite token');
+      return;
+    }
+
+    setIsCreatingToken(true);
+
     try {
-      await navigator.clipboard.writeText(registrationLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for browsers that don't support clipboard API
-      const textArea = document.createElement('textarea');
-      textArea.value = registrationLink;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      // Insert directly into invite_tokens table
+      const { data: newInvite, error: insertError } = await supabase
+        .from('invite_tokens')
+        .insert({
+          member_id: playerId,
+          email: email.trim().toLowerCase(),
+          team_id: teamId,
+          invited_by_member_id: captainMemberId,
+          status: 'pending',
+        })
+        .select('token')
+        .single();
+
+      if (insertError) {
+        // Check if it's a duplicate - there might already be a pending invite
+        if (insertError.code === '23505') {
+          toast.error('An invite token already exists for this player');
+        } else {
+          logger.error('Failed to create invite token', { error: insertError.message });
+          toast.error('Failed to create invite token. Please try again.');
+        }
+        return;
+      }
+
+      toast.success('Invite token created! Share the registration link with the player.');
+      logger.info('Invite token created (no email sent)', {
+        memberId: playerId,
+        email: email.trim(),
+        token: newInvite.token
+      });
+
+      // Invalidate invite queries so status updates
+      refetchInviteStatus();
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.byMembers([playerId]) });
+
+      // Don't close modal - user may want to copy the link
+
+    } catch (err) {
+      logger.error('Unexpected error creating invite token', { error: err });
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsCreatingToken(false);
     }
   };
 
@@ -307,97 +358,6 @@ export function InvitePlayerModal({
   const handleBackToOptions = () => {
     resetForm();
     setMode('options');
-  };
-
-  /**
-   * Handle handoff form submission
-   * Creates auth account and links to placeholder member
-   */
-  const handleHandoffSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    // Validation
-    if (!handoffEmail.trim()) {
-      setError('Email is required');
-      return;
-    }
-    if (!password) {
-      setError('Password is required');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Step 1: Create auth account (does NOT log anyone in)
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: handoffEmail.trim(),
-        password,
-      });
-
-      if (authError) {
-        logger.error('Handoff signUp failed', { error: authError.message });
-        setError(authError.message);
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError('Failed to create account - no user returned');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const newUserId = authData.user.id;
-      logger.info('Auth account created for handoff', { userId: newUserId, email: handoffEmail.trim() });
-
-      // Step 2: Link the new user_id to the placeholder member record
-      // Also save the email to the member record
-      const { error: updateError } = await supabase
-        .from('members')
-        .update({
-          user_id: newUserId,
-          email: handoffEmail.trim(),
-        })
-        .eq('id', playerId)
-        .is('user_id', null); // Only update if still a placeholder
-
-      if (updateError) {
-        logger.error('Failed to link user to placeholder', { error: updateError.message });
-        // Account was created but linking failed - this is a problem
-        // The user can still confirm email and log in, but they won't be linked
-        setError('Account created but failed to link to profile. Contact support.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      logger.info('Successfully linked user to placeholder member', {
-        userId: newUserId,
-        memberId: playerId
-      });
-
-      // Success! Show success state
-      setMode('success');
-      setIsSubmitting(false);
-
-      // Invalidate queries
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-      queryClient.invalidateQueries({ queryKey: ['member', playerId] });
-
-    } catch (err) {
-      logger.error('Unexpected error during handoff', { error: err });
-      setError('An unexpected error occurred. Please try again.');
-      setIsSubmitting(false);
-    }
   };
 
   return (
@@ -427,21 +387,39 @@ export function InvitePlayerModal({
                         <Mail className="h-4 w-4 text-gray-500 shrink-0" />
                         <span className="text-sm truncate">{email}</span>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsEditingEmail(true)}
-                        className="shrink-0 h-7 px-2"
-                      >
-                        <Pencil className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
+                      {/* Only allow editing if there's no pending invite */}
+                      {!hasExistingInvite && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingEmail(true)}
+                          className="shrink-0 h-7 px-2"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                      )}
                     </div>
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Email on file - ready to send invite
-                    </p>
+                    {/* Show different message based on invite status */}
+                    {hasExistingInvite ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-amber-600 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          Email locked. League Operator must cancel invite to change email.
+                        </p>
+                        {teamCount > 1 && (
+                          <p className="text-xs text-gray-500">
+                            This player is on {teamCount} teams. Accepting the invite will link all teams to their account.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-green-600 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Email on file - ready to send invite
+                      </p>
+                    )}
                   </div>
                 ) : (
                   /* Edit mode - no email or user clicked edit */
@@ -502,8 +480,23 @@ export function InvitePlayerModal({
                   </p>
                 </div>
 
+                {/* Show warning if team context is missing */}
+                {!hasTeamContext && (
+                  <div className="p-3 rounded-lg border bg-gray-50 border-gray-200">
+                    <div className="flex items-center gap-2 text-sm">
+                      <AlertTriangle className="h-4 w-4 text-gray-500" />
+                      <span className="text-gray-600">
+                        Email invites must be sent from a team context.
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      To send an email invite, open this player from Team Management.
+                    </p>
+                  </div>
+                )}
+
                 {/* Show existing invite status if applicable */}
-                {(hasExistingInvite || hasExpiredInvite) && existingInvite && (
+                {hasTeamContext && (hasExistingInvite || hasExpiredInvite) && existingInvite && (
                   <div className={`p-3 rounded-lg border ${hasExpiredInvite ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
                     <div className="flex items-center gap-2 text-sm">
                       {hasExpiredInvite ? (
@@ -525,39 +518,56 @@ export function InvitePlayerModal({
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex justify-between gap-2">
                   <Button
                     type="button"
                     variant="default"
-                    className="flex-1 gap-2"
+                    className="gap-1 px-3"
                     onClick={handleSendEmailInvite}
-                    disabled={!email.trim() || isSendingInvite}
+                    disabled={!email.trim() || isSendingInvite || !hasTeamContext}
                     isLoading={isSendingInvite}
-                    loadingText="Sending..."
+                    loadingText="..."
                   >
                     {hasExistingInvite || hasExpiredInvite ? (
                       <>
                         <RefreshCw className="h-4 w-4" />
-                        Resend Email
+                        <span className="hidden sm:inline">Resend</span> Email
                       </>
                     ) : (
                       <>
                         <Mail className="h-4 w-4" />
-                        Send Email
+                        Email
                       </>
                     )}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1 gap-2"
-                    disabled={!email.trim()}
-                    title="Coming soon"
+                    className="gap-1 px-3"
+                    disabled={!email.trim() || !isRegisteredUser}
+                    title={!isRegisteredUser ? 'Only available for registered users' : 'Coming soon'}
                   >
                     <MessageSquare className="h-4 w-4" />
-                    In-App Message
+                    Message
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-1 px-3"
+                    onClick={handleCreateToken}
+                    disabled={!email.trim() || isCreatingToken || !hasTeamContext || hasExistingInvite}
+                    isLoading={isCreatingToken}
+                    loadingText="..."
+                    title={hasExistingInvite ? 'Invite already sent' : 'Create invite without sending notification'}
+                  >
+                    <Key className="h-4 w-4" />
+                    {hasExistingInvite ? 'Invited' : 'Invite Only'}
                   </Button>
                 </div>
+                <p className="text-xs text-gray-500">
+                  "Invite Only" creates the invite without sending a notification. Share the link below manually.
+                </p>
+
                 {!email.trim() && (
                   <p className="text-xs text-amber-600">Enter and save an email above to enable these options.</p>
                 )}
@@ -598,84 +608,11 @@ export function InvitePlayerModal({
                 </div>
               </div>
 
-              {/* Option 3: Share Link */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Share Registration Link</Label>
-                <p className="text-xs text-gray-600">
-                  Copy the link to share via text, social media, or other messaging apps.
-                </p>
-
-                {/* Environment Warning - staging only */}
-                {isStaging && (
-                  <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <AlertTriangle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="text-xs text-blue-800">
-                      <p className="font-medium">Staging Environment</p>
-                      <p>This link points to the staging site, not production.</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <Input
-                    readOnly
-                    value={registrationLink}
-                    className="flex-1 text-sm bg-gray-50"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCopyLink}
-                    className="shrink-0"
-                    title="Copy link"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                {copied && (
-                  <p className="text-xs text-green-600">Link copied to clipboard!</p>
-                )}
-              </div>
-
-              {/* Option 4: QR Code */}
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setShowQrCode(!showQrCode)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <QrCode className="h-4 w-4 text-gray-600" />
-                    <Label className="text-sm font-medium cursor-pointer">Show QR Code</Label>
-                  </div>
-                  {showQrCode ? (
-                    <ChevronUp className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
-
-                {showQrCode && (
-                  <div className="space-y-3">
-                    <p className="text-xs text-gray-600">
-                      Have the player scan this code with their phone to register.
-                    </p>
-                    <div className="flex justify-center p-4 bg-white rounded-lg border">
-                      <QRCodeSVG
-                        value={registrationLink}
-                        size={180}
-                        level="M"
-                        includeMargin={true}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Option 3 & 4: Share Link & QR Code */}
+              <ShareLinkSection
+                registrationLink={registrationLink}
+                isStaging={isStaging}
+              />
               </div>
             </div>
           </>
@@ -701,86 +638,16 @@ export function InvitePlayerModal({
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleHandoffSubmit} className="space-y-4">
-              {/* Instructions for the person registering */}
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <span className="font-medium">Hi {playerName.split(' ')[0]}!</span> Enter your email and create a password to claim your player profile.
-                </p>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-email">Email</Label>
-                <Input
-                  id="handoff-email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={handoffEmail}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHandoffEmail(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="email"
-                  autoFocus
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-password">Password</Label>
-                <Input
-                  id="handoff-password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-2">
-                <Label htmlFor="handoff-confirm">Confirm Password</Label>
-                <Input
-                  id="handoff-confirm"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={confirmPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
-                  disabled={isSubmitting}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {/* Error message */}
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-
-              {/* Submit button */}
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBackToOptions}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Creating account..."
-                  className="flex-1"
-                >
-                  Create Account
-                </Button>
-              </div>
-            </form>
+            <DeviceHandoffForm
+              playerId={playerId}
+              playerName={playerName}
+              initialEmail={email}
+              onSuccess={(successEmail) => {
+                setHandoffEmail(successEmail);
+                setMode('success');
+              }}
+              onBack={handleBackToOptions}
+            />
           </>
         )}
 
@@ -791,40 +658,11 @@ export function InvitePlayerModal({
               <DialogTitle>Account Created!</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4">
-              {/* Success icon */}
-              <div className="flex justify-center">
-                <div className="p-4 bg-green-100 rounded-full">
-                  <Mail className="h-8 w-8 text-green-600" />
-                </div>
-              </div>
-
-              {/* Success message */}
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-900">
-                  A confirmation email has been sent to <span className="font-medium">{handoffEmail}</span>
-                </p>
-                <p className="text-xs text-gray-600">
-                  {playerName.split(' ')[0]} should check their email and click the confirmation link to complete setup.
-                  They can then log in on their own device.
-                </p>
-              </div>
-
-              {/* Important note */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-xs text-amber-800">
-                  <span className="font-medium">Important:</span> Please hand the device back to the league operator now.
-                  Your session is safe and you are not logged in as {playerName.split(' ')[0]}.
-                </p>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex justify-end">
-              <Button variant="default" loadingText="none" onClick={() => handleClose(false)}>
-                Done
-              </Button>
-            </div>
+            <InviteSuccessView
+              playerName={playerName}
+              email={handoffEmail}
+              onClose={() => handleClose(false)}
+            />
           </>
         )}
       </DialogContent>

@@ -1,0 +1,6491 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict GJ3N693sUzzh0WvPh6eZLLiLL8ElTkFaGhdVp7TwM2Vwj1c753a08UWMQMhgJc8
+
+-- Dumped from database version 17.6
+-- Dumped by pg_dump version 17.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: tenants; Type: TABLE DATA; Schema: _realtime; Owner: -
+--
+
+INSERT INTO _realtime.tenants VALUES ('78e95ce1-9643-4460-bfba-f476567214a5', 'realtime-dev', 'realtime-dev', 'iNjicxc4+llvc9wovDvqymwfnj9teWMlyOIbJ8Fh6j2WNU8CIJ2ZgjR6MUIKqSmeDmvpsKLsZ9jgXJmQPpwL8w==', 200, '2025-12-19 17:25:59', '2025-12-19 17:26:00', 100, 'postgres_cdc_rls', 100000, 100, 100, false, '{"keys": [{"k": "c3VwZXItc2VjcmV0LWp3dC10b2tlbi13aXRoLWF0LWxlYXN0LTMyLWNoYXJhY3RlcnMtbG9uZw", "kty": "oct"}]}', false, false, 65, 'gen_rpc', 1000, 3000);
+
+
+--
+-- Data for Name: extensions; Type: TABLE DATA; Schema: _realtime; Owner: -
+--
+
+INSERT INTO _realtime.extensions VALUES ('30727cc7-2a80-4842-9cab-7b98c5229d59', 'postgres_cdc_rls', '{"region": "us-east-1", "db_host": "dXlmEbp8mMsZ5X0Gmxlrqmdk/A0ncz9ATlBQ3s9T+k8=", "db_name": "sWBpZNdjggEPTQVlI52Zfw==", "db_port": "+enMDFi1J/3IrrquHHwUmA==", "db_user": "uxbEq/zz8DXVD53TOI1zmw==", "slot_name": "supabase_realtime_replication_slot", "db_password": "sWBpZNdjggEPTQVlI52Zfw==", "publication": "supabase_realtime", "ssl_enforced": false, "poll_interval_ms": 100, "poll_max_changes": 100, "poll_max_record_bytes": 1048576}', 'realtime-dev', '2025-12-19 17:25:59', '2025-12-19 17:25:59');
+
+
+--
+-- Data for Name: schema_migrations; Type: TABLE DATA; Schema: _realtime; Owner: -
+--
+
+INSERT INTO _realtime.schema_migrations VALUES (20210706140551, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220329161857, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220410212326, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220506102948, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220527210857, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220815211129, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220815215024, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20220818141501, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20221018173709, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20221102172703, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20221223010058, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20230110180046, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20230810220907, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20230810220924, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20231024094642, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20240306114423, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20240418082835, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20240625211759, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20240704172020, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20240902173232, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20241106103258, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20250424203323, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20250613072131, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20250711044927, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20250811121559, '2025-12-19 17:25:46');
+INSERT INTO _realtime.schema_migrations VALUES (20250926223044, '2025-12-19 17:25:46');
+
+
+--
+-- Data for Name: audit_log_entries; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd19ecdd2-4c43-4220-943c-f562ed3da69e', '{"action":"user_signedup","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}', '2025-10-03 02:21:27.341824+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c1f2db7f-8192-4274-b21e-63fe110c2567', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-03 02:21:27.344998+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7db280dc-641a-44ab-83e2-bcbd701a6df7', '{"action":"user_repeated_signup","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"user","traits":{"provider":"email"}}', '2025-10-03 02:22:42.221239+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '215f502d-f972-4d06-9aff-a21b45e9b02a', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-03 02:23:29.709857+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd0ca15aa-95d7-4850-951e-eb8c43d10ba1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 12:24:03.757337+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '092d6ebb-2ef5-4e73-9c8a-b7a6df54ddf0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 12:24:03.759193+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9e1996c8-2af5-4180-a454-69569572b573', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 13:22:05.724834+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eb4fe47c-2d4d-4926-a887-a7b24c6d1d4e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 13:22:05.725684+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1ee0a36e-46ad-414f-b35a-f2997fb4c8b2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 14:38:10.802209+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '394e86f6-1882-448c-a21f-1e1d55a3f833', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 14:38:10.803509+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '418d0398-a266-48e6-ac1e-29c0c113ab4c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 16:51:16.525331+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '48325114-9850-480d-8af1-0eaf2a118576', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 16:51:16.527299+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5bb75356-a0d8-4711-a33b-c4eb4c9dd5e2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 17:49:40.489302+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7cbb039f-1058-4818-b8f5-bea2e1dfe9e1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 17:49:40.48983+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b15e724f-1868-4474-8fa6-87bedac978e9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 18:48:04.003483+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0564ebc4-fe3f-444a-9539-cc2f19fbd570', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 18:48:04.004079+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2b35f154-dbc7-4bb3-8878-424c0b154b65', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 19:46:15.218808+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4a598f48-ea0c-4472-ad92-7f111d194ad0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-03 19:46:15.219728+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3f04b6e8-6192-4580-98b3-1a1e62c40578', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 04:05:56.460187+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6bd88375-e484-421f-83e3-a78a166531e6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 04:05:56.483954+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0d795f7b-6154-4945-842d-a814a3e97303', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 05:04:07.884995+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7585d47b-129c-4cd6-bc66-3f7055baa725', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 05:04:07.885975+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6510ea0a-bc56-4c8b-960a-604090d1fdbf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 15:12:10.504007+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf0190bd-d962-4cfc-adc5-df14935aa0e5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 15:12:10.512392+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2706a3e3-2727-4cfb-b030-b5c33d390050', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 16:10:51.343851+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '97974ee6-a2e5-4690-82e2-e341ad630df6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 16:10:51.472608+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5e20a41c-e77f-482d-85c3-6bdfc95cd0e8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 17:31:57.0197+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '558980cc-2fc6-424c-901a-7bd55390af74', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 17:31:57.030798+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '049207d4-3257-450f-8b76-3d12ab72bb66', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 18:31:17.195655+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4145d402-38a5-4153-bafb-c789a66bd59a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 18:31:17.197302+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63172a0c-d601-4591-a6be-6ab8cb2c0412', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 19:55:58.215259+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1ca63137-b919-4533-9d9b-1758cb217a6b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 19:55:58.230765+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '07a4b16e-3006-41dd-b01a-1317dc7fcab8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 20:54:00.664881+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '17e74802-d5ed-4cca-9ddf-0a70a6f4ab26', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-04 20:54:00.669363+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6215bc14-1d0a-4120-847e-d5026b965c44', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 15:43:05.731253+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7f3cfe96-b8ed-4977-9dd0-585c6838870a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 15:43:05.744193+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aefcad08-166e-4149-8df9-eccd2be01eec', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 16:58:53.790354+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '82fbb9e2-ff2e-497f-afd6-6ec2f615b7c5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 16:58:53.816231+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d1a0c7e-d2e6-4084-96d7-fa461adf0e6c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 18:57:08.278517+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c2d6c3f7-842f-4eb4-a51f-e0861c0eaf25', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-05 18:57:08.290082+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b7bcd8c1-e18f-45f1-a206-847b3db1b34e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 00:01:40.323208+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd6ad0e1e-4b68-41ab-b3dd-9411bdbca5bd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 00:01:40.328462+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '69f4051a-e038-4c3d-bce2-ba15278e01c1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 00:59:50.676388+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f019fd34-425d-4763-b1f2-0f4e2dbc72d0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 00:59:50.680468+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f1e062d9-6d80-416e-aadd-072e6c8947ef', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 01:57:50.535256+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '98f20e1b-7beb-4b45-86ef-7b1f9c085acc', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 01:57:50.53623+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e75734e6-f3b5-4ff6-850b-0c635139f2f3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 02:55:58.936264+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6f657092-fc30-4961-892e-32a096ab1d57', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 02:55:58.938288+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e44b96fb-5515-4e2e-99c4-db0c9212a1f1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 22:21:36.542498+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b67eeeb6-9299-4358-8d69-2ab94ca8717a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 22:21:36.553476+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '692aaf56-56d5-4b0b-8036-3da273daf450', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 23:19:55.730527+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '79a5ad9a-7858-4f3d-aee5-7db88789a560', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-06 23:19:55.731542+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ad40a484-26bf-4e31-ac09-073c5a7fa2e3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 00:18:03.838236+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7ddf771a-3497-4c9f-b27a-7ea2fa85ab2c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 00:18:03.841428+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd4b40e4a-a327-40ca-937a-fc851dac98ce', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 04:19:04.936423+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '03e735b0-c87b-4b5d-ba59-185bb6052dfd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 04:19:04.938183+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'da77af90-4b75-46c8-a2ab-6cca19c1b6ed', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 05:17:11.853645+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '724eb2f1-866b-4e7e-8073-f6f962d1338d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 05:17:11.854781+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4271f29f-a05a-4e7e-8f5e-b336ff267d28', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 06:15:37.251406+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5b63c463-c8ab-4ef0-98aa-0e0e085f7c02', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 06:15:37.252212+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b9d1cff2-ee79-4192-9281-a4bac75ce97e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 10:56:56.271331+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0126dc2f-ea78-4c63-a0c6-f87489e4c3cd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 10:56:56.296448+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd659a624-96fa-4306-af90-8a06e18fcafa', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 12:09:48.244726+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c490bd36-ab3d-4712-86a1-7b26ccc9b4ce', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 12:09:48.268806+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b508b0b8-8a05-48cc-b4c0-073e60b9ab48', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.523188+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d6f9333-5129-4d4e-ae2a-85cd243a18bd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.532514+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ba77049e-e8bb-45a1-9b6b-9f8be1ce67e4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.650824+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ac3d545d-a5eb-41a7-adec-709a0ecccb1c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.653451+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0b43b57f-3dce-497a-a3f6-c74938d5917d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.853724+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '56bb943c-5384-4186-b16e-518a86c17282', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.855327+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '356b3778-2db1-423a-909d-f1a7f98709ab', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.921402+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8e2250b5-a587-45b1-8f77-0f069c3c668b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 15:45:32.933071+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c5e07857-4540-42f8-ae26-6f1c64c8c84a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 16:49:52.663489+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a540bded-56f9-41f3-b8b9-583c67100f05', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 16:49:52.692498+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '867f448b-52e3-4c86-abb7-7ea944194f6b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 21:39:21.041655+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc05c41f-7261-42fa-a765-e403e50db657', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-07 21:39:21.064052+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '584ce527-0846-4226-b826-b2a58367006e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 05:08:13.197373+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '66a7b3eb-0981-4ae0-b7df-bdea12a049cc', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 05:08:13.199915+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e755614f-b646-4c48-aad9-bbc737c368e1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 06:06:15.419807+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6b1a8e7e-974a-40e0-876c-fad31e91a742', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 06:06:15.421044+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '483a8d74-dadf-4fbe-b689-c9d1aad579d1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 07:04:15.388389+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4c84b1c0-6535-4420-845e-e6721366a1a3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 07:04:15.389078+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5484b878-1e50-44b5-bebc-2296bb0cf522', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 18:13:51.950724+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f81edce2-0ce1-4b1a-94b4-040e300dcb44', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 18:13:51.958062+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '14aeda69-e40e-48aa-b431-a2510071b0f6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 23:31:12.168423+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ead6555e-c1dd-4580-9212-f5541e5c4fe1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-08 23:31:12.171474+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5e0bf42-586c-473a-b670-f72f9f218393', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 00:29:14.583138+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0d5dc729-fcb4-4cdf-b566-86cd12054df2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 00:29:14.584426+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7dab173b-e26f-41e0-9e12-303e5748b7d4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 01:27:40.789539+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1802787f-7399-41a0-ab5d-81b0ddf50ef8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 01:27:40.792988+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38968cf7-1343-4e5e-b81e-f7e916cae646', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 02:25:42.381907+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fa1549f4-9619-449a-a4ff-c813746b2df4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 02:25:42.383408+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b4103d8-633e-4ac7-8e8a-240080969cb0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 03:23:58.703014+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '72d8aa37-18b2-423b-af9d-d55fc42ec53b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 03:23:58.704578+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '394a9c1a-083b-4496-9dd6-d8f39802a0ff', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 16:01:44.199198+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b0b0c695-b4f2-4f95-a485-5dffe3efd546', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 16:01:44.203878+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '76f372b4-2710-479a-9bd2-925c8cc829a8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 17:03:31.54725+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c973497-efe5-4e49-bf19-e588b018932b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 17:03:31.557679+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '655f2da9-dfc3-4f6d-a4d7-f20db7c3d6ce', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 18:01:41.174769+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4206a27f-8043-4887-858f-b0edfc6a2926', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 18:01:41.177324+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5236b938-aef6-4533-9668-a88da41dba15', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 19:00:02.863702+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b31f1445-b8b3-43b6-ad09-0e2eaa0b44ef', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-09 19:00:02.864634+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b5c6afca-07a4-4c9a-901c-f01daac0f248', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 15:09:42.08769+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '30fcb2da-7ec2-444d-8840-2eaed855140c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 15:09:42.110757+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b8f59a30-b28a-402b-a794-b92d143b7a17', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 16:08:10.533672+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a803c020-c7e5-4627-a80e-c517c22c7256', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 16:08:10.534353+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '22852213-09b3-4556-8788-dd55438a55e4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 17:06:10.557761+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0bbba731-9422-48e5-b779-e15001e1418a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-10 17:06:10.558526+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0ceff7cf-391e-4b66-bcd8-5d206841be93', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 13:36:47.013143+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5df97210-215f-4e37-a06f-b0b0ce1e353b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 13:36:47.020253+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f8e15efa-3b68-4bdc-9790-909dc7e9e128', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 14:35:16.421296+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4202d4f6-6cf5-47df-808a-d10cb2da835a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 14:35:16.423524+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '770e0057-315d-4834-ad82-3b8877555e57', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 15:34:34.073397+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '59d9dc9f-04a2-4a0d-8aef-29a7b044645f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 15:34:34.076588+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '41c43337-2d60-46a3-9b81-c379d8c705f6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 18:05:48.294644+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '82a81f12-2a54-4af9-b80d-011f5d43d3b1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 18:05:48.371885+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cdeef0c9-44c4-43a5-8a26-de350ca6e808', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 19:03:56.385043+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '012c11ad-a3bd-4db9-816f-9849f469cfbf', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 19:03:56.386478+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1f17bdd9-35aa-4b1c-b700-51bb4b6bf11d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 20:02:21.246343+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2f413d57-e49a-4700-8ebf-64c3ffe0c34d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 20:02:21.247089+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '92824f37-cecb-42e1-a77f-6e1ef12c3c3e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 21:42:51.492724+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '438ecabf-5048-4ade-b3da-84886649c115', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 21:42:51.499944+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '21e9173a-5460-46b4-8534-7402dcbb3134', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 23:49:52.908042+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a3b6256b-513d-4c06-9402-cd32311e934d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-11 23:49:52.911697+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '805f56c8-37a1-4788-afa6-47f8f904da3b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 00:47:54.455034+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '835318b3-de9b-489f-b509-46db6b5a20b7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 00:47:54.456951+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c1ab02e1-8f5c-43fc-b646-d2a545dd92e1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 01:46:18.629203+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bf7092b2-df75-40f3-87f0-0cfff82cc4e2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 01:46:18.629988+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2b618ee0-46c1-44be-a215-1f929d7d30e9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 12:04:12.069361+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19806b49-4ab2-4c63-8a83-ca068eb39c61', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 12:04:12.077771+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6c8c994f-b97e-4e1e-b870-8b3f539e6534', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 13:02:32.11773+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd8e87472-7530-46fd-a195-b71abd009599', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 13:02:32.119134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '78e22752-719e-43e4-96a7-9ff38b20c52d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 14:20:39.92745+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '319c5097-36dd-4e02-ac15-75939a02a1aa', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 14:20:39.935084+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3776efa9-1575-4042-acee-d78143e0fd29', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 15:51:12.095587+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5cc2021-be2b-49ab-b9c6-f789d357a605', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 15:51:12.10138+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d8eeba0-9818-4696-9984-3a0de6b635ba', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 17:16:17.859122+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2065f584-9c38-4d9b-87d9-10855d5f1655', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 17:16:17.864224+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd0517159-3825-4bfb-a15e-562ccdce2095', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 18:14:34.699844+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f25dee92-c656-4108-9566-2dabfb55b301', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 18:14:34.701656+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '026f453a-2341-4a51-8e8f-51719658e555', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-12 18:58:01.091276+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0b976e37-fa46-4155-8360-e8be36d4adec', '{"action":"user_signedup","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}', '2025-10-12 19:02:03.640749+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a65d6bb0-5f5b-476e-b4e0-e61e4b602d77', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:02:03.64342+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0dcbcc32-3f02-471b-becb-58513af3fad3', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:04:07.902268+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e5f904c7-bc28-4815-a0f1-d0fd825c68c4', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-12 19:07:53.440222+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd129fed-f3b2-4ebc-8ea4-5e489d5c7373', '{"action":"user_signedup","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}', '2025-10-12 19:08:19.773785+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7bd2fbba-ac67-406f-b8b6-f05167e7e7c0', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:08:19.778001+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9fa5157b-4922-448c-b7d3-c1d7509f9832', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-12 19:08:52.657931+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b6681520-7f9c-410b-8fd2-f75a606c8cc6', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:09:16.471907+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9d1e1de4-c4ec-4025-8ec4-e763d4b60522', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-12 19:10:41.10181+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9f6ba511-2f94-4eb5-8597-bef7aff42eba', '{"action":"user_signedup","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"team","traits":{"provider":"email"}}', '2025-10-12 19:11:28.822599+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '840f49a4-0800-49c4-ae10-b571eb65927b', '{"action":"login","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:11:28.824783+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e3ec35c6-a289-4036-815f-98a186c4ceb3', '{"action":"login","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:12:36.811408+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '61ec72f3-4fb0-4a66-8425-3b7d10a3b0f1', '{"action":"logout","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-12 19:14:01.789468+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '32668559-0403-40b4-a07a-0d9c0d881d1d', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-12 19:14:20.134443+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a1154e55-b0ea-4d8a-a823-5c6162897135', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 21:59:04.769112+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b88713aa-7408-4e3e-bcc2-f28b64c8a307', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 21:59:04.774914+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '92823112-eb39-4bd7-8dbc-c1131468f183', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 22:57:11.419369+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '937171cc-80c9-49ef-a758-3b3c7329535b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-12 22:57:11.449409+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f8e321cc-9fc4-4a72-9f7d-bdd9eb64e055', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 01:22:17.386412+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2b9893ac-1372-4ece-83fa-00798eda22a6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 01:22:17.392844+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '82ef0baa-8446-485e-a205-1572163402cd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 12:06:02.116106+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e8b6e0cb-36b5-4f73-a93e-9bfff001022e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 12:06:02.647877+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd60fde86-2309-45ff-9709-fcdfe3e959b3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 13:20:31.178008+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3afec242-9387-4881-9195-0861bf16f758', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 13:20:31.18347+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '116a0fd7-58eb-4223-815e-6eeeab639677', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 15:30:41.47631+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4073aa65-b042-429e-95dc-bdd2bd88e43c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 15:30:41.480937+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bbd5269c-9192-4a39-8253-06440a1facfd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 16:45:42.567878+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '06fff71d-b55b-410f-bd60-7c27b72a499b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 16:45:42.571639+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '740ecafd-ef6c-4d0d-ab87-82e6e1337c63', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 17:45:41.465084+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2036ffa9-eb92-42ef-ba08-38a7749f667b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-13 17:45:41.470327+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5174941d-77f8-49e3-b1cb-a11cef130e50', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-14 19:41:04.707835+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f59b0d3f-087d-4277-bf54-0f667ae0c304', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-14 19:41:04.70939+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a4da7979-52ea-4765-9104-b5d220fdd7b2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-15 02:48:16.114774+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5be7529a-ab70-42b8-b386-b00ad34ac5a1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-15 02:48:16.11684+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bf8b9053-dd45-4d6f-a94b-eea92f3d74bf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-15 14:12:27.178818+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '53e332d5-3bd3-43b4-bb1f-185841f0ecde', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-15 14:12:27.227329+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6b1d9775-89c8-4a35-aaf5-cc36cef0850b', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-16 02:07:57.590222+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '17fbb4f8-47b6-4dfb-864f-ed1c4475eebe', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-16 03:04:12.756086+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '110527a9-0ec0-4a0e-a751-58e3d2b93b09', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 15:01:56.160237+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '445c990e-7d0d-4f01-bdef-41392efb10d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 15:01:56.162041+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9237db26-f36b-441f-a89c-506adce7d0df', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 17:47:46.382253+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3200aec9-d3eb-4af1-affc-51a33fc3307d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 17:47:46.38488+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a3022bd1-7576-4f7d-bca2-34a970508c1a', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-16 18:18:03.893524+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8c6a8f26-6b53-4c03-ab28-f47ab07598a9', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-16 18:18:33.725236+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '854712fc-5ede-4397-878d-31033c339d78', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 20:36:03.846925+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6e0b6c3e-61e5-4423-be94-1a73b58277fd', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-16 20:36:03.848419+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '60b42b22-fdf9-4330-97ae-b841ba39673a', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 12:25:33.424395+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0dfab96c-ba6b-45f5-9eb6-ea777f2dc85e', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 12:25:33.439629+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '20ec555b-92c4-41b8-8a68-abbc8fea1b2c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 14:10:50.518776+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a2e87b46-5c19-4b01-a46b-9244217e48a8', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 14:10:50.524369+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8afa3374-bc5b-4795-a37e-df65eadb2f69', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 17:08:18.424694+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5526310b-7894-4d11-a7ed-f1131cec80b0', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 17:08:18.426986+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '77f7783f-65ea-4f5c-8e45-73832f7a729d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 18:36:21.797242+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9656c014-6aea-4313-84b5-5d5c2f6a437e', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-19 18:36:21.812297+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f7a9e1c5-6eaa-46c8-a114-99e618673aad', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 11:30:03.82941+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dd25e404-1527-4898-aeb7-1670375fd2e6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 11:30:03.949178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '795463ac-9a2c-455b-90a8-cc8b8d2af868', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 12:28:26.414213+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c72915a3-1fc2-4928-93c9-dd75e00441ac', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 12:28:26.418135+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c8e0e075-e6a1-4452-a9cd-f3d7bf6e22cc', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 12:33:54.864974+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51d37e73-884b-4965-867b-474299a176c4', '{"action":"login","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 12:34:16.860037+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '64cbaf53-8d81-46f7-84ad-332ca9bb6dd7', '{"action":"logout","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 12:46:14.449583+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cb126eae-397a-4843-9226-43cf78e5cda4', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 12:46:30.972925+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4f647bfc-c494-46c1-be51-5b92bb0f0e6d', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 12:49:59.217995+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4d1ed807-8d04-473d-a3cd-4641558dab61', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 12:50:36.184823+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1066e938-8019-42e4-840c-b3df0d7584c7', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 12:51:03.425197+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '774677f2-4e84-47cd-a3fb-cebe473ef84b', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 12:51:21.706495+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9a98f663-2f09-4bb8-b3de-64b6539c8067', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 12:51:48.448031+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '94ae9211-fc5f-4654-b1e9-4e230578a6a7', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 13:00:48.464359+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51a2db86-14f5-40dd-8145-b939a0fc5303', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:01:10.541366+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e90c5cf0-18f7-475b-9b09-aad347a86d5f', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 13:02:27.625928+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5451683a-6d44-461e-84e0-526c576dc58b', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:03:24.06645+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '443a44b1-11b0-49cd-bc57-3c7018915e72', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 13:05:23.407505+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6f6e3281-7069-4ca9-85c0-0d5add547398', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:05:36.10798+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9a030451-0b83-448f-8f01-a57b95eaafde', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-20 13:07:05.303242+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1b1bed57-002b-464f-ba99-13e0b2b06ddf', '{"action":"login","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:07:18.089852+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0da7d911-1e4f-42f7-b574-cf35b54809ec', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:36:04.635901+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8f919beb-bf44-489a-bd07-81dc16a03a6e', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-20 13:38:14.630081+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '40ce5222-50c8-451f-959d-c85e123458bd', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 14:05:48.06891+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '91d7d187-ae62-4109-a783-b28caf78463e', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 14:05:48.070042+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7483c630-c3c7-445c-8ff1-79f6e49d1fd5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 14:34:33.223422+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d995b1c-482d-46f1-ae64-58fbd62e92c0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 14:34:33.224846+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5396b38f-4ec9-413b-a420-873a7b83f01e', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 15:02:18.799352+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '13eaeb93-78af-4d13-9081-05aad685e6ec', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 15:02:18.881714+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '58cb893d-baac-4eab-a56d-7e13b1bd11f5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 15:21:46.225366+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b88e7d52-1108-4835-9dcd-adf6c9dbe4ad', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 15:21:46.227506+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d02f115-6701-4867-9ac5-e094484fbf2a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 18:20:26.735302+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3617de33-fbdf-4d8a-8d88-10287ef2868d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 18:20:26.803856+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e1b75d04-2993-4b2c-b583-7ee0826e5a7c', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 18:20:29.704958+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '539b53b4-3d7f-4c00-90e7-9e6ee1d90e05', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 18:20:29.708746+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb2b2eb2-76f1-44ca-838a-ca23c6512a45', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 19:18:30.95053+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a93cf1da-a630-482f-b638-67bb2ce52c0f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 19:18:30.954347+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19405441-8ebc-49e5-adf0-d773604d272a', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 19:18:49.559933+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cfdec9dd-70e1-47a6-9c0c-461a173f396e', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 19:18:49.566235+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f157c477-0ba9-4f2a-9a50-709b79f03fae', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 20:17:28.560886+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '14cda34a-b108-433a-b96d-af39ce7f9efc', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 20:17:28.562703+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '124b5d09-614c-41e3-b556-01e5a85a5dfd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 20:17:39.071135+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '497328a1-e7e5-4899-a441-97bb5f9068d7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 20:17:39.072584+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a61c50a3-89e1-4cfa-8dc9-054b23b85fad', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 21:16:23.087977+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f2d3be79-7018-43ac-9e86-54e6708fac9d', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-20 21:16:23.089992+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ff4906de-b1fb-4eb4-9734-23a75d5e0f4b', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 01:51:13.951867+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a73186ae-922e-49d1-8905-4cc908886c5a', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 01:51:13.962111+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '42f76db7-7bc2-4928-88e0-675a575d52c5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 01:51:16.681051+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd9ad6f7e-9d86-46f5-a7ee-82f166f7effe', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 01:51:16.690205+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c419fc52-dcf9-43cb-afff-caf0fcc8d20f', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 02:49:40.532152+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b7f8d37-be2d-4004-be68-7f812514ee78', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 02:49:40.534524+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3be86473-26ef-44de-b058-bbf346a91cd7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 02:49:42.475021+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b85ab3dd-5273-4e99-9773-2c4a928ea386', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 02:49:42.478445+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b603c86d-ef3c-4214-9e0f-e18296ad0910', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 03:43:33.378543+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '731bfa03-3c91-424f-a475-a3b3b6f40bea', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 03:43:33.42257+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '686ba09d-3bcd-42b1-8858-df8123c32150', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 04:57:31.847338+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5fbd2c9f-f0e0-47d8-bac9-2fb7dbb96fac', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 04:57:31.848107+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '087bd5e3-b6b2-4aec-97cd-9dcfd4535f5a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 17:21:22.601685+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5ea49924-339b-497a-aedc-03970484b077', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 17:21:22.375607+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6dd08149-e37a-4c3b-8da3-9fcfcd744ec8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 17:21:22.634062+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5414faf1-3e73-404f-a6a7-f5eb4d5b8494', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 17:21:22.646715+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5674b4e7-e5af-49a8-8769-675491d93310', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 18:19:22.914924+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4be983cb-9fb2-4fcd-8f96-7a156a2a42b5', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 18:19:22.917426+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3d1a4347-2ac3-49d1-a892-6ee824c46610', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 18:19:43.822742+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '47adbc3b-48c4-4ad6-8bbe-b8dcf31e422e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 18:19:43.82352+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8c1a0b83-3906-4f04-b3c7-131575cf53ae', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 19:17:45.806162+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '596fe0a1-f1f2-44c5-8664-4e318314642e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 19:17:45.807883+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6dee647c-112f-49b8-9581-4db1f84705a1', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 19:17:49.847996+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f9ce30ab-6408-4ed5-ab00-b011189e6158', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 19:17:49.848894+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c5d14e80-6191-462a-b4c5-5d6f0b21df78', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 20:00:22.659405+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8d840c56-de94-4319-9405-69e6fa47933d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 20:00:22.664163+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7a175efb-8743-49d1-a4ec-21ccf23ff844', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 20:00:36.299373+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '24f33ce7-2bdf-410f-96bd-1106dcf38730', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 20:00:36.305583+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '88044c1b-3992-4e7f-9c69-b310df0270c0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 21:12:52.908582+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bcac97f2-be05-4304-9eb2-a790336d5c8a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-21 21:12:52.911771+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73d9c112-f960-4354-bd0b-bc41df9ad4a5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 15:26:14.833581+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '42d456df-5e43-49d1-9159-ad4e611c8f92', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 15:26:14.83701+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'adac1ac9-277b-4279-8647-0db88bef57d2', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 16:23:45.449808+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '83171294-f91c-4965-84ad-ff7c838a329d', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 16:23:45.452709+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '398d4f8e-f6a2-40f9-bfa8-22ea06af2b77', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 16:23:53.972337+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38c3d36d-2f47-4c4d-b6fa-ac3ec9788b2e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 16:23:53.974392+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cfffebd6-5eb0-46aa-be58-c92fbe5df178', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 17:22:23.30766+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0bd53d28-9218-406c-bdb6-5f7fa83f86ff', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 17:22:23.310097+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '11470829-d9b7-44db-8125-c35f26688667', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 17:22:56.88601+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '11e455ef-345c-45d2-b9cb-674b2bcd51be', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 17:22:56.886845+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2633b2b6-26fe-4681-99a6-f94e2d11e655', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 18:05:48.376723+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dbb4b596-56c1-4b16-88d0-20773a6679ce', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 18:05:48.38657+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd1097088-4549-412b-850a-0575d4ddde6c', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 19:04:12.295684+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '61f144ed-97dc-4c86-8c08-2b33acecd5d0', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 19:04:12.312017+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1305ff55-4ea2-40e6-8d1b-d0cdaa7fd426', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 22:52:41.48202+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8bba00d4-da2d-4200-91ca-d2235f42f178', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 22:52:41.50727+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d019ff9-6276-4f50-b304-c52ae8c6843c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 23:10:00.256474+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3abdd786-836c-48ba-8971-bd00554ac503', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 23:10:00.259706+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9ac9d231-ec42-4a87-8b4a-50786ee67e71', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 23:50:42.603841+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '815705b6-f6c0-4de2-b515-51d195bf9c0b', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 23:50:42.605134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '58de009f-8670-418b-9512-eb99f08a233c', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 02:03:14.921526+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'abc0dd8a-816b-49f3-97d9-b506a87e271f', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 02:03:14.969986+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '86cd22cc-6dc0-4d0f-993e-d012a1919ff1', '{"action":"logout","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-23 02:17:32.124058+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd7cb8526-28f5-4f5a-ac79-e724cceb50f6', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-23 02:17:49.418167+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '310e43dd-0074-461d-957b-33b2145fe6bb', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 15:23:35.079675+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0e9ca229-3425-4e0e-bbc2-a3d043434d3a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 15:23:35.125911+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f719b3c6-0aed-4767-be1a-bc3172292972', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 15:26:14.833723+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19981946-45d9-45dd-a75d-a4c019ea5d44', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-22 15:26:14.838029+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '289b3936-0cdb-4330-8fdc-62eaa83bf5c7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 16:21:49.677592+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4b4d86d2-eefd-4d35-8797-b73c2e2929b5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 16:21:49.681992+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cbcf8aa7-5d07-4974-8adc-301bdbf3f499', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 17:20:40.607791+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d0d0427-ac3e-4958-8ceb-6d29491413d8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 17:20:40.609604+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5dd227b7-7e44-4b99-b1ff-d196199c21fa', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 20:04:59.220249+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2c489497-e2f1-4464-a313-e0f1282c94e2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 20:04:59.223393+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '50756a90-8bef-4a43-b38e-d8b6ef0405c9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 21:06:44.838691+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7a278ff4-d96d-454a-a730-84f3984d0bb0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 21:06:44.84326+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8626aa45-fc0c-4136-ba1d-c25f57d47950', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 22:05:11.085506+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51c3b24b-5049-4085-8937-f8b9322c0b91', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 22:05:11.088363+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2bc014ff-2d48-4d56-a99b-c17564faa8fd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 23:01:34.785705+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eada439a-c586-4e8c-8523-30f3a68e2e61', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-23 23:01:34.788763+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1a030fd4-641c-4b80-b629-8ed3545447a3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 00:00:13.779632+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e47a62c6-f21c-4bfc-95b2-a4c2b3a7ab8e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 00:00:13.783162+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd0ba4c7e-bf6a-4021-9454-4c42e7e1cf79', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 00:59:20.848589+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '316ab938-d87f-4039-95de-b3d3b4e3a432', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 00:59:20.851289+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0c157899-9f00-4a84-a815-302af3fe31fd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 01:43:32.202752+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '64465781-d548-4dee-a592-9290899c79be', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 01:43:32.205532+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ea510f72-84d1-4b8b-8d33-79706c674fdf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 02:35:50.429679+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a919f82b-5e66-4acc-b282-90d9431ccc09', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 02:35:50.43151+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8c79fc1d-2819-47d7-9740-f5ebbc0e72ad', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 03:32:38.873879+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0a9c411-216d-4906-ad09-f7d3156d6408', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 03:32:38.875822+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6e0c5bc0-4177-4f51-8216-bd66f543ed98', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 04:37:19.797395+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b3a1ee05-fa4e-46d8-917f-37c973c1e0d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 04:37:19.799307+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5686c38-0bce-4e2c-b3a2-e3d209654f19', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 05:30:15.05478+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eb4344a1-9587-4792-ab95-3d21ed7a71e2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 05:30:15.058161+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e14ac204-853d-485c-a529-66595a3ba052', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 06:36:16.098677+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7f8ac59a-2050-4d1b-9975-dc746e329138', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 06:36:16.101196+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '34b4f83f-8cd3-42cd-afad-4d8e2dcfeac3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 07:48:06.229029+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f5d7a15c-4a6e-4e6a-a6d4-b8741c2f1db6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 07:48:06.234636+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '051b105f-1439-4159-9562-d828361399fc', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 08:58:52.456228+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f6a326ca-2ddc-4d9f-9445-b2252fe7d0b9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 08:58:52.459535+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '771b591f-10b4-4d25-937b-fbfe0fd1bff3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 10:08:51.822835+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf951483-8a87-4489-a4b2-3ef54cd9283f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 10:08:51.825728+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4aebee8c-a634-4ce5-9ce9-8964652bc43e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 10:54:08.516398+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0bc5bce-6287-4b8f-bdf2-db29cc61dcba', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 10:54:08.517441+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a1e1beec-58fa-42dd-98a5-369552e3110e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 11:53:07.189354+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c93950b-2fe5-46d5-bab5-8725bb9aa351', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 11:53:07.190168+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'afd773fd-f7da-47ff-9bd2-f9903e799ba2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 13:08:04.427186+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '005b5ade-1a9f-4196-a5aa-a424d5a703b1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 13:08:04.430539+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c958c31a-7d8d-4ce3-a680-b4b5a7deabb6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 14:01:48.665343+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '68e39436-f84b-4dd3-bed1-875765689a57', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 14:01:48.670205+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c3c25a50-50f2-4ab1-81c6-048dfdddee8b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 15:00:51.353337+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '76a2a268-0d59-449e-b3b6-dba745133bd3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 15:00:51.354498+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9ac6e7af-31c6-4015-a0b8-0a2b2f684ddb', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 15:58:55.165243+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5fc59eed-97a6-4d91-b910-d29db29baf85', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 15:58:55.16883+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4ea9e730-79a2-4496-aa62-038db1203635', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 16:46:19.342898+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ab6cbf81-60eb-4f44-9d09-d51c7b0a51e4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 16:46:19.35455+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f3d83b8a-38c5-4f75-ad6b-1069082359be', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 17:43:14.570683+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '53932bae-38fd-46e1-a3ee-632f1a27d0aa', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 17:43:14.571811+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '87631571-4f0e-4d4b-ad9a-889c686af834', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 18:50:11.079189+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '62a99463-8a64-4243-a490-5b02a6547c0e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 18:50:11.082574+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a64488d6-32f5-4770-aeef-61df368c3fa3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 19:49:16.542334+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '522ba243-59fd-4055-a38b-482bdae43749', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 19:49:16.54742+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '43722e17-b375-4721-a0d6-446cd5704368', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 20:48:19.184052+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e28b6c92-5d6b-4336-b75e-7b5d04787cef', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 20:48:19.19115+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '52d22a10-4b12-4017-8c47-d10a0c806fda', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 21:48:59.875439+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '49b7977c-5adf-4a31-bbeb-28fb3718b7aa', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 21:48:59.879942+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dc6a2902-aa69-4823-9d8f-160ef4545b13', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 22:47:40.015876+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b783af40-bb07-4044-82e3-5865564f627d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 22:47:40.018319+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '385b6a8e-43fb-43b1-8de5-5c994ea73dd2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 23:47:35.122315+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fa800890-7004-41f8-9ef9-770e4422c2f1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-24 23:47:35.125285+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f2073500-f042-4163-8d7f-859ead1b8f7b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 00:46:25.864623+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '55f6d468-b9d1-40be-803f-85617c0beef3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 00:46:25.866518+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9d875ebf-bace-4f1e-9981-1527af08dc33', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 01:53:50.508487+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6afd2280-af42-476b-aed8-4fdcf8dc4b0b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 01:53:50.511195+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '26c07aee-ba45-477c-a12e-ae791a8277dd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 02:54:10.144281+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1bbbc649-8818-43b6-a81e-31b7ac912748', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 02:54:10.147235+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc76ecd4-7574-4c3b-85c8-21e73b5992f6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 03:55:38.522685+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51e040e6-2d7c-4707-a949-e8de9705ff31', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 03:55:38.526643+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dae24105-9287-4c8f-bda4-47ab4a39cd4f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 04:54:32.267015+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4ac5585d-a197-41e7-976f-9121e6eb92bf', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 04:54:32.26791+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e1d41fbc-5bd1-4f55-a765-9cf0c14b3d0b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 05:53:12.116687+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a326105-84d7-497d-8bbe-16acb8a3a002', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 05:53:12.119304+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a67ad944-9e07-4830-a93a-bc9fd499bf3d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 06:47:38.930282+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '54ef93fc-7bf8-419e-a95c-dc1c6f42ec33', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 06:47:38.931914+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '02ff8053-08ff-4a69-b37c-fffbb013f8f3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 08:01:32.802607+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a75fb7a4-defb-4120-b790-f6d325c7fcef', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 08:01:32.807745+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5925c52-5701-40ab-beeb-7d7fc16907b8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 09:06:00.197111+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '24f7d377-1fc1-4911-8372-725cb4de3dc0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 09:06:00.203446+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6b4f7373-0f55-4c52-ae36-c42f8be78d02', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 10:19:23.491046+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00500e33-af9e-40fb-b477-adad06e905a6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 10:19:23.495751+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bae1c068-89e1-400f-8216-884d3d201134', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 11:27:05.928514+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2298e87c-4cbd-4c07-94d9-fc9b21902825', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 11:27:05.929458+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '72d3a5be-dc05-47ff-a098-7ad3985c8b0a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 12:23:48.244369+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '640aa4ad-789a-4702-84b6-924e7e16a9a7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 12:23:48.246945+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '87969097-74a8-4700-817a-b707788c6f09', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 13:10:35.580907+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '01b631e9-2256-4e65-a96b-8125686a76a8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 13:10:35.589884+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6c610712-8fb2-4527-8e41-aa76d8e0244d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 14:07:01.370061+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cd1a9e44-40ce-46d4-aa32-0bf63838b5d5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 14:07:01.372867+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b703cf4f-aea9-4d8a-b30a-f0ec10ec2cfc', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 14:53:48.106143+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '924e5276-b83d-4e4f-a3b7-4259d55b99f6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 14:53:48.106956+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '802371d3-93a7-449f-8d3e-31d289ce4123', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 15:54:02.147303+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1163bfdc-dabe-48b7-994c-9bc6c99e3733', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 15:54:02.148209+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '70c1a94f-4cf8-4ac6-a6f7-9f242e043334', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 16:14:44.83367+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '662103be-b01c-4219-8214-2b3563f87e71', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 16:14:44.836933+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd27854fa-a148-43db-8906-59463b5adfe4', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-25 16:15:03.679098+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '044e8e89-76e5-4b6d-a91f-4e65410b9729', '{"action":"login","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-25 16:15:33.52723+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '31a4c514-98ff-4a6c-bac5-9707f7c142aa', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-25 16:59:41.950333+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a818cb6c-5c2e-4c1a-b732-533f1ab571aa', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 17:13:56.208135+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '54e59066-c31b-4ba9-ae1b-8ae7da04907b', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 17:13:56.209818+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b98b37aa-d788-48a7-9b71-e8727399e6c9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 17:58:36.767753+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '787e5b66-5583-4654-b93d-30d2b4741ea4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 17:58:36.771369+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '274cb69f-b4a0-4510-af87-91aa62a48eca', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 18:12:10.087229+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6592bc78-e367-4050-9ed5-429325b9a5af', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 18:12:10.090018+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4e44e67a-d41e-4ca5-a14f-84606e3e09bd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 18:57:55.243231+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2f558957-8991-4296-89a4-de00ab5a8e87', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 18:57:55.246547+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '52b20f77-0d03-44de-ba8b-ab348b7edc3b', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 19:07:01.576396+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '99b390c4-ec73-4de3-9dc7-dfe25baa66da', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 19:07:01.578865+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00be25b2-2e22-4f13-a5b9-86b49cea49be', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 19:56:49.715098+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'da1ba7db-a536-4f52-afd3-0a94c4d15d23', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 19:56:49.716638+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '36ff6975-c5f6-4c85-9665-8a9085ff487f', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 20:05:13.982941+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6fa28fe7-9465-4b91-9239-636a8635043f', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 20:05:13.984693+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3d67de4a-5547-4f81-a1fc-b9d5c1e511a0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 20:55:59.824632+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6c473800-33d0-446e-8861-b83b8e5a25f6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 20:55:59.826438+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '157cf69a-c939-46c8-a36f-b40ee616a7ec', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 21:03:27.053544+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a2c096de-4488-436e-bf47-5933b3376f0b', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 21:03:27.054916+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c9487b47-8804-43b7-a503-01c4be139365', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 22:02:05.375841+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd7129ffe-171c-42bf-9750-c438442b93e7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 22:02:05.37747+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '97c586e7-8949-4c02-9acd-86125381f458', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 22:02:15.842887+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4666f779-85c4-4f62-b87a-9fa1acd2f57c', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 22:02:15.844168+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45d61904-567c-4811-81e6-fb48433eb0fb', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 23:05:57.235863+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d906d3e-9d6f-4c16-8c7b-7247b2f693ce', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 23:05:57.237715+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b8b960d4-efa9-41af-aa84-1c854441875a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 23:06:10.681912+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b6bd2e93-22e9-4e68-b3e6-0845198f17d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-25 23:06:10.683273+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '78f56a4d-c708-4601-99c0-f48119ffff4a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 00:16:26.466088+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a4403f9c-4f99-468b-8991-65531714566f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 00:16:26.471331+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'be6ddc6d-37e6-4c6d-a352-036604815620', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 01:03:13.76703+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '527be43f-e7cf-4cec-aab4-24c0e7c58dae', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 01:03:13.772619+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'df37a9b0-41a4-4786-b44b-54512d076734', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 02:13:03.820251+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '25944d81-09ad-448d-b5c2-3bdd7986174d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 02:13:03.822234+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb8039a2-8d37-472c-a102-4dd9945f4c10', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 03:22:12.946159+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2778b830-6633-4719-a5f2-8ecd56ae1028', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 03:22:12.955515+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '77075693-0f05-4685-bbe9-732dd89ef5e9', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 03:24:11.678166+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '54fa6324-c940-48da-8414-87abaa9c744d', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 03:24:11.682335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc47afa5-8b1e-4b04-9a92-c815eb641e77', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 04:17:50.970092+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '723638a6-de6c-438a-8e55-93e00d07a54b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 04:17:50.972703+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c3be9fc0-349f-4b0b-8fc7-7c95826934ca', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 04:18:13.216923+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c130accd-a59a-418c-83ca-d51c14b57853', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 04:18:13.217663+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '940bcffd-fb45-4a91-8bbf-cb9f20521be2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 05:16:28.869952+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '37858c34-a27f-4561-a3ca-4a92eb09ebea', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 05:16:28.872126+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b44ab4a2-af7d-4dcd-9537-4ff2d00f4c04', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 06:15:45.523989+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb7f09b2-a7f0-4b0c-b01c-f4dce5bc8bf9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 06:15:45.529986+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8fb906aa-6e8c-44ed-a6f2-19d7200929bf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 07:14:05.248395+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ba051819-69fa-486d-930e-3d12b0db15c9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 07:14:05.251203+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb86b336-32dd-4275-bade-3b21fe80a431', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 08:22:58.701118+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4cada07b-6502-4c71-a86e-0d7b940135d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 08:22:58.703385+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '10bf5937-85b6-4051-a860-ad0c5b4a1c97', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 09:34:31.55721+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4e12409e-ca56-4327-ab4d-7c67bec2ebe2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 09:34:31.563344+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '864cc69d-3c8d-49fb-bdec-8b8edc63787c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 10:46:10.537732+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f945c2e6-e9dc-4ed4-a092-89fd454077d0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 10:46:10.539947+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '58ab6bc3-2a3f-47ad-81a6-0f1457bb2a04', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 11:53:55.248768+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd0b3f974-c8dd-4891-beec-17ac593f3e67', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 11:53:55.250564+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c4ab4017-dcd4-481d-9e26-0186102eb228', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 12:54:00.784436+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '177ae32b-60c3-4010-9a06-436a1da77b44', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 12:54:00.78864+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'af25f211-ad04-419c-9321-4c332eb3dbd7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 13:56:00.724277+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '273f84af-5b6c-4854-bac8-b5aceff16e7b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 13:56:00.7257+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '92ecaeab-ad1f-4a29-a8b1-c4a1c38470da', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 14:57:13.93276+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '809b2559-4463-474f-bc04-40390ba00d14', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 14:57:13.934557+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e6bd3733-fc89-44f3-b01a-f6d7a02c1212', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 15:58:00.777727+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9a16c6c1-0e0d-41da-a450-52bbb7501448', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 15:58:00.779583+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c6f274e4-7af5-473a-a983-13af1ecce74d', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 16:15:04.128692+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45a2ce91-1401-451a-a9ac-66e27ec66010', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 16:15:04.157552+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'abc0795f-bec0-4b89-bc54-ffeb2d21e9a2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 16:56:01.999302+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d4bebc2-890e-456d-9249-67b406de0e66', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 16:56:02.001951+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f9beceec-6468-4589-9d86-61860b1a9de7', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 17:13:23.128686+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '029f47a2-df71-4483-b8b7-4d3b94c31ed4', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 17:13:23.131574+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '94fd70a2-9b62-468e-903a-ffe309d4b7ef', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 17:55:08.302623+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c2b72ac4-b71e-454e-8539-9a552968f652', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 17:55:08.305975+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '28748e55-37af-4be1-9b71-f7f4904206f0', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 18:11:31.499774+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '18ef35db-9a32-4016-ace9-724d26da122f', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 18:11:31.502564+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0cf8312-b2b6-40a1-8fc7-017e4021d3c1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 18:53:33.214846+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0ea42e2d-3eb6-425d-a2c4-1e061b540b7b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 18:53:33.219392+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '97060634-0065-44e8-9756-532b49f9ac84', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 19:08:49.074026+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e1f51a40-fd70-4a40-a88b-ecbde6d2388f', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 19:08:49.077225+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '68acd156-134c-484a-aa9a-4f2d7f97fdff', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 19:55:43.446431+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8f775744-3833-4042-a39a-96133e0d03bb', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 19:55:43.448831+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '556e9f98-1d92-410a-9673-dfa7d07255c3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 20:55:14.043505+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e8423893-837d-4548-8592-2cf7173dc744', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 20:55:14.051176+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '89ef382b-2e1a-43be-9565-59e1aa344a57', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:00:45.240859+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4f900cca-9ccd-4e55-a64f-e4ab16935bf8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:00:45.244362+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2eb4c056-70cf-4bd9-b898-6301ebfe2893', '{"action":"token_refreshed","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:15:44.311704+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fea5c513-b0c6-4975-89ef-8e07f7c588f3', '{"action":"token_revoked","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:15:44.340937+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '019c802b-d19b-4449-94d5-8c13d0e1fa62', '{"action":"logout","actor_id":"c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec","actor_username":"edpoplet+captain3@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-26 22:44:07.164467+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '29edd281-9296-4d54-b480-50f859a9cbb2', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-26 22:44:37.503136+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ddc51715-53fc-4164-ae18-9a5ff0078062', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:59:05.098479+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8e935bb9-38c8-412d-9b5a-b42516ad4ec7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 22:59:05.10147+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cb3f4294-cfda-4e55-b7b7-7963b921bdd1', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 23:42:49.496475+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2513b99c-8955-4211-b7cb-41b7ee294bc5', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 23:42:49.501577+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'af527b9e-e87c-4e95-8fec-6308a12d717c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 23:57:56.866082+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '07c335b2-119f-4dec-8571-ef8a9dfa7784', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-26 23:57:56.869855+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6321b431-e0df-4ec4-890c-f8fa75dc5c97', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 00:47:38.070437+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '992522fe-0c92-4712-8166-abcc7acedd3d', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 00:47:38.071914+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dd5fb150-16c2-44db-9c55-715240b585a5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 01:05:59.731333+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '488110da-b624-4df9-891c-fa063898eef8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 01:05:59.733696+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '86b7ef96-bc49-481b-96b9-7754bef7156f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 02:07:21.917323+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c1cb4370-cbfa-4b04-ba6e-1b43d5a791a9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 02:07:21.919759+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2b06dccf-42ef-4ca3-ab66-541196c94b40', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 03:07:18.270963+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9bc8a5e7-095b-4cf2-94eb-d5136d2e5c82', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 03:07:18.276395+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4f15e661-37b7-486c-9fe6-287983d7878b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 04:11:59.778253+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c590ff4c-147e-48fe-9a52-35971cd6aa3f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 04:11:59.784158+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '26c8430d-0522-4a73-9e61-008a6a1149da', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 05:11:21.67225+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '32d069c6-cb16-493c-81e9-80544f2d434b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 05:11:21.674332+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a015325e-c43b-4645-8c59-7aa067aea92b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 05:58:00.320209+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '149d46c5-f3e3-439e-8cd1-91bd3c7c6e64', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 05:58:00.32787+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '10638ecf-ebe4-4a07-88c6-3bbe808f88cd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 06:50:41.348123+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73e14ec3-6942-4fdc-9846-eb0330e42641', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 06:50:41.349005+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5edd2867-afff-4753-a31e-1ae5d5d610d3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 08:02:37.070429+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c67e2594-f6e9-433d-a286-8bf47c94b805', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 08:02:37.072168+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '23e500fb-8f12-4501-9e74-76b800e52520', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 09:15:51.450004+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ddd9ee1f-d660-44ca-8a46-4f0e59fdec32', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 09:15:51.451527+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7209285b-090e-4f66-8f19-694799941834', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 10:25:31.915415+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ac8a1927-aefc-476a-a7d5-07efa7e66f7c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 10:25:31.916332+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5bd2750f-8548-4698-9c5f-04268287e32b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 11:24:30.626637+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a5de690-ec4b-441b-b340-7ec26db1c357', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 11:24:30.635132+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc3f70f9-12f3-43b9-8aa9-30d1d527c53a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 12:24:48.268162+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '134dc6f2-7e9a-4cfc-bf9c-0f59009dacbd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 12:24:48.273673+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eeece73f-5bff-4180-bf9c-3ee655282bd3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 13:28:49.862272+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb5d5068-7920-411d-9923-14a106b313d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 13:28:49.864016+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8ea8a802-7be6-4100-b62d-79365c9891ea', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 14:30:18.384028+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38c6cf6f-cc10-4c32-801b-77f302a582fd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 14:30:18.386178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '16a9c302-b5d7-4507-84dd-4c0d839fcbfe', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 15:43:05.607266+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e3b16641-e982-4622-9ca3-e68e4714e220', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 15:43:05.611166+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aec6b9e9-8902-493b-a69c-d1aa56fed2b2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 16:50:42.984315+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9a4b49ea-0461-4bfe-9dc6-46a456941cee', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 16:50:42.990013+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '65cfffcd-4247-4b8d-8961-8dd93a039795', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 18:04:01.040802+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e988bf0a-f181-448d-8a4c-307e7aff9bea', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 18:04:01.042692+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd524617c-8706-4564-b088-8783c7d9514e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 19:04:16.033353+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '131a0e9d-28e7-45ff-87df-4115e0716cd7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 19:04:16.03539+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45f55c1f-19fc-4e01-9579-488b10408683', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 19:51:51.922328+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1a02c135-49e9-4997-8051-252acde9bdc2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 19:51:51.923314+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2bf4a749-8902-4d04-af47-0f2f19c2d590', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 20:50:31.536814+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9f160ea3-5103-4686-9cd7-b9ed45f42f5a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 20:50:31.542477+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e07be69c-a4c0-4f33-b449-f07c31e8534e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 21:50:14.296378+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '75f3c8e1-1011-48c3-93f3-1c68facdb942', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 21:50:14.298858+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aa38e3f1-4aa0-4e90-81b3-5717c040510a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 22:58:49.05558+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a0a2d833-4b77-4f34-b0e0-da2c71926304', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-27 22:58:49.057143+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0e6dcd26-e32c-43ed-b50b-18fc106df43b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 00:06:50.020803+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c68e863-d6b9-4d3d-9580-b706dacee980', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 00:06:50.02215+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f2a4444b-f78e-4446-9949-6b28b068e477', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 01:17:08.93433+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fcf22e7d-d008-48b6-8225-1afecb1f95ff', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 01:17:08.938849+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6f7f0d80-5ad1-4b1a-b4aa-f94cbc6257f9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 02:17:56.742982+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '542b45b5-9df8-406b-99e4-729873c7c7b5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 02:17:56.746067+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2be5a07b-bbe4-40c8-ba20-de79a18b06f4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 03:18:29.252906+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6910d25d-5d02-4fa9-8be3-46c9e59ce222', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 03:18:29.255452+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '95444373-87f9-4ab5-88ea-3c7877df051e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 04:19:54.876569+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7ce7e0d5-49a6-4006-940e-db874954c014', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 04:19:54.878143+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7c6e5990-5c44-45dc-86bb-c2fcbeb09607', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 05:18:42.039654+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e2cb05f3-4acc-404e-9f40-05f819999ead', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 05:18:42.041333+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a3ac513-71d2-4bce-b387-38ab7d6521d1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 06:18:38.20993+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4aef616d-b401-4c55-bcf8-52cb8e6b263f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 06:18:38.212814+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5bf86afb-d2a0-448b-a9e8-f7bac0a7895e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 07:31:52.999613+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd74a4bcb-5adf-4dd5-8b1b-85bbe34226c4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 07:31:53.001985+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '445b85bf-cf93-47d1-aafe-ca4bd69c617d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 08:29:23.322962+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2d1100c5-9f77-4c33-be93-59c152c650b3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 08:29:23.332927+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8a9af822-0d37-49d2-950d-f4de1ec4c41e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 09:40:53.922902+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0edec965-ccb6-46e7-be3f-66eecac3e782', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 09:40:53.927523+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3900ca83-76ca-424b-ab37-962f589fb1d8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 10:45:23.581468+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aaecdbab-8672-4032-a6d5-f83752020469', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 10:45:23.58453+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '329628aa-c955-466f-b6f3-5955a22b0bd3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 11:33:51.271887+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '75b737ec-6aaf-488d-bb83-0f28c7d16df5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 11:33:51.273983+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8acd7771-a729-41c5-be93-161707221704', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 12:33:51.541726+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a3be3d93-b9e3-4d33-92b2-8e69f7337308', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 12:33:51.543321+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a1f623f-2e77-465c-8d1f-fbdf31844d91', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 13:17:26.50935+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2ad11515-0545-45b3-b228-7e921b15765b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 13:17:26.512098+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '99295f9d-6039-4bd5-93ac-9e403081e5f4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 14:16:49.70635+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2f9e4dcd-4615-4d1c-8080-8726102b46d0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 14:16:49.709033+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8a3f4329-f138-44d8-9828-681f4ae93ad6', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 14:54:36.613783+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b346482-f1e8-4c5c-b0cd-70c6dd1a410e', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 14:54:36.625306+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4c5b3a71-87e3-4d1e-96bf-2453d8b4b674', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 15:15:44.942025+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf72cb57-877f-4870-b230-876009d36418', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 15:15:44.945352+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9984a03f-dbc2-496f-92e2-3bd46a02606b', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 15:53:17.440808+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7211c1c2-9c60-4c72-98b5-a7e58a7e6423', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 15:53:17.443291+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc7a9e11-0e6f-4591-a156-dd9acc11a744', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 16:17:43.225236+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d05000a-2e0b-4d8c-b44f-d5fdf37b7170', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 16:17:43.226704+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c0eb919a-c93b-4994-a54f-fa7783c3fbfe', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 16:37:41.601891+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7de707f3-4428-4dd7-b17b-53a97c31c7ca', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 16:37:41.604265+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '175b6b05-4763-469d-bfa9-dc5da8e090c0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 17:14:50.075147+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '11230baa-23be-455d-bced-38dfc2644815', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 17:14:50.080577+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b54c916b-37b5-4ba8-8b5b-d8fb7b2c149c', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 17:50:47.631655+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3ef50fc6-a339-4a5e-a666-5d6b0548679f', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 17:50:47.632662+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '03ce87da-125f-4799-9267-05b79c2e7457', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 18:06:55.091006+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b0f77040-3fbc-4563-9cc6-f8b57c2a4964', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 18:06:55.095922+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2040355b-e622-454c-bae8-edc75907af2d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 19:13:47.525029+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b1ff8818-0734-4372-9f73-8b83c139b2be', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 19:13:47.526463+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ae172dd1-de38-4bf2-b525-37627c07f3b9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 20:13:12.027843+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '193be79a-ee48-4afd-9ac2-ed4410e722c5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 20:13:12.029519+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ec60df5c-ea25-4e45-bacb-620b4bb2237a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 21:23:43.269146+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ae84f862-d814-4c05-9734-fe6d7fd3532f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 21:23:43.273735+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a3573946-1a0d-4ce8-b7da-673a67af60e1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 22:25:51.245037+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5d92dce-3be1-4cdd-8489-f544c53a2519', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 22:25:51.250249+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2f77e469-70d0-4b83-80fd-533213f28f40', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 23:33:39.596381+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '768acc83-a057-4d86-a27f-ea979ae8cb35', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-28 23:33:39.605754+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0fe2aa1-5315-4705-ba7f-13e1b0f93d10', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 00:30:57.25486+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63920ea4-6cc5-4594-bd44-963f148e57ac', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 00:30:57.256328+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e829bc30-7069-41be-8633-a701139b088e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 01:39:15.971924+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5b85ac7e-edc9-43bd-9f91-f2db58cf348a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 01:39:15.976662+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '446283b3-7967-4c1b-8cb3-17fd43aea889', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 02:31:07.399262+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b2387986-050e-4541-b833-850e14bc0a58', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 02:31:07.404771+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f56bd3ac-22ee-4297-9702-42f648819ffc', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 02:56:13.128585+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e65e9103-ec53-405b-9dc4-66691003b9dd', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 02:56:13.144173+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd1bab0b4-7db8-47fe-af7e-62a0097fe303', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 03:29:31.509954+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ed9c8d9f-a2bb-439f-ad1e-d744c5708f23', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 03:29:31.512706+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '43076847-0753-44c0-9b61-16f509bb9e36', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-29 03:29:46.452356+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4eabaf1d-1056-4c31-8118-c70f88146f59', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-29 03:31:15.914985+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd7fca1aa-edf8-4735-8ca9-051320a68134', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 04:28:38.733347+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '304f74da-6eed-4514-addb-cdf04f29f1ec', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 04:28:38.736785+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a496a764-f086-4108-83f4-078af2870528', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 04:30:00.605884+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e1c6c7d2-8239-4f00-b377-5b8e5afb8e4e', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 04:30:00.606947+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '57991f70-59f0-48f8-a6a6-e8671580444d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 05:27:16.779447+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd6c31e32-52d9-44f3-ad18-d2873777b63e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 05:27:16.780754+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '54ffaca3-5f00-45f6-8bed-7357ad9d52b5', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 05:28:38.856234+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c9f1eafd-f7cd-41ff-9a32-e317f5df2e5f', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 05:28:38.858167+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '807b8da2-1be3-4c6a-bad3-fe4860e9fe94', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 06:26:38.887173+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd2ca6b5e-3491-4b11-a2ee-6f8cf11b4236', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 06:26:38.892768+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6e1f12fb-7b77-490e-b95e-186dd7ece9db', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 06:27:38.868343+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e9879b77-5e72-4039-9b8c-7e9136c68994', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 06:27:38.869863+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1c1ca257-10d0-44fe-a141-e6af753b583e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 07:25:26.822034+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f45e174f-6f80-4cb1-901c-c93e08a9bb7a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 07:25:26.823034+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1de2bb6b-bd4e-4abf-ba36-e1266042f9b8', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 07:26:38.93483+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '029b2af3-732e-41e8-a107-902d8273b8b5', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 07:26:38.938402+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '79ade2d0-7927-4734-a13f-ea9157ad1b0a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 08:24:39.016429+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '20958952-5449-4000-a23a-49c3efb36562', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 08:24:39.019178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd8a28c48-f2a0-4539-a8e1-24e590dc0a0e', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 08:25:10.865077+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b38f89c2-2251-4772-87fd-b451ed478750', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 08:25:10.871233+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '40e826af-4f46-463d-9e9a-80d6de6b5058', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 09:23:26.913793+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c2e50f0f-3ddf-4a40-975a-de84e3afcb39', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 09:23:26.917117+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '323a2334-88cc-45ab-a9a0-1ea9a943e5b2', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 09:23:51.913752+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c6b13537-f683-4c24-8b8d-c021a4e19a1d', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 09:23:51.915073+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ca435264-8105-40fd-8342-5e57c1818e29', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 10:22:26.93582+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b9ac2567-772b-4ad9-af31-dee303b2d5f8', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 10:22:26.937532+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'be99b1df-68cf-400f-9c5f-0041985980b2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 10:22:39.154502+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c68d76bd-9a6d-4a7c-b2dc-2fb28cbaacd1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 10:22:39.231288+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '86f85fc0-52c9-4fa5-99d5-9ecd09f05100', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 11:21:39.104065+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8881ac21-7c77-4c4b-b92f-fc0044c8cc30', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 11:21:39.106615+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aacfb910-cdb6-45e0-8ce3-058fb1f04b22', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 11:21:39.147313+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2703b4d9-e9d2-4ae5-9392-01425a16cb0e', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 11:21:39.155837+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ab710e81-2084-4fda-aee1-44262d86d583', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 12:20:17.071272+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2ab3b92b-cc61-4d7f-80d6-fc2dae42f218', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 12:20:17.072167+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45ab35f8-18f4-4bec-9e12-18a176fc8529', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 12:20:39.12426+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7c3681a9-ba5e-4b57-81ad-c28c7a6f5e42', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 12:20:39.126782+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '69ff186a-f50d-49f9-82d7-13fefe04ad1c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 13:18:52.056582+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c505601-1586-4827-ad56-e54bc8830650', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 13:18:52.058147+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c0bfab29-6d9d-47e7-96e5-5ed4148da7ef', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 13:19:17.034288+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '76c20438-a1f1-45b8-b163-ba91dbad16b7', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 13:19:17.03822+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5c6de8c1-179c-41ec-855d-84e603dda8b7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 14:17:39.190521+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5bf99b49-a7dd-4526-9fc3-96a6afc1fa44', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 14:17:39.194182+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4a21f225-a7bb-4523-bd42-1c604431e58c', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 14:18:11.101743+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc442ebb-9977-4cc7-ba20-733bb9f367fd', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 14:18:11.102723+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c761e491-fe0f-4cd1-b759-2d6394800e32', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 15:16:39.213026+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb352c99-8d99-4ae8-9fc5-58f63db5b3b9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 15:16:39.215435+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '494dc36e-db34-4a6d-96cc-077e3d34f8f2', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 15:16:42.138301+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8b45e58a-1c5a-4082-9fbf-1b191b72176a', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 15:16:42.139017+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5efa90cc-44a1-40cd-902e-89028b73448c', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 16:15:17.199385+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eeb1997c-457d-474e-a3f7-7844a563ccf6', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 16:15:17.200183+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5109bf1a-f237-4fe7-a05b-91759f1bd7e0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 16:15:39.319404+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '76bc3370-c350-4fad-a043-f35b8666b508', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 16:15:39.325743+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7273ad8e-2ef1-47dd-bc59-ec3076c377c6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 17:14:11.231415+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f385e16a-5493-41f1-b9a5-e913961e10bf', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 17:14:11.232464+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8f6d4f0f-f01f-477f-a209-770afadd9d68', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 17:14:39.32421+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '20fb9268-4b61-4cc2-b181-f03a654fe867', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 17:14:39.325356+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '40dc3965-f54e-47b2-9dde-e47aac4a140e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 18:13:39.436192+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '402e0eb4-8440-40b9-b529-673aecfb7dfe', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 18:13:39.439528+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c78f64a8-8873-4325-adc3-c8f8003ddb43', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 18:13:39.457566+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd6271213-a1fa-4b6c-9f2f-91b43ba22ced', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 18:13:39.474111+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4e2cdab5-c8ae-459f-9160-94f354903173', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 19:12:39.429793+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8626b598-c1e5-4273-816c-d9e6a2c786a0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 19:12:39.434062+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '24b488af-166e-400a-8387-a4a7dd4c4727', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 19:12:39.430006+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e7201137-dc52-40fd-9892-9fcd1383e14d', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 19:12:39.436742+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b92bfdad-535f-4d61-8969-0c5393a449ec', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 20:11:05.194939+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4575d513-c13b-403e-ad13-5a4169e82e95', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 20:11:05.197915+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b003e9e7-fb16-4a9b-8e4a-30c551fd1df4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 20:11:39.403177+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a6c36a08-fe2e-4b1e-a466-f6ada609200b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 20:11:39.405208+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ca9573f0-df97-4fc3-8e41-2b7fdfdf1caa', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 21:09:39.52178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7d649e31-c7f4-4f72-8186-b68ebabb47cf', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 21:09:39.524835+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2e9efcd6-c0ac-4670-85d1-a568bab57e03', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 21:10:39.443121+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2fef566c-ebe3-48d1-801e-cafff56a6c1a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 21:10:39.447421+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3317f1f4-ac8d-434d-ba80-918298e7ccc2', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 22:08:27.494081+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e17fe57f-f699-4e52-a0e4-d43e956013e2', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 22:08:27.499657+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '103f1d00-087e-4f8d-8871-95a3c9093c06', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 22:09:17.473603+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e973100f-d25e-4b86-8dcd-13b12cfd8f7f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 22:09:17.475004+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb4f30e6-3249-4a14-8c49-093b86f56641', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 23:07:39.602071+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bbc80348-d0fa-47f0-bdc8-80230f51b2a8', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 23:07:39.627596+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b28b077e-beb4-49b3-b2c3-1885e46272c1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 23:08:39.588602+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b719741a-7eff-443c-adcc-d0e515e11ede', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-29 23:08:39.608444+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9b7532c6-7ae1-4671-9700-23cba5e4a18a', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 00:05:58.128915+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0940b4d8-726c-4544-aff7-46d77e4a58b0', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 00:05:58.134703+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5547fb88-f364-41e1-82a7-4b9071cc2181', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 00:06:43.116657+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8255ad58-0700-4898-a41c-2a8b3512793c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 00:06:43.117716+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '30e51a34-0af4-4754-958f-4a09daf57cf1', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 01:03:58.221305+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a87a3bce-a3be-415f-ae2b-69ceab422ebb', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 01:03:58.224488+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '78d0d061-3363-4a9d-a20e-0aa3d1193cd1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 01:19:00.735563+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '121bb1cc-d5d9-45b7-88ee-c38e404c7097', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 01:19:00.737556+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b34f2c29-e33a-4c34-9b62-e1444fa48134', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 02:02:08.163127+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '797047cd-0fb0-45e4-9d02-8cde7c9f57f1', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 02:02:08.166252+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73f62f65-1e02-4d69-a4a0-7d6ff06f6e80', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 03:00:39.797123+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd02c6412-e2b5-43e4-9b80-bcdc2c8ceba4', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 03:00:39.807695+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '80b95375-3c27-4b07-b770-3a3c692defd1', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 04:29:06.562687+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cec46727-5690-426a-b4df-9d47afdbb5af', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 04:29:06.656702+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bfa9e137-f04d-4e9b-a65c-d8ac76eedfdc', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 04:29:06.719598+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a2f6619c-b2e3-480c-abdc-af3c29d82543', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 04:29:06.726178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '35befad5-1521-41eb-9b6e-30e322887d1f', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-10-30 04:37:27.488491+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19a3bc1d-7210-495d-adfb-f2dbe1b763fb', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-10-30 04:38:11.571374+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '019c5d0c-5ca7-47ce-bb60-7af8153abb75', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 05:27:35.328029+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7b1b418c-1f5a-4a67-bcf2-cd44051641d0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 05:27:35.331638+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dbacee8c-76b2-4470-9700-f3351f79975e', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 05:36:25.049776+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '66170aa7-da37-4d06-87e4-18c43427132b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 05:36:25.052823+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8634d3ae-9723-4de1-ad9f-5e0a6117d8f3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 06:26:39.82532+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '43e69d5d-9e87-42f8-9d94-58fe81ebacc5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 06:26:39.826941+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ee380869-0a9f-4e41-8e16-4a81075f422f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 13:57:06.76038+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0cab4b5-6774-478f-a69e-7717e00d2eae', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 13:57:06.80401+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d23d86a-5579-451e-93d6-6560db52517b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 12:34:37.473963+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b95864b9-7c11-475a-82e5-6ece426b4de1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 12:34:37.481778+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ea93697a-91e0-4b82-93b9-c78806ed084a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 13:33:41.36936+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2f8180bf-433f-429e-8af5-494fbfa5bce4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 13:33:41.3966+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '907e8678-c930-4232-b2c8-e866cacf4880', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 14:32:41.370201+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5b0bac33-4493-4ef3-81a3-63d98316e436', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 14:32:41.376607+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '24e5e649-af2c-4ad8-b9d4-266c67321a28', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 15:31:07.025743+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2dedbc4a-c77b-428f-8c16-8c679ed9282f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 15:31:07.02901+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eae43e6b-634c-4447-9b64-d42a6b8fb0ad', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 15:31:28.212404+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4de55e77-89df-4e20-89b8-28ebbfb9773a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 15:31:28.213527+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b98d83d9-d421-4cb0-a01d-12aecc01fb95', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 16:29:13.839327+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '554191c1-7932-4d75-9ceb-f239281bce86', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 16:29:13.842297+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ddbc01e7-5cd2-456b-a38b-aaf615907b83', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 16:29:43.535788+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8d50a347-6348-491a-9ae2-85a7b197932a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 16:29:43.537088+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1244dc8e-508c-4acb-8b4c-d1251601b900', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 17:27:39.771425+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '37739e66-4d46-4ada-a65a-d216166b719b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 17:27:39.774525+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7d3e0e57-5297-4ebb-a9cc-407e72ca3cca', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 17:28:11.131314+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '10eef79a-cb71-495d-a62b-142a5a88f386', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 17:28:11.132612+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c409e24f-b3e6-4574-9ea8-8cc7cdda4c31', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 18:26:05.564916+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fae4beb8-5a48-452d-83af-9e5ddd1f0357', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 18:26:05.569689+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '941032b8-0d78-48d0-8faa-6690e549e3fd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 18:26:33.303438+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '98d9137f-e495-4c32-a456-e920c4c14851', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 18:26:33.308235+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '377dcc12-b28a-47f5-8124-557999f5bb25', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 13:57:06.84612+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b26d4d1a-a759-414e-8461-0b924a2db6cc', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 13:57:06.863043+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e286dfee-e197-41cf-8a82-795a2d2abdba', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 14:55:30.781875+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '14ebba80-0d9e-4f4b-886e-7e6b580dee71', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 14:55:30.785379+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '229be987-646f-42ed-b5ce-637a80d7b1d2', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 14:55:36.393516+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b510c388-ce3b-4e8b-bd1f-dc9e1f1de05e', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 14:55:36.406271+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19457ff6-98ba-4fde-b92e-77f25a4e6232', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 15:53:44.604217+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2128c0ea-eca0-4c1e-991c-0241f0ec9041', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 15:53:44.608134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6fb3b8b0-2f61-41e9-b76e-ba42051ad49c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 15:54:09.881647+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '224383fa-bf04-485f-9260-6c2b3459349c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 15:54:09.883335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '72825cac-db3d-4e2f-9de7-a63c79f7127d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 16:51:50.624134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c89caa43-0feb-463b-8849-c4bcd9dbb993', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 16:51:50.628018+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b5c1d1a3-4278-4891-9832-db6b4d0222d6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 16:52:34.205215+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6f72b1ce-a4ce-479c-ac9b-ba570e7c1392', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 16:52:34.206115+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3cf4938a-7aed-4a27-b0b9-7c823eae94d4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 17:50:38.364913+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4362fd04-cd4a-4956-951a-8dcd20543492', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 17:50:38.369322+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cb8345e0-2439-48a3-ae9b-d9fee222da9b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 17:51:28.315725+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cbc99797-2f23-4dce-8eb7-3bd977e8173e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 17:51:28.318191+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b6a8e57b-fc5a-4dcb-be8a-3c3371b578f4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 18:49:40.506031+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '886ddf69-f274-4f6c-9421-e165ba59951a', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 18:49:40.519034+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c1f3dfad-6d48-4911-b28f-93cf1858b0e7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 18:50:13.377443+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dee5f2bc-75f6-4627-90b3-d3a086e1ae78', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 18:50:13.380342+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '96ccabf0-6e65-4b15-a330-8b7a33f0bb7f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 19:47:43.521332+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5d86d9e7-6ea8-4788-b2aa-8ee30a02ecb7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 19:47:43.526134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'db1046d5-96c7-469b-a24d-12a05259d278', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 19:48:38.356712+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6061f6d4-82bb-4792-85be-e189937bfba7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 19:48:38.357651+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd6bba9a3-a371-4dcc-838b-c9067fcf8838', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 20:46:28.49629+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6f11f290-ef6d-41a0-ba1a-ab49f66d2e6f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 20:46:28.49889+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '32551957-6bb2-46de-a589-f0d00b3c2471', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 20:47:18.503724+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '847f6fdd-b9d0-4588-8c31-eeb612702c9f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-30 20:47:18.505807+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cae1dbe4-d3c3-4afa-9e98-050e655226fd', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 12:34:37.473335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e3e36f66-716a-406e-a62e-b50228009ceb', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 12:34:37.481708+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '78a995f1-fe29-4121-bd5b-2224451f60c1', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 13:33:41.370849+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c0f98161-6ed0-4781-88cb-0cd7dc023ed6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 13:33:41.388206+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9f848a68-16aa-4790-91f9-b2dfb7524e52', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 14:32:41.371142+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e34bb760-2a7f-4495-9a10-7d2c226e13db', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 14:32:41.37673+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7c261473-6042-4546-82c6-73d041fcef0e', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 05:30:12.408492+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '646e349e-682f-4b1f-8f20-3f92636f22eb', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 05:30:12.416341+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4164358f-4535-4a07-92bc-c06674ed330f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 06:28:44.877906+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45a83e55-0038-43ad-84ba-67a51f018d5b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 06:28:44.880348+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ff5675e7-4f3c-4810-8fb4-6b99f457bbd8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 07:27:19.912558+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b4feaba0-e38f-48d3-b666-eb09183b9455', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 07:27:19.91907+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '59180ffc-dabe-4ccf-a753-427dffeca130', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 12:23:21.140536+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5bf6642f-b6e9-4e32-8ae1-25164db77a1d', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 12:23:21.149136+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63bd89d2-ebe7-4765-8127-c675544bde3a', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 19:24:32.16924+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8beba5c9-64f7-4beb-8e7f-94ab2e48b4b4', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 19:24:32.173583+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc89b3ff-e6fc-4cda-8dcd-6a96b54bd6d6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 19:25:02.132813+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf0252df-97d7-46e2-995f-d766da620343', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 19:25:02.134376+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6ad634e0-a54d-4f39-894b-ca81b118c25b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 20:23:41.553415+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f6229a6f-548c-486f-9092-650632e9c15b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 20:23:41.561357+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7bc7eb19-5068-4c0f-af8b-7add7561ec78', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 20:23:44.420594+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0d90e55c-41c0-438c-bd7e-da29e4b06201', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-10-31 20:23:44.421138+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '23fad46e-cbe1-4fd2-925f-21ac8b336de5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 05:30:12.35953+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a90f6ed6-c471-4a1e-95ad-490692f24a0f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 05:30:12.368695+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a4feed35-13e3-4da8-9f66-3a34cc16afb1', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 06:28:44.878013+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9233bced-613c-4eb8-9787-bf835a9b6780', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 06:28:44.880734+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd4d499e4-9414-4387-a2d8-8b8b7053ae86', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 12:23:21.144014+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bda090b0-5b36-4637-8069-8d71e974c64f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 12:23:21.149312+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7de0e157-520d-4bda-814e-01887deddbb8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 13:21:25.861105+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73a2bfe2-cc55-4c56-b15f-34ff2d1754e2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 13:21:25.866348+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e8670bee-a50e-4c64-a24c-bc687bf9738d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 13:21:28.960743+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c57a4f00-3e60-4fe8-851a-e3b881785623', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 13:21:28.962164+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5df0efb4-796f-43d2-aa7b-78ce6f1f6beb', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 14:19:55.716321+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '182672fa-8864-4bda-88be-cd25c59f7c7f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 14:19:55.724496+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0294f32e-e9b7-4184-a1ed-eef65cf1c3e5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 14:20:14.150667+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6e199e4d-7898-4756-af7b-5e680416e498', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 14:20:14.15163+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '774b1b58-a579-441b-be02-66140bf61ad3', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 15:18:42.290957+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '699bfbda-8b4e-4c03-91a3-40363d17fa62', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 15:18:42.29626+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '15119e4a-de83-48d3-a280-2bf75f5b3c07', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 15:19:42.303247+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '35b6cab7-f81a-4c44-8d1a-0b57c79e60f4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 15:19:42.304951+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c9e87a2-3adf-4be8-b9c9-119596c6a01c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 16:17:14.319668+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c8c69b9c-3632-4511-bec8-99e27bdfde6c', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 16:17:14.33002+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8c59d4a6-d57f-448a-be3e-741a7a82459b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 16:18:42.309532+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '857d7264-26b5-4596-beae-1c584c1c0742', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 16:18:42.311422+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '26e9a10e-8af0-4a6f-a18b-d2f88f53a4f1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 17:17:20.335818+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '593ea0c4-e5ab-4446-aa96-89b2af1e6899', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 17:17:20.337028+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '41b95fd6-5004-42c0-9f61-5f22c6b2b9c8', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 17:34:07.014545+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b4be3c1f-211d-48d5-9be6-52e492045c85', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 17:34:07.02967+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eb557ad0-3b41-4f58-bdad-573da6805c5a', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-11-01 17:51:25.86655+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '36ca3087-b804-4f63-9548-d8fa74f016cf', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-01 17:51:58.566192+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fda4c029-7002-467c-b956-995ca1d0358b', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-11-01 17:59:50.229375+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a010a31-826a-4854-9fb4-90bfa942851c', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-01 18:00:10.366163+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7f41ada3-9080-4955-89f9-f3ac341c4adf', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 18:50:26.533267+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3e7971f3-c232-47e4-92b8-2bbd5bf41094', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 18:50:26.535729+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd2dc326-367d-4398-9e39-7b86f680ce52', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 18:58:55.375865+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9de467aa-21c2-42f4-9b2d-cd89039bc94a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 18:58:55.377813+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b076b76f-4b49-4f07-9371-74e9f7c254b7', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 19:48:47.511222+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3ca1bf54-e24f-47be-bb79-5c458f4bdead', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 19:48:47.513589+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9c934def-ab21-4563-990f-4213fbd790d3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 19:57:17.567687+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3ed9db83-a374-4e1e-9868-181165014405', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 19:57:17.570103+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '93a76fbc-d05c-47cc-83c3-42ccfff971a2', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 20:46:47.618794+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc2f3e0d-14b0-45dc-a2ed-675b8f892c32', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 20:46:47.624665+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6926539f-a309-4b3f-bdce-a07306bf3ac3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 20:56:42.615613+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a7004686-8d81-4b03-bcb7-9a69e2b83bc4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 20:56:42.617857+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '90a943fc-f36b-4253-8fee-8d5c072a2033', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 21:45:42.589134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '831bd5ff-8824-45e5-842e-5b5a3834c087', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 21:45:42.592241+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e6f12ebd-1950-4cd6-bf16-229b0db24f2e', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 21:55:42.592918+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a44a1adc-0fec-4241-a705-4611f34f11f3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 21:55:42.598335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '31a0e450-c0a1-4efe-ac90-5c8acff83ef9', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 22:44:42.631632+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '935aa3de-20ce-48f5-bcae-e8ea52b5d366', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 22:44:42.634362+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '17d23dd1-bc45-4932-8ec1-c8506a8b9470', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 22:54:42.613501+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'df53f98e-d8dd-4116-b0c5-cac67cfdb7d9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 22:54:42.615947+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a88c7cae-2d8a-4c42-9c68-913a6b27f136', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 23:43:42.68565+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0606a559-1283-49e5-b7ac-58ec8114f051', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 23:43:42.695429+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f6bb7943-fbee-4043-99c0-9946c4f22101', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 23:53:15.613169+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '058ec128-316e-4ebf-a224-e4229bd63fca', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-01 23:53:15.614472+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4efa22f8-0c43-4ae7-8930-9a583955ce4e', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 00:42:20.694788+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '266d501c-9f60-419d-a19a-1afe01193efa', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 00:42:20.696365+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '43853db0-8e54-4dca-84b7-bb01d5fe65ad', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 00:52:42.727991+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dbe7bd90-0de2-4f0f-99c5-78d6e3477949', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 00:52:42.732462+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c23ad4ec-f415-466d-9ba2-853f9d68ae47', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 01:40:55.639202+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '12a5e508-b8ff-4ac2-bc15-eca9106e7630', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 01:40:55.642328+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'afbb227c-8390-4694-8542-f0817783745c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 01:51:42.73813+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f04bbea0-419d-4e39-b620-b7ba139b8769', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 01:51:42.74192+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e94ba07f-0efc-4f79-9ca5-264d41ae56f2', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 02:39:45.705604+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5cd4ce72-d79d-4883-8ffb-f963785f4228', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 02:39:45.706942+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6c2ab51f-4cd8-42df-9d9e-0ffb97da57aa', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 02:50:15.680625+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8cbe37ed-ffb8-4cf0-98a5-95a0a2e62234', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 02:50:15.681723+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0ee5d1f9-23e6-456c-9dcd-e47e1f31db0a', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 03:38:42.793726+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e9fcec67-ef85-4581-8676-15ea642a6588', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 03:38:42.794949+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b0391111-b6a9-4605-97c7-58bb340932b0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 03:48:56.744581+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e370c18c-fec0-4670-b438-ce4f4f7f6f20', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 03:48:56.745468+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6d67dc1b-7164-4614-bb18-8f170d3da904', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 04:37:42.886925+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ece5aec9-ff34-4652-ac72-51e9a61feba3', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 04:37:42.889965+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b91444c9-336e-486f-aae6-a8fc77ebca3d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 04:47:42.9055+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '56a82bf4-5195-4e07-8c33-d413b9bc54f4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 04:47:42.907254+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '76964c41-2097-4f9a-8342-9e816c941345', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 05:36:30.87673+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8ac0ecab-94c9-48f8-b779-087323fb975f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 05:36:30.877787+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'be87ca0f-f38a-4fcc-96b8-1432f640aacd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 05:46:21.884672+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '87b789ec-3efb-4dd3-9f32-63aa3ddd99cd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 05:46:21.887272+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0cf6052c-0206-4619-8442-f8c50f61c728', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 06:35:42.878855+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'edcf9294-6bdb-4208-8d8d-b4cea17bde99', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 06:35:42.879815+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b5654d79-d39b-4325-8141-45655d0c1e4c', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 06:45:06.861679+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7a0187e9-5f59-4b9d-9c8c-00362d0c4249', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 06:45:06.863154+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a13b4358-bff7-4dfc-a534-26016c0fdfd9', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 07:34:20.951671+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '59bb4fa7-dffd-4b9e-b363-bfba32e5e2c3', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 07:34:20.953978+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ba94da70-00ad-4d3c-b405-a95a624d8690', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 07:43:41.947901+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a51a4320-776c-4881-8f97-5a64c521f9bd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 07:43:41.948929+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '70c7c921-0511-4058-a16f-c7ca2ab1d1e4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 08:33:43.029256+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '02c9bca0-ca5f-401b-ab30-7698df7edb89', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 08:33:43.031096+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '646df2ed-6b9e-4f92-811d-0c9b1bee1935', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 08:42:43.024116+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4079f641-5bb5-4644-ae9d-1f708bae72b5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 08:42:43.033259+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb1c0a12-d658-40b8-b98e-39aab1a6c115', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 09:32:21.020707+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2614d39a-c43a-40c6-9f7b-a05fe8a7ab8c', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 09:32:21.021524+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3a82e858-0c03-466b-99fe-d26b96815430', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 09:41:22.027262+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '68ce4609-e634-40a2-a4c4-cfb0c63190f2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 09:41:22.028394+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45233062-7e71-4832-8a7c-582c300e4511', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 10:31:43.117717+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '39ce7304-152c-40e8-be40-792f707d0524', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 10:31:43.120379+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '413f3215-9a09-4ca4-b339-8020721c53ba', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 10:40:07.017145+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4cda6e5e-3e5f-4381-91ba-4f718ad9dcf5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 10:40:07.018183+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fa64988c-fafc-4a43-9976-868d10d84abb', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 11:30:31.093562+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '960934cd-d605-41a4-9074-67ffb574c929', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 11:30:31.095095+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9ca02d4c-4d23-45e4-ab7d-1e4d83751c31', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 11:38:47.105996+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '78fdd289-e4ae-4e82-a9e8-ff8d06d90511', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 11:38:47.107292+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd2b3b4d3-ee3e-44b6-89ec-079d7a22a530', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 12:29:21.100927+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a918974e-dcb7-4f52-a8aa-2b2d405ac026', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 12:29:21.101909+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f6dfd46f-e3c1-4838-bada-2921971d25c6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 12:37:22.070658+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8583c0d5-8f63-4c2d-a5f1-2ac93a071a15', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 12:37:22.071592+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4deabaf6-3d30-4772-b863-8f550f30994d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 13:28:06.081644+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '32934320-04f0-445e-88e8-d5491c0772f7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 13:28:06.082656+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b45f248-2003-47b9-929b-b1cd24203748', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 13:36:43.21482+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '706ef872-e55f-4054-b3d4-0af0699fbbe1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 13:36:43.219645+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '721c991a-51e3-44e1-9780-bfd3c5a13fc4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 14:26:56.186573+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9b036f2a-2116-465e-81a3-dfdb8c085b66', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 14:26:56.187477+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c5d22abf-6b4d-419d-965c-24f9eaee96c0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 14:35:43.240907+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6bab7d33-abfb-4c56-8f42-7127952e5d77', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 14:35:43.245698+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8df93e98-0692-42e9-b708-5ec9eef4ec88', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 15:25:41.308716+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a039cd4e-dbe8-4583-b23d-21e40edf6c63', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 15:25:41.310258+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '34af33dc-fbd5-4121-86e1-8f34e58417c1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 15:34:43.314835+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'df1b84ca-4006-4da1-ab47-bdf1c20a9913', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 15:34:43.337521+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c7027a1e-5f50-4143-bac4-ce5672abeef9', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 16:24:43.351327+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '68fd07b2-099f-49d9-93ab-b1e638fea8d6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 16:24:43.362724+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ab227984-3bbf-4b20-9c70-82479aea463b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 16:33:32.32003+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0a52292b-f5fc-48ee-b64a-161c67050889', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 16:33:32.325951+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c0c189b3-57e9-47f9-88f8-0f14fc6ac897', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 17:23:31.341846+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'de0c4af7-a475-42df-b72a-7caea32f346f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 17:23:31.343639+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a0c1ac5a-4378-4c18-83c8-a16c75ce4630', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 17:32:16.33935+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b9f70420-91fd-49e1-b0f9-727bd928e07a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 17:32:16.34126+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6626c730-11bb-4424-acd9-8a9ba41136e4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 18:21:32.767975+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd7802045-bfae-48d2-8d2c-df24fb0b4e3f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 18:21:32.770827+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f4919834-4ec2-441f-ae2f-cf695991e265', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 18:30:25.773764+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8f2cf560-5285-45c8-abb3-2002791ebad3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 18:30:25.774911+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '586d40cf-b223-4719-b0ea-8dd6bc6a05dd', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 19:19:32.784501+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1e1936e8-4abe-4c6e-ac6e-830b3c292acb', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 19:19:32.787922+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cbc9f1f2-4abb-4052-9cc9-8677379b07d2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 19:28:25.808595+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73398e47-a160-4b62-99d5-0988d49e73d2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 19:28:25.811271+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '45366bf0-d45b-4603-a8ae-f6398a8c9bc5', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 20:18:43.564015+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dace60d6-774d-4720-9419-6c12121decfe', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 20:18:43.574107+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c4c87bef-28a0-4c8b-977f-57bf7d9e7ece', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 20:27:43.592218+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b5ec523-7aff-4842-9f39-6e9c318d9cd6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 20:27:43.595834+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4fae2f51-47e4-42d0-a732-678d3501804c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 21:17:31.504249+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '80380fbb-5777-4687-8e23-2268dc6e4c23', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 21:17:31.505471+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dbf4d924-c4ce-456b-9669-d51a73efa029', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 21:26:43.556498+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a731a99f-b0bd-44a1-aff5-59f44bcc340e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 21:26:43.559567+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b29bfe53-0750-49f3-9172-bf13a8e9a4e8', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 22:16:43.549054+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6fc1cebc-6074-43cd-8d44-1264d1c056e3', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 22:16:43.552522+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bffee5fc-932e-44e7-b5c0-66471cde7271', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 22:25:43.54348+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ad252d77-8d53-4d51-afa8-29de9ff65948', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 22:25:43.546015+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38acd254-1ff6-47ea-ac34-5153e3ff65a7', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 23:15:21.61668+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f4d9f28f-61fb-4d67-b836-dcd0cbfbc4fb', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 23:15:21.618495+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f3e9b923-e5c8-4a7d-b400-afd5192cb363', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 23:24:43.753503+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7be653b4-8b60-4dc2-b842-31492c2ebc9b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-02 23:24:43.754463+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2323c02b-3633-40d1-abe8-2eccae3f26c8', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 00:13:38.862553+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9fa7be20-b90a-4d1a-9744-278078b91a3a', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 00:13:38.867747+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9eb750be-380b-49ae-a651-f6aa2b3ae9a3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 00:23:43.616539+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd6139501-0117-49e0-9b83-0a3ea4ad8ad7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 00:23:43.622952+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '85eaa746-7b96-49ca-9e88-b1664e07a28b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 01:12:43.799642+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1e2823b0-275d-4cc8-a12e-693bc3e62ec7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 01:12:43.80285+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'af17f32b-4742-429a-bf4f-9f99d6b45da1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 01:22:43.734441+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b39f05b3-3dab-4aa4-a11b-dec964e37017', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 01:22:43.740228+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1854cd39-c325-40fa-83b8-578a56ea3e16', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 02:11:31.68057+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1df64a80-5927-4327-930f-d8593707fa48', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 02:11:31.681747+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd4b788fb-2e43-4352-a522-59fd5ed25d60', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 02:21:43.725027+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4d8df020-520d-44b3-a0d7-80233b00df26', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 02:21:43.731774+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '28d55f53-ea4d-4050-afeb-a5dd2365af2b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 03:10:15.773104+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63d047be-d5e6-4a77-905c-b5ecc2347165', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 03:10:15.77523+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '835e1a9f-e692-4f84-ae5b-f12420bea517', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 03:20:43.779679+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '374b5e97-16c5-43e0-859d-b63fc51ed831', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 03:20:43.78942+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd300a00c-f707-4eca-b34d-8b199be28d37', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 04:09:43.934623+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd8bbcc00-cab6-4080-ae19-4cbf052ab2f6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 04:09:43.946504+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ef19f797-f6a9-40ee-acbd-a4f8e0fefd1f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 04:19:43.858178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9f5c38de-85c9-427b-a13c-cb7f2dfab877', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 04:19:43.861851+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e7cc7192-edaa-49bf-a0b3-522b8d19baa2', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 05:08:44.004698+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '787da36f-6ad4-42f5-8e77-b1eeff95962e', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 05:08:44.014327+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1f10664a-cb43-426f-9517-2f2d10b7c6a6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 05:18:43.970269+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f6b62e6b-2078-4c8c-a425-cedaa16777eb', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 05:18:43.978218+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19b0f515-f8f0-4f27-beb2-666921dfdac4', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 06:07:43.958263+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a1e6e02f-8825-4171-a89d-f5761f519c60', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 06:07:43.961343+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '05099d62-caaf-47a9-b6df-34489c26cc72', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 06:17:43.889424+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '99dc58f2-f844-44a9-ad14-e9581507b04a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 06:17:43.891957+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '08489e1a-94a6-44a1-9e1e-a3c455bd66de', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 07:06:43.966138+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7a0c3a99-69d6-4347-aa68-b32794094613', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 07:06:43.969006+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '151a7fb7-3be8-42fe-8626-af425e4d59ae', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 07:16:43.995217+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7e2ff243-930c-40c2-be6d-6578740e4595', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 07:16:44.000649+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '238a8a85-fd73-4704-b21b-6eed5c72332d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 08:05:44.023799+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '208f3daf-c8d0-4a6b-aa5c-b14f554ca738', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 08:05:44.047443+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2a135bc8-0672-48c7-8c5b-3044b409cba1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 08:15:44.013804+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c793bf54-f78e-4175-9214-19b56bf033b1', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 08:15:44.015136+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a19c22a9-f99e-414e-bd98-a39f7c6772be', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 09:04:44.045471+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0ca390d5-b2f3-40ba-a502-b2e0f7545f5b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 09:04:44.048893+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5b7be704-c0ee-4941-9310-c88bfa870ac1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 09:14:44.012925+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b9a5ab98-e4b4-4d88-80cb-a49b9e817671', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 09:14:44.016207+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b7897d0b-bdd0-4a91-b047-2d84bff36056', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 10:03:44.092456+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7b8bca8f-3cd4-4fa7-87ae-ce4c4f997d3d', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 10:03:44.096986+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd1732be-443a-4b01-9d3d-c72b20f859d3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 10:13:44.144842+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a6a7552d-b073-4f0b-9936-9f77194ae04d', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 10:13:44.148441+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c424aca4-eb77-48c5-941f-9e86cc835a3c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 11:02:44.163413+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b9192406-e9fa-42f3-a9d6-59a5348b0eb6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 11:02:44.165108+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8dcdd987-061d-42ee-a2b7-47d500b0b2e6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 11:12:44.116086+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bc9227a6-e625-4fce-9021-c71b7d75de0b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 11:12:44.125892+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e6da9946-469a-4451-a377-759d94dd7f95', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:01:22.09873+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5c65cca4-53be-4105-a6d2-d357906525b6', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:01:22.099981+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc86d0b2-ecd7-420f-98e0-3d805fd684fd', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:11:17.146756+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b3f0590c-1cf5-40f8-8516-dfabbf30964b', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:11:17.149036+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e2f8f064-96fd-42d7-9adb-70607f1520ec', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:59:34.289136+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e81d75cf-6e2a-48ff-ad96-85f19a2f196b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 12:59:34.292808+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '524059c0-79d4-4a49-a33d-5cb0d39de206', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 13:09:24.477895+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7cc79da5-6ff6-496e-bf0f-fe68defbec73', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 13:09:24.482424+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5a0c28b2-ea17-4f3e-953b-2c9ba6d8e947', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 13:58:10.302042+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b45f855f-a9e6-444e-b0c7-70fffff3da9d', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 13:58:10.312421+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf4649b2-1976-4b8e-8043-1f8824aa4a44', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 14:08:44.301475+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '638f72a2-05e4-47f1-ad57-6a5d693129a8', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 14:08:44.30388+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3b356434-83c5-4cd3-ace5-11a2e011aedd', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 14:56:57.244544+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f71cbcb7-b6f9-4106-a411-b24cf32d61c8', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 14:56:57.248758+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '035ece15-8a95-436a-bfcb-f13d1e391db7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 15:06:56.40878+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3ba0054c-bd61-4f5f-96d8-df34c2e0cbd3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 15:06:56.410391+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6cc9dfaa-d318-4263-801f-db6ee799d467', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 15:55:04.150395+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6c528c92-c34f-4c6c-a796-83f3658bbdd7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 15:55:04.15317+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4c2f7982-428f-4107-b893-6753307bd2ca', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 16:05:24.191026+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eff6fa81-f666-4b22-af00-60e608248fff', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 16:05:24.193763+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '93c99648-f0fc-4953-9e6d-9fdfc8f7235b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 16:53:30.275737+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '15394943-d81b-4c56-9a22-c615a4606e4f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 16:53:30.280324+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bb2ab845-c0e9-4729-bf6f-aa66d5b46eb0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 17:04:02.508554+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0ffd6e0c-0dbe-457e-853d-35df98d0d0e2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 17:04:02.51629+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4a35efa2-f4be-4ec9-bc3e-e28513344462', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 17:51:30.321762+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bccc2249-a2c5-48e4-8b6f-c4bfb883f881', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 17:51:30.330421+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd05fb75-a7c3-4cf4-9496-f8e4f2e48946', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 18:02:16.20328+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cf2541af-134f-41c7-b315-6480a8ea08b7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 18:02:16.213312+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '408cbbf4-0e6a-4565-b8a1-71bd2bd2d67a', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 18:50:44.5548+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c6b00ce8-4ac8-45d0-92fe-a52021b8689f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 18:50:44.559674+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '40d51d11-51a7-4dd0-a0fc-5fdc9a1010eb', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:01:07.447163+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8fee1c0e-058b-43c4-a7d3-defc5788e5df', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:01:07.448366+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4e205196-8e99-40df-b0e2-151fefe4b357', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:49:44.541335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6a4b170e-a821-441a-a599-c8822342074b', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:49:44.544884+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63c5f696-f5e3-4706-ad58-6755c6875451', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:59:57.444849+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e343110e-8d41-4cee-89a9-778e1e104606', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 19:59:57.445875+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e3232444-7076-4cf0-a3fb-89c14b6381db', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 20:48:22.531482+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8f587138-4948-46af-bace-9970796a93ab', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 20:48:22.536064+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '673fb03d-4c8c-47b6-b465-115d36f8466f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 20:58:37.484294+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1fcdd3f3-e5f9-4765-8123-85a3dbf72a96', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 20:58:37.48716+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8b0b9221-b8ce-46d8-8c72-e28e109419f2', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 21:47:44.707772+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ff07eef0-b81b-45fa-ae16-1053d68135e5', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 21:47:44.716114+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '73c99d48-41a8-40c0-aec4-f207dae1253a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 21:56:59.872181+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ec7ce76a-7066-43a1-92eb-091b7e68fdb6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 21:56:59.873567+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '16b2c868-0470-4ef4-959c-47f67e9a1c20', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 22:45:56.399981+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '01e42037-d4d7-4a92-b77e-7ade38f8ca1f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 22:45:56.412961+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4ff2b74e-7f7d-46ad-845b-bc176a8ec7cf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 22:55:44.66042+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7869013a-bd47-4f6a-8143-06a30e1ca123', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 22:55:44.662526+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51570890-2831-43c3-8828-dc6addf721b0', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 23:44:47.63238+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9735de20-090b-4ee6-a469-a1ece72f29cc', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 23:44:47.634764+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6babaa62-dea8-46f3-af1e-683bf2dff079', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 23:54:44.732659+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c695ca70-ec12-4164-bd68-2599316efd8c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-03 23:54:44.735073+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc83f239-f1ae-40bb-99d0-2173f0985220', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 00:43:44.833701+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dc5f5823-e3fd-4c79-a265-db0694ce5adc', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 00:43:44.83661+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3f1ddf44-9cce-47c9-9ec3-8bac8166ad83', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 00:53:32.715479+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '202b99d0-3d4c-40d2-aad8-da2aea8a8ef9', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 00:53:32.716475+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a1c892ab-5ada-4237-b93d-b28560bab140', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 01:42:44.840015+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd7518d4a-d5ea-4333-9b21-da683cad7a93', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 01:42:44.841348+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '21b36f9c-65b2-4393-9ee9-99024ae73cac', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 01:52:44.944457+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b5020527-26a3-49b6-888f-a3e846364b15', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 01:52:44.947817+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '68dda524-35f5-4f4e-8f79-500984dd1c60', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 02:41:32.756036+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b609dddd-5943-4532-a97f-35dc1c49551d', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 02:41:32.758118+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '79ccbe86-20a7-4627-b1c2-4f2083a30346', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 02:51:44.764111+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e3227461-a4d4-4e13-8021-5b39d31e42d3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 02:51:44.769121+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f1a54455-ecb9-464d-89bc-89ce4e5e4a20', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 03:40:44.869183+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fc4481a3-6320-4613-ba94-5397981847e9', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 03:40:44.87134+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e63609ac-45e9-4530-aeea-eeabdc188eb8', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 03:50:44.899452+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ca1e21fe-b6f0-4765-b9dc-19de6a574edf', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 03:50:44.900732+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd2c64ae2-2e8f-41c8-8b9f-29e42650aaf0', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 04:38:47.459707+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '87993497-dfbf-4d47-8a60-cf46a2bce5f7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 04:38:47.472929+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd459f796-515e-4900-af4c-8f42cf5e8c8a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 04:49:09.094882+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a489eb03-a23e-4209-b1e5-410cbc5878e6', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 04:49:09.09867+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '49e3290d-b915-48a0-b2b1-eb9f993b1664', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 05:36:47.383068+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bf0adfe6-767b-4ecc-aaa6-8c56e448e7b4', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 05:36:47.387405+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5ab369a3-8319-4a8b-8fa2-b7c766405715', '{"action":"logout","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-11-04 05:39:48.291146+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3afe5920-a192-4461-960a-9a75f41040c6', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-04 05:45:06.93335+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8247b131-b445-413d-8f02-7a153041431c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 06:35:22.995662+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b694adb6-ad1e-4928-867a-60b147772391', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 06:35:22.998663+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5954796e-a043-4b90-9d09-9dc89ec3c34f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 07:34:00.055108+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '992d9a98-f90b-49fc-8f76-8727896a4706', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 07:34:00.203011+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '721e8374-8a10-4a1b-820e-b9d767b08537', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 08:32:45.095671+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7bb424d8-27b1-45ae-8415-9636cf9af544', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 08:32:45.097252+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '335f7869-ff47-4b47-9181-590d70c55d66', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 09:31:33.037488+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5eac04cd-b8d0-416b-84a4-dcd9ae8a70df', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 09:31:33.039197+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1068fb57-4641-42b0-9ff7-fcb7f3b51e24', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 10:30:17.087251+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eaaba126-488e-4696-be1d-e05665e156d3', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 10:30:17.088466+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '87222585-0547-4ed0-84b8-a59e6565f340', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 11:29:45.30184+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'cc722d0f-8c8f-45bd-818f-7503392d1a5e', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 11:29:45.313945+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd13c5cb-84f5-44dc-98d7-153f92e687ae', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 11:53:22.603211+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '190dc7e3-f7b1-49d1-92a1-55e1d7058fbe', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 11:53:22.615228+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ce62ee8d-3491-4077-b179-80b9fca61e11', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 12:27:49.31033+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1c89e6c1-9e0b-41e2-a1c0-41ebf71cf84f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 12:27:49.322826+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '23500096-62e5-4535-bcea-c45713057a66', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 12:51:48.865488+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '81d19cc7-0b0e-4113-b09e-c0f1dbe37c26', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 12:51:48.869682+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '420ea299-ac67-429e-a932-e022e47b4b3d', '{"action":"logout","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-11-04 13:15:01.915484+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '610bc418-24e1-4229-a67f-95a15aae9c72', '{"action":"login","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-04 13:15:29.87311+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '004fc86e-98bd-4933-a45b-1ea82e58a697', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 13:50:28.363616+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0cdcb124-dd3b-45e1-bdaa-3f39cb1b5a48', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 13:50:28.365656+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'dadbd168-2d9c-4e0b-93ab-a9079fa1eb80', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 14:13:49.202283+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '8ba81b90-4a47-4fe1-b6a1-df8c5cd851e8', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 14:13:49.206443+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ce4e1782-127c-4946-a299-d48d600028e0', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 14:49:45.406128+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e2f3096a-4cb9-4631-8be8-4fa28907ad70', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 14:49:45.407966+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9820ee67-09d6-4474-94b9-47a041bbd754', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 15:12:05.322036+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ed8484e4-62cc-477b-b7e5-19b32948d30c', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 15:12:05.333998+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f9e27245-55f2-4ffc-a97d-2843d79586e3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 15:48:24.395783+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aac35e8b-a394-48fa-9f33-1d5798262904', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 15:48:24.399632+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'abd1820a-bce0-41c9-bfa5-93da7aefc845', '{"action":"token_refreshed","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 16:10:05.409937+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63b54097-c7eb-4bf9-a714-e29e8996f82c', '{"action":"token_revoked","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 16:10:05.413275+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1c4241ea-14d4-43c5-9dd7-1c4236feb7fa', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 16:46:56.921433+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6032f7aa-bdbd-4587-a6e5-9e39fa221017', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 16:46:56.924663+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c491c49-6ee4-45d4-8a2d-69425c3371e8', '{"action":"logout","actor_id":"fb984ad9-216a-4d71-a8fd-e7912b79b5fc","actor_username":"edpoplet+captain2@gmail.com","actor_via_sso":false,"log_type":"account"}', '2025-11-04 17:02:12.919332+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63c0f344-b625-4dfb-b874-5f832fdfdaa3', '{"action":"login","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-11-04 17:02:31.819344+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '81e88648-6091-4d18-837e-0b66924b457a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 17:44:59.389791+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '65ad7946-dec4-4310-8b31-8bb653b956df', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 17:44:59.396602+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b6447b5d-9939-4fb2-bf3d-44a2031ce97d', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:01:17.480793+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0428c77-dd8f-4a6c-a9dc-b85b1a3f6374', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:01:17.482559+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '495389de-c9cf-469e-a4d4-f4c8b6023bf6', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:43:21.664021+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c5d640ed-c613-4d56-93df-80c593bb36cf', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:43:21.66725+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'aba4d33b-c289-4ff2-b0da-5e553a1f612f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:59:21.681346+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c44d8edc-26b5-4092-a4d5-8710c2a75907', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 18:59:21.691264+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c7c16451-dd5c-4568-bf7d-0291ba4d20d1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 19:41:22.113287+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c64f23a5-12b5-469e-8e16-c3ff3cd53aa7', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 19:41:22.117262+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bd44b288-834a-452f-8e9a-dda27279a0fd', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 19:57:46.623372+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '82677817-28a1-4e5a-ad8b-b95ff4a54a21', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 19:57:46.630838+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9cac2fdd-e575-4b0b-be35-e4574e40ea30', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 20:40:03.779955+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fbb02ff5-fb07-415b-8e90-9697c650c398', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 20:40:03.792331+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2bbacd4b-a4de-4659-bf49-c98905f5c243', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 20:55:54.135935+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '592087a5-3fd6-4bc5-947b-d879ecfe4491', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 20:55:54.145643+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '19806659-7e29-4ed6-9e09-7383765c76ba', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 21:38:16.586049+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f30128e3-9012-4a04-b665-b0b0208c5916', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 21:38:16.589741+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ea290baf-df11-4510-b442-49aabc655bcb', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 22:36:58.702393+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c50dc34f-441a-4d4c-b348-0fa0387feafd', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 22:36:58.704045+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ec9f819b-f9c1-402d-a089-b8fac17984aa', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 22:38:51.0616+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5b47db87-da89-4614-81d4-213800c37c63', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 22:38:51.067081+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '673d1b63-7a4f-4770-bc17-83ea02d201eb', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 23:35:45.994912+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38ed52d2-774d-4cd2-bad5-6883404cfbea', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-04 23:35:45.998845+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6adaf2ec-e1d3-4aba-acee-982253593097', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 00:34:45.83144+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '66853df5-5b2c-4d1b-b7ae-ca2717c10532', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 00:34:45.834126+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd5eb7b24-ad84-42b9-a916-3f2be00cb11f', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 01:33:17.676031+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2e13784a-e3f6-42d6-94a6-5595139bc15c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 01:33:17.677571+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7e4af6bb-710f-4484-b838-52328eebcdef', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 02:31:58.789311+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd05b8717-de2c-4cf7-bf4e-caec667f0eba', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 02:31:58.790526+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e41ca8ac-f842-4118-8267-ace72ecdbc45', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 03:30:46.039656+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2a7ea358-bf80-41fb-a416-5a32b6e848f0', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 03:30:46.042493+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5711434c-f21e-488c-b449-23319eafae4f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 03:59:44.599062+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'db21a786-0ce1-4473-9846-d309ae11386f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 03:59:44.621027+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'fa06786f-c48a-4766-bb9b-35c58f224c27', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 04:28:55.277276+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '66d44e2b-41eb-4abc-a2b9-ecf0d552714c', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 04:28:55.281553+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a98d1907-bc05-4500-8f9f-f4374905094b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 04:58:03.659138+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '689b863f-0819-4e96-8e69-2e591fb47552', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 04:58:03.665113+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '46227c98-2970-4d10-9ac0-b936d6a29350', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 05:27:46.071368+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a80472ee-ea8e-413c-bc3a-3f15a538f606', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 05:27:46.081268+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3e8de320-c271-47e7-a8dd-2abaffbcc875', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 05:56:44.226818+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3ac4be18-6923-497d-9753-bf9a5eae0fd1', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 05:56:44.235074+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '13e75617-cae9-4c12-9064-8ef4bae6a80b', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 06:26:45.935672+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '48356e7f-a0df-47d9-a6d6-6ae6a454e656', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 06:26:45.93813+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'eb0967c9-848c-41f1-af44-2eba09cc5945', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 06:55:24.013367+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0a580faf-2300-46a6-a890-c837e8e96eaf', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 06:55:24.014568+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2cdbe337-b96e-471d-a871-726c3149a8f7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 07:25:34.005306+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '66a230ed-28d5-4d04-be66-32d8dd89e9f5', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 07:25:34.006233+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ea1fe28d-86ac-49f8-b69c-4f7b1a4fc377', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 07:54:18.004942+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38d0e726-191e-4516-bc8f-f27173784092', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 07:54:18.006923+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'af3798dd-6427-4df3-b360-6a9e4fc6ada4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 08:24:46.123275+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ee01b394-6753-41f5-a974-f331b3b2d7c4', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 08:24:46.125068+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9112b897-b6bd-405e-a896-72b10ef1f7d1', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 08:52:49.064169+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f8ae81fd-2a2b-4b1e-bac8-7685785dfb71', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 08:52:49.065108+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '12e321a1-b607-463d-a66a-02df83283966', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 09:23:34.133431+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63875d2d-e630-4160-b3e6-bdedaeb76787', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 09:23:34.135602+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e08b9636-740e-4f72-9240-2e9eb0f57e32', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 09:51:34.148701+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '95dd49ed-1868-462e-9429-3c2b3b4dd185', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 09:51:34.150581+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '16d67350-e286-4beb-bbcd-59ca04d1b50a', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 10:22:09.185817+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'be137297-0b07-4903-9b85-ead77d6b0def', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 10:22:09.187572+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c4ca1b3c-8b07-4d6c-b83c-91411a6cd954', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 10:50:46.679305+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '521a7749-b335-4d8f-b25d-88d796c6d89d', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 10:50:46.682417+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e86ada3b-08c6-4c2d-b5a2-0c5200522a25', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 11:20:49.133832+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3cc40692-7d61-44ab-b8be-ecdd00464824', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 11:20:49.134792+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd1cb2542-4c1d-40f5-91c4-8d1e551eb192', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 11:49:34.169044+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7271b1aa-ecc8-4e38-9bf4-7a4fd6794bfd', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 11:49:34.170977+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0c197cdb-3c79-4cf0-84fc-a93aa7bea858', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 12:19:34.223105+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ce3225fe-a536-43f9-9f04-e4d2ad5e5073', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 12:19:34.223872+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '4e3b94fd-767f-41f6-b0f0-948e90c55e4f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 12:48:24.220178+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ea8d528e-57eb-4922-a470-be2276b16d06', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 12:48:24.221934+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '6e703361-33f7-496d-b61f-720fb5c5eee3', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 13:17:50.881404+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b07fd475-a2ac-4ebe-9d0d-507ac9cc410e', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 13:17:50.883512+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '61feba89-e19b-49be-b2ce-e11d708da814', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 13:46:25.66226+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '9395cef4-c427-4ad0-8924-b799e276d6a7', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 13:46:25.663788+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e1998465-cd76-49a0-9e4b-be9f4ace78aa', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 14:15:55.697435+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5e9d444a-2ac0-4b03-b2fe-1602759c0ece', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 14:15:55.699538+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '38b79b17-4496-482d-bd3d-fa9fad5fbc17', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 14:45:46.523465+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f19f0f8c-dad5-402c-b95e-99738b40a152', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 14:45:46.558016+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5f5ab4b5-9371-4de7-9398-870ffff62ddf', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 15:14:46.378217+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '40d2e22c-b206-4c09-81bd-b17481c28a93', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 15:14:46.380943+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3c0f6078-8463-4ecd-9396-4ea5bbdacd2b', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 15:44:15.628908+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3884a0f0-b5c9-43da-bfe2-1f3f85a053bb', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 15:44:15.631173+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '63b49fde-ca47-4a44-a844-b5e2458a6bb5', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 16:12:56.374016+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '718d66bc-2144-4fc2-bb9f-a2bc8e51484f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 16:12:56.376652+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00f25216-cd9f-4eb5-b57b-1a979d65d515', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 16:42:15.639375+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2d7f5cd8-56f3-4013-8a98-197b3bad1e50', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 16:42:15.647238+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f5e31f9b-8c47-45f9-b931-73f965f300c2', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 17:11:14.311466+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '10680d8f-c3b7-4254-9d02-e0bfa9a78349', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 17:11:14.313979+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '848601b0-81c0-47ae-a4a8-907633d8fc12', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 17:40:28.890679+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5c241419-556e-4046-958f-f0aba4021934', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 17:40:28.893488+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '213e77f0-4716-45f9-8fa0-19c4203af5e1', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 18:09:49.507573+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a3469c64-643d-476f-96a7-36c05e978bd3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 18:09:49.509558+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd78eb263-90b2-43a1-89de-0feae27006b6', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 18:39:18.545358+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'c99e03f8-839a-4436-8f88-80f34e1c058f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 18:39:18.546895+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0d484233-1a99-4e36-ab6d-ee3c320bf86d', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 19:08:20.499933+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f304a7df-bc93-4f34-8cdd-96a03cf2b91a', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 19:08:20.502961+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '464e0c6e-5096-477b-902a-55b58e68c381', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 19:37:49.543809+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '178288e9-ed19-44be-bcad-6c57fbb3ddbe', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 19:37:49.54554+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '748de760-3cec-444a-bd5e-d021d845f3f4', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 20:06:32.169188+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00c2961c-2e85-450f-83aa-20ad5e0635bb', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 20:06:32.172519+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ecdc2859-d7c5-4ade-9701-290bd419ace0', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 20:36:34.624955+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e83b669d-db91-4335-a4eb-021206cd0a22', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 20:36:34.629901+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '847b1301-5777-44c6-8642-a5850b29e213', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 21:05:46.630713+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'a849a740-67fe-42c6-b2fe-1ef89b293a6f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 21:05:46.634659+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '7c6c89ae-6e49-4fc4-8561-e44348155bac', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 21:35:18.623803+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '121d6695-9314-4a18-b743-89caf1bebc4c', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 21:35:18.626504+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3f0e01d7-eb16-4a64-ad0f-cbea3e957977', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 22:04:34.625787+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f3c5948d-2193-4842-a3e5-72ce50c03325', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 22:04:34.627844+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'f9301baa-b267-4636-bd10-a7e313587c7c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 22:34:46.650129+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00eebfea-6178-47a5-b8e5-ea7bffb15b98', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 22:34:46.65191+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '3f21200c-a543-45e5-98f0-04656e0f2909', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 23:03:46.731765+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '71a83783-2701-4bfc-b115-b39620c6f2b2', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 23:03:46.736961+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '33c11840-87c7-445a-bc75-cc959e942f74', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 23:33:34.724625+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '5cf403b3-4096-4797-aecf-cac6ce6e1e26', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-05 23:33:34.729908+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '51e1932e-4d05-4134-95a6-8f9364890dd7', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 00:02:46.747447+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'bc83798f-e906-436f-9253-dac58e867db3', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 00:02:46.750823+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1300dfd1-4e48-4a9e-9054-ee67a5fd538f', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 00:32:46.81044+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '29b4a7af-d9a8-4a05-b9b9-20e764b1ba6f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 00:32:46.812933+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '71a9fe55-86a8-4e67-9b60-4a1faedec436', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:01:18.789604+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'e0776bf4-2817-48d4-922e-3c81bf2bb857', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:01:18.79281+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '1b49f78c-8bce-4f7d-965e-4635b92930a0', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:31:46.837545+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '96ca4d2d-2579-4434-b148-5134d2f1f13f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:31:46.8506+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0d4c0166-1da3-4e77-87a2-c9aba040c3a9', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:59:49.817721+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'ec543bc9-0857-46fc-8e57-af869232192f', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 01:59:49.824797+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '92674bba-ed5b-4106-a1e9-145b7311168c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 02:30:05.860662+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '29b77d03-34b6-4a01-8bc3-d988b7d58c4f', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 02:30:05.863835+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '0394cade-cda2-4b16-ac91-b172652addcc', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 02:58:46.921791+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2bc12cd6-4229-478b-b6e3-6be7258a8515', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 02:58:46.924265+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b035a49d-150c-4db3-91d2-81cb8e713b3c', '{"action":"token_refreshed","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 03:28:05.844863+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '00fde1ac-73f6-4a6b-b712-c54a3363bba3', '{"action":"token_revoked","actor_id":"575dead2-d2af-4a44-81ee-92c63ea38219","actor_username":"edpoplet+captain1@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 03:28:05.846297+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'd87d1e71-8c1d-46fb-a979-12dc19183534', '{"action":"token_refreshed","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 03:57:24.861533+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', '2da418f9-debe-4a7d-a231-f303903ed426', '{"action":"token_revoked","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"token"}', '2025-11-06 03:57:24.866296+00', '');
+INSERT INTO auth.audit_log_entries VALUES ('00000000-0000-0000-0000-000000000000', 'b47d3917-4e6f-4517-b9b5-37ec2e680e78', '{"action":"login","actor_id":"0e0f89e1-9e80-4ebb-ba38-79d728de8cae","actor_username":"shodbyed@gmail.com","actor_via_sso":false,"log_type":"account","traits":{"provider":"email"}}', '2025-12-19 17:36:54.539129+00', '');
+
+
+--
+-- Data for Name: flow_state; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.users VALUES ('00000000-0000-0000-0000-000000000000', 'fb984ad9-216a-4d71-a8fd-e7912b79b5fc', 'authenticated', 'authenticated', 'edpoplet+captain2@gmail.com', '$2a$10$MJY7HuXIkpaisMU3PNC6uOL/4WPNjY/CGiqqieYFRyggXCokZMwpO', '2025-10-12 19:08:19.774534+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-11-04 13:15:29.874186+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "fb984ad9-216a-4d71-a8fd-e7912b79b5fc", "email": "edpoplet+captain2@gmail.com", "email_verified": true, "phone_verified": false}', NULL, '2025-10-12 19:08:19.769402+00', '2025-11-04 16:10:05.419202+00', NULL, NULL, '', '', NULL, DEFAULT, '', 0, NULL, '', NULL, false, NULL, false);
+INSERT INTO auth.users VALUES ('00000000-0000-0000-0000-000000000000', '575dead2-d2af-4a44-81ee-92c63ea38219', 'authenticated', 'authenticated', 'edpoplet+captain1@gmail.com', '$2a$10$LnwdgExfxejfm1dvr7Aj3.Bi0Sun/kStqHyJPLU3/7LuHZwuOYu7a', '2025-10-12 19:02:03.641258+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-11-04 17:02:31.82029+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "575dead2-d2af-4a44-81ee-92c63ea38219", "email": "edpoplet+captain1@gmail.com", "email_verified": true, "phone_verified": false}', NULL, '2025-10-12 19:02:03.628293+00', '2025-11-06 03:28:05.848951+00', NULL, NULL, '', '', NULL, DEFAULT, '', 0, NULL, '', NULL, false, NULL, false);
+INSERT INTO auth.users VALUES ('00000000-0000-0000-0000-000000000000', 'c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec', 'authenticated', 'authenticated', 'edpoplet+captain3@gmail.com', '$2a$10$Fyib2d7lnW.HZWbfh39dK.egHyj7jEQDiVdDxMVJ1/kXkmLQHHH5a', '2025-10-12 19:11:28.823203+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-10-25 16:15:33.528103+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec", "email": "edpoplet+captain3@gmail.com", "email_verified": true, "phone_verified": false}', NULL, '2025-10-12 19:11:28.816515+00', '2025-10-26 22:15:44.364742+00', NULL, NULL, '', '', NULL, DEFAULT, '', 0, NULL, '', NULL, false, NULL, false);
+INSERT INTO auth.users VALUES ('00000000-0000-0000-0000-000000000000', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', 'authenticated', 'authenticated', 'shodbyed@gmail.com', '$2a$10$nINPric797TVyviktz2FaunJ5mrZAToNf/IZ0wUXOc/QaKQGQPweu', '2025-10-03 02:21:27.342879+00', NULL, '', NULL, '', NULL, '', '', NULL, '2025-12-19 17:36:54.540212+00', '{"provider": "email", "providers": ["email"]}', '{"sub": "0e0f89e1-9e80-4ebb-ba38-79d728de8cae", "email": "shodbyed@gmail.com", "email_verified": true, "phone_verified": false}', NULL, '2025-10-03 02:21:27.326479+00', '2025-12-19 17:36:54.543525+00', NULL, NULL, '', '', NULL, DEFAULT, '', 0, NULL, '', NULL, false, NULL, false);
+
+
+--
+-- Data for Name: identities; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.identities VALUES ('0e0f89e1-9e80-4ebb-ba38-79d728de8cae', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', '{"sub": "0e0f89e1-9e80-4ebb-ba38-79d728de8cae", "email": "shodbyed@gmail.com", "email_verified": false, "phone_verified": false}', 'email', '2025-10-03 02:21:27.339371+00', '2025-10-03 02:21:27.339388+00', '2025-10-03 02:21:27.339388+00', DEFAULT, '611f196c-2f88-4d70-acab-80999d20336c');
+INSERT INTO auth.identities VALUES ('575dead2-d2af-4a44-81ee-92c63ea38219', '575dead2-d2af-4a44-81ee-92c63ea38219', '{"sub": "575dead2-d2af-4a44-81ee-92c63ea38219", "email": "edpoplet+captain1@gmail.com", "email_verified": false, "phone_verified": false}', 'email', '2025-10-12 19:02:03.638145+00', '2025-10-12 19:02:03.638165+00', '2025-10-12 19:02:03.638165+00', DEFAULT, 'd015d800-8ad5-47e1-84d5-671b02734e10');
+INSERT INTO auth.identities VALUES ('fb984ad9-216a-4d71-a8fd-e7912b79b5fc', 'fb984ad9-216a-4d71-a8fd-e7912b79b5fc', '{"sub": "fb984ad9-216a-4d71-a8fd-e7912b79b5fc", "email": "edpoplet+captain2@gmail.com", "email_verified": false, "phone_verified": false}', 'email', '2025-10-12 19:08:19.771804+00', '2025-10-12 19:08:19.771839+00', '2025-10-12 19:08:19.771839+00', DEFAULT, '85aeb260-5d1b-4c19-b8a6-3a9363cf088a');
+INSERT INTO auth.identities VALUES ('c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec', 'c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec', '{"sub": "c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec", "email": "edpoplet+captain3@gmail.com", "email_verified": false, "phone_verified": false}', 'email', '2025-10-12 19:11:28.819298+00', '2025-10-12 19:11:28.819327+00', '2025-10-12 19:11:28.819327+00', DEFAULT, 'c2d6871c-e37b-4dc7-b257-e78a2c24794a');
+
+
+--
+-- Data for Name: instances; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: oauth_clients; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: sessions; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.sessions VALUES ('1e00f72d-e216-484a-8e29-eb26ca14a94b', '575dead2-d2af-4a44-81ee-92c63ea38219', '2025-11-04 17:02:31.820375+00', '2025-11-06 03:28:05.849601+00', NULL, 'aal1', NULL, '2025-11-06 03:28:05.849574', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36', '172.217.15.202', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO auth.sessions VALUES ('36ab8c9c-3f8a-406d-b683-160993328d27', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', '2025-11-04 05:45:06.94111+00', '2025-11-06 03:57:24.87181+00', NULL, 'aal1', NULL, '2025-11-06 03:57:24.87178', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36', '172.217.15.202', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO auth.sessions VALUES ('46611ff0-344a-4007-8024-86e3c957f9b8', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', '2025-12-19 17:36:54.540275+00', '2025-12-19 17:36:54.540275+00', NULL, 'aal1', NULL, NULL, 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '140.82.113.6', NULL, NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: mfa_amr_claims; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.mfa_amr_claims VALUES ('36ab8c9c-3f8a-406d-b683-160993328d27', '2025-11-04 05:45:06.959504+00', '2025-11-04 05:45:06.959504+00', 'password', 'b4fa0694-2b15-48aa-87e0-69f622df00b5');
+INSERT INTO auth.mfa_amr_claims VALUES ('1e00f72d-e216-484a-8e29-eb26ca14a94b', '2025-11-04 17:02:31.826055+00', '2025-11-04 17:02:31.826055+00', 'password', '8564dda3-6855-4132-b9bf-0fb527bdecc3');
+INSERT INTO auth.mfa_amr_claims VALUES ('46611ff0-344a-4007-8024-86e3c957f9b8', '2025-12-19 17:36:54.543892+00', '2025-12-19 17:36:54.543892+00', 'password', 'b09818c6-3ee2-45b4-a30f-52a0e26f9db8');
+
+
+--
+-- Data for Name: mfa_factors; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: mfa_challenges; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: oauth_authorizations; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: oauth_consents; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: one_time_tokens; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: refresh_tokens; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 571, '5txzmn5jn6j5', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 12:51:48.874042+00', '2025-11-04 13:50:28.366467+00', 'xftxx5wqfk3f', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 573, '4yuhdpw4sghb', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 13:50:28.368737+00', '2025-11-04 14:49:45.408348+00', '5txzmn5jn6j5', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 575, 'bxy6nnfypobu', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 14:49:45.411141+00', '2025-11-04 15:48:24.400362+00', '4yuhdpw4sghb', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 577, 'krac4f5bbifi', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 15:48:24.407972+00', '2025-11-04 16:46:56.925511+00', 'bxy6nnfypobu', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 579, 'szojt2sjo2ug', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 16:46:56.928083+00', '2025-11-04 17:44:59.39925+00', 'krac4f5bbifi', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 580, '6k63nguamryr', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 17:02:31.822658+00', '2025-11-04 18:01:17.483326+00', NULL, '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 562, 'uwbpodrsyzqs', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 05:45:06.954181+00', '2025-11-04 11:53:22.616316+00', NULL, '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 581, 'qah7moo2egnh', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 17:44:59.403442+00', '2025-11-04 18:43:21.669343+00', 'szojt2sjo2ug', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 582, 'gg5cirqek2rh', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 18:01:17.484264+00', '2025-11-04 18:59:21.693523+00', '6k63nguamryr', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 583, 'fzvasdb7vfrs', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 18:43:21.67237+00', '2025-11-04 19:41:22.118855+00', 'qah7moo2egnh', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 569, 'xftxx5wqfk3f', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 11:53:22.635731+00', '2025-11-04 12:51:48.871788+00', 'uwbpodrsyzqs', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 584, '2a727nzmchqq', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 18:59:21.697298+00', '2025-11-04 19:57:46.642158+00', 'gg5cirqek2rh', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 585, '2oqoecul26cp', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 19:41:22.12256+00', '2025-11-04 20:40:03.794487+00', 'fzvasdb7vfrs', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 586, '7emrhqgg2spj', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 19:57:46.646417+00', '2025-11-04 20:55:54.14815+00', '2a727nzmchqq', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 587, 'c76vpnxx4de4', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 20:40:03.805733+00', '2025-11-04 21:38:16.593198+00', '2oqoecul26cp', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 589, 'sgxmrcxs6vxi', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 21:38:16.59715+00', '2025-11-04 22:36:58.705037+00', 'c76vpnxx4de4', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 588, '4255kw4ospge', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 20:55:54.152427+00', '2025-11-04 22:38:51.069704+00', '7emrhqgg2spj', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 590, 'jbmolc44mxpn', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 22:36:58.707098+00', '2025-11-04 23:35:46.000286+00', 'sgxmrcxs6vxi', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 592, 'ten2utevz5en', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-04 23:35:46.003147+00', '2025-11-05 00:34:45.835082+00', 'jbmolc44mxpn', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 593, 'kfb64nrq2ki4', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 00:34:45.842973+00', '2025-11-05 01:33:17.678075+00', 'ten2utevz5en', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 594, 'kojdelrdmf2p', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 01:33:17.678595+00', '2025-11-05 02:31:58.791696+00', 'kfb64nrq2ki4', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 595, 'oifm3zxdzevx', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 02:31:58.792258+00', '2025-11-05 03:30:46.044212+00', 'kojdelrdmf2p', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 591, 'y2mpgwelmutn', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-04 22:38:51.071189+00', '2025-11-05 03:59:44.622708+00', '4255kw4ospge', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 596, 'ptc6qk4rxtdx', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 03:30:46.052784+00', '2025-11-05 04:28:55.282808+00', 'oifm3zxdzevx', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 597, '35htan5e4ik5', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 03:59:44.631345+00', '2025-11-05 04:58:03.666169+00', 'y2mpgwelmutn', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 598, 'hvo4jez336oy', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 04:28:55.286326+00', '2025-11-05 05:27:46.092601+00', 'ptc6qk4rxtdx', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 599, 'hvuafxbe73wp', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 04:58:03.668775+00', '2025-11-05 05:56:44.240314+00', '35htan5e4ik5', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 600, 'gqx27mbfkh2o', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 05:27:46.098984+00', '2025-11-05 06:26:45.940899+00', 'hvo4jez336oy', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 601, 'mn6dbwqf2tdy', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 05:56:44.244986+00', '2025-11-05 06:55:24.015906+00', 'hvuafxbe73wp', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 602, '5qczqcfbbzyu', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 06:26:45.947303+00', '2025-11-05 07:25:34.006669+00', 'gqx27mbfkh2o', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 603, 'gknsztgyhxvk', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 06:55:24.016298+00', '2025-11-05 07:54:18.008032+00', 'mn6dbwqf2tdy', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 604, '6u5lnmli7tbd', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 07:25:34.007208+00', '2025-11-05 08:24:46.126759+00', '5qczqcfbbzyu', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 605, 'uo3aimcp2g3n', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 07:54:18.008993+00', '2025-11-05 08:52:49.065959+00', 'gknsztgyhxvk', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 606, 'xgmn5kqkdklh', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 08:24:46.135037+00', '2025-11-05 09:23:34.137436+00', '6u5lnmli7tbd', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 607, 'cbzfiw5jkw3s', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 08:52:49.066575+00', '2025-11-05 09:51:34.151666+00', 'uo3aimcp2g3n', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 608, 'p6zluifvc3jo', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 09:23:34.141158+00', '2025-11-05 10:22:09.189133+00', 'xgmn5kqkdklh', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 609, 'jlwtqc6n6cim', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 09:51:34.15272+00', '2025-11-05 10:50:46.685598+00', 'cbzfiw5jkw3s', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 610, 'jeqxyzj67kqn', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 10:22:09.189982+00', '2025-11-05 11:20:49.135487+00', 'p6zluifvc3jo', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 611, 'ljrv6d5jk3ly', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 10:50:46.689081+00', '2025-11-05 11:49:34.172036+00', 'jlwtqc6n6cim', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 612, 'fdeamapk373z', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 11:20:49.136143+00', '2025-11-05 12:19:34.224524+00', 'jeqxyzj67kqn', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 613, '7erswnmbqygf', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 11:49:34.172617+00', '2025-11-05 12:48:24.222445+00', 'ljrv6d5jk3ly', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 614, 'jusni6nsg73a', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 12:19:34.225051+00', '2025-11-05 13:17:50.884858+00', 'fdeamapk373z', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 615, 'l65dlrggdsoj', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 12:48:24.223896+00', '2025-11-05 13:46:25.66433+00', '7erswnmbqygf', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 616, 'wii4fxambbxs', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 13:17:50.887091+00', '2025-11-05 14:15:55.70113+00', 'jusni6nsg73a', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 617, 'qkz5dzxrhebh', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 13:46:25.66625+00', '2025-11-05 14:45:46.560706+00', 'l65dlrggdsoj', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 618, 'tzn5octmudvz', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 14:15:55.702831+00', '2025-11-05 15:14:46.381917+00', 'wii4fxambbxs', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 619, 'jy53w4n3tjuw', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 14:45:46.562007+00', '2025-11-05 15:44:15.632673+00', 'qkz5dzxrhebh', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 620, 'kaohx6cvfxwk', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 15:14:46.382988+00', '2025-11-05 16:12:56.378916+00', 'tzn5octmudvz', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 621, 'tklumlp6cq62', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 15:44:15.633758+00', '2025-11-05 16:42:15.648696+00', 'jy53w4n3tjuw', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 622, 'gdrfset4cgrb', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 16:12:56.382626+00', '2025-11-05 17:11:14.314711+00', 'kaohx6cvfxwk', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 629, 'n5jwiy6gdoss', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 19:37:49.547581+00', '2025-11-05 20:36:34.6304+00', 't4yba7t3zjat', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 630, 'o4tlzsmrucw6', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 20:06:32.176124+00', '2025-11-05 21:05:46.635263+00', 'yrunxmxx7ok7', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 623, 'hbzvvmmflzzq', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 16:42:15.652836+00', '2025-11-05 17:40:28.896115+00', 'tklumlp6cq62', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 624, '3df7buqofvdw', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 17:11:14.31726+00', '2025-11-05 18:09:49.510652+00', 'gdrfset4cgrb', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 631, 'tdhn2w65dkhi', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 20:36:34.633862+00', '2025-11-05 21:35:18.627328+00', 'n5jwiy6gdoss', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 625, 'e6fblb4rjfa7', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 17:40:28.900035+00', '2025-11-05 18:39:18.547131+00', 'hbzvvmmflzzq', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 626, 'nipnxsejdaiw', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 18:09:49.513015+00', '2025-11-05 19:08:20.503993+00', '3df7buqofvdw', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 632, 'h4ospg7bntsf', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 21:05:46.638286+00', '2025-11-05 22:04:34.628851+00', 'o4tlzsmrucw6', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 627, 't4yba7t3zjat', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 18:39:18.547612+00', '2025-11-05 19:37:49.546095+00', 'e6fblb4rjfa7', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 628, 'yrunxmxx7ok7', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 19:08:20.505604+00', '2025-11-05 20:06:32.173497+00', 'nipnxsejdaiw', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 633, '4j5ct6hnf3ei', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 21:35:18.628294+00', '2025-11-05 22:34:46.652905+00', 'tdhn2w65dkhi', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 634, 'snddx7fpodpm', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 22:04:34.629717+00', '2025-11-05 23:03:46.739718+00', 'h4ospg7bntsf', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 635, 'lldca3htlg7l', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 22:34:46.654445+00', '2025-11-05 23:33:34.731198+00', '4j5ct6hnf3ei', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 636, 'j2cb2yapxlkw', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-05 23:03:46.742446+00', '2025-11-06 00:02:46.751863+00', 'snddx7fpodpm', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 637, 'nsdyvqhnyo5l', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-05 23:33:34.732139+00', '2025-11-06 00:32:46.814969+00', 'lldca3htlg7l', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 638, 'lna53dtaacba', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-06 00:02:46.753751+00', '2025-11-06 01:01:18.795629+00', 'j2cb2yapxlkw', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 639, 'yseyaqtybwho', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-06 00:32:46.820316+00', '2025-11-06 01:31:46.861656+00', 'nsdyvqhnyo5l', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 640, 'h5aaemnr76v2', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-06 01:01:18.800863+00', '2025-11-06 01:59:49.826013+00', 'lna53dtaacba', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 641, '4o4a3hq6oxzu', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-06 01:31:46.874881+00', '2025-11-06 02:30:05.864422+00', 'yseyaqtybwho', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 642, 'cizhs7khwexc', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-06 01:59:49.829792+00', '2025-11-06 02:58:46.925742+00', 'h5aaemnr76v2', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 643, 'zfp3oobuxx2c', '575dead2-d2af-4a44-81ee-92c63ea38219', true, '2025-11-06 02:30:05.868244+00', '2025-11-06 03:28:05.846699+00', '4o4a3hq6oxzu', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 645, 'v7al6svk4w5f', '575dead2-d2af-4a44-81ee-92c63ea38219', false, '2025-11-06 03:28:05.848258+00', '2025-11-06 03:28:05.848258+00', 'zfp3oobuxx2c', '1e00f72d-e216-484a-8e29-eb26ca14a94b');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 644, 'ov6c7s4ow4hh', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', true, '2025-11-06 02:58:46.928405+00', '2025-11-06 03:57:24.867353+00', 'cizhs7khwexc', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 646, 'qo7d2rqtwtw2', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', false, '2025-11-06 03:57:24.869553+00', '2025-11-06 03:57:24.869553+00', 'ov6c7s4ow4hh', '36ab8c9c-3f8a-406d-b683-160993328d27');
+INSERT INTO auth.refresh_tokens VALUES ('00000000-0000-0000-0000-000000000000', 647, 'yr5qryddtuvi', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', false, '2025-12-19 17:36:54.541411+00', '2025-12-19 17:36:54.541411+00', NULL, '46611ff0-344a-4007-8024-86e3c957f9b8');
+
+
+--
+-- Data for Name: sso_providers; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: saml_providers; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: saml_relay_states; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: schema_migrations; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+INSERT INTO auth.schema_migrations VALUES ('20171026211738');
+INSERT INTO auth.schema_migrations VALUES ('20171026211808');
+INSERT INTO auth.schema_migrations VALUES ('20171026211834');
+INSERT INTO auth.schema_migrations VALUES ('20180103212743');
+INSERT INTO auth.schema_migrations VALUES ('20180108183307');
+INSERT INTO auth.schema_migrations VALUES ('20180119214651');
+INSERT INTO auth.schema_migrations VALUES ('20180125194653');
+INSERT INTO auth.schema_migrations VALUES ('00');
+INSERT INTO auth.schema_migrations VALUES ('20210710035447');
+INSERT INTO auth.schema_migrations VALUES ('20210722035447');
+INSERT INTO auth.schema_migrations VALUES ('20210730183235');
+INSERT INTO auth.schema_migrations VALUES ('20210909172000');
+INSERT INTO auth.schema_migrations VALUES ('20210927181326');
+INSERT INTO auth.schema_migrations VALUES ('20211122151130');
+INSERT INTO auth.schema_migrations VALUES ('20211124214934');
+INSERT INTO auth.schema_migrations VALUES ('20211202183645');
+INSERT INTO auth.schema_migrations VALUES ('20220114185221');
+INSERT INTO auth.schema_migrations VALUES ('20220114185340');
+INSERT INTO auth.schema_migrations VALUES ('20220224000811');
+INSERT INTO auth.schema_migrations VALUES ('20220323170000');
+INSERT INTO auth.schema_migrations VALUES ('20220429102000');
+INSERT INTO auth.schema_migrations VALUES ('20220531120530');
+INSERT INTO auth.schema_migrations VALUES ('20220614074223');
+INSERT INTO auth.schema_migrations VALUES ('20220811173540');
+INSERT INTO auth.schema_migrations VALUES ('20221003041349');
+INSERT INTO auth.schema_migrations VALUES ('20221003041400');
+INSERT INTO auth.schema_migrations VALUES ('20221011041400');
+INSERT INTO auth.schema_migrations VALUES ('20221020193600');
+INSERT INTO auth.schema_migrations VALUES ('20221021073300');
+INSERT INTO auth.schema_migrations VALUES ('20221021082433');
+INSERT INTO auth.schema_migrations VALUES ('20221027105023');
+INSERT INTO auth.schema_migrations VALUES ('20221114143122');
+INSERT INTO auth.schema_migrations VALUES ('20221114143410');
+INSERT INTO auth.schema_migrations VALUES ('20221125140132');
+INSERT INTO auth.schema_migrations VALUES ('20221208132122');
+INSERT INTO auth.schema_migrations VALUES ('20221215195500');
+INSERT INTO auth.schema_migrations VALUES ('20221215195800');
+INSERT INTO auth.schema_migrations VALUES ('20221215195900');
+INSERT INTO auth.schema_migrations VALUES ('20230116124310');
+INSERT INTO auth.schema_migrations VALUES ('20230116124412');
+INSERT INTO auth.schema_migrations VALUES ('20230131181311');
+INSERT INTO auth.schema_migrations VALUES ('20230322519590');
+INSERT INTO auth.schema_migrations VALUES ('20230402418590');
+INSERT INTO auth.schema_migrations VALUES ('20230411005111');
+INSERT INTO auth.schema_migrations VALUES ('20230508135423');
+INSERT INTO auth.schema_migrations VALUES ('20230523124323');
+INSERT INTO auth.schema_migrations VALUES ('20230818113222');
+INSERT INTO auth.schema_migrations VALUES ('20230914180801');
+INSERT INTO auth.schema_migrations VALUES ('20231027141322');
+INSERT INTO auth.schema_migrations VALUES ('20231114161723');
+INSERT INTO auth.schema_migrations VALUES ('20231117164230');
+INSERT INTO auth.schema_migrations VALUES ('20240115144230');
+INSERT INTO auth.schema_migrations VALUES ('20240214120130');
+INSERT INTO auth.schema_migrations VALUES ('20240306115329');
+INSERT INTO auth.schema_migrations VALUES ('20240314092811');
+INSERT INTO auth.schema_migrations VALUES ('20240427152123');
+INSERT INTO auth.schema_migrations VALUES ('20240612123726');
+INSERT INTO auth.schema_migrations VALUES ('20240729123726');
+INSERT INTO auth.schema_migrations VALUES ('20240802193726');
+INSERT INTO auth.schema_migrations VALUES ('20240806073726');
+INSERT INTO auth.schema_migrations VALUES ('20241009103726');
+INSERT INTO auth.schema_migrations VALUES ('20250717082212');
+INSERT INTO auth.schema_migrations VALUES ('20250731150234');
+INSERT INTO auth.schema_migrations VALUES ('20250804100000');
+INSERT INTO auth.schema_migrations VALUES ('20250901200500');
+INSERT INTO auth.schema_migrations VALUES ('20250903112500');
+INSERT INTO auth.schema_migrations VALUES ('20250904133000');
+INSERT INTO auth.schema_migrations VALUES ('20250925093508');
+INSERT INTO auth.schema_migrations VALUES ('20251007112900');
+INSERT INTO auth.schema_migrations VALUES ('20251104100000');
+INSERT INTO auth.schema_migrations VALUES ('20251111201300');
+
+
+--
+-- Data for Name: sso_domains; Type: TABLE DATA; Schema: auth; Owner: -
+--
+
+
+
+--
+-- Data for Name: app_logs; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: members; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.members VALUES ('565a372b-116f-4afe-b658-9e39dc57af2c', NULL, 'James', 'Anderson', 'Jimmy', '305-555-0101', 'james.anderson@example.com', '1001 Biscayne Blvd', 'Miami', 'FL', '33101', '1985-03-15', 'player', 3, '123456', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('d12b6458-7841-4b9a-9daf-bdfa3bfa6315', NULL, 'Maria', 'Garcia', NULL, '305-555-0102', 'maria.garcia@example.com', '1002 Ocean Drive', 'Miami', 'FL', '33139', '1990-07-22', 'player', 4, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('ee37dfae-0c9f-44a1-9064-9165537f0001', NULL, 'Robert', 'Martinez', 'Bobby', '305-555-0103', 'robert.martinez@example.com', '1003 Collins Ave', 'Miami Beach', 'FL', '33140', '1982-11-08', 'player', 5, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e0d50fa3-d062-4b4d-b039-c245f56f6565', NULL, 'Jennifer', 'Rodriguez', 'Jenny', '305-555-0104', 'jennifer.rodriguez@example.com', '1004 Washington Ave', 'Miami Beach', 'FL', '33139', '1995-02-14', 'player', 6, '234567', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('44605915-7e53-45e8-a39a-d8f93007a343', NULL, 'Michael', 'Hernandez', 'Mike', '305-555-0105', 'michael.hernandez@example.com', '1005 Alton Rd', 'Miami Beach', 'FL', '33139', '1988-09-30', 'player', 7, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('20cfb081-df76-4ecb-8100-c2f4ec21b359', NULL, 'Lisa', 'Lopez', NULL, '305-555-0106', 'lisa.lopez@example.com', '1006 Flagler St', 'Miami', 'FL', '33130', '1992-05-18', 'player', 8, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('206eb562-921d-4fbb-a171-315459fbd466', NULL, 'David', 'Gonzalez', 'Dave', '305-555-0107', 'david.gonzalez@example.com', '1007 Coral Way', 'Miami', 'FL', '33145', '1987-12-25', 'player', 9, '345678', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('3f8405ba-defa-4b09-a05a-9cc560c2d963', NULL, 'Sarah', 'Wilson', NULL, '305-555-0108', 'sarah.wilson@example.com', '1008 SW 8th St', 'Miami', 'FL', '33135', '1991-08-07', 'player', 10, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('79f18be4-0094-4695-a874-31fa87826646', NULL, 'Christopher', 'Perez', 'Chris', '305-555-0109', 'christopher.perez@example.com', '1009 NW 7th St', 'Miami', 'FL', '33136', '1984-04-20', 'player', 11, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('8c371ee4-2fbb-4e39-b8e3-10b4d9ed265c', NULL, 'Jessica', 'Sanchez', 'Jess', '305-555-0110', 'jessica.sanchez@example.com', '1010 Brickell Ave', 'Miami', 'FL', '33131', '1993-10-12', 'player', 12, '456789', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('5af3881d-0423-42fa-9a87-20d8aba17d4d', NULL, 'Daniel', 'Ramirez', 'Danny', '813-555-0201', 'daniel.ramirez@example.com', '2001 Tampa St', 'Tampa', 'FL', '33602', '1986-01-30', 'player', 13, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('9638af7a-6f81-4982-ac1d-bdcb83d146b3', NULL, 'Emily', 'Torres', NULL, '813-555-0202', 'emily.torres@example.com', '2002 Kennedy Blvd', 'Tampa', 'FL', '33602', '1994-06-15', 'player', 14, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('3080ce2f-5435-4eab-a7fe-e23691b27ab2', NULL, 'Matthew', 'Rivera', 'Matt', '813-555-0203', 'matthew.rivera@example.com', '2003 Bayshore Blvd', 'Tampa', 'FL', '33606', '1989-03-22', 'player', 15, '567890', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('757d3503-94d2-4739-8be4-65de20acf2a4', NULL, 'Joshua', 'Gomez', 'Josh', '813-555-0205', 'joshua.gomez@example.com', '2005 Hyde Park Ave', 'Tampa', 'FL', '33606', '1983-12-19', 'player', 17, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('1ea9efc3-1133-4d25-ba95-32e1fa692e60', NULL, 'Ashley', 'Reyes', 'Ash', '813-555-0206', 'ashley.reyes@example.com', '2006 Armenia Ave', 'Tampa', 'FL', '33607', '1990-07-04', 'player', 18, '678901', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('3e9d54d2-a19b-4b23-a065-ae6c83bf53c8', NULL, 'Andrew', 'Cruz', 'Andy', '813-555-0207', 'andrew.cruz@example.com', '2007 Dale Mabry Hwy', 'Tampa', 'FL', '33609', '1987-02-28', 'player', 19, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('109208f0-a4b7-4f38-8ee3-a0c6104dc451', NULL, 'Stephanie', 'Morales', 'Steph', '813-555-0208', 'stephanie.morales@example.com', '2008 Henderson Blvd', 'Tampa', 'FL', '33609', '1995-11-16', 'player', 20, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('9441f8e2-e40a-415a-b968-14f267a003ef', NULL, 'Ryan', 'Gutierrez', NULL, '813-555-0209', 'ryan.gutierrez@example.com', '2009 Cypress St', 'Tampa', 'FL', '33607', '1988-05-23', 'player', 21, '789012', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('12bd4d47-35e2-4959-aab0-d9a6f222b9bb', NULL, 'Nicole', 'Ortiz', 'Nikki', '813-555-0210', 'nicole.ortiz@example.com', '2010 Florida Ave', 'Tampa', 'FL', '33602', '1991-08-10', 'player', 22, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('08651003-0500-49a9-896c-a7b60a4299f0', NULL, 'Brandon', 'Jimenez', NULL, '407-555-0301', 'brandon.jimenez@example.com', '3001 Orange Ave', 'Orlando', 'FL', '32801', '1985-04-17', 'player', 23, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e8601c8c-d9b4-4db8-8865-21fba815e107', NULL, 'Melissa', 'Ruiz', 'Mel', '407-555-0302', 'melissa.ruiz@example.com', '3002 Church St', 'Orlando', 'FL', '32801', '1993-10-05', 'player', 24, '890123', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b726a9b2-c1cf-478b-9ffc-c71ab7973bc7', NULL, 'Jonathan', 'Diaz', 'Jon', '407-555-0303', 'jonathan.diaz@example.com', '3003 Colonial Dr', 'Orlando', 'FL', '32803', '1989-01-12', 'player', 25, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('16e25130-0afb-4233-80aa-1f86c1493bb3', NULL, 'Heather', 'Mendoza', NULL, '407-555-0304', 'heather.mendoza@example.com', '3004 Mills Ave', 'Orlando', 'FL', '32803', '1991-06-29', 'player', 26, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b4971e21-3d0c-4c52-b12c-dc6921a73352', NULL, 'Justin', 'Castro', NULL, '407-555-0305', 'justin.castro@example.com', '3005 Bumby Ave', 'Orlando', 'FL', '32803', '1986-09-14', 'player', 27, '901234', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('8a6b0a70-dfe4-4e2c-a672-8e96217d1c6a', NULL, 'Lauren', 'Vargas', NULL, '407-555-0306', 'lauren.vargas@example.com', '3006 Summerlin Ave', 'Orlando', 'FL', '32806', '1994-03-20', 'player', 28, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('973c8103-3fd9-45cd-b254-66f5ce737d3c', NULL, 'Kevin', 'Romero', NULL, '407-555-0307', 'kevin.romero@example.com', '3007 Curry Ford Rd', 'Orlando', 'FL', '32806', '1987-12-08', 'player', 29, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('990efe7e-c5c5-4527-add2-a691fb781996', NULL, 'Rachel', 'Medina', NULL, '407-555-0308', 'rachel.medina@example.com', '3008 Hoffner Ave', 'Orlando', 'FL', '32822', '1992-07-25', 'player', 30, '012345', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('f8cca4d4-d735-434f-b54f-3557dcf3df19', NULL, 'Tyler', 'Aguilar', NULL, '407-555-0309', 'tyler.aguilar@example.com', '3009 Sand Lake Rd', 'Orlando', 'FL', '32819', '1988-02-11', 'player', 31, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('7fc2dabb-f3e4-4d8d-a47b-c02e89c70b17', NULL, 'Amber', 'Moreno', NULL, '407-555-0310', 'amber.moreno@example.com', '3010 Conroy Rd', 'Orlando', 'FL', '32839', '1990-11-03', 'player', 32, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('ea958f8b-c3bb-4255-9c1d-0068f90f73b6', NULL, 'Michelle', 'Santos', NULL, '904-555-0402', 'michelle.santos@example.com', '4002 Main St', 'Jacksonville', 'FL', '32202', '1991-09-27', 'player', 34, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('eb5b9711-fe64-4194-9027-e3ad444820e7', NULL, 'Jacob', 'Navarro', 'Jake', '904-555-0403', 'jacob.navarro@example.com', '4003 Ocean Blvd', 'Jacksonville Beach', 'FL', '32250', '1987-01-14', 'player', 35, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('bdb72dcb-e6d5-4d85-b913-6697d53e08d1', NULL, 'Danielle', 'Campos', 'Dani', '904-555-0404', 'danielle.campos@example.com', '4004 Beach Blvd', 'Jacksonville Beach', 'FL', '32250', '1995-06-08', 'player', 36, '234560', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c4b0840f-f5cf-4356-941a-f68a8a404a48', NULL, 'Aaron', 'Delgado', NULL, '904-555-0405', 'aaron.delgado@example.com', '4005 Atlantic Blvd', 'Jacksonville', 'FL', '32225', '1989-10-22', 'player', 37, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('7ceb97e2-a4a4-468a-86f9-45a19c8be6a3', NULL, 'Nathan', 'Ortega', 'Nate', '904-555-0407', 'nathan.ortega@example.com', '4007 St Johns Ave', 'Jacksonville', 'FL', '32205', '1986-08-30', 'player', 39, '345670', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('48d8f705-3be8-4eb4-b2be-6b12fcc62d78', NULL, 'Samantha', 'Fuentes', 'Sam', '904-555-0408', 'samantha.fuentes@example.com', '4008 University Blvd', 'Jacksonville', 'FL', '32211', '1992-12-13', 'player', 40, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('06836cc7-82ef-4845-81bf-bbf13e69399d', NULL, 'Kyle', 'Valdez', NULL, '904-555-0409', 'kyle.valdez@example.com', '4009 Beach Blvd', 'Jacksonville', 'FL', '32207', '1988-04-26', 'player', 41, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('cde7ab4d-7696-4d2b-be49-2f3477487544', NULL, 'Christina', 'Salazar', 'Chris', '904-555-0410', 'christina.salazar@example.com', '4010 San Jose Blvd', 'Jacksonville', 'FL', '32217', '1990-07-19', 'player', 42, '456780', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c1416131-a046-4306-a448-d6b69120e502', NULL, 'Adam', 'Castillo', NULL, '954-555-0501', 'adam.castillo@example.com', '5001 Las Olas Blvd', 'Fort Lauderdale', 'FL', '33301', '1985-02-23', 'player', 43, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b40c0ee7-49bb-4336-8e6b-073dcd58e0b3', NULL, 'Kelly', 'Jimenez', NULL, '954-555-0502', 'kelly.jimenez@example.com', '5002 Sunrise Blvd', 'Fort Lauderdale', 'FL', '33304', '1991-08-15', 'player', 44, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('d3d25189-3e79-46c0-bf16-69fe50866052', NULL, 'Jason', 'Miranda', NULL, '954-555-0503', 'jason.miranda@example.com', '5003 Oakland Park Blvd', 'Fort Lauderdale', 'FL', '33306', '1987-11-28', 'player', 45, '567891', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('0cf4b3d9-108c-43aa-92a4-90961dc9e76b', '0e0f89e1-9e80-4ebb-ba38-79d728de8cae', 'Ed', 'Poplet', 'Ed P', '8059072636', 'shodbyed@gmail.com', '6101 Twilight Dr', 'Zephyrhills', 'FL', '33540', '1968-04-08', 'league_operator', 2, NULL, NULL, '2025-10-11 23:56:07.175394+00', '2025-10-24 15:34:25.184686+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b08effce-2f04-4901-96bc-14aaa67b6cee', NULL, 'Eric', 'Ramos', 'Eric R', '904-555-0401', 'eric.ramos@example.com', '4001 Bay St', 'Jacksonville', 'FL', '32202', '1984-05-19', 'player', 33, '123450', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-26 23:33:20.584652+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('85b5e0e5-d609-4b84-abd6-89cc77dc0046', NULL, 'Brittany', 'Guerrero', 'Brit', '904-555-0406', 'brittany.guerrero@example.com', '4006 Southside Blvd', 'Jacksonville', 'FL', '32256', '1993-03-16', 'player', 38, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-26 23:34:02.032906+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('274fcc42-f20e-4730-afec-dab1bbcd64ba', NULL, 'Amanda', 'Flores', 'Mandy', '813-555-0204', 'amanda.flores@example.com', '2004 Davis Islands', 'Tampa', 'FL', '33606', '1992-09-08', 'player', 16, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-29 03:11:22.650241+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e3e4f5b7-02a8-469c-8b35-bcbff9b48882', NULL, 'Megan', 'Rojas', NULL, '954-555-0504', 'megan.rojas@example.com', '5004 Commercial Blvd', 'Fort Lauderdale', 'FL', '33308', '1994-05-07', 'player', 46, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('4af09585-1d44-4aaf-a831-4cfafc930932', NULL, 'Brian', 'Acosta', NULL, '954-555-0505', 'brian.acosta@example.com', '5005 Federal Hwy', 'Fort Lauderdale', 'FL', '33308', '1989-09-19', 'player', 47, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c1767c77-eb66-401c-b5d6-cc45c2eac40b', NULL, 'Laura', 'Contreras', NULL, '954-555-0506', 'laura.contreras@example.com', '5006 Sample Rd', 'Pompano Beach', 'FL', '33064', '1992-01-31', 'player', 48, '678902', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('7e5b9765-7fcf-4307-b133-2d2639083abe', NULL, 'Angela', 'Herrera', 'Angie', '954-555-0508', 'angela.herrera@example.com', '5008 Copans Rd', 'Pompano Beach', 'FL', '33064', '1993-10-24', 'player', 50, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('39236b4b-3bdc-4d7f-aa88-971d8fe9c61c', NULL, 'Timothy', 'Dominguez', 'Tim', '954-555-0509', 'timothy.dominguez@example.com', '5009 McNab Rd', 'Pompano Beach', 'FL', '33069', '1988-03-08', 'player', 51, '789013', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('53923f93-55e3-4e8b-80c5-d7b47a039066', NULL, 'Rebecca', 'Estrada', 'Becca', '954-555-0510', 'rebecca.estrada@example.com', '5010 Sample Rd', 'Coral Springs', 'FL', '33065', '1991-07-16', 'player', 52, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('73b5b98a-643c-48f7-9e54-dbdbd7037a81', NULL, 'Jeremy', 'Figueroa', NULL, '727-555-0601', 'jeremy.figueroa@example.com', '6001 Central Ave', 'St. Petersburg', 'FL', '33701', '1984-09-21', 'player', 53, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c7563372-c485-4736-8447-5b51dbab4d15', NULL, 'Crystal', 'Cardenas', NULL, '727-555-0602', 'crystal.cardenas@example.com', '6002 4th St N', 'St. Petersburg', 'FL', '33701', '1992-02-14', 'player', 54, '890124', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b1af65f6-95f9-485b-841f-7b8efcf38b27', NULL, 'Patrick', 'Vega', 'Pat', '727-555-0603', 'patrick.vega@example.com', '6003 Beach Dr', 'St. Petersburg', 'FL', '33701', '1988-06-29', 'player', 55, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b4356239-543f-4619-b4a0-39c251087ff8', NULL, 'Kimberly', 'Leon', 'Kim', '727-555-0604', 'kimberly.leon@example.com', '6004 1st Ave N', 'St. Petersburg', 'FL', '33701', '1995-11-10', 'player', 56, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('93baf63d-9152-4388-84cd-de29205e2b3f', NULL, 'Sean', 'Soto', NULL, '727-555-0605', 'sean.soto@example.com', '6005 Tyrone Blvd', 'St. Petersburg', 'FL', '33710', '1987-04-03', 'player', 57, '901235', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('11bbeaff-b982-4007-a3d5-d7f33a2ad7cf', NULL, 'Tiffany', 'Cortez', 'Tiff', '727-555-0606', 'tiffany.cortez@example.com', '6006 66th St N', 'St. Petersburg', 'FL', '33709', '1993-08-18', 'player', 58, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('f1ee127e-7e64-4a99-a005-c5dd255037ab', NULL, 'Gregory', 'Pacheco', 'Greg', '727-555-0607', 'gregory.pacheco@example.com', '6007 38th Ave N', 'St. Petersburg', 'FL', '33710', '1986-12-26', 'player', 59, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c11dab77-aa0a-421c-b879-586934302382', NULL, 'Vanessa', 'Calderon', NULL, '727-555-0608', 'vanessa.calderon@example.com', '6008 Park Blvd', 'Pinellas Park', 'FL', '33781', '1991-05-09', 'player', 60, '012346', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', NULL, 'Peter', 'Alvarado', NULL, '727-555-0609', 'peter.alvarado@example.com', '6009 49th St N', 'St. Petersburg', 'FL', '33709', '1989-09-24', 'player', 61, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e02f4591-1e6f-4491-80c5-398926632018', NULL, 'Monica', 'Galindo', NULL, '727-555-0610', 'monica.galindo@example.com', '6010 Ulmerton Rd', 'Largo', 'FL', '33771', '1994-01-15', 'player', 62, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e070de2f-b414-4393-934e-6c72c3e2c9ae', NULL, 'Bradley', 'Ibarra', 'Brad', '850-555-0701', 'bradley.ibarra@example.com', '7001 Tennessee St', 'Tallahassee', 'FL', '32304', '1985-07-28', 'player', 63, '123451', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('840f5618-9565-491a-9682-8136ae54c01f', NULL, 'Catherine', 'Velasquez', 'Cathy', '850-555-0702', 'catherine.velasquez@example.com', '7002 Apalachee Pkwy', 'Tallahassee', 'FL', '32301', '1992-11-06', 'player', 64, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('0fd191e2-3634-432d-85ff-67e5dcf45d6b', NULL, 'Kenneth', 'Maldonado', 'Ken', '850-555-0703', 'kenneth.maldonado@example.com', '7003 Monroe St', 'Tallahassee', 'FL', '32303', '1988-03-19', 'player', 65, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('882b1e00-4bd2-4a5e-b147-80f455fe5569', NULL, 'Diana', 'Espinoza', NULL, '850-555-0704', 'diana.espinoza@example.com', '7004 Capital Cir', 'Tallahassee', 'FL', '32308', '1993-07-31', 'player', 66, '234561', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('78deff4b-f33f-4ceb-9cec-85a5a2e6424c', NULL, 'Richard', 'Mejia', 'Rick', '850-555-0705', 'richard.mejia@example.com', '7005 Thomasville Rd', 'Tallahassee', 'FL', '32308', '1987-10-13', 'player', 67, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('a0edba32-3713-41fe-8743-6d241122b97c', NULL, 'Alexis', 'Orozco', NULL, '850-555-0706', 'alexis.orozco@example.com', '7006 Mahan Dr', 'Tallahassee', 'FL', '32308', '1991-02-25', 'player', 68, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('67924a73-dd72-462c-aeee-6f1b342200f2', NULL, 'Dennis', 'Sandoval', NULL, '850-555-0707', 'dennis.sandoval@example.com', '7007 Pensacola St', 'Tallahassee', 'FL', '32304', '1986-06-08', 'player', 69, '345671', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('cce259b9-f47a-4403-a761-e6795868ffdb', NULL, 'Sharon', 'Ochoa', NULL, '850-555-0708', 'sharon.ochoa@example.com', '7008 Magnolia Dr', 'Tallahassee', 'FL', '32301', '1994-10-20', 'player', 70, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('7e0d82ac-358e-45ae-8e34-d170f818e5e2', NULL, 'Jerry', 'Cervantes', NULL, '850-555-0709', 'jerry.cervantes@example.com', '7009 Lafayette St', 'Tallahassee', 'FL', '32301', '1989-01-02', 'player', 71, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('2ed591a5-1ee5-4827-b535-247828dd29ef', NULL, 'Cynthia', 'Cabrera', 'Cindy', '850-555-0710', 'cynthia.cabrera@example.com', '7010 Gaines St', 'Tallahassee', 'FL', '32304', '1992-05-17', 'player', 72, '456781', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('bc7173c1-c8ad-4421-8b9f-ccbfe53cc861', NULL, 'Raymond', 'Nunez', 'Ray', '850-555-0801', 'raymond.nunez@example.com', '8001 Palafox St', 'Pensacola', 'FL', '32501', '1984-08-22', 'player', 73, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c0dd883e-4108-4176-9090-3cc011fa629b', NULL, 'Pamela', 'Rios', 'Pam', '850-555-0802', 'pamela.rios@example.com', '8002 Navy Blvd', 'Pensacola', 'FL', '32507', '1990-12-04', 'player', 74, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('685bfa8f-d94a-4876-9e7d-f4c46f30c2eb', NULL, 'Harold', 'Pena', NULL, '850-555-0803', 'harold.pena@example.com', '8003 Gulf Beach Hwy', 'Pensacola', 'FL', '32507', '1987-04-16', 'player', 75, '567892', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('39421dd3-2151-4a6e-8421-18606609c468', NULL, 'Julie', 'Montoya', NULL, '850-555-0804', 'julie.montoya@example.com', '8004 Davis Hwy', 'Pensacola', 'FL', '32514', '1993-08-28', 'player', 76, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('930e9ab8-b732-4af3-b594-8d4b29517f9b', NULL, 'Carl', 'Blanco', NULL, '850-555-0805', 'carl.blanco@example.com', '8005 9th Ave', 'Pensacola', 'FL', '32514', '1988-11-09', 'player', 77, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('365e4362-0cb2-4032-819b-8db514f6fb1a', NULL, 'Frances', 'Rubio', NULL, '850-555-0806', 'frances.rubio@example.com', '8006 Perdido Key Dr', 'Pensacola', 'FL', '32507', '1991-03-23', 'player', 78, '678903', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('d013c4b9-6698-4450-8cae-6ea96f7b33a4', NULL, 'Roy', 'Marquez', NULL, '850-555-0807', 'roy.marquez@example.com', '8007 Brent Ln', 'Pensacola', 'FL', '32503', '1985-07-06', 'player', 79, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('db60e74b-0e1b-4036-bec8-03064e8c6cca', NULL, 'Martha', 'Zavala', NULL, '850-555-0808', 'martha.zavala@example.com', '8008 Summit Blvd', 'Pensacola', 'FL', '32505', '1992-10-18', 'player', 80, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('89cbf264-b1ad-4e84-975e-018a36cc06f9', NULL, 'Willie', 'Osorio', NULL, '850-555-0809', 'willie.osorio@example.com', '8009 Mobile Hwy', 'Pensacola', 'FL', '32506', '1989-02-01', 'player', 81, '789014', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('fb8e05ac-017c-40f3-ad7d-033f71e6806a', NULL, 'Virginia', 'Robles', 'Ginny', '850-555-0810', 'virginia.robles@example.com', '8010 Creighton Rd', 'Pensacola', 'FL', '32504', '1994-06-14', 'player', 82, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('6286849f-b190-4911-80eb-4a7597550d29', NULL, 'Albert', 'Molina', 'Al', '727-555-0901', 'albert.molina@example.com', '9001 Gulf to Bay Blvd', 'Clearwater', 'FL', '33759', '1986-09-11', 'player', 83, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b1c412c9-3613-4bd1-a4fe-713d6bf27c21', NULL, 'Joyce', 'Valencia', NULL, '727-555-0902', 'joyce.valencia@example.com', '9002 Belleair Rd', 'Clearwater', 'FL', '33756', '1991-01-24', 'player', 84, '890125', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('b8922161-7e97-4210-b37b-1d5c10a743eb', NULL, 'Joe', 'Carrillo', NULL, '727-555-0903', 'joe.carrillo@example.com', '9003 Drew St', 'Clearwater', 'FL', '33755', '1988-05-07', 'player', 85, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('6d7ce55a-5477-4b2e-8a44-dd2de5e5b75b', NULL, 'Kathryn', 'Rosales', 'Kate', '727-555-0904', 'kathryn.rosales@example.com', '9004 Sunset Point Rd', 'Clearwater', 'FL', '33759', '1993-09-19', 'player', 86, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('cea7f9f2-42af-46d6-8248-e4fbf601b3c1', NULL, 'Frank', 'Vasquez', NULL, '727-555-0905', 'frank.vasquez@example.com', '9005 Court St', 'Clearwater', 'FL', '33756', '1987-12-31', 'player', 87, '901236', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('0c02ef5d-3692-4fe8-ac28-99c0fb3a0b16', NULL, 'Judith', 'Carmona', 'Judy', '727-555-0906', 'judith.carmona@example.com', '9006 Cleveland St', 'Clearwater', 'FL', '33755', '1992-04-13', 'player', 88, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', NULL, 'Douglas', 'Cano', 'Doug', '727-555-0907', 'douglas.cano@example.com', '9007 Keene Rd', 'Clearwater', 'FL', '33755', '1986-08-26', 'player', 89, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('6cc52642-7166-4c36-8583-1639a27abc42', NULL, 'Evelyn', 'Barrera', NULL, '727-555-0908', 'evelyn.barrera@example.com', '9008 Missouri Ave', 'Clearwater', 'FL', '33756', '1994-12-08', 'player', 90, '012347', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('08411f8f-58ed-4304-891d-3eb9623825e2', NULL, 'Henry', 'Esquivel', 'Hank', '727-555-0909', 'henry.esquivel@example.com', '9009 Highland Ave', 'Clearwater', 'FL', '33755', '1989-03-21', 'player', 91, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('52b21898-172c-4822-8e28-228e31022140', NULL, 'Teresa', 'Villarreal', NULL, '727-555-0910', 'teresa.villarreal@example.com', '9010 Bayshore Blvd', 'Clearwater', 'FL', '33767', '1991-07-03', 'player', 92, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('3c0023bc-c912-455e-8e53-4a0ac6cdfe3b', NULL, 'Walter', 'Zamora', 'Walt', '941-555-1001', 'walter.zamora@example.com', '10001 Main St', 'Sarasota', 'FL', '34236', '1985-10-15', 'player', 93, '123452', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('1875d94f-8a0e-4bfb-8db0-d2d138210164', NULL, 'Ann', 'Montes', NULL, '941-555-1002', 'ann.montes@example.com', '10002 Tamiami Trail', 'Sarasota', 'FL', '34231', '1992-02-27', 'player', 94, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('622aa9b6-8c63-47a4-8f5a-bab20e9c0475', NULL, 'Ralph', 'Duarte', NULL, '941-555-1003', 'ralph.duarte@example.com', '10003 Fruitville Rd', 'Sarasota', 'FL', '34232', '1988-06-10', 'player', 95, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('30635740-ebf2-4d71-b5eb-40ab02487983', NULL, 'Janice', 'Quiroz', 'Jan', '941-555-1004', 'janice.quiroz@example.com', '10004 Bee Ridge Rd', 'Sarasota', 'FL', '34233', '1993-10-22', 'player', 96, '234562', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('2bbdedcc-0d8f-4705-b455-abe097cbc06a', NULL, 'Roger', 'Barajas', NULL, '941-555-1005', 'roger.barajas@example.com', '10005 Clark Rd', 'Sarasota', 'FL', '34233', '1987-01-04', 'player', 97, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('8a6f2065-b7ca-4f34-ad92-02aa0cfc0733', NULL, 'Marie', 'Velazquez', NULL, '941-555-1006', 'marie.velazquez@example.com', '10006 Stickney Point Rd', 'Sarasota', 'FL', '34231', '1991-05-18', 'player', 98, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('926c4fda-8206-4ebd-b5c2-850701465090', NULL, 'Jack', 'Camacho', NULL, '941-555-1007', 'jack.camacho@example.com', '10007 Siesta Dr', 'Sarasota', 'FL', '34242', '1986-09-30', 'player', 99, '345672', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', NULL, 'Diane', 'Bautista', NULL, '941-555-1008', 'diane.bautista@example.com', '10008 Gulf Gate Dr', 'Sarasota', 'FL', '34231', '1994-01-11', 'player', 100, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('41321be8-dbb8-472c-b785-4f6a21939094', NULL, 'Arthur', 'Avila', 'Art', '941-555-1009', 'arthur.avila@example.com', '10009 Beneva Rd', 'Sarasota', 'FL', '34238', '1989-05-24', 'player', 101, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('26736277-b5aa-4012-b41d-cc0ada994b2f', NULL, 'Joan', 'Corona', NULL, '941-555-1010', 'joan.corona@example.com', '10010 McIntosh Rd', 'Sarasota', 'FL', '34232', '1992-09-06', 'player', 102, '456782', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('810c8a7d-42f1-4b3d-95c3-96eef8b53942', NULL, 'Eugene', 'Cordova', 'Gene', '239-555-1101', 'eugene.cordova@example.com', '11001 Del Prado Blvd', 'Cape Coral', 'FL', '33909', '1984-11-17', 'player', 103, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('720c6214-6fcc-4813-81f0-435c7249faa6', NULL, 'Cheryl', 'Escobar', NULL, '239-555-1102', 'cheryl.escobar@example.com', '11002 Santa Barbara Blvd', 'Cape Coral', 'FL', '33991', '1990-03-30', 'player', 104, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('015d5499-9188-4fc0-a380-0cd2037cbed6', NULL, 'Russell', 'Munoz', 'Russ', '239-555-1103', 'russell.munoz@example.com', '11003 Pine Island Rd', 'Cape Coral', 'FL', '33909', '1987-07-12', 'player', 105, '567893', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e0936da5-3bd4-428c-a754-3d9da9ac2fd5', NULL, 'Carolyn', 'Lara', NULL, '239-555-1104', 'carolyn.lara@example.com', '11004 Cape Coral Pkwy', 'Cape Coral', 'FL', '33904', '1993-11-24', 'player', 106, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('eec16e13-ed8d-40f1-988e-cb6f052420a6', NULL, 'Philip', 'Calderon', 'Phil', '239-555-1105', 'philip.calderon@example.com', '11005 Veterans Pkwy', 'Cape Coral', 'FL', '33914', '1988-02-06', 'player', 107, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('68a32ee5-5dbf-4959-b340-9a0b556d279d', NULL, 'Janet', 'Paz', NULL, '239-555-1106', 'janet.paz@example.com', '11006 Chiquita Blvd', 'Cape Coral', 'FL', '33993', '1991-06-19', 'player', 108, '678904', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('eb1f121c-15e5-439c-8794-dd47daf66a42', NULL, 'Billy', 'Gil', NULL, '239-555-1107', 'billy.gil@example.com', '11007 Skyline Blvd', 'Cape Coral', 'FL', '33914', '1985-10-01', 'player', 109, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('d7ce6a08-ec85-423c-97ff-8278ff674498', NULL, 'Betty', 'Tovar', NULL, '239-555-1108', 'betty.tovar@example.com', '11008 Hancock Bridge Pkwy', 'Cape Coral', 'FL', '33990', '1992-01-13', 'player', 110, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('51b6811e-8a41-4929-83a6-7af7c2a824e8', NULL, 'Bobby', 'Delacruz', NULL, '239-555-1109', 'bobby.delacruz@example.com', '11009 Embers Pkwy', 'Cape Coral', 'FL', '33993', '1989-05-26', 'player', 111, '789015', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('29cd4a82-e9e8-47f2-aa14-f27d72dac7c8', NULL, 'Gloria', 'Mata', NULL, '239-555-1110', 'gloria.mata@example.com', '11010 Nicholas Pkwy', 'Cape Coral', 'FL', '33990', '1994-09-08', 'player', 112, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('42380b44-5eab-4d0c-8fea-fa4180b1297c', NULL, 'Lawrence', 'Fernandez', 'Larry', '772-555-1201', 'lawrence.fernandez@example.com', '12001 US Highway 1', 'Port St. Lucie', 'FL', '34952', '1986-12-20', 'player', 113, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('94dce91b-8023-456a-8af0-37f2e871b64d', NULL, 'Louis', 'Trujillo', 'Lou', '772-555-1203', 'louis.trujillo@example.com', '12003 SE Walton Rd', 'Port St. Lucie', 'FL', '34952', '1988-08-15', 'player', 115, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('8b066934-417a-4a29-bbea-31048d1110b4', NULL, 'Marilyn', 'Rosario', NULL, '772-555-1204', 'marilyn.rosario@example.com', '12004 SW Darwin Blvd', 'Port St. Lucie', 'FL', '34987', '1993-12-27', 'player', 116, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('1f228080-e156-46fe-82ca-9de1d17be90f', NULL, 'Gerald', 'Quintero', NULL, '772-555-1205', 'gerald.quintero@example.com', '12005 Gatlin Blvd', 'Port St. Lucie', 'FL', '34953', '1987-03-10', 'player', 117, '901237', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('1f8caa27-c9e3-4987-a062-2b7ff95f85dc', NULL, 'Norma', 'Elizondo', NULL, '772-555-1206', 'norma.elizondo@example.com', '12006 SW Cashmere Blvd', 'Port St. Lucie', 'FL', '34987', '1992-07-23', 'player', 118, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('99f1ad8e-2630-4fdd-92c2-0a54dda268c9', NULL, 'Keith', 'Bustamante', NULL, '772-555-1207', 'keith.bustamante@example.com', '12007 SW California Blvd', 'Port St. Lucie', 'FL', '34987', '1986-11-05', 'player', 119, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('31c5d946-3729-4b0b-a2ac-b2f4e8699cc9', NULL, 'Alice', 'Olvera', NULL, '772-555-1208', 'alice.olvera@example.com', '12008 SW Bayshore Blvd', 'Port St. Lucie', 'FL', '34987', '1994-03-18', 'player', 120, '012348', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('6f31eec3-a4fe-4a6e-a977-c3347b907f6a', NULL, 'Craig', 'Arellano', NULL, '772-555-1209', 'craig.arellano@example.com', '12009 SW Becker Rd', 'Port St. Lucie', 'FL', '34987', '1989-06-30', 'player', 121, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('3282d6a2-4c5b-4a3e-98db-855bd36e2394', NULL, 'Debra', 'Guillen', 'Deb', '772-555-1210', 'debra.guillen@example.com', '12010 SW Jennings Ave', 'Port St. Lucie', 'FL', '34987', '1991-10-12', 'player', 122, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('81562b65-51ef-4f66-96d0-13296e8b45ba', NULL, 'Wayne', 'Solis', NULL, '305-555-1301', 'wayne.solis@example.com', '13001 W 49th St', 'Hialeah', 'FL', '33012', '1985-01-25', 'player', 123, '123453', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('c90f8d2a-1752-4593-9ebc-38fb5567cef7', NULL, 'Theresa', 'Lugo', 'Terry', '305-555-1302', 'theresa.lugo@example.com', '13002 Palm Ave', 'Hialeah', 'FL', '33010', '1992-05-08', 'player', 124, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('4995d3dd-1f7a-4388-87ea-164048106fc8', NULL, 'Randy', 'Navarro', NULL, '305-555-1303', 'randy.navarro@example.com', '13003 E 4th Ave', 'Hialeah', 'FL', '33013', '1988-09-20', 'player', 125, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('82a365c2-723c-44c5-a469-a308fc953b4f', NULL, 'Tammy', 'Cisneros', NULL, '305-555-1304', 'tammy.cisneros@example.com', '13004 NW 79th St', 'Hialeah', 'FL', '33016', '1993-01-01', 'player', 126, '234563', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('76460e60-8007-40e1-b47a-c7b9a9c0cfd6', NULL, 'Howard', 'Nieves', NULL, '305-555-1305', 'howard.nieves@example.com', '13005 W 84th St', 'Hialeah', 'FL', '33014', '1987-05-15', 'player', 127, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('f6977a56-5b99-4998-9711-b66a85cf6d57', NULL, 'Shirley', 'Galvan', NULL, '305-555-1306', 'shirley.galvan@example.com', '13006 E 8th Ave', 'Hialeah', 'FL', '33013', '1991-09-27', 'player', 128, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('92984477-9349-4852-a88d-257b81abecb9', NULL, 'Larry', 'Andrade', NULL, '305-555-1307', 'larry.andrade@example.com', '13007 W 20th Ave', 'Hialeah', 'FL', '33010', '1986-01-09', 'player', 129, '345673', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('11289be6-357d-4f01-a322-a831c35b7073', NULL, 'Brenda', 'Jaramillo', NULL, '305-555-1308', 'brenda.jaramillo@example.com', '13008 NW 103rd St', 'Hialeah', 'FL', '33018', '1994-05-22', 'player', 130, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('ea09e715-dd11-4b6d-b9a7-9c4ee83b7d83', NULL, 'Eugene', 'Collazo', 'Gene', '305-555-1309', 'eugene.collazo@example.com', '13009 SE 3rd Ct', 'Hialeah', 'FL', '33010', '1989-08-03', 'player', 131, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('ecc78b30-4587-44c3-a829-e3f65c2ebd71', NULL, 'Katherine', 'Lucero', 'Kathy', '305-555-1310', 'katherine.lucero@example.com', '13010 W 12th Ave', 'Hialeah', 'FL', '33012', '1992-12-16', 'player', 132, '456783', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-12 13:14:52.00667+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', '575dead2-d2af-4a44-81ee-92c63ea38219', 'Captiana', 'One', NULL, '5551234566', 'edpoplet+captain1@gmail.com', '1234 Dictator St', 'Capopla', 'FL', '33553', '1944-02-04', 'player', 133, NULL, NULL, '2025-10-12 19:05:30.731019+00', '2025-10-12 19:05:30.731019+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('5787f016-315c-4faf-9c65-615987eff0fa', NULL, 'Doris', 'Alonso', 'Doris A.', '772-555-1202', 'doris.alonso@example.com', '12002 SW Port St Lucie Blvd', 'Port St. Lucie', 'FL', '34953', '1991-04-02', 'player', 114, '890126', NULL, '2025-10-12 13:14:52.00667+00', '2025-10-29 03:11:59.842125+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'c58ca73a-0d2b-4d3c-b6b8-79b1e41f25ec', 'Captainavich', 'Three', NULL, '3343344525', 'edpoplet+captain3@gmail.com', '5234 Bullcrapolis Blvd', 'Manure', 'FL', '33553', '1991-12-12', 'player', 135, NULL, NULL, '2025-10-12 19:13:45.443548+00', '2025-10-25 16:16:09.284962+00', true, NULL, NULL);
+INSERT INTO public.members VALUES ('f0f2eab1-34f4-417c-864c-5b62b21c6185', 'fb984ad9-216a-4d71-a8fd-e7912b79b5fc', 'Captainzo', 'Two', 'Captain2', '5553533663', 'edpoplet+captain2@gmail.com', '4525 Horktown Dr', 'Cabbaba', 'FL', '33533', '1988-02-20', 'player', 134, NULL, NULL, '2025-10-12 19:10:34.562776+00', '2025-10-26 23:35:02.277721+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('e994f096-9781-4aef-8eea-dac7077f77d2', NULL, 'Scott', 'Luna', 'Scotty', '954-555-0507', 'scott.luna@example.com', '5007 Atlantic Blvd', 'Pompano Beach', 'FL', '33062', '1986-06-12', 'player', 49, NULL, NULL, '2025-10-12 13:14:52.00667+00', '2025-10-29 03:12:28.675651+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('00000000-0000-0000-0000-000000000001', NULL, 'Home', 'Substitute', 'Sub (Home)', '000-000-0001', 'sub.home@placeholder.local', 'N/A', 'N/A', 'NA', '00000', '1900-01-01', 'player', 137, NULL, NULL, '2025-10-30 15:11:37.214368+00', '2025-10-30 15:11:37.214368+00', false, NULL, NULL);
+INSERT INTO public.members VALUES ('00000000-0000-0000-0000-000000000002', NULL, 'Away', 'Substitute', 'Sub (Away)', '000-000-0002', 'sub.away@placeholder.local', 'N/A', 'N/A', 'NA', '00000', '1900-01-01', 'player', 138, NULL, NULL, '2025-10-30 15:11:37.214368+00', '2025-10-30 15:11:37.214368+00', false, NULL, NULL);
+
+
+--
+-- Data for Name: blocked_users; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: championship_date_options; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.championship_date_options VALUES ('fc90e799-a75e-435a-84cc-4e5c000d5009', 'BCA', 2025, '2026-02-18', '2026-02-28', 1, false, '2025-11-02 18:25:20.89304+00', '2025-11-02 18:25:20.89304+00');
+
+
+--
+-- Data for Name: conversations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.conversations VALUES ('2559307f-cbc2-4d2d-94a2-860e768e4c90', NULL, '2025-10-20 13:00:06.188524+00', '2025-10-20 13:04:16.999705+00', '2025-10-20 13:04:16.999705+00', 'from catiana one to captainzo 2', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('8e80d319-edb5-441b-a684-1f6289484b57', NULL, '2025-10-20 12:59:38.238112+00', '2025-10-20 13:05:11.057299+00', '2025-10-20 13:05:11.057299+00', 'from captaiana one to capavich 3', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('3110f6a5-2dfc-447d-9464-514254bc27f6', NULL, '2025-10-20 13:01:59.635545+00', '2025-10-20 13:06:05.450524+00', '2025-10-20 13:06:05.450524+00', 'from captainzo 2 to ed', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('39f8407a-2a91-4c7c-b0c2-1b09969ea243', NULL, '2025-10-20 13:06:22.05953+00', '2025-10-20 13:06:40.25584+00', '2025-10-20 13:06:40.25584+00', 'from captainzo 2 to captainvich 3', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('e21331bb-12a0-48b0-9328-1989e14d440b', NULL, '2025-10-20 12:45:23.25841+00', '2025-10-21 02:50:01.562577+00', '2025-10-21 02:50:01.562577+00', 'fuck you', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('217da9e8-dca6-4278-a36d-c6f38f2a5280', 'cool dudes', '2025-10-21 02:50:29.372372+00', '2025-10-21 02:50:29.372372+00', NULL, NULL, false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('47302ea6-05ce-4cd1-938c-9297c7ca7156', NULL, '2025-10-21 17:47:22.99956+00', '2025-10-21 17:47:22.99956+00', NULL, NULL, false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'Fall 2025 Monday 8-Ball Zephyrhills Announcements', '2025-10-23 16:30:57.718452+00', '2025-10-23 20:05:21.055005+00', '2025-10-23 20:05:21.055005+00', 'hello', true, 'announcements', 'season', '60592886-7982-4f8f-ab97-115e28d3d415');
+INSERT INTO public.conversations VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'Ed''s Florida Leagues Announcements', '2025-10-23 21:31:52.985541+00', '2025-10-23 21:31:53.019381+00', '2025-10-23 21:31:53.019381+00', 'asdff', true, 'announcements', 'organization', '179e8f3d-9856-47bc-98e6-2b22e809f3f2');
+INSERT INTO public.conversations VALUES ('6d139f69-f4f2-4447-82c9-2e9b2664ef30', 'Captains', '2025-10-20 19:26:34.596693+00', '2025-10-24 15:08:30.210076+00', '2025-10-24 15:08:30.210076+00', 'fuck you', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('e7db6713-ed66-4d81-9e09-7c899f791779', NULL, '2025-10-25 16:13:54.726055+00', '2025-10-26 17:14:26.037229+00', '2025-10-26 17:14:26.037229+00', 'so this is working', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', NULL, '2025-10-20 12:52:05.840739+00', '2025-11-04 05:45:36.177822+00', '2025-11-04 05:45:36.141+00', 'hello', false, NULL, 'none', NULL);
+INSERT INTO public.conversations VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', 'Fall 2025 Tuesday 8-Ball West Announcements', '2025-11-04 12:42:46.022859+00', '2025-11-04 12:42:46.075712+00', '2025-11-04 12:42:46.075712+00', 'this is a message!', true, 'announcements', 'season', '38bb1e17-0981-47a2-858d-b9c99ed41051');
+
+
+--
+-- Data for Name: conversation_participants; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('6d139f69-f4f2-4447-82c9-2e9b2664ef30', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-10-24 19:45:24.639+00', 0, '2025-10-20 19:26:34.596693+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('47302ea6-05ce-4cd1-938c-9297c7ca7156', 'c90f8d2a-1752-4593-9ebc-38fb5567cef7', 'participant', false, true, NULL, 0, '2025-10-21 17:47:22.99956+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('47302ea6-05ce-4cd1-938c-9297c7ca7156', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-21 17:47:23.127+00', 0, '2025-10-21 17:47:22.99956+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-10-23 22:14:49.231+00', 0, '2025-10-20 12:45:23.25841+00', '2025-10-23 22:15:06.582+00');
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 16:15:56.367+00', 0, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('6d139f69-f4f2-4447-82c9-2e9b2664ef30', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 3, '2025-10-20 19:26:34.596693+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('6d139f69-f4f2-4447-82c9-2e9b2664ef30', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 3, '2025-10-20 19:26:34.596693+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('39f8407a-2a91-4c7c-b0c2-1b09969ea243', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 17:44:22.44+00', 0, '2025-10-20 13:06:22.05953+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('e21331bb-12a0-48b0-9328-1989e14d440b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 16:16:17.667+00', 0, '2025-10-20 12:45:23.25841+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('6d139f69-f4f2-4447-82c9-2e9b2664ef30', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 16:16:22.499+00', 0, '2025-10-20 19:26:34.596693+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('8e80d319-edb5-441b-a684-1f6289484b57', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-20 19:15:50.653+00', 0, '2025-10-20 12:59:38.238112+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('8e80d319-edb5-441b-a684-1f6289484b57', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 0, '2025-10-20 12:59:38.238112+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('2559307f-cbc2-4d2d-94a2-860e768e4c90', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 0, '2025-10-20 13:00:06.188524+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('2559307f-cbc2-4d2d-94a2-860e768e4c90', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 0, '2025-10-20 13:00:06.188524+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('3110f6a5-2dfc-447d-9464-514254bc27f6', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 0, '2025-10-20 13:01:59.635545+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('39f8407a-2a91-4c7c-b0c2-1b09969ea243', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 0, '2025-10-20 13:06:22.05953+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('e7db6713-ed66-4d81-9e09-7c899f791779', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 17:44:15.317+00', 1, '2025-10-25 16:13:54.726055+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('3110f6a5-2dfc-447d-9464-514254bc27f6', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-10-24 19:39:40.198+00', 0, '2025-10-20 13:01:59.635545+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('e7db6713-ed66-4d81-9e09-7c899f791779', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-11-03 13:45:09.904+00', 0, '2025-10-25 16:13:54.726055+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '92984477-9349-4852-a88d-257b81abecb9', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '4af09585-1d44-4aaf-a831-4cfafc930932', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('217da9e8-dca6-4278-a36d-c6f38f2a5280', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-10-24 19:40:25.11+00', 0, '2025-10-21 02:50:29.372372+00', '2025-10-24 19:42:13.454+00');
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '5787f016-315c-4faf-9c65-615987eff0fa', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', 'c11dab77-aa0a-421c-b879-586934302382', 'participant', false, true, NULL, 1, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'f8cca4d4-d735-434f-b54f-3557dcf3df19', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '6f31eec3-a4fe-4a6e-a977-c3347b907f6a', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('217da9e8-dca6-4278-a36d-c6f38f2a5280', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 0, '2025-10-21 02:50:29.372372+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('217da9e8-dca6-4278-a36d-c6f38f2a5280', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 0, '2025-10-21 02:50:29.372372+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('217da9e8-dca6-4278-a36d-c6f38f2a5280', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-22 23:11:38.218+00', 0, '2025-10-21 02:50:29.372372+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '92984477-9349-4852-a88d-257b81abecb9', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '4af09585-1d44-4aaf-a831-4cfafc930932', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '41321be8-dbb8-472c-b785-4f6a21939094', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-10-23 20:55:39.708+00', 0, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'd3d25189-3e79-46c0-bf16-69fe50866052', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '7e5b9765-7fcf-4307-b133-2d2639083abe', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'e02f4591-1e6f-4491-80c5-398926632018', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'c90f8d2a-1752-4593-9ebc-38fb5567cef7', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '82a365c2-723c-44c5-a469-a308fc953b4f', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, '2025-11-03 13:02:00.446+00', 4, '2025-10-20 12:52:05.840739+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, '2025-11-04 05:45:36.374+00', 0, '2025-10-20 12:52:05.840739+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('bb70f572-c5f4-4952-811b-346846c16dd4', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, NULL, 0, '2025-11-04 12:42:46.022859+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'b4971e21-3d0c-4c52-b12c-dc6921a73352', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '565a372b-116f-4afe-b658-9e39dc57af2c', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '274fcc42-f20e-4730-afec-dab1bbcd64ba', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', 'e994f096-9781-4aef-8eea-dac7077f77d2', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('a66594fd-5d5e-48cc-978f-f0c3c20a3418', '5787f016-315c-4faf-9c65-615987eff0fa', 'participant', false, true, NULL, 2, '2025-10-23 16:30:57.718452+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'participant', false, true, '2025-10-25 16:15:45.356+00', 0, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'participant', false, true, NULL, 0, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'f8cca4d4-d735-434f-b54f-3557dcf3df19', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '6f31eec3-a4fe-4a6e-a977-c3347b907f6a', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '92984477-9349-4852-a88d-257b81abecb9', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '4af09585-1d44-4aaf-a831-4cfafc930932', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '41321be8-dbb8-472c-b785-4f6a21939094', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'd3d25189-3e79-46c0-bf16-69fe50866052', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '7e5b9765-7fcf-4307-b133-2d2639083abe', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'e02f4591-1e6f-4491-80c5-398926632018', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'c90f8d2a-1752-4593-9ebc-38fb5567cef7', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '82a365c2-723c-44c5-a469-a308fc953b4f', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'b4971e21-3d0c-4c52-b12c-dc6921a73352', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '565a372b-116f-4afe-b658-9e39dc57af2c', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '274fcc42-f20e-4730-afec-dab1bbcd64ba', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', 'e994f096-9781-4aef-8eea-dac7077f77d2', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+INSERT INTO public.conversation_participants VALUES ('16de8625-7916-4815-9b9d-f9ae7118e9c9', '5787f016-315c-4faf-9c65-615987eff0fa', 'participant', false, true, NULL, 1, '2025-10-23 21:31:52.985541+00', NULL);
+
+
+--
+-- Data for Name: handicap_chart_3vs3; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.handicap_chart_3vs3 VALUES (12, 16, 15, 14);
+INSERT INTO public.handicap_chart_3vs3 VALUES (11, 15, NULL, 14);
+INSERT INTO public.handicap_chart_3vs3 VALUES (10, 15, 14, 13);
+INSERT INTO public.handicap_chart_3vs3 VALUES (9, 14, NULL, 13);
+INSERT INTO public.handicap_chart_3vs3 VALUES (8, 14, 13, 12);
+INSERT INTO public.handicap_chart_3vs3 VALUES (7, 13, NULL, 12);
+INSERT INTO public.handicap_chart_3vs3 VALUES (6, 13, 12, 11);
+INSERT INTO public.handicap_chart_3vs3 VALUES (5, 12, NULL, 11);
+INSERT INTO public.handicap_chart_3vs3 VALUES (4, 12, 11, 10);
+INSERT INTO public.handicap_chart_3vs3 VALUES (3, 11, NULL, 10);
+INSERT INTO public.handicap_chart_3vs3 VALUES (2, 11, 10, 9);
+INSERT INTO public.handicap_chart_3vs3 VALUES (1, 10, NULL, 9);
+INSERT INTO public.handicap_chart_3vs3 VALUES (0, 10, 9, 8);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-1, 9, NULL, 8);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-2, 9, 8, 7);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-3, 8, NULL, 7);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-4, 8, 7, 6);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-5, 7, NULL, 6);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-6, 7, 6, 5);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-7, 6, NULL, 5);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-8, 6, 5, 4);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-9, 5, NULL, 4);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-10, 5, 4, 3);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-11, 4, NULL, 3);
+INSERT INTO public.handicap_chart_3vs3 VALUES (-12, 4, 3, 2);
+
+
+--
+-- Data for Name: organizations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.organizations VALUES ('179e8f3d-9856-47bc-98e6-2b22e809f3f2', 'Ed''s Florida Leagues', '6101 Twilight Dr', 'Zephyrhills', 'FL', '33540', 'shodbyed@gmail.com', 'my_organization', '8059072636', 'my_teams', 'cus_mock_0iny9seluqe50000', 'pm_mock_u0upowy9mn000000', '4242', 'visa', 12, 2027, '12345', true, false, '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', '2025-10-12 00:00:43.639001+00', '2025-11-04 12:40:13.709527+00');
+
+
+--
+-- Data for Name: leagues; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.leagues VALUES ('0dc7fe28-f672-4e83-b62d-740fa18adb3b', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', 'eight_ball', 'wednesday', 'New', '5_man', '2025-11-12', '2025-11-05 04:00:43.661837+00', '2025-11-05 04:00:43.661837+00', 'active', 'standard', 'standard', true, 'standard');
+INSERT INTO public.leagues VALUES ('5eaa49dd-263e-4724-a9b5-190b4be1eae4', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', 'eight_ball', 'tuesday', 'Testing Shit', '5_man', '2025-11-11', '2025-11-05 20:07:20.729601+00', '2025-11-05 20:07:20.729601+00', 'active', 'standard', 'standard', true, 'standard');
+
+
+--
+-- Data for Name: seasons; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.seasons VALUES ('0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', 'Fall 2025 Wednesday 8-Ball New', '2025-11-12', '2026-03-03', 16, 'active', false, '2025-11-05 04:01:47.335005+00', '2025-11-05 04:03:14.825381+00');
+INSERT INTO public.seasons VALUES ('db692ba6-c44b-424e-b5c4-a80b24a96197', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', 'Fall 2025 Tuesday 8-Ball Testing Shit', '2025-11-11', '2026-03-02', 16, 'active', false, '2025-11-05 20:13:47.320988+00', '2025-11-05 20:16:07.588366+00');
+
+
+--
+-- Data for Name: venue_owners; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: venues; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.venues VALUES ('8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, 'Crystals', '5707 Gall Bl', 'Zephyrhills', 'FL', '33540', '813-715-2004', 4, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-10-12 00:31:50.355931+00', '2025-10-12 00:47:50.40834+00', '{1,2,3,4}', '{}', '{}', DEFAULT);
+INSERT INTO public.venues VALUES ('b9d6be5e-c98b-4569-a83a-1e5adc89b096', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, 'happy dayz', '12401 us 301', 'dade city', 'FL', '33525', '352-521-5003', 6, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-10-12 00:52:17.780418+00', '2025-10-12 00:52:17.780418+00', '{1,2,3,4,5,6}', '{}', '{}', DEFAULT);
+INSERT INTO public.venues VALUES ('ece734e4-3483-42f9-976a-4d4a1650db67', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, 'buteras billiards', '1234 shit st', 'tampa', 'FL', '33555', '283-746-5833', 6, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-11-02 18:27:58.366982+00', '2025-11-02 18:40:35.882019+00', '{1,2,3,4,5,6}', '{}', '{}', DEFAULT);
+INSERT INTO public.venues VALUES ('ad877885-68e0-435f-ab56-9a48a1a07fd0', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, 'cool pool', '9874 calutrans', 'zephyrhills', 'FL', '33540', '384-783-6733', 6, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-11-02 19:05:04.203804+00', '2025-11-02 19:05:21.777335+00', '{1,2,3,4,5,6}', '{}', '{}', DEFAULT);
+INSERT INTO public.venues VALUES ('5b9ef269-deff-4d98-81eb-b3821f5e161c', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, 'newest test venue 2', '4321 asshole st', 'zephyrhills', 'FL', '33540', '423-123-6889', 7, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, true, '2025-11-02 19:13:16.138311+00', '2025-11-02 19:13:52.67291+00', '{1,2,3,4,5,6,7}', '{}', '{}', DEFAULT);
+
+
+--
+-- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.teams VALUES ('347bd884-b587-4553-99ac-7a354ff45a29', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', 'Team 2', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 20:14:46.982992+00', '2025-11-05 20:14:46.982992+00');
+INSERT INTO public.teams VALUES ('6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'ece734e4-3483-42f9-976a-4d4a1650db67', 'Team 3', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 20:15:10.906134+00', '2025-11-05 20:15:10.906134+00');
+INSERT INTO public.teams VALUES ('48af8d9c-42ba-48c1-b108-f5905f2fc185', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', '5b9ef269-deff-4d98-81eb-b3821f5e161c', 'Still Aint Working', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 20:15:50.472538+00', '2025-11-05 20:16:50.857621+00');
+INSERT INTO public.teams VALUES ('1812e7c3-7688-4462-964e-5e9869579d4d', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'ece734e4-3483-42f9-976a-4d4a1650db67', 'Dry Hump', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 20:14:24.1898+00', '2025-11-05 20:17:27.552287+00');
+INSERT INTO public.teams VALUES ('fb13f2ba-4820-4872-a11a-9b2000302cc3', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', NULL, 'Team 2', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 04:02:25.913119+00', '2025-11-05 04:02:25.913119+00');
+INSERT INTO public.teams VALUES ('c147b519-02ad-438c-a20d-4cea8d763661', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', 'Team 3', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 04:02:42.874581+00', '2025-11-05 04:02:42.874581+00');
+INSERT INTO public.teams VALUES ('f23111d3-3002-4713-aec7-73aaf7a04717', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'ece734e4-3483-42f9-976a-4d4a1650db67', 'This Better', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 04:02:57.184899+00', '2025-11-05 04:05:05.98964+00');
+INSERT INTO public.teams VALUES ('6f17cd5a-a986-4970-9809-424ff664c9bf', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', 'Hoping It Works', 5, 0, 0, 0, 0, 0, 0, 'active', '2025-11-05 04:02:15.663215+00', '2025-11-05 04:05:08.28932+00');
+
+
+--
+-- Data for Name: invite_tokens; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: league_venues; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.league_venues VALUES ('34607c40-baf0-40e8-8989-88da115f53c2', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', 'ece734e4-3483-42f9-976a-4d4a1650db67', 6, 0, DEFAULT, '2025-11-05 04:01:53.313646+00', '2025-11-05 04:01:53.313646+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('c6ff00b5-1557-49ce-b1ba-062f016acfb1', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', 6, 0, DEFAULT, '2025-11-05 04:01:55.468195+00', '2025-11-05 04:01:55.468195+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('9ffb4ce7-9009-4ffb-bc6b-d753ab40a5bf', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', 4, 0, DEFAULT, '2025-11-05 04:01:55.468195+00', '2025-11-05 04:01:55.468195+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('0da80a6f-b3e4-4d5d-980f-1cccaaf47ce3', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', 6, 0, DEFAULT, '2025-11-05 04:01:55.468195+00', '2025-11-05 04:01:55.468195+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('b3e31d60-900c-4499-a1db-2156e08a9e9b', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', '5b9ef269-deff-4d98-81eb-b3821f5e161c', 7, 0, DEFAULT, '2025-11-05 04:01:55.468195+00', '2025-11-05 04:01:55.468195+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('c20e0aa3-3cd9-4819-9800-387610a2de3f', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', 'ece734e4-3483-42f9-976a-4d4a1650db67', 6, 0, DEFAULT, '2025-11-05 20:13:51.124632+00', '2025-11-05 20:13:51.124632+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('a83d6451-7a9d-4abd-b90c-a52871e6f497', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', 6, 0, DEFAULT, '2025-11-05 20:13:51.124632+00', '2025-11-05 20:13:51.124632+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('b3af551b-1dcc-43e6-845d-754bb6f0e05a', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', 4, 0, DEFAULT, '2025-11-05 20:13:51.124632+00', '2025-11-05 20:13:51.124632+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('0b70dbda-136d-467d-8fbd-fa5f4d877e37', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', 6, 0, DEFAULT, '2025-11-05 20:13:51.124632+00', '2025-11-05 20:13:51.124632+00', '{}', NULL);
+INSERT INTO public.league_venues VALUES ('872f114d-bcb7-4d5a-86b3-2b62a111092a', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', '5b9ef269-deff-4d98-81eb-b3821f5e161c', 7, 0, DEFAULT, '2025-11-05 20:13:51.124632+00', '2025-11-05 20:13:51.124632+00', '{}', NULL);
+
+
+--
+-- Data for Name: match_lineups; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.match_lineups VALUES ('41e0dc71-2293-4ca9-8ad3-375cb880aad7', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 1.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, '6cc52642-7166-4c36-8583-1639a27abc42', 2.0, true, NULL, '2025-11-05 04:05:56.148438+00', '2025-11-05 04:05:56.148438+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_lineups VALUES ('f5ceff94-3c06-4432-8b6f-73312c907ece', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', -1.0, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', -1.0, 'c11dab77-aa0a-421c-b879-586934302382', -1.0, true, NULL, '2025-11-05 04:06:21.755021+00', '2025-11-05 04:06:21.755021+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_lineups VALUES ('48861cd4-d6ff-40d1-92d0-c4136d79a607', 'd73dd97f-da42-4725-b8f9-434f5d85d904', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 0.0, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 0.0, '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 0.0, true, NULL, '2025-11-05 04:45:31.149785+00', '2025-11-05 04:45:31.149785+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_lineups VALUES ('9eb180cd-3bda-4b7e-93a8-fe64935163c1', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 0.0, '6cc52642-7166-4c36-8583-1639a27abc42', 0.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, true, NULL, '2025-11-05 04:45:34.604977+00', '2025-11-05 04:45:34.604977+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_lineups VALUES ('aaef90ba-0f6b-4f1a-8dbc-a82f708e416e', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', '1812e7c3-7688-4462-964e-5e9869579d4d', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 0.0, '92984477-9349-4852-a88d-257b81abecb9', 0.0, '41321be8-dbb8-472c-b785-4f6a21939094', 0.0, true, NULL, '2025-11-05 20:18:29.818538+00', '2025-11-05 20:18:29.818538+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_lineups VALUES ('8e1db8c7-45e4-4bac-9b59-e7d249cd4c47', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '926c4fda-8206-4ebd-b5c2-850701465090', 1.0, 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', 0.0, 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', 0.0, true, NULL, '2025-11-05 20:18:33.258645+00', '2025-11-05 20:18:33.258645+00', 0.0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: season_weeks; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.season_weeks VALUES ('b168e2a0-918f-420c-890f-579cb55ba42f', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-11-12', 'Week 1', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('9be905d3-e4d3-405f-868b-57c794a72a10', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-11-19', 'Week 2', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('7106762c-a237-4ad6-903f-67e36ace331e', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-11-26', 'Thanksgiving Day', 'blackout', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('923d96c9-4c47-4fa5-9437-dc9faaf4fb34', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-12-03', 'Week 3', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('6a1063f5-c1a7-468e-862a-e35445cfc4f9', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-12-10', 'Week 4', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('a9a4ce9a-0c33-43b4-8fb3-6875623e1cb0', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-12-17', 'Week 5', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('068b4d2a-f8cd-4d78-98db-37f21dda7ea9', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-12-24', 'Christmas Eve', 'blackout', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('bd834b1f-db3a-492a-bb37-133f57fc8744', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2025-12-31', 'New Year''s Eve', 'blackout', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('8cb2ebee-c209-4885-ba18-0d43c063f29f', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-01-07', 'Week 6', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('d24d0cba-1553-4345-a31d-65b86d524d1d', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-01-14', 'Week 7', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('8db5cfd9-143a-48ad-b277-207f83a4ae48', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-01-21', 'Week 8', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('22158c2c-e978-49ea-8f35-edbb6388f415', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-01-28', 'Week 9', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('fa2a7e5a-c67d-4e7b-b5f4-c61a25c318b9', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-02-04', 'Week 10', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('559427c8-a6a4-4221-8d32-e4ac73d7eb70', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-02-11', 'Week 11', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('9b39cee7-1a42-469c-9b58-3c43c7f3904c', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-02-18', 'Washington''s Birthday', 'blackout', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('33a1b906-1c18-4814-9662-470f9c3bdcb8', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-02-25', 'BCA National Tournament Week 2', 'blackout', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('be2e86f3-c74e-4a92-a00f-c2451cf647ca', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-03-04', 'Week 12', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('be586f53-d68e-4f23-8e85-8622ebaa82c5', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-03-11', 'Week 13', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('f6e668ca-14f2-44b4-a485-d5e2ba6572d0', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-03-18', 'Week 14', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('2b5dd4a6-6434-421f-a243-26e4d09b3b8a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-03-25', 'Week 15', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('b89ea149-40f1-4530-9f66-5f93e7cde2e9', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-04-01', 'Week 16', 'regular', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('b4c18856-5423-4a5d-b931-b490bfc6b32f', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-04-08', 'Season End Break', 'season_end_break', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('ef7f3fc8-dc52-412d-9f6c-fb29ef7f649f', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2026-04-15', 'Playoffs', 'playoffs', false, NULL, '2025-11-05 04:01:47.373501+00', '2025-11-05 04:01:47.373501+00');
+INSERT INTO public.season_weeks VALUES ('924a1f1d-4857-414c-8173-49b06e367987', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-11-11', 'Veterans Day', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('24f6b1e4-63a1-47e5-92b5-588ace138cbf', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-11-18', 'Week 1', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('8c5cfa14-5597-414c-b99a-5eda804a4794', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-11-25', 'Thanksgiving Day', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('e71db19b-f0ae-4ab5-b2b6-1522d10f39c9', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-12-02', 'Week 2', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('d767bde4-3587-4a4d-b845-403ccfb82b30', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-12-09', 'Week 3', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('e4b1d7b0-71fa-4342-a7b6-f38c011140ce', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-12-16', 'Week 4', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('7aecdb6e-a139-4625-b45a-01e4a0d67524', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-12-23', 'Christmas Eve', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('1876c3b5-a8bc-408b-a67a-d8e553ff385b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2025-12-30', 'New Year''s Eve', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('eedb6eff-2f52-4e5c-8a5e-bfbf8d0e8e0c', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-01-06', 'Week 5', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('45a88e31-1703-47d9-a58a-c1a452e19dd3', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-01-13', 'Week 6', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('d92163bb-c774-48f8-906f-e2b83fa6ef34', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-01-20', 'Week 7', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('284ba408-5cbf-4e92-804b-8b2ebf5fc3a0', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-01-27', 'Week 8', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('d668fb70-83d4-4928-810b-3dfa4f9408bd', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-02-03', 'Week 9', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('95dd3b41-b3b3-409a-bc67-59ae724221cf', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-02-10', 'Week 10', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('5073b7af-266d-45b9-8a27-63c7bf7761b7', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-02-17', 'Valentine''s Day', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('bae89ffb-c6e0-4ede-96db-b56d6e697721', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-02-24', 'BCA National Tournament Week 1', 'blackout', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('13608d4a-6e68-4093-9bc4-ea9ed3208870', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-03-03', 'Week 11', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('ade17310-0c1f-4961-9351-1035ee4eda6f', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-03-10', 'Week 12', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('8ea7e970-9b4a-4939-99d3-cf67454a4300', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-03-17', 'Week 13', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('35269aad-1e58-4342-b1ca-622e89e069c3', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-03-24', 'Week 14', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('80a1f700-1029-4bfb-a710-eebba24a005b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-03-31', 'Week 15', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('d1507d61-7928-4b1e-a8cc-39efb0e8551c', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-04-07', 'Week 16', 'regular', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('072233d1-bf49-4cb1-9e67-2fb8e1212eb8', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-04-14', 'Season End Break', 'season_end_break', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+INSERT INTO public.season_weeks VALUES ('0524a996-f91e-45ac-b8fb-b03ff5ca2c0d', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '2026-04-21', 'Playoffs', 'playoffs', false, NULL, '2025-11-05 20:13:47.369798+00', '2025-11-05 20:13:47.369798+00');
+
+
+--
+-- Data for Name: matches; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.matches VALUES ('b549f11e-1e89-45e0-8f0c-b20da441cf13', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'b168e2a0-918f-420c-890f-579cb55ba42f', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '6f17cd5a-a986-4970-9809-424ff664c9bf', NULL, NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('3347710d-588a-4b68-9473-84fbaecdf163', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'b168e2a0-918f-420c-890f-579cb55ba42f', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'c147b519-02ad-438c-a20d-4cea8d763661', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('0970cc17-d475-4494-9c38-2a3ae98c3e16', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '9be905d3-e4d3-405f-868b-57c794a72a10', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('e12b9ee3-8060-436b-9cfa-8899d46f6536', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '9be905d3-e4d3-405f-868b-57c794a72a10', 'c147b519-02ad-438c-a20d-4cea8d763661', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('3ca10c89-4408-4ecb-9eb6-0a28b5e7e336', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '923d96c9-4c47-4fa5-9437-dc9faaf4fb34', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'c147b519-02ad-438c-a20d-4cea8d763661', NULL, NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('f6608689-fac8-4b36-95d5-0a1e1d73e3f3', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '6a1063f5-c1a7-468e-862a-e35445cfc4f9', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'c147b519-02ad-438c-a20d-4cea8d763661', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('7e3577bd-03a9-4567-bc0d-11a99d4a5eab', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'a9a4ce9a-0c33-43b4-8fb3-6875623e1cb0', 'c147b519-02ad-438c-a20d-4cea8d763661', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('6b217608-3ad0-4c48-844c-4a9cfce05268', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'a9a4ce9a-0c33-43b4-8fb3-6875623e1cb0', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'f23111d3-3002-4713-aec7-73aaf7a04717', NULL, NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('e53b332d-0614-4b99-aed1-7be2fffef937', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '8cb2ebee-c209-4885-ba18-0d43c063f29f', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'c147b519-02ad-438c-a20d-4cea8d763661', NULL, NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('a17d6ea9-1638-4ae4-bb8d-670aed37931a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'd24d0cba-1553-4345-a31d-65b86d524d1d', 'c147b519-02ad-438c-a20d-4cea8d763661', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('9831653f-9da2-4ac7-8332-9eacf3b60c62', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '8db5cfd9-143a-48ad-b277-207f83a4ae48', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'f23111d3-3002-4713-aec7-73aaf7a04717', NULL, NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('cfd85325-5765-41ee-812b-41516c81d3b2', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '22158c2c-e978-49ea-8f35-edbb6388f415', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('66d189ba-e5d7-4d62-8206-3efe63fc2ddc', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '22158c2c-e978-49ea-8f35-edbb6388f415', 'c147b519-02ad-438c-a20d-4cea8d763661', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('140e2cd6-7eff-46f9-9126-92848de3703b', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'fa2a7e5a-c67d-4e7b-b5f4-c61a25c318b9', 'c147b519-02ad-438c-a20d-4cea8d763661', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('0f0bb734-f196-42e1-b90a-81761e8b0ecb', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'fa2a7e5a-c67d-4e7b-b5f4-c61a25c318b9', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '6f17cd5a-a986-4970-9809-424ff664c9bf', NULL, NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('dad15d9e-891a-4f15-b3b6-2e8f9339183a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '559427c8-a6a4-4221-8d32-e4ac73d7eb70', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('ae207494-480e-4b90-aafc-76c732facb1a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'be2e86f3-c74e-4a92-a00f-c2451cf647ca', 'c147b519-02ad-438c-a20d-4cea8d763661', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('0cf9dff7-bece-4182-9ea6-2b4f2b417c48', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'be586f53-d68e-4f23-8e85-8622ebaa82c5', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '6f17cd5a-a986-4970-9809-424ff664c9bf', NULL, NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('4aacd4a6-ebdf-4cb3-80b6-7451b032df79', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'be586f53-d68e-4f23-8e85-8622ebaa82c5', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'c147b519-02ad-438c-a20d-4cea8d763661', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('f377bc68-3175-43ab-b166-216dcadf1e48', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'f6e668ca-14f2-44b4-a485-d5e2ba6572d0', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('6844e505-8453-44e3-9457-4ba6b990fe91', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'f6e668ca-14f2-44b4-a485-d5e2ba6572d0', 'c147b519-02ad-438c-a20d-4cea8d763661', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad877885-68e0-435f-ab56-9a48a1a07fd0', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('347d4135-0f5d-4eee-bd07-d01cbe6ac280', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2b5dd4a6-6434-421f-a243-26e4d09b3b8a', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'c147b519-02ad-438c-a20d-4cea8d763661', NULL, NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('02c93456-6d16-40f1-8a21-4708627a4980', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'b89ea149-40f1-4530-9f66-5f93e7cde2e9', 'f23111d3-3002-4713-aec7-73aaf7a04717', 'c147b519-02ad-438c-a20d-4cea8d763661', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:03:06.361451+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('b42de9f5-e65b-4b59-b183-fbc18b933a97', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '923d96c9-4c47-4fa5-9437-dc9faaf4fb34', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'f23111d3-3002-4713-aec7-73aaf7a04717', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('2b73e503-71c3-4c87-b30c-6e1e45aa7f34', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '6a1063f5-c1a7-468e-862a-e35445cfc4f9', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('f64d4e1b-a790-4bcb-bb9e-3d7104430d84', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'd24d0cba-1553-4345-a31d-65b86d524d1d', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('4b72c8fe-3147-43fb-8ed5-dd2656054c9e', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '8db5cfd9-143a-48ad-b277-207f83a4ae48', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'c147b519-02ad-438c-a20d-4cea8d763661', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('0aeca94d-722b-42b9-86b1-594b5865c77c', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '559427c8-a6a4-4221-8d32-e4ac73d7eb70', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'c147b519-02ad-438c-a20d-4cea8d763661', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('aa945b77-d8a1-46a8-822e-137387ef6c15', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'be2e86f3-c74e-4a92-a00f-c2451cf647ca', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'f23111d3-3002-4713-aec7-73aaf7a04717', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('46df0f01-b4c4-4d46-9400-57fb0194fac8', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '2b5dd4a6-6434-421f-a243-26e4d09b3b8a', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'f23111d3-3002-4713-aec7-73aaf7a04717', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('907fbf5d-34d7-4fd5-98cc-51f215d4fffb', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', 'b89ea149-40f1-4530-9f66-5f93e7cde2e9', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', '8ee822ea-5ff8-4c78-90ee-9baa3acf6f57', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:05:08.28932+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('d73dd97f-da42-4725-b8f9-434f5d85d904', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', '8cb2ebee-c209-4885-ba18-0d43c063f29f', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 04:03:06.361451+00', '2025-11-05 04:45:34.925287+00', NULL, NULL, 10, 10, 9, 9, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('3cd4ada4-70b7-4d96-bf7d-6d0c429f6732', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '24f6b1e4-63a1-47e5-92b5-588ace138cbf', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('87447e4e-61d4-492c-b507-8e3b95beb904', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'e71db19b-f0ae-4ab5-b2b6-1522d10f39c9', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '1812e7c3-7688-4462-964e-5e9869579d4d', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('970f19f4-f4a3-45e4-a452-0ad13394bec4', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'e71db19b-f0ae-4ab5-b2b6-1522d10f39c9', '347bd884-b587-4553-99ac-7a354ff45a29', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('982d53ba-adfe-4e00-88fb-5eb8e0c37c6a', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd767bde4-3587-4a4d-b845-403ccfb82b30', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('49251ae3-5469-4a67-90a4-0874aae38085', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd767bde4-3587-4a4d-b845-403ccfb82b30', '1812e7c3-7688-4462-964e-5e9869579d4d', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('e13f5c06-be7e-40b3-8aa0-f0279f485ef6', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'e4b1d7b0-71fa-4342-a7b6-f38c011140ce', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('4541f5cf-564b-486f-be0b-a669fcdcdb3a', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'e4b1d7b0-71fa-4342-a7b6-f38c011140ce', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '1812e7c3-7688-4462-964e-5e9869579d4d', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('9b22514e-59c2-4bff-94a5-f9cb97cb1961', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'eedb6eff-2f52-4e5c-8a5e-bfbf8d0e8e0c', '347bd884-b587-4553-99ac-7a354ff45a29', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('1f9d09d7-6218-410b-a142-aeb5e1bc069a', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'eedb6eff-2f52-4e5c-8a5e-bfbf8d0e8e0c', '1812e7c3-7688-4462-964e-5e9869579d4d', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '24f6b1e4-63a1-47e5-92b5-588ace138cbf', '1812e7c3-7688-4462-964e-5e9869579d4d', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:18:33.585377+00', NULL, NULL, 9, 10, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('2e204ea7-2cd0-417d-8e26-fd3e578694c6', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '45a88e31-1703-47d9-a58a-c1a452e19dd3', '1812e7c3-7688-4462-964e-5e9869579d4d', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('44e9d5cf-3d52-4a48-8b36-ad5351babd3c', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '45a88e31-1703-47d9-a58a-c1a452e19dd3', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('abf65f26-8d47-4a8a-bf40-1f33f0e9134f', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd92163bb-c774-48f8-906f-e2b83fa6ef34', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '1812e7c3-7688-4462-964e-5e9869579d4d', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('bd92f85a-dac2-4ce9-bb7f-161b66d9a77b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd92163bb-c774-48f8-906f-e2b83fa6ef34', '347bd884-b587-4553-99ac-7a354ff45a29', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('9866b478-a7cc-49c6-a938-ee7b7d4f1171', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '284ba408-5cbf-4e92-804b-8b2ebf5fc3a0', '1812e7c3-7688-4462-964e-5e9869579d4d', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('66dfa825-494a-4dc9-acff-f0e2fe2c5eb8', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '284ba408-5cbf-4e92-804b-8b2ebf5fc3a0', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '347bd884-b587-4553-99ac-7a354ff45a29', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('bb25685e-9dcf-4861-a6ea-e74a63e54c9b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd668fb70-83d4-4928-810b-3dfa4f9408bd', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('f909add0-302d-4385-b1fb-3250510bb647', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd668fb70-83d4-4928-810b-3dfa4f9408bd', '347bd884-b587-4553-99ac-7a354ff45a29', '1812e7c3-7688-4462-964e-5e9869579d4d', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('05226dc3-ece6-4dfd-9fbe-640692755f28', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '95dd3b41-b3b3-409a-bc67-59ae724221cf', '347bd884-b587-4553-99ac-7a354ff45a29', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('4c60d84f-5363-4d14-868d-27ba9158cbfd', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '95dd3b41-b3b3-409a-bc67-59ae724221cf', '1812e7c3-7688-4462-964e-5e9869579d4d', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('1164c61f-6cb2-4acb-97c7-31db6ea1d39d', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '13608d4a-6e68-4093-9bc4-ea9ed3208870', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '347bd884-b587-4553-99ac-7a354ff45a29', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('b4712a45-32bc-48b7-a1d8-a3c8c548ac99', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '13608d4a-6e68-4093-9bc4-ea9ed3208870', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '1812e7c3-7688-4462-964e-5e9869579d4d', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('54b3c4ab-6c89-4353-91c4-61efd32b250b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'ade17310-0c1f-4961-9351-1035ee4eda6f', '347bd884-b587-4553-99ac-7a354ff45a29', '1812e7c3-7688-4462-964e-5e9869579d4d', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('c8d9f2cc-42bc-452e-aeb1-a8edc943a110', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'ade17310-0c1f-4961-9351-1035ee4eda6f', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('62ed00a4-262f-4159-be7b-4920b712d2ba', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '8ea7e970-9b4a-4939-99d3-cf67454a4300', '1812e7c3-7688-4462-964e-5e9869579d4d', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('90863a09-ae36-40fc-9e17-751cbbaeab28', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '8ea7e970-9b4a-4939-99d3-cf67454a4300', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('8768f03b-c541-4d71-b62b-bfc689acf5c0', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '35269aad-1e58-4342-b1ca-622e89e069c3', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '1812e7c3-7688-4462-964e-5e9869579d4d', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('802979f5-8c16-4a90-b725-1f2497956438', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '35269aad-1e58-4342-b1ca-622e89e069c3', '347bd884-b587-4553-99ac-7a354ff45a29', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'b9d6be5e-c98b-4569-a83a-1e5adc89b096', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('5b459378-f429-48f2-a814-01aae2845107', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '80a1f700-1029-4bfb-a710-eebba24a005b', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('43d31c5f-60d9-4b67-a023-ab0c1975d8af', 'db692ba6-c44b-424e-b5c4-a80b24a96197', '80a1f700-1029-4bfb-a710-eebba24a005b', '1812e7c3-7688-4462-964e-5e9869579d4d', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('eeaaf4f5-0352-41da-8dca-22524d0141a8', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd1507d61-7928-4b1e-a8cc-39efb0e8551c', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '347bd884-b587-4553-99ac-7a354ff45a29', 'ece734e4-3483-42f9-976a-4d4a1650db67', NULL, 1, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.matches VALUES ('2eceb30b-a16b-427f-8492-30ab2a8b549b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', 'd1507d61-7928-4b1e-a8cc-39efb0e8551c', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '1812e7c3-7688-4462-964e-5e9869579d4d', '5b9ef269-deff-4d98-81eb-b3821f5e161c', NULL, 2, 'scheduled', NULL, NULL, '2025-11-05 20:16:02.124524+00', '2025-11-05 20:16:02.124524+00', NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0.0, 0.0, NULL, NULL, NULL, NULL, false, false, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: match_games; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.match_games VALUES ('81c1114c-f1ed-42c3-a314-feece8a6065c', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 4, '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '92984477-9349-4852-a88d-257b81abecb9', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:07:25.805926+00', '2025-11-05 04:07:25.805926+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('277acb97-c467-45ea-bad6-be474a0d17c1', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 3, 'c11dab77-aa0a-421c-b879-586934302382', '6cc52642-7166-4c36-8583-1639a27abc42', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'c11dab77-aa0a-421c-b879-586934302382', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:15:37.7233+00', '2025-11-05 04:15:37.7233+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('4f63f145-97ce-4c93-949a-4f74a89c1cd3', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 5, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', '6cc52642-7166-4c36-8583-1639a27abc42', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:16:14.835497+00', '2025-11-05 04:16:14.835497+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('f940af3a-29a3-4e3f-bba6-b2c483a608ee', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 6, 'c11dab77-aa0a-421c-b879-586934302382', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:18:31.193303+00', '2025-11-05 04:18:31.193303+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('53ca9b51-0c6a-4059-af8e-e8dd1f7ce9b3', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 7, '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '6cc52642-7166-4c36-8583-1639a27abc42', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:21:48.67528+00', '2025-11-05 04:21:48.67528+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('2b692698-7723-46c5-947d-f955202b7d0c', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 8, 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', '930e9ab8-b732-4af3-b594-8d4b29517f9b', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:22:36.876959+00', '2025-11-05 04:22:36.876959+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('13cf1dd5-c237-4678-9556-5166a333b3d6', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 9, 'c11dab77-aa0a-421c-b879-586934302382', '92984477-9349-4852-a88d-257b81abecb9', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'c11dab77-aa0a-421c-b879-586934302382', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:25:21.124933+00', '2025-11-05 04:25:21.124933+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('206de8b3-4a78-4570-98ef-373ac93883fd', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 10, '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:28:44.634646+00', '2025-11-05 04:28:44.634646+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('189f6611-7ecb-4b99-b8a6-4cfb98ad5971', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 1, '930e9ab8-b732-4af3-b594-8d4b29517f9b', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('c460f80d-ae11-4d14-908d-d3fccb4d65bf', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 7, '930e9ab8-b732-4af3-b594-8d4b29517f9b', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('1ac530bd-3ee4-457d-8e25-8c01dcf5bdef', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 6, '92984477-9349-4852-a88d-257b81abecb9', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('95dc7265-1383-4f58-b846-472894ffdea5', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 11, '6cc52642-7166-4c36-8583-1639a27abc42', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('b8214b3d-a1ec-44a1-83f7-d746d5a7ed7d', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 12, '92984477-9349-4852-a88d-257b81abecb9', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('6ae1f91d-1b48-44ed-9bd0-f9ee94f9418b', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 13, '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('36bbe922-84f6-47d7-be2e-42fb86b3c0d2', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 14, '6cc52642-7166-4c36-8583-1639a27abc42', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('4776fc6c-b6e5-4528-850c-29d31e5f63cc', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 15, '92984477-9349-4852-a88d-257b81abecb9', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('5c2ad75c-c0d1-4925-9cca-537258a11200', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 17, '6cc52642-7166-4c36-8583-1639a27abc42', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('76dc22be-97e3-4a9a-a271-bc3ff6af4054', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 18, '92984477-9349-4852-a88d-257b81abecb9', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('db5b0438-7c21-4bb9-936a-192ad7259ff7', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 8, '6cc52642-7166-4c36-8583-1639a27abc42', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('d40212a7-3b00-49fc-a7c3-3afd6a09761f', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 2, '6cc52642-7166-4c36-8583-1639a27abc42', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('18bd94cd-da7c-44f4-b431-5a31f99964d9', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 13, '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '92984477-9349-4852-a88d-257b81abecb9', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:35:14.697659+00', '2025-11-05 04:35:14.697659+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('33fdfecb-2b19-402a-91b2-48553555a0c1', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 3, '92984477-9349-4852-a88d-257b81abecb9', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('f584ca59-c93b-4a89-9a71-0eddcb6d3d2d', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 9, '92984477-9349-4852-a88d-257b81abecb9', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('d33e7c6e-7e06-4ca2-9a2f-8bad8173c9f9', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 5, '6cc52642-7166-4c36-8583-1639a27abc42', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', '6f17cd5a-a986-4970-9809-424ff664c9bf', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('ab46c750-8c21-4671-9e27-0db6680e487c', 'b42de9f5-e65b-4b59-b183-fbc18b933a97', 1, '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '930e9ab8-b732-4af3-b594-8d4b29517f9b', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 04:06:35.398738+00', '2025-11-05 04:06:35.398738+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('9ac25c38-f015-4cb0-9866-e112f559dd69', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 4, '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('b46e5ea4-31da-41e2-8f5d-52c21bade564', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 16, '930e9ab8-b732-4af3-b594-8d4b29517f9b', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', '6f17cd5a-a986-4970-9809-424ff664c9bf', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('54a81360-ec2b-4c91-b702-1c75543bdd8f', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 6, '41321be8-dbb8-472c-b785-4f6a21939094', '926c4fda-8206-4ebd-b5c2-850701465090', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('792a5563-6713-4dc5-b2d0-d7bc5ff919e1', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 7, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('c3333197-d731-430f-946d-2db135e01f18', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 8, '92984477-9349-4852-a88d-257b81abecb9', '926c4fda-8206-4ebd-b5c2-850701465090', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('03e2ea10-12fc-40f5-b6c1-b3967e9d8c8f', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 9, '41321be8-dbb8-472c-b785-4f6a21939094', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('8156ea53-bad6-4d79-bc58-3f5557239891', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 10, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', '926c4fda-8206-4ebd-b5c2-850701465090', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('ee49f57d-3863-4045-9530-23240b924cd9', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 11, '92984477-9349-4852-a88d-257b81abecb9', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('dde7d13d-1ee6-459d-b8a4-dd36797497f3', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 12, '41321be8-dbb8-472c-b785-4f6a21939094', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('642a1392-e224-4dfe-9699-95e2b40b5fcd', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 13, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('d8f8f602-8678-481e-9151-5c389fc05132', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 14, '92984477-9349-4852-a88d-257b81abecb9', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('632c89f5-5119-4b19-852a-58172c1a78d3', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 15, '41321be8-dbb8-472c-b785-4f6a21939094', '926c4fda-8206-4ebd-b5c2-850701465090', NULL, NULL, 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('bac0e4bd-c644-4881-818b-b5e10a628ebc', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 16, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('04c7ef02-61b7-44f0-99a2-d7e847afef8b', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 17, '92984477-9349-4852-a88d-257b81abecb9', '926c4fda-8206-4ebd-b5c2-850701465090', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('a329e275-4bf3-40e5-8377-47491661b700', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 18, '41321be8-dbb8-472c-b785-4f6a21939094', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', NULL, NULL, 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('d2812406-1974-4b25-9b4a-4632c4981b52', 'd73dd97f-da42-4725-b8f9-434f5d85d904', 10, '930e9ab8-b732-4af3-b594-8d4b29517f9b', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 04:45:35.046374+00', '2025-11-05 04:45:35.046374+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('d7f94ed1-da5f-44c7-97b6-491c428070b9', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 1, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', '926c4fda-8206-4ebd-b5c2-850701465090', '1812e7c3-7688-4462-964e-5e9869579d4d', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('27e7e8ba-b376-4353-b296-9eab4680c2d1', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 2, '92984477-9349-4852-a88d-257b81abecb9', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', '1812e7c3-7688-4462-964e-5e9869579d4d', '92984477-9349-4852-a88d-257b81abecb9', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('f9d6d9d5-c8f9-4b7c-9bad-6ce63b2b9099', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 3, '41321be8-dbb8-472c-b785-4f6a21939094', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', 'breaks', 'racks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('5d5e1a70-6568-4b45-ae3b-fc7477bfea74', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 4, '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+INSERT INTO public.match_games VALUES ('9a7f63dd-b6a3-4569-be55-a62152832477', 'eee1fe6b-ef03-42ac-8d21-25c2330cd60f', 5, '92984477-9349-4852-a88d-257b81abecb9', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', 'racks', 'breaks', false, false, NULL, false, '2025-11-05 20:18:33.633594+00', '2025-11-05 20:18:33.633594+00', 'eight_ball', NULL, NULL, NULL, NULL, NULL);
+
+
+--
+-- Data for Name: merge_requests; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.messages VALUES ('0dec3e72-1fae-4262-8e2e-83f3ce40f3d9', 'e21331bb-12a0-48b0-9328-1989e14d440b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'hello', '2025-10-20 12:45:33.055331+00', '2025-10-20 12:45:33.055331+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('16bcced6-479f-416a-ae4a-4c7b82226a35', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'hello', '2025-10-20 12:52:12.889468+00', '2025-10-20 12:52:12.889468+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('c60fdcc3-7865-4476-a813-1889f04a74b0', '8e80d319-edb5-441b-a684-1f6289484b57', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'to capt avich 3', '2025-10-20 12:59:55.393219+00', '2025-10-20 12:59:55.393219+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('fa838015-099f-4cd3-b24a-5e5889beb2a1', '2559307f-cbc2-4d2d-94a2-860e768e4c90', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'to captainzo 3', '2025-10-20 13:00:24.08339+00', '2025-10-20 13:00:24.08339+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('5ac1e844-a358-43d7-8e8a-6393d6a30182', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'to ed', '2025-10-20 13:00:33.790864+00', '2025-10-20 13:00:33.790864+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('d2b20e8c-7985-40b5-8c84-aad1a607dd00', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'to captaina one', '2025-10-20 13:01:32.895588+00', '2025-10-20 13:01:32.895588+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('04cf61d8-8ed3-4b79-a124-609cfd53ac11', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'to capta vich 3', '2025-10-20 13:01:50.057577+00', '2025-10-20 13:01:50.057577+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('7fea67ac-c327-49be-8c52-66336be57255', '3110f6a5-2dfc-447d-9464-514254bc27f6', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'to captainzo 2', '2025-10-20 13:02:16.806685+00', '2025-10-20 13:02:16.806685+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('9409fdde-a91b-4758-a6e5-c2ecbd006d98', '2559307f-cbc2-4d2d-94a2-860e768e4c90', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'from catiana one to captainzo 2', '2025-10-20 13:04:16.999705+00', '2025-10-20 13:04:16.999705+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('6f395cb8-bbd3-4ec4-a7bd-1a29ac31b068', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'from captaina one to ed', '2025-10-20 13:04:46.244967+00', '2025-10-20 13:04:46.244967+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('81c6ffa7-ff23-4a1e-bd78-c1dc0e1b3dd8', '8e80d319-edb5-441b-a684-1f6289484b57', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'from captaiana one to capavich 3', '2025-10-20 13:05:11.057299+00', '2025-10-20 13:05:11.057299+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('63da38fb-f291-46fb-8389-dc30a13504fe', '3110f6a5-2dfc-447d-9464-514254bc27f6', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'from captainzo 2 to ed', '2025-10-20 13:06:05.450524+00', '2025-10-20 13:06:05.450524+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('0cc4bf50-d361-4566-b829-1e8ba339f359', '39f8407a-2a91-4c7c-b0c2-1b09969ea243', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'from captainzo 2 to captainvich 3', '2025-10-20 13:06:40.25584+00', '2025-10-20 13:06:40.25584+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('edd03922-1100-4421-be53-a94337eb2706', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello?', '2025-10-20 13:39:24.713747+00', '2025-10-20 13:39:24.713747+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('16027f7d-1655-4953-8b80-203794191666', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'test message one', '2025-10-20 13:41:49.585833+00', '2025-10-20 13:41:49.585833+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('2847a99b-65e7-4c6a-8862-eea27c825299', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello test message 2', '2025-10-20 13:46:31.239472+00', '2025-10-20 13:46:31.239472+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('76c51c5a-bb4a-48f3-84f0-c1e8329fbcb6', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'testing again', '2025-10-20 13:49:39.690061+00', '2025-10-20 13:49:39.690061+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('3e8a9962-7501-4da9-9395-8798e8b917f6', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'testing', '2025-10-20 13:49:51.730543+00', '2025-10-20 13:49:51.730543+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('516a0032-0087-4243-9fec-6bc70b34dc6b', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'another test', '2025-10-20 13:51:14.385568+00', '2025-10-20 13:51:14.385568+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('03c36057-a746-44e2-8de9-2d1847a3b5c8', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'test again2', '2025-10-20 13:51:23.657204+00', '2025-10-20 13:51:23.657204+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('881afd60-e087-4961-9018-108319514e93', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello test 3', '2025-10-20 13:56:24.500225+00', '2025-10-20 13:56:24.500225+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('ece39ab0-953a-44ab-a171-4ee6d3909eaa', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'yet another test', '2025-10-20 13:56:38.088959+00', '2025-10-20 13:56:38.088959+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('c1341bb7-4631-407e-9c80-c44732659afa', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'I hope this is working', '2025-10-20 14:06:15.47627+00', '2025-10-20 14:06:15.47627+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('4dbf801c-3274-4794-b102-199324c26609', 'e21331bb-12a0-48b0-9328-1989e14d440b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'this is a test', '2025-10-20 14:37:00.832862+00', '2025-10-20 14:37:00.832862+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('5777640b-5521-4807-9a0a-21d4809ef001', 'e21331bb-12a0-48b0-9328-1989e14d440b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'can i see this', '2025-10-20 14:37:43.154249+00', '2025-10-20 14:37:43.154249+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('30b493b9-b293-4655-83c2-df9b4f16c7bf', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-20 14:39:09.113663+00', '2025-10-20 14:39:09.113663+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('d776bf97-9c8e-47ec-be0d-2ab521d6d3ff', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-20 18:59:17.999235+00', '2025-10-20 18:59:17.999235+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('b3db6b0e-5760-46d3-8d04-9adcab4856a3', 'e21331bb-12a0-48b0-9328-1989e14d440b', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'hi back', '2025-10-20 18:59:28.909075+00', '2025-10-20 18:59:28.909075+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('8122fa8e-a4f2-4bad-8388-17c001c2384e', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-20 19:00:51.30942+00', '2025-10-20 19:00:51.30942+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('8ae8511d-1e41-4584-bb49-c2583d2514b5', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-20 19:04:47.058105+00', '2025-10-20 19:04:47.058105+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('2e0a4f74-5d19-4668-a018-5ee0d37f6066', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-20 19:05:01.684599+00', '2025-10-20 19:05:01.684599+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('fb20444b-0ef7-4b91-8225-d11afd56e2c0', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'It works', '2025-10-20 19:05:09.101993+00', '2025-10-20 19:05:09.101993+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('b41764fa-ae90-43d5-abfd-bb56b308c54b', '6d139f69-f4f2-4447-82c9-2e9b2664ef30', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello captains', '2025-10-20 19:26:56.701256+00', '2025-10-20 19:26:56.701256+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('a5613623-447b-4ed7-9291-8ffa40d1bbf1', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'quick you', '2025-10-21 02:49:24.569457+00', '2025-10-21 02:49:24.569457+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('02cb6f7a-531b-4c7e-9317-ad21e18e76e4', 'e21331bb-12a0-48b0-9328-1989e14d440b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'fuck you', '2025-10-21 02:50:01.562577+00', '2025-10-21 02:50:01.562577+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('6a89d537-5f04-416e-a223-00f546fb446f', '6d139f69-f4f2-4447-82c9-2e9b2664ef30', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'd', '2025-10-22 23:16:39.443564+00', '2025-10-22 23:16:39.443564+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('45eac4db-8e03-4abe-9e1e-a3dcdba67fe9', 'a66594fd-5d5e-48cc-978f-f0c3c20a3418', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-23 16:30:57.751497+00', '2025-10-23 16:30:57.751497+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('e2a0fc1b-fbfb-4ef9-bb89-2196743dff42', 'a66594fd-5d5e-48cc-978f-f0c3c20a3418', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-23 20:05:21.055005+00', '2025-10-23 20:05:21.055005+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('2f2e1b97-b427-443a-bbbc-846262d288c3', '16de8625-7916-4815-9b9d-f9ae7118e9c9', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'asdff', '2025-10-23 21:31:53.019381+00', '2025-10-23 21:31:53.019381+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('d139227d-9219-4342-85a0-254305777b23', '6d139f69-f4f2-4447-82c9-2e9b2664ef30', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'fuck you', '2025-10-24 15:08:30.210076+00', '2025-10-24 15:08:30.210076+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('e050feb9-701e-4a1f-83f0-a6cc040326eb', 'e7db6713-ed66-4d81-9e09-7c899f791779', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-10-25 16:17:10.283095+00', '2025-10-25 16:17:10.283095+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('db6eaed9-764d-4c5a-800e-c7d0d611a48f', 'e7db6713-ed66-4d81-9e09-7c899f791779', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'hi back', '2025-10-25 17:35:40.976081+00', '2025-10-25 17:35:40.976081+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('0cc38355-90d2-4d6f-ac07-9dc62cb6e24f', 'e7db6713-ed66-4d81-9e09-7c899f791779', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'so this is working', '2025-10-26 17:14:26.037229+00', '2025-10-26 17:14:26.037229+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('6245bd06-6bed-4a0d-a371-f4d6877c4396', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'im testing you', '2025-11-01 18:40:22.58478+00', '2025-11-01 18:40:22.58478+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('f696cdac-1ed2-4c1b-b7f5-8fd301fa09e2', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'test back', '2025-11-01 18:40:41.93444+00', '2025-11-01 18:40:41.93444+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('12716bda-7b37-4040-bf8b-13794f68e3f1', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'testing again', '2025-11-01 20:16:04.952+00', '2025-11-01 20:16:04.990221+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('3269f4b2-114a-48ad-af00-6d9ac9b9565d', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-11-01 20:16:35.263+00', '2025-11-01 20:16:35.289908+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('7b1b38be-e713-4fa0-acd3-1d92e4b67b51', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'are we working', '2025-11-03 13:01:51.817+00', '2025-11-03 13:01:51.847368+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('12c245d6-5579-482d-827b-a5b67f06009e', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'yes', '2025-11-03 13:01:59.697+00', '2025-11-03 13:01:59.770474+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('ccd65c73-da38-4f0f-8437-3aef1205c311', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'are we working still', '2025-11-03 13:45:22.94+00', '2025-11-03 13:45:23.007532+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('d9c02912-d10d-4098-bd4e-e1a220993bd3', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hi', '2025-11-03 14:28:41.754+00', '2025-11-03 14:28:41.84011+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('9205662f-185f-45ec-9aa0-38bed7e788cf', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'is this working', '2025-11-03 15:26:40.461+00', '2025-11-03 15:26:40.552347+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('68c9f999-96cb-4d0c-bbe3-4844856234a5', 'eeefed0f-cbd9-4bbb-9fd6-56d875e827c5', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'hello', '2025-11-04 05:45:36.141+00', '2025-11-04 05:45:36.177822+00', NULL, NULL, false, false);
+INSERT INTO public.messages VALUES ('edfa21ab-fc49-4c80-8de4-d4260e57ed59', 'bb70f572-c5f4-4952-811b-346846c16dd4', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'this is a message!', '2025-11-04 12:42:46.075712+00', '2025-11-04 12:42:46.075712+00', NULL, NULL, false, false);
+
+
+--
+-- Data for Name: operator_blackout_preferences; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: organization_staff; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.organization_staff VALUES ('8d1c6aad-be53-4f43-b1cf-c1f3f0b5ebf1', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'owner', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', '2025-12-19 17:31:58.133982+00');
+
+
+--
+-- Data for Name: playoff_configurations; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.playoff_configurations VALUES ('1a02171c-5ab9-4fbe-859c-88d496895232', 'global', '00000000-0000-0000-0000-000000000000', 'Money Round', 'Standard single last round. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.', true, 'all', NULL, 50, 4, NULL, 1, '{seeded}', 0, 'automatic', false, '2025-12-19 17:25:51.818068+00', '2025-12-19 17:25:51.818068+00');
+INSERT INTO public.playoff_configurations VALUES ('351e1303-8a4e-4921-9e23-8b74e95abb0a', 'global', '00000000-0000-0000-0000-000000000000', 'Money Round (Wildcard)', 'Standard single last round with odd number of teams. Wildcard allows last place team a chance to play. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.', false, 'all', NULL, 50, 4, NULL, 1, '{seeded}', 1, 'automatic', false, '2025-12-19 17:25:51.818068+00', '2025-12-19 17:25:51.818068+00');
+INSERT INTO public.playoff_configurations VALUES ('ed5a168e-4876-4796-b18d-fc5763177586', 'global', '00000000-0000-0000-0000-000000000000', 'Standard Playoffs (Wildcard)', 'Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs wildcard and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Wildcard is randomly picked team from teams not in top 3.', false, 'fixed', 4, 50, 4, NULL, 2, '{seeded,bracket}', 1, 'automatic', false, '2025-12-19 17:25:51.818068+00', '2025-12-19 17:25:51.818068+00');
+INSERT INTO public.playoff_configurations VALUES ('1aa152e0-f716-4a7b-b1e5-4103105089ba', 'global', '00000000-0000-0000-0000-000000000000', 'Standard Playoffs', 'Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs 4th and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Only top 4 teams play.', false, 'fixed', 4, 50, 4, NULL, 2, '{seeded,bracket}', 0, 'automatic', false, '2025-12-19 17:25:51.818068+00', '2025-12-19 17:25:51.818068+00');
+
+
+--
+-- Data for Name: preferences; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.preferences VALUES ('2547eaa8-e2cd-4fa8-9cc1-866335b3e606', 'organization', '179e8f3d-9856-47bc-98e6-2b22e809f3f2', NULL, NULL, NULL, NULL, NULL, '2025-12-19 17:31:58.133982+00', '2025-12-19 17:31:58.133982+00', true, NULL);
+INSERT INTO public.preferences VALUES ('36bbf2f8-d100-4be7-bb69-c97f36b8c2cf', 'league', '0dc7fe28-f672-4e83-b62d-740fa18adb3b', NULL, NULL, NULL, NULL, NULL, '2025-12-19 17:31:58.141711+00', '2025-12-19 17:31:58.141711+00', true, NULL);
+INSERT INTO public.preferences VALUES ('46308260-4d49-4106-9ef3-10f845c86283', 'league', '5eaa49dd-263e-4724-a9b5-190b4be1eae4', NULL, NULL, NULL, NULL, NULL, '2025-12-19 17:31:58.141711+00', '2025-12-19 17:31:58.141711+00', true, NULL);
+
+
+--
+-- Data for Name: user_reports; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+
+
+--
+-- Data for Name: report_actions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.report_actions VALUES ('926fa87b-53f2-4bc0-87d8-0a99b6907c21', '2378237c-8e18-46a9-8fde-a2151c4b5fd1', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'warning', 'he is a dick', NULL, '2025-11-04 12:31:09.948297+00');
+
+
+--
+-- Data for Name: report_updates; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.report_updates VALUES ('7881a72c-93ec-45a5-b522-f930b379293a', 'cb9d4c4b-43e2-494f-8cca-d0501fbe9399', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'pending', 'under_review', NULL, '2025-11-04 12:29:22.735911+00');
+INSERT INTO public.report_updates VALUES ('c630f80a-3185-47c5-a3ec-ddf29fde6aa8', '5ac5a601-646e-40f0-b7f4-2a88f72abef1', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'pending', 'under_review', NULL, '2025-11-04 12:29:29.058235+00');
+INSERT INTO public.report_updates VALUES ('06212ba3-a637-41c4-a9b5-267d139ec197', 'a3197ea4-c35a-4ad3-ae6d-1ba97356347b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'pending', 'under_review', NULL, '2025-11-04 12:29:31.660907+00');
+INSERT INTO public.report_updates VALUES ('44994114-a436-46d0-a403-5405c5aa78bd', '57cc829f-cf02-4f9d-85ca-81c26c19fc5b', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'pending', 'under_review', NULL, '2025-11-04 12:29:35.444621+00');
+INSERT INTO public.report_updates VALUES ('aa188196-86e9-4eec-8401-91651d35b36b', '2378237c-8e18-46a9-8fde-a2151c4b5fd1', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'pending', 'under_review', NULL, '2025-11-04 12:29:37.589696+00');
+INSERT INTO public.report_updates VALUES ('232ba240-b518-436b-94f4-8d8103b87252', '2378237c-8e18-46a9-8fde-a2151c4b5fd1', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'under_review', 'action_taken', NULL, '2025-11-04 12:31:09.981449+00');
+INSERT INTO public.report_updates VALUES ('d29a6358-9336-4c76-bbd6-51699aea6f18', 'cb9d4c4b-43e2-494f-8cca-d0501fbe9399', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'operator', 'under_review', 'escalated', NULL, '2025-11-04 12:37:24.216831+00');
+
+
+--
+-- Data for Name: team_players; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+INSERT INTO public.team_players VALUES ('473a86a9-f9d8-46f7-8c35-3ed7a8356aef', '6f17cd5a-a986-4970-9809-424ff664c9bf', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:08.511631+00', '2025-11-05 04:05:08.511631+00');
+INSERT INTO public.team_players VALUES ('454f5e70-194b-45f5-87e0-f626ee69bad7', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:08.511631+00', '2025-11-05 04:05:08.511631+00');
+INSERT INTO public.team_players VALUES ('0ac616a9-6f37-492f-8c20-cb8cb7346a53', '6f17cd5a-a986-4970-9809-424ff664c9bf', '6f31eec3-a4fe-4a6e-a977-c3347b907f6a', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:08.511631+00', '2025-11-05 04:05:08.511631+00');
+INSERT INTO public.team_players VALUES ('a909f68e-53ff-493c-987a-5e5319b5d04c', '6f17cd5a-a986-4970-9809-424ff664c9bf', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', true, 0, 0, NULL, 'active', '2025-11-05 04:02:15.693308+00', '2025-11-05 04:02:15.693308+00');
+INSERT INTO public.team_players VALUES ('9be814b6-28db-4bb9-a93f-c751cc5559de', 'fb13f2ba-4820-4872-a11a-9b2000302cc3', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', true, 0, 0, NULL, 'active', '2025-11-05 04:02:25.932317+00', '2025-11-05 04:02:25.932317+00');
+INSERT INTO public.team_players VALUES ('f129b9e6-2995-4390-86a4-d97e32978e2e', 'c147b519-02ad-438c-a20d-4cea8d763661', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', true, 0, 0, NULL, 'active', '2025-11-05 04:02:42.895417+00', '2025-11-05 04:02:42.895417+00');
+INSERT INTO public.team_players VALUES ('9bba4a6f-0f7d-4066-a906-bb2b51173519', '6f17cd5a-a986-4970-9809-424ff664c9bf', 'c11dab77-aa0a-421c-b879-586934302382', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:08.511631+00', '2025-11-05 04:05:08.511631+00');
+INSERT INTO public.team_players VALUES ('21a0fbaf-b154-4ca5-b9d1-e898e0de8762', 'f23111d3-3002-4713-aec7-73aaf7a04717', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', true, 0, 0, NULL, 'active', '2025-11-05 04:02:57.225286+00', '2025-11-05 04:05:06.189821+00');
+INSERT INTO public.team_players VALUES ('36949eeb-7404-4b9d-be67-da41bfc65a42', 'f23111d3-3002-4713-aec7-73aaf7a04717', '930e9ab8-b732-4af3-b594-8d4b29517f9b', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:06.630135+00', '2025-11-05 04:05:06.630135+00');
+INSERT INTO public.team_players VALUES ('01cde574-f608-468c-bd85-8a5ddbc81088', 'f23111d3-3002-4713-aec7-73aaf7a04717', '6cc52642-7166-4c36-8583-1639a27abc42', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:06.630135+00', '2025-11-05 04:05:06.630135+00');
+INSERT INTO public.team_players VALUES ('d1a8f9aa-582c-48e9-9b60-862b278ea4bb', 'f23111d3-3002-4713-aec7-73aaf7a04717', '92984477-9349-4852-a88d-257b81abecb9', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:06.630135+00', '2025-11-05 04:05:06.630135+00');
+INSERT INTO public.team_players VALUES ('c0b65e30-dbfe-4499-a96d-dfa7224c104e', 'f23111d3-3002-4713-aec7-73aaf7a04717', '565a372b-116f-4afe-b658-9e39dc57af2c', '0429a8af-3daf-48ed-bc0f-a5a4e0167c6f', false, 0, 0, NULL, 'active', '2025-11-05 04:05:06.630135+00', '2025-11-05 04:05:06.630135+00');
+INSERT INTO public.team_players VALUES ('18eac379-0265-42f8-83ee-9c2914549101', '1812e7c3-7688-4462-964e-5e9869579d4d', '9e8784bd-e5d0-4c44-99fe-1b05d93cfcf4', 'db692ba6-c44b-424e-b5c4-a80b24a96197', true, 0, 0, NULL, 'active', '2025-11-05 20:14:24.226729+00', '2025-11-05 20:14:24.226729+00');
+INSERT INTO public.team_players VALUES ('c4d476a3-483c-4b0a-bdc0-5d5ce01d098f', '347bd884-b587-4553-99ac-7a354ff45a29', 'f0f2eab1-34f4-417c-864c-5b62b21c6185', 'db692ba6-c44b-424e-b5c4-a80b24a96197', true, 0, 0, NULL, 'active', '2025-11-05 20:14:47.006608+00', '2025-11-05 20:14:47.006608+00');
+INSERT INTO public.team_players VALUES ('f9ae6ec5-f60b-4e6c-90e5-b19d47f37520', '347bd884-b587-4553-99ac-7a354ff45a29', '99f1ad8e-2630-4fdd-92c2-0a54dda268c9', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:14:47.006608+00', '2025-11-05 20:14:47.006608+00');
+INSERT INTO public.team_players VALUES ('724d91b5-9c53-4db0-adcc-8063e3a8905f', '347bd884-b587-4553-99ac-7a354ff45a29', '6cc52642-7166-4c36-8583-1639a27abc42', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:14:47.006608+00', '2025-11-05 20:14:47.006608+00');
+INSERT INTO public.team_players VALUES ('7cdc81d0-a760-4bd5-a38d-270ac8dea12e', '347bd884-b587-4553-99ac-7a354ff45a29', '930e9ab8-b732-4af3-b594-8d4b29517f9b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:14:47.006608+00', '2025-11-05 20:14:47.006608+00');
+INSERT INTO public.team_players VALUES ('a292e45e-00fa-4c7d-8703-bbedf63fffba', '347bd884-b587-4553-99ac-7a354ff45a29', '565a372b-116f-4afe-b658-9e39dc57af2c', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:14:47.006608+00', '2025-11-05 20:14:47.006608+00');
+INSERT INTO public.team_players VALUES ('dda84f68-e44d-4090-8779-45d912924df9', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '5a5eb3dd-f9d0-40f3-9977-4775e220cacf', 'db692ba6-c44b-424e-b5c4-a80b24a96197', true, 0, 0, NULL, 'active', '2025-11-05 20:15:10.967538+00', '2025-11-05 20:15:10.967538+00');
+INSERT INTO public.team_players VALUES ('7245ce65-5c7e-4d5d-8a80-6c71cd4e7af5', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'c11dab77-aa0a-421c-b879-586934302382', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:15:10.967538+00', '2025-11-05 20:15:10.967538+00');
+INSERT INTO public.team_players VALUES ('5ca14c5a-ec16-4646-8f83-c0beedbd9e89', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', '2bbdedcc-0d8f-4705-b455-abe097cbc06a', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:15:10.967538+00', '2025-11-05 20:15:10.967538+00');
+INSERT INTO public.team_players VALUES ('1d65e0a9-f09c-4f11-aeda-a7ed91761e95', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'ad607dbc-62fb-4b1b-a9b9-2b1c1cc01a99', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:15:10.967538+00', '2025-11-05 20:15:10.967538+00');
+INSERT INTO public.team_players VALUES ('1099fd71-aa5a-4ac6-b87e-ead3e17780dc', '6e3c31d1-7329-46b1-93c2-37b0b7adeaf7', 'eec16e13-ed8d-40f1-988e-cb6f052420a6', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:15:10.967538+00', '2025-11-05 20:15:10.967538+00');
+INSERT INTO public.team_players VALUES ('5818aac7-4ff9-4ce1-9bce-6329549d2637', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '0cf4b3d9-108c-43aa-92a4-90961dc9e76b', 'db692ba6-c44b-424e-b5c4-a80b24a96197', true, 0, 0, NULL, 'active', '2025-11-05 20:15:50.525565+00', '2025-11-05 20:16:50.933212+00');
+INSERT INTO public.team_players VALUES ('7653ec6f-d4b4-4bc3-9d1e-07b251950570', '48af8d9c-42ba-48c1-b108-f5905f2fc185', '926c4fda-8206-4ebd-b5c2-850701465090', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:16:51.095418+00', '2025-11-05 20:16:51.095418+00');
+INSERT INTO public.team_players VALUES ('6f8e3bd1-aeee-46c6-a164-7cadb91d99a0', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'bc2771a8-3d06-4ba0-857b-db1e4f4b24b0', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:16:51.095418+00', '2025-11-05 20:16:51.095418+00');
+INSERT INTO public.team_players VALUES ('194ecb50-4945-4e40-9c6d-3b1d74aaf3db', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'bdb72dcb-e6d5-4d85-b913-6697d53e08d1', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:16:51.095418+00', '2025-11-05 20:16:51.095418+00');
+INSERT INTO public.team_players VALUES ('ce2573f4-5100-4ce3-805f-dac963685f9c', '48af8d9c-42ba-48c1-b108-f5905f2fc185', 'c7563372-c485-4736-8447-5b51dbab4d15', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:16:51.095418+00', '2025-11-05 20:16:51.095418+00');
+INSERT INTO public.team_players VALUES ('658e63d7-7ca8-4866-8a62-fac5d4a36053', '1812e7c3-7688-4462-964e-5e9869579d4d', '2d6ec23d-c0f2-4266-9dc8-e99c0314b02d', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:17:27.701733+00', '2025-11-05 20:17:27.701733+00');
+INSERT INTO public.team_players VALUES ('be67f982-bbde-42e0-843e-b84c94d170c7', '1812e7c3-7688-4462-964e-5e9869579d4d', '92984477-9349-4852-a88d-257b81abecb9', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:17:27.701733+00', '2025-11-05 20:17:27.701733+00');
+INSERT INTO public.team_players VALUES ('15bbb76f-7e97-4fc8-b0ac-0dadafa2bd0b', '1812e7c3-7688-4462-964e-5e9869579d4d', '41321be8-dbb8-472c-b785-4f6a21939094', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:17:27.701733+00', '2025-11-05 20:17:27.701733+00');
+INSERT INTO public.team_players VALUES ('64608bae-9faf-4aa1-b01c-fae08c531b6f', '1812e7c3-7688-4462-964e-5e9869579d4d', '6f31eec3-a4fe-4a6e-a977-c3347b907f6a', 'db692ba6-c44b-424e-b5c4-a80b24a96197', false, 0, 0, NULL, 'active', '2025-11-05 20:17:27.701733+00', '2025-11-05 20:17:27.701733+00');
+
+
+--
+-- Data for Name: messages_2025_12_18; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages_2025_12_19; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages_2025_12_20; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages_2025_12_21; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: messages_2025_12_22; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: schema_migrations; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+INSERT INTO realtime.schema_migrations VALUES (20211116024918, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116045059, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116050929, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116051442, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116212300, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116213355, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116213934, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211116214523, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211122062447, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211124070109, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211202204204, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211202204605, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211210212804, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20211228014915, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220107221237, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220228202821, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220312004840, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220603231003, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220603232444, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220615214548, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220712093339, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220908172859, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20220916233421, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230119133233, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230128025114, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230128025212, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230227211149, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230228184745, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230308225145, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20230328144023, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20231018144023, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20231204144023, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20231204144024, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20231204144025, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240108234812, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240109165339, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240227174441, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240311171622, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240321100241, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240401105812, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240418121054, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240523004032, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240618124746, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240801235015, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240805133720, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240827160934, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240919163303, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20240919163305, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241019105805, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241030150047, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241108114728, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241121104152, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241130184212, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241220035512, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241220123912, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20241224161212, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250107150512, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250110162412, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250123174212, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250128220012, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250506224012, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250523164012, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250714121412, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20250905041441, '2025-12-19 17:25:48');
+INSERT INTO realtime.schema_migrations VALUES (20251103001201, '2025-12-19 17:25:48');
+
+
+--
+-- Data for Name: subscription; Type: TABLE DATA; Schema: realtime; Owner: -
+--
+
+
+
+--
+-- Data for Name: buckets; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: buckets_analytics; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: buckets_vectors; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: iceberg_namespaces; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: iceberg_tables; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: migrations; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+INSERT INTO storage.migrations VALUES (0, 'create-migrations-table', 'e18db593bcde2aca2a408c4d1100f6abba2195df', '2025-12-19 17:25:50.72185');
+INSERT INTO storage.migrations VALUES (1, 'initialmigration', '6ab16121fbaa08bbd11b712d05f358f9b555d777', '2025-12-19 17:25:50.724668');
+INSERT INTO storage.migrations VALUES (2, 'storage-schema', '5c7968fd083fcea04050c1b7f6253c9771b99011', '2025-12-19 17:25:50.725591');
+INSERT INTO storage.migrations VALUES (3, 'pathtoken-column', '2cb1b0004b817b29d5b0a971af16bafeede4b70d', '2025-12-19 17:25:50.731774');
+INSERT INTO storage.migrations VALUES (4, 'add-migrations-rls', '427c5b63fe1c5937495d9c635c263ee7a5905058', '2025-12-19 17:25:50.73576');
+INSERT INTO storage.migrations VALUES (5, 'add-size-functions', '79e081a1455b63666c1294a440f8ad4b1e6a7f84', '2025-12-19 17:25:50.736766');
+INSERT INTO storage.migrations VALUES (6, 'change-column-name-in-get-size', 'f93f62afdf6613ee5e7e815b30d02dc990201044', '2025-12-19 17:25:50.738079');
+INSERT INTO storage.migrations VALUES (7, 'add-rls-to-buckets', 'e7e7f86adbc51049f341dfe8d30256c1abca17aa', '2025-12-19 17:25:50.739069');
+INSERT INTO storage.migrations VALUES (8, 'add-public-to-buckets', 'fd670db39ed65f9d08b01db09d6202503ca2bab3', '2025-12-19 17:25:50.73983');
+INSERT INTO storage.migrations VALUES (9, 'fix-search-function', '3a0af29f42e35a4d101c259ed955b67e1bee6825', '2025-12-19 17:25:50.740766');
+INSERT INTO storage.migrations VALUES (10, 'search-files-search-function', '68dc14822daad0ffac3746a502234f486182ef6e', '2025-12-19 17:25:50.741741');
+INSERT INTO storage.migrations VALUES (11, 'add-trigger-to-auto-update-updated_at-column', '7425bdb14366d1739fa8a18c83100636d74dcaa2', '2025-12-19 17:25:50.742872');
+INSERT INTO storage.migrations VALUES (12, 'add-automatic-avif-detection-flag', '8e92e1266eb29518b6a4c5313ab8f29dd0d08df9', '2025-12-19 17:25:50.74425');
+INSERT INTO storage.migrations VALUES (13, 'add-bucket-custom-limits', 'cce962054138135cd9a8c4bcd531598684b25e7d', '2025-12-19 17:25:50.745075');
+INSERT INTO storage.migrations VALUES (14, 'use-bytes-for-max-size', '941c41b346f9802b411f06f30e972ad4744dad27', '2025-12-19 17:25:50.745906');
+INSERT INTO storage.migrations VALUES (15, 'add-can-insert-object-function', '934146bc38ead475f4ef4b555c524ee5d66799e5', '2025-12-19 17:25:50.752371');
+INSERT INTO storage.migrations VALUES (16, 'add-version', '76debf38d3fd07dcfc747ca49096457d95b1221b', '2025-12-19 17:25:50.753442');
+INSERT INTO storage.migrations VALUES (17, 'drop-owner-foreign-key', 'f1cbb288f1b7a4c1eb8c38504b80ae2a0153d101', '2025-12-19 17:25:50.754183');
+INSERT INTO storage.migrations VALUES (18, 'add_owner_id_column_deprecate_owner', 'e7a511b379110b08e2f214be852c35414749fe66', '2025-12-19 17:25:50.755204');
+INSERT INTO storage.migrations VALUES (19, 'alter-default-value-objects-id', '02e5e22a78626187e00d173dc45f58fa66a4f043', '2025-12-19 17:25:50.756521');
+INSERT INTO storage.migrations VALUES (20, 'list-objects-with-delimiter', 'cd694ae708e51ba82bf012bba00caf4f3b6393b7', '2025-12-19 17:25:50.757137');
+INSERT INTO storage.migrations VALUES (21, 's3-multipart-uploads', '8c804d4a566c40cd1e4cc5b3725a664a9303657f', '2025-12-19 17:25:50.758429');
+INSERT INTO storage.migrations VALUES (22, 's3-multipart-uploads-big-ints', '9737dc258d2397953c9953d9b86920b8be0cdb73', '2025-12-19 17:25:50.762293');
+INSERT INTO storage.migrations VALUES (23, 'optimize-search-function', '9d7e604cddc4b56a5422dc68c9313f4a1b6f132c', '2025-12-19 17:25:50.765392');
+INSERT INTO storage.migrations VALUES (24, 'operation-function', '8312e37c2bf9e76bbe841aa5fda889206d2bf8aa', '2025-12-19 17:25:50.766405');
+INSERT INTO storage.migrations VALUES (25, 'custom-metadata', 'd974c6057c3db1c1f847afa0e291e6165693b990', '2025-12-19 17:25:50.767458');
+INSERT INTO storage.migrations VALUES (26, 'objects-prefixes', 'ef3f7871121cdc47a65308e6702519e853422ae2', '2025-12-19 17:25:50.768278');
+INSERT INTO storage.migrations VALUES (27, 'search-v2', '33b8f2a7ae53105f028e13e9fcda9dc4f356b4a2', '2025-12-19 17:25:50.772588');
+INSERT INTO storage.migrations VALUES (28, 'object-bucket-name-sorting', 'ba85ec41b62c6a30a3f136788227ee47f311c436', '2025-12-19 17:25:50.774418');
+INSERT INTO storage.migrations VALUES (29, 'create-prefixes', 'a7b1a22c0dc3ab630e3055bfec7ce7d2045c5b7b', '2025-12-19 17:25:50.775699');
+INSERT INTO storage.migrations VALUES (30, 'update-object-levels', '6c6f6cc9430d570f26284a24cf7b210599032db7', '2025-12-19 17:25:50.776812');
+INSERT INTO storage.migrations VALUES (31, 'objects-level-index', '33f1fef7ec7fea08bb892222f4f0f5d79bab5eb8', '2025-12-19 17:25:50.778052');
+INSERT INTO storage.migrations VALUES (32, 'backward-compatible-index-on-objects', '2d51eeb437a96868b36fcdfb1ddefdf13bef1647', '2025-12-19 17:25:50.779229');
+INSERT INTO storage.migrations VALUES (33, 'backward-compatible-index-on-prefixes', 'fe473390e1b8c407434c0e470655945b110507bf', '2025-12-19 17:25:50.780471');
+INSERT INTO storage.migrations VALUES (34, 'optimize-search-function-v1', '82b0e469a00e8ebce495e29bfa70a0797f7ebd2c', '2025-12-19 17:25:50.780755');
+INSERT INTO storage.migrations VALUES (35, 'add-insert-trigger-prefixes', '63bb9fd05deb3dc5e9fa66c83e82b152f0caf589', '2025-12-19 17:25:50.782369');
+INSERT INTO storage.migrations VALUES (36, 'optimise-existing-functions', '81cf92eb0c36612865a18016a38496c530443899', '2025-12-19 17:25:50.783046');
+INSERT INTO storage.migrations VALUES (37, 'add-bucket-name-length-trigger', '3944135b4e3e8b22d6d4cbb568fe3b0b51df15c1', '2025-12-19 17:25:50.78556');
+INSERT INTO storage.migrations VALUES (38, 'iceberg-catalog-flag-on-buckets', '19a8bd89d5dfa69af7f222a46c726b7c41e462c5', '2025-12-19 17:25:50.786819');
+INSERT INTO storage.migrations VALUES (39, 'add-search-v2-sort-support', '39cf7d1e6bf515f4b02e41237aba845a7b492853', '2025-12-19 17:25:50.791705');
+INSERT INTO storage.migrations VALUES (40, 'fix-prefix-race-conditions-optimized', 'fd02297e1c67df25a9fc110bf8c8a9af7fb06d1f', '2025-12-19 17:25:50.793597');
+INSERT INTO storage.migrations VALUES (41, 'add-object-level-update-trigger', '44c22478bf01744b2129efc480cd2edc9a7d60e9', '2025-12-19 17:25:50.796393');
+INSERT INTO storage.migrations VALUES (42, 'rollback-prefix-triggers', 'f2ab4f526ab7f979541082992593938c05ee4b47', '2025-12-19 17:25:50.797842');
+INSERT INTO storage.migrations VALUES (43, 'fix-object-level', 'ab837ad8f1c7d00cc0b7310e989a23388ff29fc6', '2025-12-19 17:25:50.79905');
+INSERT INTO storage.migrations VALUES (44, 'vector-bucket-type', '99c20c0ffd52bb1ff1f32fb992f3b351e3ef8fb3', '2025-12-19 17:25:50.79995');
+INSERT INTO storage.migrations VALUES (45, 'vector-buckets', '049e27196d77a7cb76497a85afae669d8b230953', '2025-12-19 17:25:50.800976');
+INSERT INTO storage.migrations VALUES (46, 'buckets-objects-grants', 'fedeb96d60fefd8e02ab3ded9fbde05632f84aed', '2025-12-19 17:25:50.803571');
+INSERT INTO storage.migrations VALUES (47, 'iceberg-table-metadata', '649df56855c24d8b36dd4cc1aeb8251aa9ad42c2', '2025-12-19 17:25:50.804433');
+INSERT INTO storage.migrations VALUES (48, 'iceberg-catalog-ids', '2666dff93346e5d04e0a878416be1d5fec345d6f', '2025-12-19 17:25:50.805574');
+INSERT INTO storage.migrations VALUES (49, 'buckets-objects-grants-postgres', '072b1195d0d5a2f888af6b2302a1938dd94b8b3d', '2025-12-19 17:25:50.817214');
+
+
+--
+-- Data for Name: objects; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: prefixes; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: s3_multipart_uploads; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: s3_multipart_uploads_parts; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: vector_indexes; Type: TABLE DATA; Schema: storage; Owner: -
+--
+
+
+
+--
+-- Data for Name: hooks; Type: TABLE DATA; Schema: supabase_functions; Owner: -
+--
+
+
+
+--
+-- Data for Name: migrations; Type: TABLE DATA; Schema: supabase_functions; Owner: -
+--
+
+INSERT INTO supabase_functions.migrations VALUES ('initial', '2025-12-19 17:25:36.073982+00');
+INSERT INTO supabase_functions.migrations VALUES ('20210809183423_update_grants', '2025-12-19 17:25:36.073982+00');
+
+
+--
+-- Data for Name: schema_migrations; Type: TABLE DATA; Schema: supabase_migrations; Owner: -
+--
+
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251130010824', '{"SET statement_timeout = 0","SET lock_timeout = 0","SET idle_in_transaction_session_timeout = 0","SET client_encoding = ''UTF8''","SET standard_conforming_strings = on","SELECT pg_catalog.set_config(''search_path'', '''', false)","SET check_function_bodies = false","SET xmloption = content","SET client_min_messages = warning","SET row_security = off","CREATE SCHEMA IF NOT EXISTS \"public\"","ALTER SCHEMA \"public\" OWNER TO \"pg_database_owner\"","COMMENT ON SCHEMA \"public\" IS ''standard public schema''","CREATE TYPE \"public\".\"moderation_action\" AS ENUM (
+    ''warning'',
+    ''temporary_suspension'',
+    ''permanent_ban'',
+    ''account_deletion'',
+    ''no_action''
+)","ALTER TYPE \"public\".\"moderation_action\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"preference_action\" AS ENUM (
+    ''blackout'',
+    ''ignore''
+)","ALTER TYPE \"public\".\"preference_action\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"preference_type\" AS ENUM (
+    ''holiday'',
+    ''championship'',
+    ''custom''
+)","ALTER TYPE \"public\".\"preference_type\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"report_category\" AS ENUM (
+    ''inappropriate_message'',
+    ''harassment'',
+    ''fake_account'',
+    ''cheating'',
+    ''poor_sportsmanship'',
+    ''impersonation'',
+    ''spam'',
+    ''other''
+)","ALTER TYPE \"public\".\"report_category\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"report_severity\" AS ENUM (
+    ''low'',
+    ''medium'',
+    ''high'',
+    ''critical''
+)","ALTER TYPE \"public\".\"report_severity\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"report_status\" AS ENUM (
+    ''pending'',
+    ''under_review'',
+    ''escalated'',
+    ''action_taken'',
+    ''resolved'',
+    ''dismissed''
+)","ALTER TYPE \"public\".\"report_status\" OWNER TO \"postgres\"","CREATE TYPE \"public\".\"user_role\" AS ENUM (
+    ''player'',
+    ''league_operator'',
+    ''developer''
+)","ALTER TYPE \"public\".\"user_role\" OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"auto_create_match_lineups\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    AS $$
+DECLARE
+  home_lineup_uuid UUID;
+  away_lineup_uuid UUID;
+BEGIN
+  -- Create empty home team lineup
+  INSERT INTO match_lineups (
+    match_id,
+    team_id,
+    player1_id,
+    player1_handicap,
+    player2_id,
+    player2_handicap,
+    player3_id,
+    player3_handicap,
+    player4_id,
+    player4_handicap,
+    player5_id,
+    player5_handicap,
+    home_team_modifier,
+    locked,
+    locked_at
+  ) VALUES (
+    NEW.id,
+    NEW.home_team_id,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    0,
+    false,
+    NULL
+  ) RETURNING id INTO home_lineup_uuid;
+
+  -- Create empty away team lineup
+  INSERT INTO match_lineups (
+    match_id,
+    team_id,
+    player1_id,
+    player1_handicap,
+    player2_id,
+    player2_handicap,
+    player3_id,
+    player3_handicap,
+    player4_id,
+    player4_handicap,
+    player5_id,
+    player5_handicap,
+    home_team_modifier,
+    locked,
+    locked_at
+  ) VALUES (
+    NEW.id,
+    NEW.away_team_id,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    0,
+    false,
+    NULL
+  ) RETURNING id INTO away_lineup_uuid;
+
+  -- Update the match record with the lineup IDs
+  UPDATE matches
+  SET
+    home_lineup_id = home_lineup_uuid,
+    away_lineup_id = away_lineup_uuid
+  WHERE id = NEW.id;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"auto_create_match_lineups\"() OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"auto_create_match_lineups\"() IS ''Automatically creates empty lineup records for both home and away teams when a new match is inserted. This ensures real-time subscriptions have records to watch and eliminates client-side lineup creation logic.''","CREATE OR REPLACE FUNCTION \"public\".\"auto_delete_match_lineups\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    AS $$
+BEGIN
+  -- Delete home team lineup if it exists
+  IF OLD.home_lineup_id IS NOT NULL THEN
+    DELETE FROM match_lineups WHERE id = OLD.home_lineup_id;
+  END IF;
+
+  -- Delete away team lineup if it exists
+  IF OLD.away_lineup_id IS NOT NULL THEN
+    DELETE FROM match_lineups WHERE id = OLD.away_lineup_id;
+  END IF;
+
+  RETURN OLD;
+END;
+$$","ALTER FUNCTION \"public\".\"auto_delete_match_lineups\"() OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"auto_delete_match_lineups\"() IS ''Automatically deletes lineup records for both home and away teams when a match is deleted. This prevents orphaned lineup records and maintains referential integrity.''","CREATE OR REPLACE FUNCTION \"public\".\"check_delete_time_limit\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  -- Allow deletes within 15 minutes of creation
+  IF OLD.created_at + INTERVAL ''15 minutes'' < NOW() THEN
+    RAISE EXCEPTION ''Cannot delete message after 15 minutes'';
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"check_delete_time_limit\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"check_edit_time_limit\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  -- Allow edits within 5 minutes of creation
+  IF OLD.created_at + INTERVAL ''5 minutes'' < NOW() THEN
+    RAISE EXCEPTION ''Cannot edit message after 5 minutes'';
+  END IF;
+
+  -- Mark as edited
+  NEW.is_edited = TRUE;
+  NEW.edited_at = NOW();
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"check_edit_time_limit\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) RETURNS \"uuid\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+DECLARE
+  v_conversation_id UUID;
+  v_member_id UUID;
+BEGIN
+  -- Check if conversation already exists for this season
+  SELECT id INTO v_conversation_id
+  FROM conversations
+  WHERE scope_type = ''season''
+    AND scope_id = p_season_id
+    AND conversation_type = ''announcements'';
+
+  -- If conversation doesn''t exist, create it
+  IF v_conversation_id IS NULL THEN
+    INSERT INTO conversations (
+      title,
+      conversation_type,
+      scope_type,
+      scope_id,
+      auto_managed
+    )
+    VALUES (
+      p_title,
+      ''announcements'',
+      ''season'',
+      p_season_id,
+      true
+    )
+    RETURNING id INTO v_conversation_id;
+
+    -- Add all members as participants
+    FOREACH v_member_id IN ARRAY p_member_ids
+    LOOP
+      INSERT INTO conversation_participants (
+        conversation_id,
+        user_id
+      )
+      VALUES (
+        v_conversation_id,
+        v_member_id
+      )
+      ON CONFLICT DO NOTHING;
+    END LOOP;
+  END IF;
+
+  RETURN v_conversation_id;
+END;
+$$","ALTER FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) IS ''Creates or retrieves a season announcement conversation with all participants. Uses SECURITY DEFINER to bypass RLS.''","CREATE OR REPLACE FUNCTION \"public\".\"create_default_league_preferences\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  INSERT INTO preferences (entity_type, entity_id)
+  VALUES (''league'', NEW.id)
+  ON CONFLICT (entity_type, entity_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"create_default_league_preferences\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"create_default_org_preferences\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  INSERT INTO preferences (entity_type, entity_id)
+  VALUES (''organization'', NEW.id)
+  ON CONFLICT (entity_type, entity_id) DO NOTHING;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"create_default_org_preferences\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") RETURNS \"uuid\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+DECLARE
+  new_conversation_id UUID;
+  existing_conversation_id UUID;
+BEGIN
+  -- First check if conversation already exists between these two users
+  -- Must be exactly 2 participants (DM), not a group conversation
+  SELECT cp1.conversation_id INTO existing_conversation_id
+  FROM conversation_participants cp1
+  INNER JOIN conversation_participants cp2
+    ON cp1.conversation_id = cp2.conversation_id
+  INNER JOIN conversations c
+    ON c.id = cp1.conversation_id
+  WHERE cp1.user_id = user1_id
+    AND cp2.user_id = user2_id
+    AND cp1.user_id != cp2.user_id
+    AND cp1.left_at IS NULL
+    AND cp2.left_at IS NULL
+    AND c.auto_managed = FALSE
+    -- Ensure exactly 2 participants (DM only, not groups)
+    AND (
+      SELECT COUNT(*)
+      FROM conversation_participants cp3
+      WHERE cp3.conversation_id = cp1.conversation_id
+        AND cp3.left_at IS NULL
+    ) = 2
+  LIMIT 1;
+
+  -- If conversation exists, return it
+  IF existing_conversation_id IS NOT NULL THEN
+    RETURN existing_conversation_id;
+  END IF;
+
+  -- Create new conversation
+  INSERT INTO conversations (auto_managed, conversation_type, scope_type, scope_id)
+  VALUES (false, null, ''none'', null)
+  RETURNING id INTO new_conversation_id;
+
+  -- Add both participants
+  INSERT INTO conversation_participants (conversation_id, user_id)
+  VALUES
+    (new_conversation_id, user1_id),
+    (new_conversation_id, user2_id);
+
+  RETURN new_conversation_id;
+END;
+$$","ALTER FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") IS ''Creates or returns existing DM conversation between two users (NOT groups), bypassing RLS for conversation creation''","CREATE OR REPLACE FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) RETURNS \"uuid\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+DECLARE
+  new_conversation_id UUID;
+  member_id UUID;
+BEGIN
+  -- Validate inputs
+  IF group_name IS NULL OR trim(group_name) = '''' THEN
+    RAISE EXCEPTION ''Group name is required'';
+  END IF;
+
+  IF array_length(member_ids, 1) IS NULL OR array_length(member_ids, 1) < 2 THEN
+    RAISE EXCEPTION ''Group must have at least 2 members'';
+  END IF;
+
+  IF array_length(member_ids, 1) > 25 THEN
+    RAISE EXCEPTION ''Group cannot have more than 25 members'';
+  END IF;
+
+  -- Create the conversation
+  -- For manual groups: conversation_type = NULL, scope_type = ''none'', auto_managed = FALSE
+  INSERT INTO conversations (title, conversation_type, scope_type, auto_managed)
+  VALUES (trim(group_name), NULL, ''none'', FALSE)
+  RETURNING id INTO new_conversation_id;
+
+  -- Add all members as participants
+  FOREACH member_id IN ARRAY member_ids
+  LOOP
+    INSERT INTO conversation_participants (conversation_id, user_id)
+    VALUES (new_conversation_id, member_id)
+    ON CONFLICT (conversation_id, user_id) DO NOTHING;
+  END LOOP;
+
+  RETURN new_conversation_id;
+END;
+$$","ALTER FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) IS ''Create a new group conversation with multiple participants. Bypasses RLS using SECURITY DEFINER.''","CREATE OR REPLACE FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) RETURNS \"uuid\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+DECLARE
+  v_conversation_id UUID;
+  v_member_id UUID;
+BEGIN
+  -- Check if conversation already exists for this organization
+  SELECT id INTO v_conversation_id
+  FROM conversations
+  WHERE scope_type = ''organization''
+    AND scope_id = p_organization_id
+    AND conversation_type = ''announcements'';
+
+  -- If conversation doesn''t exist, create it
+  IF v_conversation_id IS NULL THEN
+    INSERT INTO conversations (
+      title,
+      conversation_type,
+      scope_type,
+      scope_id,
+      auto_managed
+    )
+    VALUES (
+      p_title,
+      ''announcements'',
+      ''organization'',
+      p_organization_id,
+      true
+    )
+    RETURNING id INTO v_conversation_id;
+
+    -- Add all members as participants
+    FOREACH v_member_id IN ARRAY p_member_ids
+    LOOP
+      INSERT INTO conversation_participants (
+        conversation_id,
+        user_id
+      )
+      VALUES (
+        v_conversation_id,
+        v_member_id
+      )
+      ON CONFLICT DO NOTHING;
+    END LOOP;
+  END IF;
+
+  RETURN v_conversation_id;
+END;
+$$","ALTER FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) IS ''Creates or retrieves an organization announcement conversation with all participants. Uses SECURITY DEFINER to bypass RLS.''","CREATE OR REPLACE FUNCTION \"public\".\"create_owner_staff\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    AS $$
+BEGIN
+  -- When a new organization is created, automatically add the creator as owner
+  INSERT INTO organization_staff (organization_id, member_id, position, added_by)
+  VALUES (NEW.id, NEW.created_by, ''owner'', NEW.created_by);
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"create_owner_staff\"() OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"create_owner_staff\"() IS ''Automatically creates owner staff record when organization is created''","CREATE OR REPLACE FUNCTION \"public\".\"get_current_member_id\"() RETURNS \"uuid\"
+    LANGUAGE \"plpgsql\" STABLE SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+BEGIN
+  RETURN (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1);
+END;
+$$","ALTER FUNCTION \"public\".\"get_current_member_id\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"get_operator_stats\"(\"operator_id_param\" \"uuid\") RETURNS json
+    LANGUAGE \"plpgsql\"
+    AS $$
+DECLARE
+  league_count INT;
+  team_count INT;
+  player_count INT;
+  venue_count INT;
+  season_count INT;
+  match_count INT;
+  game_count INT;
+BEGIN
+  -- Count all leagues (matches original query - no is_active filter)
+  SELECT COUNT(*)
+  INTO league_count
+  FROM leagues
+  WHERE organization_id = operator_id_param;
+
+  -- Count teams across all leagues/seasons
+  SELECT COUNT(*)
+  INTO team_count
+  FROM teams t
+  INNER JOIN seasons s ON t.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.organization_id = operator_id_param;
+
+  -- Count players across all teams
+  SELECT COUNT(*)
+  INTO player_count
+  FROM team_players tp
+  INNER JOIN teams t ON tp.team_id = t.id
+  INNER JOIN seasons s ON t.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.organization_id = operator_id_param;
+
+  -- Count active venues
+  SELECT COUNT(*)
+  INTO venue_count
+  FROM venues
+  WHERE organization_id = operator_id_param
+    AND is_active = true;
+
+  -- Count completed seasons
+  SELECT COUNT(*)
+  INTO season_count
+  FROM seasons s
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.organization_id = operator_id_param
+    AND s.status = ''completed'';
+
+  -- Count completed matches
+  SELECT COUNT(*)
+  INTO match_count
+  FROM matches m
+  INNER JOIN seasons s ON m.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.organization_id = operator_id_param
+    AND m.status = ''completed'';
+
+  -- Count total games played (with winner determined)
+  SELECT COUNT(*)
+  INTO game_count
+  FROM match_games mg
+  INNER JOIN matches m ON mg.match_id = m.id
+  INNER JOIN seasons s ON m.season_id = s.id
+  INNER JOIN leagues l ON s.league_id = l.id
+  WHERE l.organization_id = operator_id_param
+    AND mg.winner_player_id IS NOT NULL;
+
+  -- Return all counts as JSON
+  RETURN json_build_object(
+    ''leagues'', league_count,
+    ''teams'', team_count,
+    ''players'', player_count,
+    ''venues'', venue_count,
+    ''seasons_completed'', season_count,
+    ''matches_completed'', match_count,
+    ''games_played'', game_count
+  );
+END;
+$$","ALTER FUNCTION \"public\".\"get_operator_stats\"(\"operator_id_param\" \"uuid\") OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"increment_unread_count\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+BEGIN
+  -- Increment unread count for all participants except the sender
+  UPDATE conversation_participants
+  SET unread_count = unread_count + 1
+  WHERE conversation_id = NEW.conversation_id
+    AND user_id != NEW.sender_id
+    AND left_at IS NULL;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"increment_unread_count\"() OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"increment_unread_count\"() IS ''Increments unread_count for participants except sender (SECURITY DEFINER)''","CREATE OR REPLACE FUNCTION \"public\".\"is_conversation_participant\"(\"conv_id\" \"uuid\", \"uid\" \"uuid\") RETURNS boolean
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM conversation_participants
+    WHERE conversation_id = conv_id
+      AND user_id = uid
+      AND left_at IS NULL
+  );
+END;
+$$","ALTER FUNCTION \"public\".\"is_conversation_participant\"(\"conv_id\" \"uuid\", \"uid\" \"uuid\") OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"log_report_status_change\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  IF OLD.status != NEW.status THEN
+    INSERT INTO report_updates (
+      report_id,
+      updater_id,
+      updater_role,
+      old_status,
+      new_status,
+      update_notes
+    ) VALUES (
+      NEW.id,
+      (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1),
+      (CASE
+        WHEN EXISTS (SELECT 1 FROM organization_staff WHERE member_id = (SELECT id FROM members WHERE user_id = auth.uid() LIMIT 1)) THEN ''operator''
+        WHEN EXISTS (SELECT 1 FROM members WHERE user_id = auth.uid() AND role = ''developer'') THEN ''developer''
+        ELSE ''unknown''
+      END),
+      OLD.status,
+      NEW.status,
+      NULL
+    );
+  END IF;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"log_report_status_change\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"prevent_blocked_user_dm\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+DECLARE
+  participant_ids UUID[];
+  is_dm BOOLEAN;
+BEGIN
+  -- Check if this is a DM conversation (2 participants, not auto-managed)
+  SELECT
+    (SELECT auto_managed FROM conversations WHERE id = NEW.conversation_id) = FALSE
+    AND (SELECT COUNT(*) FROM conversation_participants WHERE conversation_id = NEW.conversation_id) = 1
+  INTO is_dm;
+
+  -- If this is a DM, check for blocks
+  IF is_dm THEN
+    -- Get the other participant''s ID
+    SELECT ARRAY_AGG(user_id)
+    INTO participant_ids
+    FROM conversation_participants
+    WHERE conversation_id = NEW.conversation_id;
+
+    -- Check if either user has blocked the other
+    IF EXISTS (
+      SELECT 1 FROM blocked_users
+      WHERE (blocker_id = NEW.user_id AND blocked_id = ANY(participant_ids))
+         OR (blocker_id = ANY(participant_ids) AND blocked_id = NEW.user_id)
+    ) THEN
+      RAISE EXCEPTION ''Cannot join conversation with blocked user'';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"prevent_blocked_user_dm\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"reset_unread_count\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  -- When last_read_at is updated, reset unread count to 0
+  IF NEW.last_read_at IS DISTINCT FROM OLD.last_read_at THEN
+    NEW.unread_count = 0;
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"reset_unread_count\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"set_reviewed_timestamp\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  -- When status changes from pending to anything else, set reviewed_at
+  IF OLD.status = ''pending'' AND NEW.status != ''pending'' THEN
+    NEW.reviewed_at = NOW();
+    NEW.reviewed_by = auth.uid();
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"set_reviewed_timestamp\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_championship_date_options_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_championship_date_options_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_championship_dates_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_championship_dates_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_conversation_last_message\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  -- Update conversation with new message info
+  UPDATE conversations
+  SET
+    last_message_at = NEW.created_at,
+    last_message_preview = CASE
+      WHEN LENGTH(NEW.content) > 100 THEN SUBSTRING(NEW.content FROM 1 FOR 100) || ''...''
+      ELSE NEW.content
+    END
+  WHERE id = NEW.conversation_id;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_conversation_last_message\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_conversation_on_message_delete\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+DECLARE
+  last_msg RECORD;
+BEGIN
+  -- Find the most recent non-deleted message
+  SELECT created_at, content INTO last_msg
+  FROM messages
+  WHERE conversation_id = NEW.conversation_id
+    AND is_deleted = FALSE
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  -- Update conversation with most recent non-deleted message
+  IF last_msg IS NOT NULL THEN
+    UPDATE conversations
+    SET
+      last_message_at = last_msg.created_at,
+      last_message_preview = CASE
+        WHEN LENGTH(last_msg.content) > 100 THEN SUBSTRING(last_msg.content FROM 1 FOR 100) || ''...''
+        ELSE last_msg.content
+      END
+    WHERE id = NEW.conversation_id;
+  ELSE
+    -- No messages left, clear preview
+    UPDATE conversations
+    SET
+      last_message_at = NULL,
+      last_message_preview = NULL
+    WHERE id = NEW.conversation_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_conversation_on_message_delete\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_conversations_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_conversations_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_league_venues_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_league_venues_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_leagues_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_leagues_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_match_lineups_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = now();
+  IF NEW.locked = true AND OLD.locked = false THEN
+    NEW.locked_at = now();
+  END IF;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_match_lineups_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\" SECURITY DEFINER
+    SET \"search_path\" TO ''public''
+    AS $$
+DECLARE
+  match_count INTEGER;
+BEGIN
+  -- Only proceed if home_venue_id actually changed
+  IF OLD.home_venue_id IS DISTINCT FROM NEW.home_venue_id THEN
+    RAISE NOTICE ''Trigger fired! Team ID: %, Old Venue: %, New Venue: %'',
+      NEW.id, OLD.home_venue_id, NEW.home_venue_id;
+
+    -- Update all matches where this team is the home team
+    UPDATE matches
+    SET
+      scheduled_venue_id = NEW.home_venue_id,
+      updated_at = NOW()
+    WHERE home_team_id = NEW.id
+      AND status IN (''scheduled'', ''in_progress'');
+
+    GET DIAGNOSTICS match_count = ROW_COUNT;
+
+    RAISE NOTICE ''Updated % matches for team % with new venue %'',
+      match_count, NEW.id, NEW.home_venue_id;
+  ELSE
+    RAISE NOTICE ''Trigger fired but venue unchanged for team %'', NEW.id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_matches_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_matches_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_members_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_members_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_messages_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_messages_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_report_resolved_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  IF NEW.status IN (''resolved'', ''dismissed'', ''action_taken'') AND OLD.resolved_at IS NULL THEN
+    NEW.resolved_at = NOW();
+  END IF;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_report_resolved_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_report_reviewed_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  IF OLD.status = ''pending'' AND NEW.status != ''pending'' THEN
+    NEW.reviewed_at = NOW();
+  END IF;
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_report_reviewed_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_season_weeks_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_season_weeks_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_seasons_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_seasons_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_team_players_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_team_players_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_teams_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_teams_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_user_reports_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_user_reports_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_venue_owners_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_venue_owners_updated_at\"() OWNER TO \"postgres\"","CREATE OR REPLACE FUNCTION \"public\".\"update_venues_updated_at\"() RETURNS \"trigger\"
+    LANGUAGE \"plpgsql\"
+    AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$","ALTER FUNCTION \"public\".\"update_venues_updated_at\"() OWNER TO \"postgres\"","SET default_tablespace = ''''","SET default_table_access_method = \"heap\"","CREATE TABLE IF NOT EXISTS \"public\".\"blocked_users\" (
+    \"blocker_id\" \"uuid\" NOT NULL,
+    \"blocked_id\" \"uuid\" NOT NULL,
+    \"blocked_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"reason\" \"text\",
+    CONSTRAINT \"cannot_block_self\" CHECK ((\"blocker_id\" <> \"blocked_id\"))
+)","ALTER TABLE \"public\".\"blocked_users\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"blocked_users\" IS ''Tracks user blocking relationships for direct messages''","COMMENT ON COLUMN \"public\".\"blocked_users\".\"blocker_id\" IS ''User who initiated the block''","COMMENT ON COLUMN \"public\".\"blocked_users\".\"blocked_id\" IS ''User who was blocked''","COMMENT ON COLUMN \"public\".\"blocked_users\".\"blocked_at\" IS ''When the block was created''","COMMENT ON COLUMN \"public\".\"blocked_users\".\"reason\" IS ''Optional reason for block (user-facing, for their own reference)''","CREATE TABLE IF NOT EXISTS \"public\".\"championship_date_options\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization\" \"text\" NOT NULL,
+    \"year\" integer NOT NULL,
+    \"start_date\" \"date\" NOT NULL,
+    \"end_date\" \"date\" NOT NULL,
+    \"vote_count\" integer DEFAULT 1 NOT NULL,
+    \"dev_verified\" boolean DEFAULT false NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"championship_date_options_organization_check\" CHECK ((\"organization\" = ANY (ARRAY[''BCA''::\"text\", ''APA''::\"text\"]))),
+    CONSTRAINT \"championship_date_options_vote_count_check\" CHECK ((\"vote_count\" >= 1)),
+    CONSTRAINT \"championship_date_options_year_check\" CHECK (((\"year\" >= 2024) AND (\"year\" <= 2050))),
+    CONSTRAINT \"valid_date_range\" CHECK ((\"end_date\" > \"start_date\"))
+)","ALTER TABLE \"public\".\"championship_date_options\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"championship_date_options\" IS ''Stores championship tournament dates with community vote counts. Dev-verified dates are authoritative and bypass user selection.''","COMMENT ON COLUMN \"public\".\"championship_date_options\".\"organization\" IS ''Tournament organization: BCA or APA''","COMMENT ON COLUMN \"public\".\"championship_date_options\".\"year\" IS ''Championship year (used for cleanup of past dates)''","COMMENT ON COLUMN \"public\".\"championship_date_options\".\"vote_count\" IS ''Number of operators who have confirmed these dates''","COMMENT ON COLUMN \"public\".\"championship_date_options\".\"dev_verified\" IS ''When true, these dates are authoritative and can auto-fill in wizard''","CREATE TABLE IF NOT EXISTS \"public\".\"conversation_participants\" (
+    \"conversation_id\" \"uuid\" NOT NULL,
+    \"user_id\" \"uuid\" NOT NULL,
+    \"role\" character varying(50) DEFAULT ''participant''::character varying NOT NULL,
+    \"is_muted\" boolean DEFAULT false NOT NULL,
+    \"notifications_enabled\" boolean DEFAULT true NOT NULL,
+    \"last_read_at\" timestamp with time zone,
+    \"unread_count\" integer DEFAULT 0 NOT NULL,
+    \"joined_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"left_at\" timestamp with time zone,
+    CONSTRAINT \"conversation_participants_role_check\" CHECK (((\"role\")::\"text\" = ANY (ARRAY[(''admin''::character varying)::\"text\", (''participant''::character varying)::\"text\"]))),
+    CONSTRAINT \"valid_participant\" CHECK (((\"left_at\" IS NULL) OR (\"left_at\" >= \"joined_at\")))
+)","ALTER TABLE \"public\".\"conversation_participants\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"conversation_participants\" IS ''Join table connecting users to conversations with per-user settings''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"role\" IS ''User role in conversation: admin (can add/remove users) or participant''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"is_muted\" IS ''User has muted notifications for this conversation''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"notifications_enabled\" IS ''User wants push notifications for this conversation''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"last_read_at\" IS ''Last time user viewed messages in this conversation (for unread tracking)''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"unread_count\" IS ''Number of unread messages for this user in this conversation''","COMMENT ON COLUMN \"public\".\"conversation_participants\".\"left_at\" IS ''When user left conversation (NULL if still participating)''","CREATE TABLE IF NOT EXISTS \"public\".\"conversations\" (
+    \"id\" \"uuid\" DEFAULT \"extensions\".\"uuid_generate_v4\"() NOT NULL,
+    \"title\" character varying(200),
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"last_message_at\" timestamp with time zone,
+    \"last_message_preview\" \"text\",
+    \"auto_managed\" boolean DEFAULT false NOT NULL,
+    \"conversation_type\" character varying(50),
+    \"scope_type\" character varying(50),
+    \"scope_id\" \"uuid\",
+    CONSTRAINT \"conversations_conversation_type_check\" CHECK (((\"conversation_type\")::\"text\" = ANY (ARRAY[(''direct''::character varying)::\"text\", (''team_chat''::character varying)::\"text\", (''captains_chat''::character varying)::\"text\", (''announcements''::character varying)::\"text\"]))),
+    CONSTRAINT \"conversations_scope_type_check\" CHECK (((\"scope_type\")::\"text\" = ANY (ARRAY[(''team''::character varying)::\"text\", (''season''::character varying)::\"text\", (''organization''::character varying)::\"text\", (''none''::character varying)::\"text\"]))),
+    CONSTRAINT \"valid_auto_managed\" CHECK ((((\"auto_managed\" = false) AND (\"conversation_type\" IS NULL) AND ((\"scope_type\")::\"text\" = ''none''::\"text\")) OR ((\"auto_managed\" = true) AND (\"conversation_type\" IS NOT NULL) AND (\"scope_type\" IS NOT NULL) AND (\"scope_id\" IS NOT NULL))))
+)","ALTER TABLE \"public\".\"conversations\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"conversations\" IS ''Represents conversations between 2+ users including DMs, team chats, and announcements''","COMMENT ON COLUMN \"public\".\"conversations\".\"last_message_at\" IS ''Timestamp of most recent message, used for sorting conversation list''","COMMENT ON COLUMN \"public\".\"conversations\".\"last_message_preview\" IS ''Preview text of last message, shown in conversation list''","COMMENT ON COLUMN \"public\".\"conversations\".\"auto_managed\" IS ''True for system-created conversations (team chat, captains chat, announcements)''","COMMENT ON COLUMN \"public\".\"conversations\".\"conversation_type\" IS ''Type of conversation: direct, team_chat, captains_chat, or announcements''","COMMENT ON COLUMN \"public\".\"conversations\".\"scope_type\" IS ''What entity this conversation is scoped to: team, season, organization, or none''","COMMENT ON COLUMN \"public\".\"conversations\".\"scope_id\" IS ''Foreign key to the team, season, or organization (stored as UUID)''","CREATE TABLE IF NOT EXISTS \"public\".\"handicap_chart_3vs3\" (
+    \"hcp_diff\" integer NOT NULL,
+    \"games_to_win\" integer NOT NULL,
+    \"games_to_tie\" integer,
+    \"games_to_lose\" integer NOT NULL,
+    CONSTRAINT \"handicap_chart_3vs3_hcp_diff_check\" CHECK (((\"hcp_diff\" >= ''-12''::integer) AND (\"hcp_diff\" <= 12)))
+)","ALTER TABLE \"public\".\"handicap_chart_3vs3\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"league_venues\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"league_id\" \"uuid\" NOT NULL,
+    \"venue_id\" \"uuid\" NOT NULL,
+    \"available_bar_box_tables\" integer DEFAULT 0 NOT NULL,
+    \"available_regulation_tables\" integer DEFAULT 0 NOT NULL,
+    \"available_total_tables\" integer GENERATED ALWAYS AS ((\"available_bar_box_tables\" + \"available_regulation_tables\")) STORED,
+    \"added_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"league_venue_must_have_tables\" CHECK ((\"available_total_tables\" > 0)),
+    CONSTRAINT \"league_venues_available_bar_box_tables_check\" CHECK ((\"available_bar_box_tables\" >= 0)),
+    CONSTRAINT \"league_venues_available_regulation_tables_check\" CHECK ((\"available_regulation_tables\" >= 0))
+)","ALTER TABLE \"public\".\"league_venues\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"leagues\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization_id\" \"uuid\" NOT NULL,
+    \"game_type\" character varying(20) NOT NULL,
+    \"day_of_week\" character varying(10) NOT NULL,
+    \"division\" character varying(50),
+    \"team_format\" character varying(20) NOT NULL,
+    \"league_start_date\" \"date\" NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"status\" character varying(20) DEFAULT ''active''::character varying NOT NULL,
+    \"handicap_variant\" \"text\" DEFAULT ''standard''::\"text\" NOT NULL,
+    \"team_handicap_variant\" \"text\" DEFAULT ''standard''::\"text\" NOT NULL,
+    \"golden_break_counts_as_win\" boolean DEFAULT true NOT NULL,
+    \"handicap_level\" character varying(20) DEFAULT ''standard''::character varying NOT NULL,
+    CONSTRAINT \"leagues_day_of_week_check\" CHECK (((\"day_of_week\")::\"text\" = ANY (ARRAY[(''monday''::character varying)::\"text\", (''tuesday''::character varying)::\"text\", (''wednesday''::character varying)::\"text\", (''thursday''::character varying)::\"text\", (''friday''::character varying)::\"text\", (''saturday''::character varying)::\"text\", (''sunday''::character varying)::\"text\"]))),
+    CONSTRAINT \"leagues_game_type_check\" CHECK (((\"game_type\")::\"text\" = ANY (ARRAY[(''eight_ball''::character varying)::\"text\", (''nine_ball''::character varying)::\"text\", (''ten_ball''::character varying)::\"text\"]))),
+    CONSTRAINT \"leagues_handicap_level_check\" CHECK (((\"handicap_level\")::\"text\" = ANY (ARRAY[(''standard''::character varying)::\"text\", (''reduced''::character varying)::\"text\", (''none''::character varying)::\"text\"]))),
+    CONSTRAINT \"leagues_handicap_variant_check\" CHECK ((\"handicap_variant\" = ANY (ARRAY[''standard''::\"text\", ''reduced''::\"text\", ''none''::\"text\"]))),
+    CONSTRAINT \"leagues_status_check\" CHECK (((\"status\")::\"text\" = ANY (ARRAY[(''active''::character varying)::\"text\", (''completed''::character varying)::\"text\", (''abandoned''::character varying)::\"text\"]))),
+    CONSTRAINT \"leagues_team_format_check\" CHECK (((\"team_format\")::\"text\" = ANY (ARRAY[(''5_man''::character varying)::\"text\", (''8_man''::character varying)::\"text\"]))),
+    CONSTRAINT \"leagues_team_handicap_variant_check\" CHECK ((\"team_handicap_variant\" = ANY (ARRAY[''standard''::\"text\", ''reduced''::\"text\", ''none''::\"text\"])))
+)","ALTER TABLE \"public\".\"leagues\" OWNER TO \"postgres\"","COMMENT ON COLUMN \"public\".\"leagues\".\"handicap_variant\" IS ''Determines player handicap range: standard (-2 to +2), reduced (-1 to +1), or none (all 0)''","COMMENT ON COLUMN \"public\".\"leagues\".\"team_handicap_variant\" IS ''Determines team bonus handicap: standard (every 2 ahead), reduced (every 3 ahead), or none (no bonus)''","COMMENT ON COLUMN \"public\".\"leagues\".\"golden_break_counts_as_win\" IS ''If true, sinking game ball on break (8BB/9BB) counts as a win. If false, breaker re-racks and breaks again.''","COMMENT ON COLUMN \"public\".\"leagues\".\"handicap_level\" IS ''Handicap level for the league: standard (full range 2,1,0,-1,-2), reduced (capped range 1,0,-1), or none (all players 0)''","CREATE TABLE IF NOT EXISTS \"public\".\"match_games\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"match_id\" \"uuid\" NOT NULL,
+    \"game_number\" integer NOT NULL,
+    \"home_player_id\" \"uuid\",
+    \"away_player_id\" \"uuid\",
+    \"winner_team_id\" \"uuid\",
+    \"winner_player_id\" \"uuid\",
+    \"home_action\" \"text\" NOT NULL,
+    \"away_action\" \"text\" NOT NULL,
+    \"break_and_run\" boolean DEFAULT false NOT NULL,
+    \"golden_break\" boolean DEFAULT false NOT NULL,
+    \"confirmed_at\" timestamp with time zone,
+    \"is_tiebreaker\" boolean DEFAULT false NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"game_type\" character varying(20) NOT NULL,
+    \"confirmed_by_home\" \"uuid\",
+    \"confirmed_by_away\" \"uuid\",
+    \"vacate_requested_by\" character varying(4),
+    \"home_position\" integer,
+    \"away_position\" integer,
+    CONSTRAINT \"match_games_away_action_check\" CHECK ((\"away_action\" = ANY (ARRAY[''breaks''::\"text\", ''racks''::\"text\"]))),
+    CONSTRAINT \"match_games_away_position_check\" CHECK (((\"away_position\" >= 1) AND (\"away_position\" <= 5))),
+    CONSTRAINT \"match_games_check\" CHECK ((NOT ((\"break_and_run\" = true) AND (\"golden_break\" = true)))),
+    CONSTRAINT \"match_games_game_type_check\" CHECK (((\"game_type\")::\"text\" = ANY ((ARRAY[''eight_ball''::character varying, ''nine_ball''::character varying, ''ten_ball''::character varying])::\"text\"[]))),
+    CONSTRAINT \"match_games_home_action_check\" CHECK ((\"home_action\" = ANY (ARRAY[''breaks''::\"text\", ''racks''::\"text\"]))),
+    CONSTRAINT \"match_games_home_position_check\" CHECK (((\"home_position\" >= 1) AND (\"home_position\" <= 5))),
+    CONSTRAINT \"match_games_vacate_requested_by_check\" CHECK (((\"vacate_requested_by\")::\"text\" = ANY ((ARRAY[''home''::character varying, ''away''::character varying])::\"text\"[])))
+)","ALTER TABLE \"public\".\"match_games\" OWNER TO \"postgres\"","COMMENT ON COLUMN \"public\".\"match_games\".\"break_and_run\" IS ''Break and Run (B&R): Player breaks and runs the entire table. Always tracked for statistics.''","COMMENT ON COLUMN \"public\".\"match_games\".\"golden_break\" IS ''8BB/9BB: Game ball sunk on break. Whether this counts as a win depends on league.golden_break_counts_as_win setting.''","COMMENT ON COLUMN \"public\".\"match_games\".\"game_type\" IS ''Denormalized from league for performance. Game type (eight_ball, nine_ball, ten_ball) for fast filtering.''","COMMENT ON COLUMN \"public\".\"match_games\".\"confirmed_by_home\" IS ''Member ID who confirmed this game result for home team''","COMMENT ON COLUMN \"public\".\"match_games\".\"confirmed_by_away\" IS ''Member ID who confirmed this game result for away team''","COMMENT ON COLUMN \"public\".\"match_games\".\"vacate_requested_by\" IS ''Indicates which team requested to vacate this game score. NULL = no request, ''''home'''' = home team requested, ''''away'''' = away team requested. Preserves original confirmation UUIDs during vacate request flow.''","COMMENT ON COLUMN \"public\".\"match_games\".\"home_position\" IS ''Lineup position (1-5) for home player. Used to differentiate games when same player appears in multiple positions (5v5 double duty).''","COMMENT ON COLUMN \"public\".\"match_games\".\"away_position\" IS ''Lineup position (1-5) for away player. Used to differentiate games when same player appears in multiple positions (5v5 double duty).''","CREATE TABLE IF NOT EXISTS \"public\".\"match_lineups\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"match_id\" \"uuid\" NOT NULL,
+    \"team_id\" \"uuid\" NOT NULL,
+    \"player1_id\" \"uuid\",
+    \"player1_handicap\" numeric(5,1) NOT NULL,
+    \"player2_id\" \"uuid\",
+    \"player2_handicap\" numeric(5,1) NOT NULL,
+    \"player3_id\" \"uuid\",
+    \"player3_handicap\" numeric(5,1) NOT NULL,
+    \"locked\" boolean DEFAULT false NOT NULL,
+    \"locked_at\" timestamp with time zone,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"home_team_modifier\" numeric(5,1) DEFAULT 0 NOT NULL,
+    \"player4_id\" \"uuid\",
+    \"player4_handicap\" numeric(5,1),
+    \"player5_id\" \"uuid\",
+    \"player5_handicap\" numeric(5,1)
+)","ALTER TABLE \"public\".\"match_lineups\" OWNER TO \"postgres\"","COMMENT ON COLUMN \"public\".\"match_lineups\".\"home_team_modifier\" IS ''Home team standings modifier (bonus/penalty based on season record)''","COMMENT ON COLUMN \"public\".\"match_lineups\".\"player4_id\" IS ''Fourth player ID (used for 5v5 matches in 8-man team format)''","COMMENT ON COLUMN \"public\".\"match_lineups\".\"player4_handicap\" IS ''Fourth player handicap at time of lineup lock (used for 5v5 matches)''","COMMENT ON COLUMN \"public\".\"match_lineups\".\"player5_id\" IS ''Fifth player ID (used for 5v5 matches in 8-man team format)''","COMMENT ON COLUMN \"public\".\"match_lineups\".\"player5_handicap\" IS ''Fifth player handicap at time of lineup lock (used for 5v5 matches)''","CREATE TABLE IF NOT EXISTS \"public\".\"matches\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"season_id\" \"uuid\" NOT NULL,
+    \"season_week_id\" \"uuid\" NOT NULL,
+    \"home_team_id\" \"uuid\",
+    \"away_team_id\" \"uuid\",
+    \"scheduled_venue_id\" \"uuid\",
+    \"actual_venue_id\" \"uuid\",
+    \"match_number\" integer NOT NULL,
+    \"status\" \"text\" DEFAULT ''scheduled''::\"text\" NOT NULL,
+    \"home_team_score\" integer,
+    \"away_team_score\" integer,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"home_lineup_id\" \"uuid\",
+    \"away_lineup_id\" \"uuid\",
+    \"home_games_to_win\" integer,
+    \"away_games_to_win\" integer,
+    \"home_games_to_tie\" integer,
+    \"away_games_to_tie\" integer,
+    \"home_games_won\" integer DEFAULT 0 NOT NULL,
+    \"away_games_won\" integer DEFAULT 0 NOT NULL,
+    \"home_points_earned\" numeric(4,1) DEFAULT 0 NOT NULL,
+    \"away_points_earned\" numeric(4,1) DEFAULT 0 NOT NULL,
+    \"winner_team_id\" \"uuid\",
+    \"match_result\" \"text\",
+    \"started_at\" timestamp with time zone,
+    \"completed_at\" timestamp with time zone,
+    \"results_confirmed_by_home\" boolean DEFAULT false NOT NULL,
+    \"results_confirmed_by_away\" boolean DEFAULT false NOT NULL,
+    \"home_team_verified_by\" \"uuid\",
+    \"away_team_verified_by\" \"uuid\",
+    \"home_games_to_lose\" integer,
+    \"away_games_to_lose\" integer,
+    \"home_tiebreaker_verified_by\" \"uuid\",
+    \"away_tiebreaker_verified_by\" \"uuid\",
+    CONSTRAINT \"matches_match_result_check\" CHECK ((\"match_result\" = ANY (ARRAY[''home_win''::\"text\", ''away_win''::\"text\", ''tie''::\"text\"]))),
+    CONSTRAINT \"matches_status_check\" CHECK ((\"status\" = ANY (ARRAY[''scheduled''::\"text\", ''in_progress''::\"text\", ''awaiting_verification''::\"text\", ''completed''::\"text\", ''forfeited''::\"text\", ''postponed''::\"text\"])))
+)","ALTER TABLE \"public\".\"matches\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"matches\" IS ''Individual matches between teams for each week of the season''","COMMENT ON COLUMN \"public\".\"matches\".\"scheduled_venue_id\" IS ''Originally scheduled venue (usually home team venue)''","COMMENT ON COLUMN \"public\".\"matches\".\"actual_venue_id\" IS ''Actual venue if different from scheduled (e.g., venue conflict)''","COMMENT ON COLUMN \"public\".\"matches\".\"match_number\" IS ''Order of match on the night (1, 2, 3...) for scheduling table assignments''","COMMENT ON COLUMN \"public\".\"matches\".\"status\" IS ''Match status progression:
+  - scheduled: Match created, awaiting lineups
+  - in_progress: Scoring active (lineups locked, games being played)
+  - results_ready: All games scored, awaiting results confirmation from both teams
+  - finalized: Both teams confirmed results (end state for normal completion)
+  - completed: Legacy status (may be used for admin-completed matches)
+  - forfeited: Match forfeited by one team
+  - postponed: Match postponed/rescheduled''","COMMENT ON COLUMN \"public\".\"matches\".\"home_lineup_id\" IS ''Lineup used by home team for this match (set at lineup lock)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_lineup_id\" IS ''Lineup used by away team for this match (set at lineup lock)''","COMMENT ON COLUMN \"public\".\"matches\".\"home_games_to_win\" IS ''Number of games home team needs to win the match (from handicap chart)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_games_to_win\" IS ''Number of games away team needs to win the match (from handicap chart)''","COMMENT ON COLUMN \"public\".\"matches\".\"home_games_to_tie\" IS ''Number of games home team needs to tie the match (null if ties not allowed)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_games_to_tie\" IS ''Number of games away team needs to tie the match (null if ties not allowed)''","COMMENT ON COLUMN \"public\".\"matches\".\"home_games_won\" IS ''Current count of games won by home team (updated live during match)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_games_won\" IS ''Current count of games won by away team (updated live during match)''","COMMENT ON COLUMN \"public\".\"matches\".\"home_points_earned\" IS ''Points earned by home team. Uses numeric(4,1) to support BCA scoring with decimal values (e.g., 1.5 for 70% bonus)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_points_earned\" IS ''Points earned by away team. Uses numeric(4,1) to support BCA scoring with decimal values (e.g., 1.5 for 70% bonus)''","COMMENT ON COLUMN \"public\".\"matches\".\"winner_team_id\" IS ''Team that won the match (null if tie or not completed)''","COMMENT ON COLUMN \"public\".\"matches\".\"match_result\" IS ''Final result: home_win, away_win, or tie (set when match completes)''","COMMENT ON COLUMN \"public\".\"matches\".\"started_at\" IS ''Timestamp when first game was scored''","COMMENT ON COLUMN \"public\".\"matches\".\"completed_at\" IS ''Timestamp when match was completed (team reached games_to_win)''","COMMENT ON COLUMN \"public\".\"matches\".\"results_confirmed_by_home\" IS ''Whether the home team has confirmed the match results on the results page''","COMMENT ON COLUMN \"public\".\"matches\".\"results_confirmed_by_away\" IS ''Whether the away team has confirmed the match results on the results page''","COMMENT ON COLUMN \"public\".\"matches\".\"home_team_verified_by\" IS ''Member ID of home team player who verified final scores''","COMMENT ON COLUMN \"public\".\"matches\".\"away_team_verified_by\" IS ''Member ID of away team player who verified final scores''","COMMENT ON COLUMN \"public\".\"matches\".\"home_games_to_lose\" IS ''Number of games home team needs to lose the match (based on handicap thresholds)''","COMMENT ON COLUMN \"public\".\"matches\".\"away_games_to_lose\" IS ''Number of games away team needs to lose the match (based on handicap thresholds)''","COMMENT ON COLUMN \"public\".\"matches\".\"home_tiebreaker_verified_by\" IS ''Member who verified tiebreaker results for home team''","COMMENT ON COLUMN \"public\".\"matches\".\"away_tiebreaker_verified_by\" IS ''Member who verified tiebreaker results for away team''","CREATE TABLE IF NOT EXISTS \"public\".\"members\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"user_id\" \"uuid\",
+    \"first_name\" character varying(100) NOT NULL,
+    \"last_name\" character varying(100) NOT NULL,
+    \"nickname\" character varying(12),
+    \"phone\" character varying(20) NOT NULL,
+    \"email\" character varying(255) NOT NULL,
+    \"address\" character varying(255) NOT NULL,
+    \"city\" character varying(100) NOT NULL,
+    \"state\" character varying(2) NOT NULL,
+    \"zip_code\" character varying(10) NOT NULL,
+    \"date_of_birth\" \"date\" NOT NULL,
+    \"role\" \"public\".\"user_role\" DEFAULT ''player''::\"public\".\"user_role\",
+    \"system_player_number\" integer NOT NULL,
+    \"bca_member_number\" character varying(20),
+    \"membership_paid_date\" \"date\",
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"profanity_filter_enabled\" boolean DEFAULT false,
+    \"starting_handicap_3v3\" numeric DEFAULT 0,
+    \"starting_handicap_5v5\" numeric DEFAULT 40
+)","ALTER TABLE \"public\".\"members\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"members\" IS ''Player/member records. Includes two special substitute members with fixed UUIDs:
+  - 00000000-0000-0000-0000-000000000001: Home team substitute placeholder
+  - 00000000-0000-0000-0000-000000000002: Away team substitute placeholder
+  These allow tracking substitute wins/losses in match games.''","COMMENT ON COLUMN \"public\".\"members\".\"profanity_filter_enabled\" IS ''Personal profanity filter preference for message display. Forced ON for users under 18, optional for adults.''","COMMENT ON COLUMN \"public\".\"members\".\"starting_handicap_3v3\" IS ''Starting handicap for 3v3 (5_man) format. Used when player has < 15 games in a league. Typically ranges from -2 to +2. Default: 0''","COMMENT ON COLUMN \"public\".\"members\".\"starting_handicap_5v5\" IS ''Starting handicap for 5v5 (8_man) format. Used when player has < 15 games in a league. Typically ranges from 0-100 (percentage). Default: 40''","CREATE SEQUENCE IF NOT EXISTS \"public\".\"members_system_player_number_seq\"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1","ALTER SEQUENCE \"public\".\"members_system_player_number_seq\" OWNER TO \"postgres\"","ALTER SEQUENCE \"public\".\"members_system_player_number_seq\" OWNED BY \"public\".\"members\".\"system_player_number\"","CREATE TABLE IF NOT EXISTS \"public\".\"messages\" (
+    \"id\" \"uuid\" DEFAULT \"extensions\".\"uuid_generate_v4\"() NOT NULL,
+    \"conversation_id\" \"uuid\" NOT NULL,
+    \"sender_id\" \"uuid\" NOT NULL,
+    \"content\" \"text\" NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"edited_at\" timestamp with time zone,
+    \"deleted_at\" timestamp with time zone,
+    \"is_edited\" boolean DEFAULT false NOT NULL,
+    \"is_deleted\" boolean DEFAULT false NOT NULL,
+    CONSTRAINT \"messages_content_check\" CHECK (((\"length\"(\"content\") > 0) AND (\"length\"(\"content\") <= 2000)))
+)","ALTER TABLE \"public\".\"messages\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"messages\" IS ''Individual messages within conversations, supporting edit/delete with time limits''","COMMENT ON COLUMN \"public\".\"messages\".\"content\" IS ''Message text content (max 2000 characters)''","COMMENT ON COLUMN \"public\".\"messages\".\"edited_at\" IS ''Last time message was edited (NULL if never edited)''","COMMENT ON COLUMN \"public\".\"messages\".\"deleted_at\" IS ''Soft delete timestamp (NULL if not deleted)''","COMMENT ON COLUMN \"public\".\"messages\".\"is_edited\" IS ''True if message has been edited''","COMMENT ON COLUMN \"public\".\"messages\".\"is_deleted\" IS ''True if message has been soft-deleted''","CREATE TABLE IF NOT EXISTS \"public\".\"operator_blackout_preferences\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization_id\" \"uuid\" NOT NULL,
+    \"preference_type\" \"public\".\"preference_type\" NOT NULL,
+    \"preference_action\" \"public\".\"preference_action\" NOT NULL,
+    \"holiday_name\" \"text\",
+    \"championship_id\" \"uuid\",
+    \"custom_name\" \"text\",
+    \"custom_start_date\" \"date\",
+    \"custom_end_date\" \"date\",
+    \"auto_apply\" boolean DEFAULT false NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"valid_championship_preference\" CHECK (((\"preference_type\" <> ''championship''::\"public\".\"preference_type\") OR (\"championship_id\" IS NOT NULL))),
+    CONSTRAINT \"valid_custom_preference\" CHECK (((\"preference_type\" <> ''custom''::\"public\".\"preference_type\") OR ((\"custom_name\" IS NOT NULL) AND (\"custom_start_date\" IS NOT NULL) AND (\"custom_end_date\" IS NOT NULL) AND (\"custom_end_date\" >= \"custom_start_date\")))),
+    CONSTRAINT \"valid_holiday_preference\" CHECK (((\"preference_type\" <> ''holiday''::\"public\".\"preference_type\") OR (\"holiday_name\" IS NOT NULL)))
+)","ALTER TABLE \"public\".\"operator_blackout_preferences\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"operator_blackout_preferences\" IS ''Stores operator preferences for automatic blackouts and ignored conflicts. Supports championship dates, holidays, and custom recurring dates. Used to reduce repetitive data entry and filter noise from conflict warnings.''","COMMENT ON COLUMN \"public\".\"operator_blackout_preferences\".\"preference_type\" IS ''Type of preference: holiday (e.g., Christmas), championship (BCA/APA), or custom (local tournaments)''","COMMENT ON COLUMN \"public\".\"operator_blackout_preferences\".\"preference_action\" IS ''Action to take: blackout (insert blackout week) or ignore (suppress conflict warning)''","COMMENT ON COLUMN \"public\".\"operator_blackout_preferences\".\"holiday_name\" IS ''Name of holiday (e.g., \"Christmas\", \"Tax Day\") - required when preference_type = holiday''","COMMENT ON COLUMN \"public\".\"operator_blackout_preferences\".\"championship_id\" IS ''Reference to championship_date_options - required when preference_type = championship''","COMMENT ON COLUMN \"public\".\"operator_blackout_preferences\".\"auto_apply\" IS ''If true, automatically apply this preference when creating new seasons (future feature)''","CREATE TABLE IF NOT EXISTS \"public\".\"organization_staff\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization_id\" \"uuid\" NOT NULL,
+    \"member_id\" \"uuid\" NOT NULL,
+    \"position\" character varying(20) NOT NULL,
+    \"added_by\" \"uuid\",
+    \"added_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"organization_staff_position_check\" CHECK (((\"position\")::\"text\" = ANY ((ARRAY[''owner''::character varying, ''admin''::character varying, ''league_rep''::character varying])::\"text\"[])))
+)","ALTER TABLE \"public\".\"organization_staff\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"organization_staff\" IS ''Many-to-many relationship between members and organizations with position-based access''","COMMENT ON COLUMN \"public\".\"organization_staff\".\"position\" IS ''owner (creator, can add/remove staff), admin (operations), league_rep (future use)''","COMMENT ON COLUMN \"public\".\"organization_staff\".\"added_by\" IS ''Member who added this person to the organization''","CREATE TABLE IF NOT EXISTS \"public\".\"organizations\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization_name\" character varying(255) NOT NULL,
+    \"organization_address\" character varying(255) NOT NULL,
+    \"organization_city\" character varying(100) NOT NULL,
+    \"organization_state\" character varying(2) NOT NULL,
+    \"organization_zip_code\" character varying(10) NOT NULL,
+    \"organization_email\" character varying(255) NOT NULL,
+    \"organization_email_visibility\" character varying(20) DEFAULT ''my_teams''::character varying NOT NULL,
+    \"organization_phone\" character varying(20) NOT NULL,
+    \"organization_phone_visibility\" character varying(20) DEFAULT ''my_teams''::character varying NOT NULL,
+    \"stripe_customer_id\" character varying(100) NOT NULL,
+    \"payment_method_id\" character varying(100) NOT NULL,
+    \"card_last4\" character varying(4) NOT NULL,
+    \"card_brand\" character varying(20) NOT NULL,
+    \"expiry_month\" integer NOT NULL,
+    \"expiry_year\" integer NOT NULL,
+    \"billing_zip\" character varying(10) NOT NULL,
+    \"payment_verified\" boolean DEFAULT false NOT NULL,
+    \"profanity_filter_enabled\" boolean DEFAULT true NOT NULL,
+    \"created_by\" \"uuid\" NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"organizations_organization_email_visibility_check\" CHECK (((\"organization_email_visibility\")::\"text\" = ANY ((ARRAY[''public''::character varying, ''my_organization''::character varying, ''my_teams''::character varying])::\"text\"[]))),
+    CONSTRAINT \"organizations_organization_phone_visibility_check\" CHECK (((\"organization_phone_visibility\")::\"text\" = ANY ((ARRAY[''public''::character varying, ''my_organization''::character varying, ''my_teams''::character varying])::\"text\"[])))
+)","ALTER TABLE \"public\".\"organizations\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"organizations\" IS ''Organization details for league operators. Supports multiple staff managing same organization.''","COMMENT ON COLUMN \"public\".\"organizations\".\"organization_email\" IS ''Contact email for the organization''","COMMENT ON COLUMN \"public\".\"organizations\".\"organization_email_visibility\" IS ''Who can see the organization email: public, my_organization, or my_teams''","COMMENT ON COLUMN \"public\".\"organizations\".\"organization_phone\" IS ''Contact phone number for the organization''","COMMENT ON COLUMN \"public\".\"organizations\".\"organization_phone_visibility\" IS ''Who can see the organization phone: public, my_organization, or my_teams''","COMMENT ON COLUMN \"public\".\"organizations\".\"profanity_filter_enabled\" IS ''Whether to enforce profanity validation for team names and organization content''","COMMENT ON COLUMN \"public\".\"organizations\".\"created_by\" IS ''Member who originally created this organization (becomes owner in organization_staff)''","CREATE TABLE IF NOT EXISTS \"public\".\"preferences\" (
+    \"id\" \"uuid\" DEFAULT \"extensions\".\"uuid_generate_v4\"() NOT NULL,
+    \"entity_type\" \"text\" NOT NULL,
+    \"entity_id\" \"uuid\" NOT NULL,
+    \"handicap_variant\" \"text\",
+    \"team_handicap_variant\" \"text\",
+    \"game_history_limit\" integer,
+    \"team_format\" \"text\",
+    \"golden_break_counts_as_win\" boolean,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"preferences_entity_type_check\" CHECK ((\"entity_type\" = ANY (ARRAY[''organization''::\"text\", ''league''::\"text\"]))),
+    CONSTRAINT \"preferences_game_history_limit_check\" CHECK (((\"game_history_limit\" >= 50) AND (\"game_history_limit\" <= 500))),
+    CONSTRAINT \"preferences_handicap_variant_check\" CHECK ((\"handicap_variant\" = ANY (ARRAY[''standard''::\"text\", ''reduced''::\"text\", ''none''::\"text\"]))),
+    CONSTRAINT \"preferences_team_format_check\" CHECK ((\"team_format\" = ANY (ARRAY[''5_man''::\"text\", ''8_man''::\"text\"]))),
+    CONSTRAINT \"preferences_team_handicap_variant_check\" CHECK ((\"team_handicap_variant\" = ANY (ARRAY[''standard''::\"text\", ''reduced''::\"text\", ''none''::\"text\"])))
+)","ALTER TABLE \"public\".\"preferences\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"preferences\" IS ''Stores both organization-level defaults and league-level overrides. NULL values cascade to next level (league → organization → system default).''","COMMENT ON COLUMN \"public\".\"preferences\".\"entity_type\" IS ''Type of entity: organization (defaults for all leagues) or league (overrides for specific league)''","COMMENT ON COLUMN \"public\".\"preferences\".\"entity_id\" IS ''ID of the entity: organization_id for organization, league_id for league''","COMMENT ON COLUMN \"public\".\"preferences\".\"handicap_variant\" IS ''Player handicap calculation method. NULL = use next level default''","COMMENT ON COLUMN \"public\".\"preferences\".\"team_handicap_variant\" IS ''Team bonus calculation method. NULL = use next level default''","COMMENT ON COLUMN \"public\".\"preferences\".\"game_history_limit\" IS ''Number of recent games for handicap calculation. NULL = use next level default (system default: 200)''","COMMENT ON COLUMN \"public\".\"preferences\".\"team_format\" IS ''Default team format for new leagues. NULL = use next level default (system default: 5_man)''","COMMENT ON COLUMN \"public\".\"preferences\".\"golden_break_counts_as_win\" IS ''Whether golden breaks count as wins. NULL = use next level default (system default: true)''","CREATE TABLE IF NOT EXISTS \"public\".\"report_actions\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"report_id\" \"uuid\" NOT NULL,
+    \"actor_id\" \"uuid\" NOT NULL,
+    \"actor_role\" character varying(50) NOT NULL,
+    \"action_type\" \"public\".\"moderation_action\" NOT NULL,
+    \"action_notes\" \"text\" NOT NULL,
+    \"suspension_until\" timestamp with time zone,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL
+)","ALTER TABLE \"public\".\"report_actions\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"report_updates\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"report_id\" \"uuid\" NOT NULL,
+    \"updater_id\" \"uuid\" NOT NULL,
+    \"updater_role\" character varying(50) NOT NULL,
+    \"old_status\" \"public\".\"report_status\" NOT NULL,
+    \"new_status\" \"public\".\"report_status\" NOT NULL,
+    \"update_notes\" \"text\",
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL
+)","ALTER TABLE \"public\".\"report_updates\" OWNER TO \"postgres\"","CREATE OR REPLACE VIEW \"public\".\"resolved_league_preferences\" AS
+ SELECT \"l\".\"id\" AS \"league_id\",
+    \"l\".\"organization_id\",
+    COALESCE(\"league_prefs\".\"handicap_variant\", \"org_prefs\".\"handicap_variant\", \"l\".\"handicap_variant\", ''standard''::\"text\") AS \"handicap_variant\",
+    COALESCE(\"league_prefs\".\"team_handicap_variant\", \"org_prefs\".\"team_handicap_variant\", \"org_prefs\".\"handicap_variant\", \"l\".\"handicap_variant\", ''standard''::\"text\") AS \"team_handicap_variant\",
+    COALESCE(\"league_prefs\".\"game_history_limit\", \"org_prefs\".\"game_history_limit\", 200) AS \"game_history_limit\",
+    COALESCE(\"league_prefs\".\"team_format\", \"org_prefs\".\"team_format\", (\"l\".\"team_format\")::\"text\") AS \"team_format\",
+    COALESCE(\"league_prefs\".\"golden_break_counts_as_win\", \"org_prefs\".\"golden_break_counts_as_win\", \"l\".\"golden_break_counts_as_win\", true) AS \"golden_break_counts_as_win\"
+   FROM ((\"public\".\"leagues\" \"l\"
+     LEFT JOIN \"public\".\"preferences\" \"org_prefs\" ON (((\"org_prefs\".\"entity_type\" = ''organization''::\"text\") AND (\"org_prefs\".\"entity_id\" = \"l\".\"organization_id\"))))
+     LEFT JOIN \"public\".\"preferences\" \"league_prefs\" ON (((\"league_prefs\".\"entity_type\" = ''league''::\"text\") AND (\"league_prefs\".\"entity_id\" = \"l\".\"id\"))))","ALTER VIEW \"public\".\"resolved_league_preferences\" OWNER TO \"postgres\"","COMMENT ON VIEW \"public\".\"resolved_league_preferences\" IS ''Convenience view showing final resolved preferences for each league with full fallback chain applied.''","CREATE TABLE IF NOT EXISTS \"public\".\"season_weeks\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"season_id\" \"uuid\" NOT NULL,
+    \"scheduled_date\" \"date\" NOT NULL,
+    \"week_name\" \"text\" NOT NULL,
+    \"week_type\" character varying(20) NOT NULL,
+    \"week_completed\" boolean DEFAULT false NOT NULL,
+    \"notes\" \"text\",
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"season_weeks_week_type_check\" CHECK (((\"week_type\")::\"text\" = ANY (ARRAY[(''regular''::character varying)::\"text\", (''blackout''::character varying)::\"text\", (''playoffs''::character varying)::\"text\", (''season_end_break''::character varying)::\"text\"])))
+)","ALTER TABLE \"public\".\"season_weeks\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"seasons\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"league_id\" \"uuid\" NOT NULL,
+    \"season_name\" \"text\" NOT NULL,
+    \"start_date\" \"date\" NOT NULL,
+    \"end_date\" \"date\" NOT NULL,
+    \"season_length\" integer NOT NULL,
+    \"status\" character varying(20) DEFAULT ''upcoming''::character varying NOT NULL,
+    \"season_completed\" boolean DEFAULT false,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"seasons_season_length_check\" CHECK (((\"season_length\" >= 10) AND (\"season_length\" <= 52)))
+)","ALTER TABLE \"public\".\"seasons\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"team_players\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"team_id\" \"uuid\" NOT NULL,
+    \"member_id\" \"uuid\" NOT NULL,
+    \"season_id\" \"uuid\" NOT NULL,
+    \"is_captain\" boolean DEFAULT false,
+    \"individual_wins\" integer DEFAULT 0,
+    \"individual_losses\" integer DEFAULT 0,
+    \"skill_level\" integer,
+    \"status\" character varying(20) DEFAULT ''active''::character varying,
+    \"joined_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"team_players_individual_losses_check\" CHECK ((\"individual_losses\" >= 0)),
+    CONSTRAINT \"team_players_individual_wins_check\" CHECK ((\"individual_wins\" >= 0)),
+    CONSTRAINT \"team_players_skill_level_check\" CHECK (((\"skill_level\" >= 1) AND (\"skill_level\" <= 9))),
+    CONSTRAINT \"team_players_status_check\" CHECK (((\"status\")::\"text\" = ANY (ARRAY[(''active''::character varying)::\"text\", (''inactive''::character varying)::\"text\", (''dropped''::character varying)::\"text\"])))
+)","ALTER TABLE \"public\".\"team_players\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"team_players\" IS ''Join table linking players to teams for specific seasons. Tracks roster membership and stats.''","COMMENT ON COLUMN \"public\".\"team_players\".\"team_id\" IS ''Which team this player is on''","COMMENT ON COLUMN \"public\".\"team_players\".\"member_id\" IS ''Which player/member''","COMMENT ON COLUMN \"public\".\"team_players\".\"season_id\" IS ''Denormalized season reference for fast queries without joining teams''","COMMENT ON COLUMN \"public\".\"team_players\".\"is_captain\" IS ''True if this player is the captain (redundant with teams.captain_id but useful)''","COMMENT ON COLUMN \"public\".\"team_players\".\"skill_level\" IS ''BCA skill level (1-9) for handicap calculations''","COMMENT ON COLUMN \"public\".\"team_players\".\"status\" IS ''Player status: active (playing), inactive (benched), dropped (removed from team)''","CREATE TABLE IF NOT EXISTS \"public\".\"teams\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"season_id\" \"uuid\" NOT NULL,
+    \"league_id\" \"uuid\" NOT NULL,
+    \"captain_id\" \"uuid\" NOT NULL,
+    \"home_venue_id\" \"uuid\",
+    \"team_name\" character varying(100) NOT NULL,
+    \"roster_size\" integer NOT NULL,
+    \"wins\" integer DEFAULT 0,
+    \"losses\" integer DEFAULT 0,
+    \"ties\" integer DEFAULT 0,
+    \"points\" integer DEFAULT 0,
+    \"games_won\" integer DEFAULT 0,
+    \"games_lost\" integer DEFAULT 0,
+    \"status\" character varying(20) DEFAULT ''active''::character varying,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"teams_games_lost_check\" CHECK ((\"games_lost\" >= 0)),
+    CONSTRAINT \"teams_games_won_check\" CHECK ((\"games_won\" >= 0)),
+    CONSTRAINT \"teams_losses_check\" CHECK ((\"losses\" >= 0)),
+    CONSTRAINT \"teams_points_check\" CHECK ((\"points\" >= 0)),
+    CONSTRAINT \"teams_roster_size_check\" CHECK ((\"roster_size\" = ANY (ARRAY[5, 8]))),
+    CONSTRAINT \"teams_status_check\" CHECK (((\"status\")::\"text\" = ANY (ARRAY[(''active''::character varying)::\"text\", (''withdrawn''::character varying)::\"text\", (''forfeited''::character varying)::\"text\"]))),
+    CONSTRAINT \"teams_ties_check\" CHECK ((\"ties\" >= 0)),
+    CONSTRAINT \"teams_wins_check\" CHECK ((\"wins\" >= 0))
+)","ALTER TABLE \"public\".\"teams\" OWNER TO \"postgres\"","COMMENT ON TABLE \"public\".\"teams\" IS ''Teams competing in specific seasons. Season-specific: each season gets new team records.''","COMMENT ON COLUMN \"public\".\"teams\".\"season_id\" IS ''Which season this team is competing in''","COMMENT ON COLUMN \"public\".\"teams\".\"league_id\" IS ''Denormalized league reference for fast queries without joining seasons''","COMMENT ON COLUMN \"public\".\"teams\".\"captain_id\" IS ''Team captain who can edit team name, venue, and manage roster''","COMMENT ON COLUMN \"public\".\"teams\".\"home_venue_id\" IS ''Where team plays home games. Captain chooses from league authorized venues.''","COMMENT ON COLUMN \"public\".\"teams\".\"roster_size\" IS ''Max players: 5 for 5-man format, 8 for 8-man format''","COMMENT ON COLUMN \"public\".\"teams\".\"status\" IS ''Team status: active (playing), withdrawn (left league), forfeited (disqualified)''","CREATE TABLE IF NOT EXISTS \"public\".\"user_reports\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"reporter_id\" \"uuid\" NOT NULL,
+    \"reported_user_id\" \"uuid\" NOT NULL,
+    \"category\" \"public\".\"report_category\" NOT NULL,
+    \"description\" \"text\" NOT NULL,
+    \"evidence_snapshot\" \"jsonb\",
+    \"context_data\" \"jsonb\",
+    \"severity\" \"public\".\"report_severity\" DEFAULT ''medium''::\"public\".\"report_severity\",
+    \"auto_flagged\" boolean DEFAULT false,
+    \"status\" \"public\".\"report_status\" DEFAULT ''pending''::\"public\".\"report_status\",
+    \"assigned_organization_id\" \"uuid\",
+    \"escalated_to_dev\" boolean DEFAULT false,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"() NOT NULL,
+    \"reviewed_at\" timestamp with time zone,
+    \"resolved_at\" timestamp with time zone,
+    CONSTRAINT \"cannot_report_self\" CHECK ((\"reporter_id\" <> \"reported_user_id\")),
+    CONSTRAINT \"description_not_empty\" CHECK ((\"length\"(TRIM(BOTH FROM \"description\")) > 0))
+)","ALTER TABLE \"public\".\"user_reports\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"venue_owners\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"user_id\" \"uuid\",
+    \"business_name\" character varying(255) NOT NULL,
+    \"contact_name\" character varying(255) NOT NULL,
+    \"contact_phone\" character varying(20) NOT NULL,
+    \"contact_email\" character varying(255) NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"()
+)","ALTER TABLE \"public\".\"venue_owners\" OWNER TO \"postgres\"","CREATE TABLE IF NOT EXISTS \"public\".\"venues\" (
+    \"id\" \"uuid\" DEFAULT \"gen_random_uuid\"() NOT NULL,
+    \"organization_id\" \"uuid\",
+    \"venue_owner_id\" \"uuid\",
+    \"name\" character varying(255) NOT NULL,
+    \"street_address\" character varying(255) NOT NULL,
+    \"city\" character varying(100) NOT NULL,
+    \"state\" character varying(2) NOT NULL,
+    \"zip_code\" character varying(10) NOT NULL,
+    \"phone\" character varying(20) NOT NULL,
+    \"bar_box_tables\" integer DEFAULT 0 NOT NULL,
+    \"regulation_tables\" integer DEFAULT 0 NOT NULL,
+    \"total_tables\" integer GENERATED ALWAYS AS ((\"bar_box_tables\" + \"regulation_tables\")) STORED,
+    \"proprietor_name\" character varying(255),
+    \"proprietor_phone\" character varying(20),
+    \"league_contact_name\" character varying(255),
+    \"league_contact_phone\" character varying(20),
+    \"league_contact_email\" character varying(255),
+    \"website\" character varying(500),
+    \"business_hours\" \"text\",
+    \"notes\" \"text\",
+    \"is_active\" boolean DEFAULT true NOT NULL,
+    \"created_at\" timestamp with time zone DEFAULT \"now\"(),
+    \"updated_at\" timestamp with time zone DEFAULT \"now\"(),
+    CONSTRAINT \"venue_must_have_tables\" CHECK ((\"total_tables\" > 0)),
+    CONSTRAINT \"venues_bar_box_tables_check\" CHECK ((\"bar_box_tables\" >= 0)),
+    CONSTRAINT \"venues_regulation_tables_check\" CHECK ((\"regulation_tables\" >= 0))
+)","ALTER TABLE \"public\".\"venues\" OWNER TO \"postgres\"","COMMENT ON COLUMN \"public\".\"venues\".\"organization_id\" IS ''Operator who first created this venue. NULL if operator deleted. Venues persist independently.''","ALTER TABLE ONLY \"public\".\"members\" ALTER COLUMN \"system_player_number\" SET DEFAULT \"nextval\"(''\"public\".\"members_system_player_number_seq\"''::\"regclass\")","ALTER TABLE ONLY \"public\".\"blocked_users\"
+    ADD CONSTRAINT \"blocked_users_pkey\" PRIMARY KEY (\"blocker_id\", \"blocked_id\")","ALTER TABLE ONLY \"public\".\"championship_date_options\"
+    ADD CONSTRAINT \"championship_date_options_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"conversation_participants\"
+    ADD CONSTRAINT \"conversation_participants_pkey\" PRIMARY KEY (\"conversation_id\", \"user_id\")","ALTER TABLE ONLY \"public\".\"conversations\"
+    ADD CONSTRAINT \"conversations_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"handicap_chart_3vs3\"
+    ADD CONSTRAINT \"handicap_chart_3vs3_pkey\" PRIMARY KEY (\"hcp_diff\")","ALTER TABLE ONLY \"public\".\"league_venues\"
+    ADD CONSTRAINT \"league_venues_league_id_venue_id_key\" UNIQUE (\"league_id\", \"venue_id\")","ALTER TABLE ONLY \"public\".\"league_venues\"
+    ADD CONSTRAINT \"league_venues_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"leagues\"
+    ADD CONSTRAINT \"leagues_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_match_id_game_number_key\" UNIQUE (\"match_id\", \"game_number\")","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"match_lineups\"
+    ADD CONSTRAINT \"match_lineups_match_id_team_id_key\" UNIQUE (\"match_id\", \"team_id\")","ALTER TABLE ONLY \"public\".\"match_lineups\"
+    ADD CONSTRAINT \"match_lineups_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"members\"
+    ADD CONSTRAINT \"members_bca_member_number_key\" UNIQUE (\"bca_member_number\")","ALTER TABLE ONLY \"public\".\"members\"
+    ADD CONSTRAINT \"members_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"members\"
+    ADD CONSTRAINT \"members_system_player_number_key\" UNIQUE (\"system_player_number\")","ALTER TABLE ONLY \"public\".\"members\"
+    ADD CONSTRAINT \"members_user_id_key\" UNIQUE (\"user_id\")","ALTER TABLE ONLY \"public\".\"messages\"
+    ADD CONSTRAINT \"messages_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"operator_blackout_preferences\"
+    ADD CONSTRAINT \"operator_blackout_preferences_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"organization_staff\"
+    ADD CONSTRAINT \"organization_staff_organization_id_member_id_key\" UNIQUE (\"organization_id\", \"member_id\")","ALTER TABLE ONLY \"public\".\"organization_staff\"
+    ADD CONSTRAINT \"organization_staff_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"organizations\"
+    ADD CONSTRAINT \"organizations_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"preferences\"
+    ADD CONSTRAINT \"preferences_entity_type_entity_id_key\" UNIQUE (\"entity_type\", \"entity_id\")","ALTER TABLE ONLY \"public\".\"preferences\"
+    ADD CONSTRAINT \"preferences_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"report_actions\"
+    ADD CONSTRAINT \"report_actions_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"report_updates\"
+    ADD CONSTRAINT \"report_updates_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"season_weeks\"
+    ADD CONSTRAINT \"season_weeks_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"seasons\"
+    ADD CONSTRAINT \"seasons_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"team_players\"
+    ADD CONSTRAINT \"team_players_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"team_players\"
+    ADD CONSTRAINT \"team_players_team_id_member_id_key\" UNIQUE (\"team_id\", \"member_id\")","ALTER TABLE ONLY \"public\".\"teams\"
+    ADD CONSTRAINT \"teams_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"season_weeks\"
+    ADD CONSTRAINT \"unique_season_date\" UNIQUE (\"season_id\", \"scheduled_date\")","ALTER TABLE ONLY \"public\".\"user_reports\"
+    ADD CONSTRAINT \"user_reports_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"venue_owners\"
+    ADD CONSTRAINT \"venue_owners_pkey\" PRIMARY KEY (\"id\")","ALTER TABLE ONLY \"public\".\"venue_owners\"
+    ADD CONSTRAINT \"venue_owners_user_id_key\" UNIQUE (\"user_id\")","ALTER TABLE ONLY \"public\".\"venues\"
+    ADD CONSTRAINT \"venues_pkey\" PRIMARY KEY (\"id\")","CREATE INDEX \"idx_blocked_users_blocked\" ON \"public\".\"blocked_users\" USING \"btree\" (\"blocked_id\")","CREATE INDEX \"idx_blocked_users_blocker\" ON \"public\".\"blocked_users\" USING \"btree\" (\"blocker_id\")","CREATE INDEX \"idx_championship_dev_verified\" ON \"public\".\"championship_date_options\" USING \"btree\" (\"organization\", \"year\", \"dev_verified\")","CREATE INDEX \"idx_championship_end_date\" ON \"public\".\"championship_date_options\" USING \"btree\" (\"end_date\")","CREATE INDEX \"idx_championship_org_year\" ON \"public\".\"championship_date_options\" USING \"btree\" (\"organization\", \"year\")","CREATE INDEX \"idx_conversation_participants_active\" ON \"public\".\"conversation_participants\" USING \"btree\" (\"user_id\", \"conversation_id\") WHERE (\"left_at\" IS NULL)","CREATE INDEX \"idx_conversation_participants_conversation\" ON \"public\".\"conversation_participants\" USING \"btree\" (\"conversation_id\")","CREATE INDEX \"idx_conversation_participants_unread\" ON \"public\".\"conversation_participants\" USING \"btree\" (\"user_id\", \"unread_count\") WHERE (\"unread_count\" > 0)","CREATE INDEX \"idx_conversation_participants_user\" ON \"public\".\"conversation_participants\" USING \"btree\" (\"user_id\")","CREATE INDEX \"idx_conversations_auto_managed\" ON \"public\".\"conversations\" USING \"btree\" (\"auto_managed\")","CREATE INDEX \"idx_conversations_last_message_at\" ON \"public\".\"conversations\" USING \"btree\" (\"last_message_at\" DESC)","CREATE INDEX \"idx_conversations_scope\" ON \"public\".\"conversations\" USING \"btree\" (\"scope_type\", \"scope_id\") WHERE (\"auto_managed\" = true)","CREATE INDEX \"idx_conversations_type\" ON \"public\".\"conversations\" USING \"btree\" (\"conversation_type\") WHERE (\"conversation_type\" IS NOT NULL)","CREATE INDEX \"idx_league_venues_league\" ON \"public\".\"league_venues\" USING \"btree\" (\"league_id\")","CREATE INDEX \"idx_league_venues_venue\" ON \"public\".\"league_venues\" USING \"btree\" (\"venue_id\")","CREATE INDEX \"idx_leagues_day_of_week\" ON \"public\".\"leagues\" USING \"btree\" (\"day_of_week\")","CREATE INDEX \"idx_leagues_organization_id\" ON \"public\".\"leagues\" USING \"btree\" (\"organization_id\")","CREATE INDEX \"idx_leagues_status\" ON \"public\".\"leagues\" USING \"btree\" (\"status\")","CREATE INDEX \"idx_match_games_away_position_player\" ON \"public\".\"match_games\" USING \"btree\" (\"away_position\", \"away_player_id\", \"game_type\", \"created_at\" DESC) WHERE (\"winner_player_id\" IS NOT NULL)","CREATE INDEX \"idx_match_games_game_type\" ON \"public\".\"match_games\" USING \"btree\" (\"game_type\")","CREATE INDEX \"idx_match_games_home_position_player\" ON \"public\".\"match_games\" USING \"btree\" (\"home_position\", \"home_player_id\", \"game_type\", \"created_at\" DESC) WHERE (\"winner_player_id\" IS NOT NULL)","CREATE INDEX \"idx_match_games_match_id\" ON \"public\".\"match_games\" USING \"btree\" (\"match_id\")","CREATE INDEX \"idx_match_games_player_game_type_created\" ON \"public\".\"match_games\" USING \"btree\" (\"home_player_id\", \"game_type\", \"created_at\" DESC) WHERE (\"winner_player_id\" IS NOT NULL)","CREATE INDEX \"idx_match_games_player_game_type_created_away\" ON \"public\".\"match_games\" USING \"btree\" (\"away_player_id\", \"game_type\", \"created_at\" DESC) WHERE (\"winner_player_id\" IS NOT NULL)","CREATE INDEX \"idx_match_games_tiebreaker\" ON \"public\".\"match_games\" USING \"btree\" (\"is_tiebreaker\")","CREATE INDEX \"idx_match_games_winner_player\" ON \"public\".\"match_games\" USING \"btree\" (\"winner_player_id\")","CREATE INDEX \"idx_match_lineups_locked\" ON \"public\".\"match_lineups\" USING \"btree\" (\"locked\")","CREATE INDEX \"idx_match_lineups_match_id\" ON \"public\".\"match_lineups\" USING \"btree\" (\"match_id\")","CREATE INDEX \"idx_match_lineups_team_id\" ON \"public\".\"match_lineups\" USING \"btree\" (\"team_id\")","CREATE INDEX \"idx_matches_actual_venue_id\" ON \"public\".\"matches\" USING \"btree\" (\"actual_venue_id\")","CREATE INDEX \"idx_matches_away_team_id\" ON \"public\".\"matches\" USING \"btree\" (\"away_team_id\")","CREATE INDEX \"idx_matches_completed_season\" ON \"public\".\"matches\" USING \"btree\" (\"season_id\", \"status\") WHERE (\"status\" = ''completed''::\"text\")","CREATE INDEX \"idx_matches_home_team_id\" ON \"public\".\"matches\" USING \"btree\" (\"home_team_id\")","CREATE INDEX \"idx_matches_scheduled_venue_id\" ON \"public\".\"matches\" USING \"btree\" (\"scheduled_venue_id\")","CREATE INDEX \"idx_matches_season_id\" ON \"public\".\"matches\" USING \"btree\" (\"season_id\")","CREATE INDEX \"idx_matches_season_week_id\" ON \"public\".\"matches\" USING \"btree\" (\"season_week_id\")","CREATE INDEX \"idx_matches_status\" ON \"public\".\"matches\" USING \"btree\" (\"status\")","CREATE INDEX \"idx_matches_status_season_week\" ON \"public\".\"matches\" USING \"btree\" (\"status\", \"season_id\", \"season_week_id\") WHERE (\"status\" = ANY (ARRAY[''in_progress''::\"text\", ''scheduled''::\"text\"]))","CREATE INDEX \"idx_members_bca_number\" ON \"public\".\"members\" USING \"btree\" (\"bca_member_number\")","CREATE INDEX \"idx_members_email\" ON \"public\".\"members\" USING \"btree\" (\"email\")","CREATE INDEX \"idx_members_role\" ON \"public\".\"members\" USING \"btree\" (\"role\")","CREATE INDEX \"idx_members_state\" ON \"public\".\"members\" USING \"btree\" (\"state\")","CREATE INDEX \"idx_members_system_number\" ON \"public\".\"members\" USING \"btree\" (\"system_player_number\")","CREATE INDEX \"idx_members_user_id\" ON \"public\".\"members\" USING \"btree\" (\"user_id\")","CREATE INDEX \"idx_messages_active\" ON \"public\".\"messages\" USING \"btree\" (\"conversation_id\", \"created_at\" DESC) WHERE (\"is_deleted\" = false)","CREATE INDEX \"idx_messages_conversation\" ON \"public\".\"messages\" USING \"btree\" (\"conversation_id\", \"created_at\" DESC)","CREATE INDEX \"idx_messages_created_at\" ON \"public\".\"messages\" USING \"btree\" (\"created_at\" DESC)","CREATE INDEX \"idx_messages_sender\" ON \"public\".\"messages\" USING \"btree\" (\"sender_id\")","CREATE INDEX \"idx_operator_blackout_preferences_championship_id\" ON \"public\".\"operator_blackout_preferences\" USING \"btree\" (\"championship_id\") WHERE (\"championship_id\" IS NOT NULL)","CREATE INDEX \"idx_operator_blackout_preferences_organization_id\" ON \"public\".\"operator_blackout_preferences\" USING \"btree\" (\"organization_id\")","CREATE INDEX \"idx_operator_blackout_preferences_type_action\" ON \"public\".\"operator_blackout_preferences\" USING \"btree\" (\"preference_type\", \"preference_action\")","CREATE INDEX \"idx_org_staff_member\" ON \"public\".\"organization_staff\" USING \"btree\" (\"member_id\")","CREATE INDEX \"idx_org_staff_org\" ON \"public\".\"organization_staff\" USING \"btree\" (\"organization_id\")","CREATE INDEX \"idx_org_staff_position\" ON \"public\".\"organization_staff\" USING \"btree\" (\"position\")","CREATE INDEX \"idx_organizations_created_by\" ON \"public\".\"organizations\" USING \"btree\" (\"created_by\")","CREATE INDEX \"idx_organizations_name\" ON \"public\".\"organizations\" USING \"btree\" (\"organization_name\")","CREATE INDEX \"idx_preferences_entity\" ON \"public\".\"preferences\" USING \"btree\" (\"entity_type\", \"entity_id\")","CREATE INDEX \"idx_preferences_league\" ON \"public\".\"preferences\" USING \"btree\" (\"entity_type\", \"entity_id\") WHERE (\"entity_type\" = ''league''::\"text\")","CREATE INDEX \"idx_preferences_organization\" ON \"public\".\"preferences\" USING \"btree\" (\"entity_type\", \"entity_id\") WHERE (\"entity_type\" = ''organization''::\"text\")","CREATE INDEX \"idx_report_actions_actor\" ON \"public\".\"report_actions\" USING \"btree\" (\"actor_id\")","CREATE INDEX \"idx_report_actions_created\" ON \"public\".\"report_actions\" USING \"btree\" (\"created_at\" DESC)","CREATE INDEX \"idx_report_actions_report\" ON \"public\".\"report_actions\" USING \"btree\" (\"report_id\")","CREATE INDEX \"idx_report_updates_report\" ON \"public\".\"report_updates\" USING \"btree\" (\"report_id\")","CREATE INDEX \"idx_season_weeks_completed\" ON \"public\".\"season_weeks\" USING \"btree\" (\"week_completed\")","CREATE INDEX \"idx_season_weeks_date\" ON \"public\".\"season_weeks\" USING \"btree\" (\"scheduled_date\")","CREATE INDEX \"idx_season_weeks_season_id\" ON \"public\".\"season_weeks\" USING \"btree\" (\"season_id\")","CREATE INDEX \"idx_season_weeks_type\" ON \"public\".\"season_weeks\" USING \"btree\" (\"week_type\")","CREATE INDEX \"idx_seasons_dates\" ON \"public\".\"seasons\" USING \"btree\" (\"start_date\", \"end_date\")","CREATE INDEX \"idx_seasons_league_id\" ON \"public\".\"seasons\" USING \"btree\" (\"league_id\")","CREATE INDEX \"idx_seasons_status\" ON \"public\".\"seasons\" USING \"btree\" (\"status\")","CREATE INDEX \"idx_team_players_captain\" ON \"public\".\"team_players\" USING \"btree\" (\"team_id\", \"is_captain\")","CREATE INDEX \"idx_team_players_member\" ON \"public\".\"team_players\" USING \"btree\" (\"member_id\")","CREATE INDEX \"idx_team_players_season\" ON \"public\".\"team_players\" USING \"btree\" (\"season_id\")","CREATE INDEX \"idx_team_players_team\" ON \"public\".\"team_players\" USING \"btree\" (\"team_id\")","CREATE INDEX \"idx_teams_captain\" ON \"public\".\"teams\" USING \"btree\" (\"captain_id\")","CREATE INDEX \"idx_teams_league\" ON \"public\".\"teams\" USING \"btree\" (\"league_id\")","CREATE INDEX \"idx_teams_season\" ON \"public\".\"teams\" USING \"btree\" (\"season_id\")","CREATE INDEX \"idx_teams_status\" ON \"public\".\"teams\" USING \"btree\" (\"status\")","CREATE INDEX \"idx_teams_venue\" ON \"public\".\"teams\" USING \"btree\" (\"home_venue_id\")","CREATE INDEX \"idx_user_reports_assigned_operator\" ON \"public\".\"user_reports\" USING \"btree\" (\"assigned_organization_id\")","CREATE INDEX \"idx_user_reports_category\" ON \"public\".\"user_reports\" USING \"btree\" (\"category\")","CREATE INDEX \"idx_user_reports_created_at\" ON \"public\".\"user_reports\" USING \"btree\" (\"created_at\" DESC)","CREATE INDEX \"idx_user_reports_escalated\" ON \"public\".\"user_reports\" USING \"btree\" (\"escalated_to_dev\") WHERE (\"escalated_to_dev\" = true)","CREATE INDEX \"idx_user_reports_reported_user\" ON \"public\".\"user_reports\" USING \"btree\" (\"reported_user_id\")","CREATE INDEX \"idx_user_reports_reporter\" ON \"public\".\"user_reports\" USING \"btree\" (\"reporter_id\")","CREATE INDEX \"idx_user_reports_severity\" ON \"public\".\"user_reports\" USING \"btree\" (\"severity\")","CREATE INDEX \"idx_user_reports_status\" ON \"public\".\"user_reports\" USING \"btree\" (\"status\")","CREATE INDEX \"idx_venue_owners_user\" ON \"public\".\"venue_owners\" USING \"btree\" (\"user_id\")","CREATE INDEX \"idx_venues_active\" ON \"public\".\"venues\" USING \"btree\" (\"is_active\")","CREATE INDEX \"idx_venues_city_state\" ON \"public\".\"venues\" USING \"btree\" (\"city\", \"state\")","CREATE INDEX \"idx_venues_organization_id\" ON \"public\".\"venues\" USING \"btree\" (\"organization_id\")","CREATE UNIQUE INDEX \"unique_dates_per_org_year\" ON \"public\".\"championship_date_options\" USING \"btree\" (\"organization\", \"year\", \"start_date\", \"end_date\")","CREATE OR REPLACE TRIGGER \"championship_date_options_updated_at_trigger\" BEFORE UPDATE ON \"public\".\"championship_date_options\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_championship_date_options_updated_at\"()","CREATE OR REPLACE TRIGGER \"create_owner_staff_trigger\" AFTER INSERT ON \"public\".\"organizations\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"create_owner_staff\"()","CREATE OR REPLACE TRIGGER \"enforce_delete_time_limit\" BEFORE UPDATE OF \"is_deleted\" ON \"public\".\"messages\" FOR EACH ROW WHEN (((\"new\".\"is_deleted\" = true) AND (\"old\".\"is_deleted\" = false))) EXECUTE FUNCTION \"public\".\"check_delete_time_limit\"()","CREATE OR REPLACE TRIGGER \"enforce_edit_time_limit\" BEFORE UPDATE OF \"content\" ON \"public\".\"messages\" FOR EACH ROW WHEN ((\"old\".\"content\" IS DISTINCT FROM \"new\".\"content\")) EXECUTE FUNCTION \"public\".\"check_edit_time_limit\"()","CREATE OR REPLACE TRIGGER \"increment_unread_on_message\" AFTER INSERT ON \"public\".\"messages\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"increment_unread_count\"()","CREATE OR REPLACE TRIGGER \"league_venues_updated_at\" BEFORE UPDATE ON \"public\".\"league_venues\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_league_venues_updated_at\"()","CREATE OR REPLACE TRIGGER \"leagues_updated_at_trigger\" BEFORE UPDATE ON \"public\".\"leagues\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_leagues_updated_at\"()","CREATE OR REPLACE TRIGGER \"members_updated_at\" BEFORE UPDATE ON \"public\".\"members\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_members_updated_at\"()","CREATE OR REPLACE TRIGGER \"operator_blackout_preferences_updated_at_trigger\" BEFORE UPDATE ON \"public\".\"operator_blackout_preferences\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"()","CREATE OR REPLACE TRIGGER \"prevent_dm_with_blocked_user\" BEFORE INSERT ON \"public\".\"conversation_participants\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"prevent_blocked_user_dm\"()","CREATE OR REPLACE TRIGGER \"reset_unread_on_read\" BEFORE UPDATE ON \"public\".\"conversation_participants\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"reset_unread_count\"()","CREATE OR REPLACE TRIGGER \"season_weeks_updated_at\" BEFORE UPDATE ON \"public\".\"season_weeks\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_season_weeks_updated_at\"()","CREATE OR REPLACE TRIGGER \"seasons_updated_at\" BEFORE UPDATE ON \"public\".\"seasons\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_seasons_updated_at\"()","CREATE OR REPLACE TRIGGER \"set_conversations_updated_at\" BEFORE UPDATE ON \"public\".\"conversations\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_conversations_updated_at\"()","CREATE OR REPLACE TRIGGER \"set_messages_updated_at\" BEFORE UPDATE ON \"public\".\"messages\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_messages_updated_at\"()","CREATE OR REPLACE TRIGGER \"team_players_updated_at\" BEFORE UPDATE ON \"public\".\"team_players\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_team_players_updated_at\"()","CREATE OR REPLACE TRIGGER \"teams_updated_at\" BEFORE UPDATE ON \"public\".\"teams\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_teams_updated_at\"()","CREATE OR REPLACE TRIGGER \"trigger_auto_create_match_lineups\" AFTER INSERT ON \"public\".\"matches\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"auto_create_match_lineups\"()","CREATE OR REPLACE TRIGGER \"trigger_auto_delete_match_lineups\" BEFORE DELETE ON \"public\".\"matches\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"auto_delete_match_lineups\"()","CREATE OR REPLACE TRIGGER \"trigger_create_league_preferences\" AFTER INSERT ON \"public\".\"leagues\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"create_default_league_preferences\"()","CREATE OR REPLACE TRIGGER \"trigger_create_org_preferences\" AFTER INSERT ON \"public\".\"organizations\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"create_default_org_preferences\"()","CREATE OR REPLACE TRIGGER \"trigger_update_match_lineups_updated_at\" BEFORE UPDATE ON \"public\".\"match_lineups\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_match_lineups_updated_at\"()","CREATE OR REPLACE TRIGGER \"trigger_update_match_venues_on_team_venue_change\" AFTER UPDATE OF \"home_venue_id\" ON \"public\".\"teams\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"()","CREATE OR REPLACE TRIGGER \"trigger_update_matches_updated_at\" BEFORE UPDATE ON \"public\".\"matches\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_matches_updated_at\"()","CREATE OR REPLACE TRIGGER \"trigger_update_report_resolved_at\" BEFORE UPDATE ON \"public\".\"user_reports\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_report_resolved_at\"()","CREATE OR REPLACE TRIGGER \"trigger_update_report_reviewed_at\" BEFORE UPDATE ON \"public\".\"user_reports\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_report_reviewed_at\"()","CREATE OR REPLACE TRIGGER \"update_conversation_on_message_soft_delete\" AFTER UPDATE OF \"is_deleted\" ON \"public\".\"messages\" FOR EACH ROW WHEN (((\"new\".\"is_deleted\" = true) AND (\"old\".\"is_deleted\" = false))) EXECUTE FUNCTION \"public\".\"update_conversation_on_message_delete\"()","CREATE OR REPLACE TRIGGER \"update_conversation_on_new_message\" AFTER INSERT ON \"public\".\"messages\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_conversation_last_message\"()","CREATE OR REPLACE TRIGGER \"venue_owners_updated_at\" BEFORE UPDATE ON \"public\".\"venue_owners\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_venue_owners_updated_at\"()","CREATE OR REPLACE TRIGGER \"venues_updated_at\" BEFORE UPDATE ON \"public\".\"venues\" FOR EACH ROW EXECUTE FUNCTION \"public\".\"update_venues_updated_at\"()","ALTER TABLE ONLY \"public\".\"blocked_users\"
+    ADD CONSTRAINT \"blocked_users_blocked_id_fkey\" FOREIGN KEY (\"blocked_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"blocked_users\"
+    ADD CONSTRAINT \"blocked_users_blocker_id_fkey\" FOREIGN KEY (\"blocker_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"conversation_participants\"
+    ADD CONSTRAINT \"conversation_participants_conversation_id_fkey\" FOREIGN KEY (\"conversation_id\") REFERENCES \"public\".\"conversations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"conversation_participants\"
+    ADD CONSTRAINT \"conversation_participants_user_id_fkey\" FOREIGN KEY (\"user_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"league_venues\"
+    ADD CONSTRAINT \"league_venues_league_id_fkey\" FOREIGN KEY (\"league_id\") REFERENCES \"public\".\"leagues\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"league_venues\"
+    ADD CONSTRAINT \"league_venues_venue_id_fkey\" FOREIGN KEY (\"venue_id\") REFERENCES \"public\".\"venues\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"leagues\"
+    ADD CONSTRAINT \"leagues_organization_id_fkey\" FOREIGN KEY (\"organization_id\") REFERENCES \"public\".\"organizations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_confirmed_by_away_member_fkey\" FOREIGN KEY (\"confirmed_by_away\") REFERENCES \"public\".\"members\"(\"id\")","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_confirmed_by_home_member_fkey\" FOREIGN KEY (\"confirmed_by_home\") REFERENCES \"public\".\"members\"(\"id\")","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_match_id_fkey\" FOREIGN KEY (\"match_id\") REFERENCES \"public\".\"matches\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"match_games\"
+    ADD CONSTRAINT \"match_games_winner_team_id_fkey\" FOREIGN KEY (\"winner_team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"match_lineups\"
+    ADD CONSTRAINT \"match_lineups_match_id_fkey\" FOREIGN KEY (\"match_id\") REFERENCES \"public\".\"matches\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"match_lineups\"
+    ADD CONSTRAINT \"match_lineups_team_id_fkey\" FOREIGN KEY (\"team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_actual_venue_id_fkey\" FOREIGN KEY (\"actual_venue_id\") REFERENCES \"public\".\"venues\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_away_lineup_id_fkey\" FOREIGN KEY (\"away_lineup_id\") REFERENCES \"public\".\"match_lineups\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_away_team_id_fkey\" FOREIGN KEY (\"away_team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_away_team_verified_by_fkey\" FOREIGN KEY (\"away_team_verified_by\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_away_tiebreaker_verified_by_fkey\" FOREIGN KEY (\"away_tiebreaker_verified_by\") REFERENCES \"public\".\"members\"(\"id\")","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_home_lineup_id_fkey\" FOREIGN KEY (\"home_lineup_id\") REFERENCES \"public\".\"match_lineups\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_home_team_id_fkey\" FOREIGN KEY (\"home_team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_home_team_verified_by_fkey\" FOREIGN KEY (\"home_team_verified_by\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_home_tiebreaker_verified_by_fkey\" FOREIGN KEY (\"home_tiebreaker_verified_by\") REFERENCES \"public\".\"members\"(\"id\")","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_scheduled_venue_id_fkey\" FOREIGN KEY (\"scheduled_venue_id\") REFERENCES \"public\".\"venues\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_season_id_fkey\" FOREIGN KEY (\"season_id\") REFERENCES \"public\".\"seasons\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_season_week_id_fkey\" FOREIGN KEY (\"season_week_id\") REFERENCES \"public\".\"season_weeks\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"matches\"
+    ADD CONSTRAINT \"matches_winner_team_id_fkey\" FOREIGN KEY (\"winner_team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"members\"
+    ADD CONSTRAINT \"members_user_id_fkey\" FOREIGN KEY (\"user_id\") REFERENCES \"auth\".\"users\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"messages\"
+    ADD CONSTRAINT \"messages_conversation_id_fkey\" FOREIGN KEY (\"conversation_id\") REFERENCES \"public\".\"conversations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"messages\"
+    ADD CONSTRAINT \"messages_sender_id_fkey\" FOREIGN KEY (\"sender_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"operator_blackout_preferences\"
+    ADD CONSTRAINT \"operator_blackout_preferences_championship_id_fkey\" FOREIGN KEY (\"championship_id\") REFERENCES \"public\".\"championship_date_options\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"operator_blackout_preferences\"
+    ADD CONSTRAINT \"operator_blackout_preferences_organization_id_fkey\" FOREIGN KEY (\"organization_id\") REFERENCES \"public\".\"organizations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"organization_staff\"
+    ADD CONSTRAINT \"organization_staff_added_by_fkey\" FOREIGN KEY (\"added_by\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"organization_staff\"
+    ADD CONSTRAINT \"organization_staff_member_id_fkey\" FOREIGN KEY (\"member_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"organization_staff\"
+    ADD CONSTRAINT \"organization_staff_organization_id_fkey\" FOREIGN KEY (\"organization_id\") REFERENCES \"public\".\"organizations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"organizations\"
+    ADD CONSTRAINT \"organizations_created_by_fkey\" FOREIGN KEY (\"created_by\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE RESTRICT","ALTER TABLE ONLY \"public\".\"report_actions\"
+    ADD CONSTRAINT \"report_actions_actor_id_fkey\" FOREIGN KEY (\"actor_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"report_actions\"
+    ADD CONSTRAINT \"report_actions_report_id_fkey\" FOREIGN KEY (\"report_id\") REFERENCES \"public\".\"user_reports\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"report_updates\"
+    ADD CONSTRAINT \"report_updates_report_id_fkey\" FOREIGN KEY (\"report_id\") REFERENCES \"public\".\"user_reports\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"report_updates\"
+    ADD CONSTRAINT \"report_updates_updater_id_fkey\" FOREIGN KEY (\"updater_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"season_weeks\"
+    ADD CONSTRAINT \"season_weeks_season_id_fkey\" FOREIGN KEY (\"season_id\") REFERENCES \"public\".\"seasons\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"seasons\"
+    ADD CONSTRAINT \"seasons_league_id_fkey\" FOREIGN KEY (\"league_id\") REFERENCES \"public\".\"leagues\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"team_players\"
+    ADD CONSTRAINT \"team_players_member_id_fkey\" FOREIGN KEY (\"member_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"team_players\"
+    ADD CONSTRAINT \"team_players_season_id_fkey\" FOREIGN KEY (\"season_id\") REFERENCES \"public\".\"seasons\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"team_players\"
+    ADD CONSTRAINT \"team_players_team_id_fkey\" FOREIGN KEY (\"team_id\") REFERENCES \"public\".\"teams\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"teams\"
+    ADD CONSTRAINT \"teams_captain_id_fkey\" FOREIGN KEY (\"captain_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE RESTRICT","ALTER TABLE ONLY \"public\".\"teams\"
+    ADD CONSTRAINT \"teams_home_venue_id_fkey\" FOREIGN KEY (\"home_venue_id\") REFERENCES \"public\".\"venues\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"teams\"
+    ADD CONSTRAINT \"teams_league_id_fkey\" FOREIGN KEY (\"league_id\") REFERENCES \"public\".\"leagues\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"teams\"
+    ADD CONSTRAINT \"teams_season_id_fkey\" FOREIGN KEY (\"season_id\") REFERENCES \"public\".\"seasons\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"user_reports\"
+    ADD CONSTRAINT \"user_reports_assigned_organization_id_fkey\" FOREIGN KEY (\"assigned_organization_id\") REFERENCES \"public\".\"organizations\"(\"id\") ON DELETE SET NULL","ALTER TABLE ONLY \"public\".\"user_reports\"
+    ADD CONSTRAINT \"user_reports_reported_user_id_fkey\" FOREIGN KEY (\"reported_user_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"user_reports\"
+    ADD CONSTRAINT \"user_reports_reporter_id_fkey\" FOREIGN KEY (\"reporter_id\") REFERENCES \"public\".\"members\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"venue_owners\"
+    ADD CONSTRAINT \"venue_owners_user_id_fkey\" FOREIGN KEY (\"user_id\") REFERENCES \"auth\".\"users\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"venues\"
+    ADD CONSTRAINT \"venues_organization_id_fkey\" FOREIGN KEY (\"organization_id\") REFERENCES \"public\".\"organizations\"(\"id\") ON DELETE CASCADE","ALTER TABLE ONLY \"public\".\"venues\"
+    ADD CONSTRAINT \"venues_venue_owner_id_fkey\" FOREIGN KEY (\"venue_owner_id\") REFERENCES \"public\".\"venue_owners\"(\"id\") ON DELETE SET NULL","GRANT USAGE ON SCHEMA \"public\" TO \"postgres\"","GRANT USAGE ON SCHEMA \"public\" TO \"anon\"","GRANT USAGE ON SCHEMA \"public\" TO \"authenticated\"","GRANT USAGE ON SCHEMA \"public\" TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"auto_create_match_lineups\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"auto_create_match_lineups\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"auto_create_match_lineups\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"auto_delete_match_lineups\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"auto_delete_match_lineups\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"auto_delete_match_lineups\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"check_delete_time_limit\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"check_delete_time_limit\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"check_delete_time_limit\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"check_edit_time_limit\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"check_edit_time_limit\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"check_edit_time_limit\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_announcement_conversation\"(\"p_season_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_default_league_preferences\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_default_league_preferences\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_default_league_preferences\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_default_org_preferences\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_default_org_preferences\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_default_org_preferences\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_dm_conversation\"(\"user1_id\" \"uuid\", \"user2_id\" \"uuid\") TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_group_conversation\"(\"creator_id\" \"uuid\", \"group_name\" \"text\", \"member_ids\" \"uuid\"[]) TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_organization_announcement_conversation\"(\"p_organization_id\" \"uuid\", \"p_title\" \"text\", \"p_member_ids\" \"uuid\"[]) TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"create_owner_staff\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"create_owner_staff\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"create_owner_staff\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"get_current_member_id\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"get_current_member_id\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"get_current_member_id\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"get_operator_stats\"(\"operator_id_param\" \"uuid\") TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"get_operator_stats\"(\"operator_id_param\" \"uuid\") TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"get_operator_stats\"(\"operator_id_param\" \"uuid\") TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"increment_unread_count\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"increment_unread_count\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"increment_unread_count\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"is_conversation_participant\"(\"conv_id\" \"uuid\", \"uid\" \"uuid\") TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"is_conversation_participant\"(\"conv_id\" \"uuid\", \"uid\" \"uuid\") TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"is_conversation_participant\"(\"conv_id\" \"uuid\", \"uid\" \"uuid\") TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"log_report_status_change\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"log_report_status_change\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"log_report_status_change\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"prevent_blocked_user_dm\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"prevent_blocked_user_dm\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"prevent_blocked_user_dm\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"reset_unread_count\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"reset_unread_count\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"reset_unread_count\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"set_reviewed_timestamp\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"set_reviewed_timestamp\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"set_reviewed_timestamp\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_date_options_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_date_options_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_date_options_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_dates_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_dates_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_championship_dates_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_last_message\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_last_message\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_last_message\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_on_message_delete\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_on_message_delete\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_conversation_on_message_delete\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_conversations_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_conversations_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_conversations_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_league_venues_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_league_venues_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_league_venues_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_leagues_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_leagues_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_leagues_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_match_lineups_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_match_lineups_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_match_lineups_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_matches_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_matches_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_matches_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_members_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_members_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_members_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_messages_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_messages_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_messages_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_operator_blackout_preferences_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_report_resolved_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_report_resolved_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_report_resolved_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_report_reviewed_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_report_reviewed_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_report_reviewed_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_season_weeks_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_season_weeks_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_season_weeks_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_seasons_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_seasons_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_seasons_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_team_players_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_team_players_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_team_players_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_teams_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_teams_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_teams_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_user_reports_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_user_reports_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_user_reports_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_venue_owners_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_venue_owners_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_venue_owners_updated_at\"() TO \"service_role\"","GRANT ALL ON FUNCTION \"public\".\"update_venues_updated_at\"() TO \"anon\"","GRANT ALL ON FUNCTION \"public\".\"update_venues_updated_at\"() TO \"authenticated\"","GRANT ALL ON FUNCTION \"public\".\"update_venues_updated_at\"() TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"blocked_users\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"blocked_users\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"blocked_users\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"championship_date_options\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"championship_date_options\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"championship_date_options\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"conversation_participants\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"conversation_participants\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"conversation_participants\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"conversations\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"conversations\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"conversations\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"handicap_chart_3vs3\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"handicap_chart_3vs3\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"handicap_chart_3vs3\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"league_venues\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"league_venues\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"league_venues\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"leagues\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"leagues\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"leagues\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"match_games\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"match_games\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"match_games\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"match_lineups\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"match_lineups\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"match_lineups\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"matches\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"matches\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"matches\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"members\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"members\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"members\" TO \"service_role\"","GRANT ALL ON SEQUENCE \"public\".\"members_system_player_number_seq\" TO \"anon\"","GRANT ALL ON SEQUENCE \"public\".\"members_system_player_number_seq\" TO \"authenticated\"","GRANT ALL ON SEQUENCE \"public\".\"members_system_player_number_seq\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"messages\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"messages\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"messages\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"operator_blackout_preferences\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"operator_blackout_preferences\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"operator_blackout_preferences\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"organization_staff\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"organization_staff\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"organization_staff\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"organizations\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"organizations\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"organizations\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"preferences\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"preferences\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"preferences\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"report_actions\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"report_actions\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"report_actions\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"report_updates\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"report_updates\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"report_updates\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"resolved_league_preferences\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"resolved_league_preferences\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"resolved_league_preferences\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"season_weeks\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"season_weeks\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"season_weeks\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"seasons\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"seasons\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"seasons\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"team_players\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"team_players\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"team_players\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"teams\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"teams\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"teams\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"user_reports\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"user_reports\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"user_reports\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"venue_owners\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"venue_owners\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"venue_owners\" TO \"service_role\"","GRANT ALL ON TABLE \"public\".\"venues\" TO \"anon\"","GRANT ALL ON TABLE \"public\".\"venues\" TO \"authenticated\"","GRANT ALL ON TABLE \"public\".\"venues\" TO \"service_role\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON SEQUENCES TO \"postgres\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON SEQUENCES TO \"anon\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON SEQUENCES TO \"authenticated\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON SEQUENCES TO \"service_role\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON FUNCTIONS TO \"postgres\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON FUNCTIONS TO \"anon\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON FUNCTIONS TO \"authenticated\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON FUNCTIONS TO \"service_role\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON TABLES TO \"postgres\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON TABLES TO \"anon\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON TABLES TO \"authenticated\"","ALTER DEFAULT PRIVILEGES FOR ROLE \"postgres\" IN SCHEMA \"public\" GRANT ALL ON TABLES TO \"service_role\""}', 'baseline');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251130014152', NULL, 'add_rls_policies');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251201174359', '{"-- ============================================================================
+-- APP_LOGS TABLE
+-- Stores application logs from the frontend for production debugging
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS app_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  level TEXT NOT NULL CHECK (level IN (''error'', ''warn'', ''info'')),
+  message TEXT NOT NULL,
+  context JSONB DEFAULT ''{}'',
+  url TEXT,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+)","-- Index for querying by level and time
+CREATE INDEX idx_app_logs_level_created ON app_logs(level, created_at DESC)","-- Index for querying by user
+CREATE INDEX idx_app_logs_user_id ON app_logs(user_id) WHERE user_id IS NOT NULL","-- Enable RLS
+ALTER TABLE app_logs ENABLE ROW LEVEL SECURITY","-- Allow any authenticated user to INSERT logs (they can log their own errors)
+CREATE POLICY \"Users can insert their own logs\"
+  ON app_logs
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true)","-- Allow anonymous users to insert logs too (for pre-auth errors)
+CREATE POLICY \"Anonymous users can insert logs\"
+  ON app_logs
+  FOR INSERT
+  TO anon
+  WITH CHECK (true)","-- Only allow operators/admins to READ logs (for debugging)
+-- For now, we''ll restrict to service role only - operators can view via Supabase dashboard
+-- If you want operators to see logs in-app, add a policy like:
+-- CREATE POLICY \"Operators can view all logs\"
+--   ON app_logs
+--   FOR SELECT
+--   TO authenticated
+--   USING (
+--     EXISTS (
+--       SELECT 1 FROM organization_staff os
+--       WHERE os.member_id = (SELECT id FROM members WHERE user_id = auth.uid())
+--       AND os.position IN (''owner'', ''admin'')
+--     )
+--   );
+
+-- Add comment
+COMMENT ON TABLE app_logs IS ''Frontend application logs for production debugging. Errors and warnings are automatically sent here.''"}', 'add_app_logs_table');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251202194308', '{"-- Migration: Authorize New Players Feature + Preferences Enhancement
+-- Description: Adds support for tracking player authorization status via starting handicaps
+--              and moves profanity filter to preferences table for cascading behavior
+--
+-- Changes:
+-- 1. Members table: Change starting_handicap defaults from 0/40 to NULL
+-- 2. Members table: Set existing default values to NULL (puts players in authorization queue)
+-- 3. Preferences table: Add allow_unauthorized_players column
+-- 4. Preferences table: Add profanity_filter_enabled column (cascading: league → org → system default)
+
+-- =============================================================================
+-- MEMBERS TABLE: Change starting handicap defaults to NULL
+-- =============================================================================
+-- This allows us to distinguish between:
+-- - NULL = \"not yet reviewed/authorized by operator\"
+-- - 0/40 (or any value) = \"intentionally set by operator\"
+
+-- Change default for starting_handicap_3v3 from 0 to NULL
+ALTER TABLE members
+ALTER COLUMN starting_handicap_3v3 DROP DEFAULT","ALTER TABLE members
+ALTER COLUMN starting_handicap_3v3 SET DEFAULT NULL","-- Change default for starting_handicap_5v5 from 40 to NULL
+ALTER TABLE members
+ALTER COLUMN starting_handicap_5v5 DROP DEFAULT","ALTER TABLE members
+ALTER COLUMN starting_handicap_5v5 SET DEFAULT NULL","-- Update column comments to reflect new behavior
+COMMENT ON COLUMN members.starting_handicap_3v3 IS ''Starting handicap for 3v3 (5_man) format. NULL = not yet authorized. Used when player has < 15 games. Typically ranges from -2 to +2.''","COMMENT ON COLUMN members.starting_handicap_5v5 IS ''Starting handicap for 5v5 (8_man) format. NULL = not yet authorized. Used when player has < 15 games. Typically ranges from 0-100 (percentage).''","-- =============================================================================
+-- MEMBERS TABLE: Set existing players with default values to NULL
+-- =============================================================================
+-- This puts all players who currently have the old default values (0 and 40)
+-- into the \"needs authorization\" queue.
+--
+-- NOTE: If you want to preserve existing values and NOT require re-authorization,
+-- comment out this UPDATE statement.
+
+UPDATE members
+SET starting_handicap_3v3 = NULL,
+    starting_handicap_5v5 = NULL
+WHERE starting_handicap_3v3 = 0
+  AND starting_handicap_5v5 = 40","-- =============================================================================
+-- PREFERENCES TABLE: Add allow_unauthorized_players column
+-- =============================================================================
+-- This setting controls whether unauthorized players can be added to lineups.
+-- Cascades: league preference → organization preference → system default (true)
+
+ALTER TABLE preferences
+ADD COLUMN allow_unauthorized_players BOOLEAN DEFAULT true","COMMENT ON COLUMN preferences.allow_unauthorized_players IS ''When false, players must have their starting handicaps set (authorized) before they can be added to match lineups. Cascades: league → organization → system default (true).''","-- =============================================================================
+-- PREFERENCES TABLE: Add profanity_filter_enabled column
+-- =============================================================================
+-- This setting controls whether team names and content are validated for profanity.
+-- Cascades: league preference → organization preference → system default (false)
+-- Moved from organizations table to preferences for proper cascading behavior.
+
+ALTER TABLE preferences
+ADD COLUMN profanity_filter_enabled BOOLEAN DEFAULT NULL","COMMENT ON COLUMN preferences.profanity_filter_enabled IS ''Whether to enforce profanity validation for team names and content. NULL = use next level default. Cascades: league → organization → system default (false).''","-- =============================================================================
+-- UPDATE resolved_league_preferences VIEW
+-- =============================================================================
+-- Add the new preference columns to the convenience view that handles cascading.
+-- This view is the single source of truth for resolved preferences.
+
+CREATE OR REPLACE VIEW \"public\".\"resolved_league_preferences\" AS
+SELECT
+    l.id AS league_id,
+    l.organization_id,
+    COALESCE(league_prefs.handicap_variant, org_prefs.handicap_variant, l.handicap_variant, ''standard''::text) AS handicap_variant,
+    COALESCE(league_prefs.team_handicap_variant, org_prefs.team_handicap_variant, org_prefs.handicap_variant, l.handicap_variant, ''standard''::text) AS team_handicap_variant,
+    COALESCE(league_prefs.game_history_limit, org_prefs.game_history_limit, 200) AS game_history_limit,
+    COALESCE(league_prefs.team_format, org_prefs.team_format, l.team_format::text) AS team_format,
+    COALESCE(league_prefs.golden_break_counts_as_win, org_prefs.golden_break_counts_as_win, l.golden_break_counts_as_win, true) AS golden_break_counts_as_win,
+    COALESCE(league_prefs.allow_unauthorized_players, org_prefs.allow_unauthorized_players, true) AS allow_unauthorized_players,
+    COALESCE(league_prefs.profanity_filter_enabled, org_prefs.profanity_filter_enabled, false) AS profanity_filter_enabled
+FROM leagues l
+LEFT JOIN preferences org_prefs ON org_prefs.entity_type = ''organization'' AND org_prefs.entity_id = l.organization_id
+LEFT JOIN preferences league_prefs ON league_prefs.entity_type = ''league'' AND league_prefs.entity_id = l.id","COMMENT ON VIEW \"public\".\"resolved_league_preferences\" IS ''Convenience view showing final resolved preferences for each league with full fallback chain applied.''"}', 'authorize_new_players');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251206000000', '{"-- ============================================================================
+-- PLAYOFF CONFIGURATIONS MIGRATION
+-- ============================================================================
+--
+-- Creates the playoff_configurations table for storing playoff bracket
+-- configurations at three levels: global, organization, and league.
+--
+-- Global templates are system-provided (read-only for operators).
+-- Organization configs serve as defaults for all leagues in that org.
+-- League configs override organization settings for specific leagues.
+--
+-- Key design decisions:
+-- 1. entity_type + entity_id pattern (like preferences table)
+-- 2. Global uses nil UUID ''00000000-0000-0000-0000-000000000000''
+-- 3. Stores SETTINGS, not actual matchups
+-- 4. week_matchup_styles array stores template names per week
+--
+-- The matchup generation logic lives in usePlayoffSettingsReducer.ts:
+--   generateMatchupPairs(bracketSize, style) → Array<[homeSeed, awaySeed]>
+--
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS playoff_configurations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- === Entity Ownership ===
+    -- Determines the scope/level of this configuration
+    entity_type TEXT NOT NULL CHECK (entity_type IN (''global'', ''organization'', ''league'')),
+
+    -- The entity this configuration belongs to:
+    -- - global: ''00000000-0000-0000-0000-000000000000'' (nil UUID)
+    -- - organization: the organization''s UUID
+    -- - league: the league''s UUID
+    entity_id UUID NOT NULL,
+
+    -- === Configuration Metadata ===
+    name TEXT NOT NULL,                          -- e.g., \"Standard Single Elimination\", \"Double Elimination\"
+    description TEXT,                            -- Optional description of what this configuration does
+
+    -- Is this the default config for this entity?
+    -- For global: marks the recommended default template
+    -- For organization: the org''s default for new leagues
+    -- For league: not used (league only has one config)
+    is_default BOOLEAN DEFAULT false,
+
+    -- === Qualification Settings ===
+    -- These determine how many teams make it into the bracket
+
+    qualification_type TEXT NOT NULL DEFAULT ''all''
+        CHECK (qualification_type IN (''all'', ''fixed'', ''percentage'')),
+
+    -- For ''fixed'' type: exactly this many teams qualify
+    fixed_team_count INTEGER DEFAULT 4 CHECK (fixed_team_count >= 2),
+
+    -- For ''percentage'' type: this percentage of teams qualify
+    qualifying_percentage INTEGER DEFAULT 50 CHECK (qualifying_percentage BETWEEN 1 AND 100),
+    percentage_min INTEGER DEFAULT 4 CHECK (percentage_min >= 2),  -- Minimum teams even if % is lower
+    percentage_max INTEGER DEFAULT NULL,                           -- Maximum cap (NULL = no limit)
+
+    -- === Playoff Structure ===
+
+    playoff_weeks INTEGER NOT NULL DEFAULT 1 CHECK (playoff_weeks >= 1),
+
+    -- Matchup style for each week (array index = week number - 1)
+    -- Valid values: ''seeded'', ''ranked'', ''random'', ''bracket''
+    -- Week 1 typically ''seeded'', subsequent weeks typically ''bracket''
+    week_matchup_styles TEXT[] NOT NULL DEFAULT ARRAY[''seeded'']::TEXT[],
+
+    -- Wildcard spots replace the last N bracket positions with random selection
+    -- 0 = disabled, all spots determined by standings
+    wildcard_spots INTEGER NOT NULL DEFAULT 0 CHECK (wildcard_spots >= 0),
+
+    -- Payment method for additional playoff weeks
+    payment_method TEXT NOT NULL DEFAULT ''automatic''
+        CHECK (payment_method IN (''automatic'', ''manual'')),
+
+    -- === Generation Control ===
+
+    -- When true: System automatically creates playoff matches when regular season ends
+    -- When false: Operator must manually trigger playoff generation from the league page
+    -- Defaults to false so new operators can verify the system works as expected first
+    auto_generate BOOLEAN NOT NULL DEFAULT false,
+
+    -- === Timestamps ===
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- === Constraints ===
+    -- Ensure global records use the nil UUID
+    CONSTRAINT valid_global_entity CHECK (
+        (entity_type = ''global'' AND entity_id = ''00000000-0000-0000-0000-000000000000'') OR
+        (entity_type != ''global'' AND entity_id != ''00000000-0000-0000-0000-000000000000'')
+    ),
+
+    -- Each entity can only have one config with a given name
+    CONSTRAINT unique_entity_config_name UNIQUE (entity_type, entity_id, name)
+)","-- ============================================================================
+-- INDEXES
+-- ============================================================================
+
+-- Fast lookup by entity
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_entity
+    ON playoff_configurations(entity_type, entity_id)","-- Find global templates quickly
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_global
+    ON playoff_configurations(entity_type)
+    WHERE entity_type = ''global''","-- Find default config for an entity
+CREATE INDEX IF NOT EXISTS idx_playoff_configurations_default
+    ON playoff_configurations(entity_type, entity_id)
+    WHERE is_default = true","-- ============================================================================
+-- TRIGGERS
+-- ============================================================================
+
+-- Update timestamps
+CREATE OR REPLACE FUNCTION update_playoff_configurations_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql","CREATE TRIGGER trigger_update_playoff_configurations_updated_at
+    BEFORE UPDATE ON playoff_configurations
+    FOR EACH ROW
+    EXECUTE FUNCTION update_playoff_configurations_updated_at()","-- Ensure only one default per entity
+CREATE OR REPLACE FUNCTION ensure_single_default_playoff_config()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.is_default = true THEN
+        UPDATE playoff_configurations
+        SET is_default = false
+        WHERE entity_type = NEW.entity_type
+          AND entity_id = NEW.entity_id
+          AND id != NEW.id
+          AND is_default = true;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql","CREATE TRIGGER trigger_ensure_single_default_playoff_config
+    BEFORE INSERT OR UPDATE ON playoff_configurations
+    FOR EACH ROW
+    EXECUTE FUNCTION ensure_single_default_playoff_config()","-- ============================================================================
+-- ROW LEVEL SECURITY
+-- ============================================================================
+-- RLS policies intentionally left blank for development speed.
+-- TODO: Add proper policies before production deployment.
+
+ALTER TABLE playoff_configurations ENABLE ROW LEVEL SECURITY","-- Allow all operations during development
+CREATE POLICY \"Dev: Allow all operations\"
+    ON playoff_configurations
+    FOR ALL
+    USING (true)
+    WITH CHECK (true)","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON TABLE playoff_configurations IS
+    ''Stores playoff bracket configurations at three levels: global (system templates), organization (org defaults), and league (overrides).''","COMMENT ON COLUMN playoff_configurations.entity_type IS
+    ''Level of this config: global (system template), organization (org default), or league (override)''","COMMENT ON COLUMN playoff_configurations.entity_id IS
+    ''UUID of the entity. For global: nil UUID (00000000-0000-0000-0000-000000000000). For org/league: their respective UUIDs.''","COMMENT ON COLUMN playoff_configurations.name IS
+    ''Display name for this configuration (required). Used in template picker menus.''","COMMENT ON COLUMN playoff_configurations.description IS
+    ''Optional description explaining what this configuration does. Helpful for operators choosing templates.''","COMMENT ON COLUMN playoff_configurations.qualification_type IS
+    ''How teams qualify: all (everyone plays), fixed (specific count), percentage (% of league)''","COMMENT ON COLUMN playoff_configurations.week_matchup_styles IS
+    ''Array of matchup styles per week. Values: seeded (1v8,2v7), ranked (1v2,3v4), random, bracket (winner vs winner)''","COMMENT ON COLUMN playoff_configurations.wildcard_spots IS
+    ''Number of bracket spots filled by random selection from non-qualifying teams. 0 = disabled.''","COMMENT ON COLUMN playoff_configurations.payment_method IS
+    ''How additional playoff week fees are handled: automatic (system charges) or manual (operator collects)''","COMMENT ON COLUMN playoff_configurations.auto_generate IS
+    ''When true, playoff matches are created automatically when regular season ends. When false, operator must manually trigger from league page.''","-- ============================================================================
+-- SEED DATA: Global Templates
+-- ============================================================================
+
+INSERT INTO playoff_configurations (
+    entity_type,
+    entity_id,
+    name,
+    description,
+    is_default,
+    qualification_type,
+    fixed_team_count,
+    playoff_weeks,
+    week_matchup_styles,
+    wildcard_spots,
+    auto_generate
+) VALUES
+-- 1. Money Round (default global template)
+(
+    ''global'',
+    ''00000000-0000-0000-0000-000000000000'',
+    ''Money Round'',
+    ''Standard single last round. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.'',
+    true,
+    ''all'',
+    NULL,
+    1,
+    ARRAY[''seeded'']::TEXT[],
+    0,
+    false
+),
+-- 2. Money Round (Wildcard)
+(
+    ''global'',
+    ''00000000-0000-0000-0000-000000000000'',
+    ''Money Round (Wildcard)'',
+    ''Standard single last round with odd number of teams. Wildcard allows last place team a chance to play. Best used for in-house (single venue) leagues to gather all teams for prize pool winner presentations. Can put a small prize on each table giving all teams a chance at some winnings.'',
+    false,
+    ''all'',
+    NULL,
+    1,
+    ARRAY[''seeded'']::TEXT[],
+    1,
+    false
+),
+-- 3. Standard Playoffs (Wildcard)
+(
+    ''global'',
+    ''00000000-0000-0000-0000-000000000000'',
+    ''Standard Playoffs (Wildcard)'',
+    ''Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs wildcard and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Wildcard is randomly picked team from teams not in top 3.'',
+    false,
+    ''fixed'',
+    4,
+    2,
+    ARRAY[''seeded'', ''bracket'']::TEXT[],
+    1,
+    false
+),
+-- 4. Standard Playoffs
+(
+    ''global'',
+    ''00000000-0000-0000-0000-000000000000'',
+    ''Standard Playoffs'',
+    ''Standard semi-finals style to determine 1st-4th place for prize pool determinations. 1st vs 4th and 2nd vs 3rd in first round. Winners vs winners, losers vs losers in second round. Only top 4 teams play.'',
+    false,
+    ''fixed'',
+    4,
+    2,
+    ARRAY[''seeded'', ''bracket'']::TEXT[],
+    0,
+    false
+)","-- ============================================================================
+-- RESOLVED PLAYOFF CONFIGURATION VIEW
+-- ============================================================================
+-- For each league, returns the effective playoff configuration using priority:
+-- 1. League-specific config (if exists and is_default = true)
+-- 2. Organization default config (if exists and is_default = true)
+-- 3. Global default config (fallback)
+--
+-- Unlike preferences (which merge individual columns), this returns ONE complete
+-- configuration record. Playoff settings are interdependent and used as a unit.
+-- ============================================================================
+
+CREATE OR REPLACE VIEW resolved_league_playoff_config AS
+SELECT
+    l.id AS league_id,
+    l.organization_id,
+    -- Include source info so UI can show \"Using: Organization Default\" or \"Using: League Custom\"
+    CASE
+        WHEN league_config.id IS NOT NULL THEN ''league''
+        WHEN org_config.id IS NOT NULL THEN ''organization''
+        ELSE ''global''
+    END AS config_source,
+    -- Return the effective configuration (coalesce picks first non-null)
+    COALESCE(league_config.id, org_config.id, global_config.id) AS config_id,
+    COALESCE(league_config.name, org_config.name, global_config.name) AS name,
+    COALESCE(league_config.description, org_config.description, global_config.description) AS description,
+    COALESCE(league_config.qualification_type, org_config.qualification_type, global_config.qualification_type) AS qualification_type,
+    COALESCE(league_config.fixed_team_count, org_config.fixed_team_count, global_config.fixed_team_count) AS fixed_team_count,
+    COALESCE(league_config.qualifying_percentage, org_config.qualifying_percentage, global_config.qualifying_percentage) AS qualifying_percentage,
+    COALESCE(league_config.percentage_min, org_config.percentage_min, global_config.percentage_min) AS percentage_min,
+    COALESCE(league_config.percentage_max, org_config.percentage_max, global_config.percentage_max) AS percentage_max,
+    COALESCE(league_config.playoff_weeks, org_config.playoff_weeks, global_config.playoff_weeks) AS playoff_weeks,
+    COALESCE(league_config.week_matchup_styles, org_config.week_matchup_styles, global_config.week_matchup_styles) AS week_matchup_styles,
+    COALESCE(league_config.wildcard_spots, org_config.wildcard_spots, global_config.wildcard_spots) AS wildcard_spots,
+    COALESCE(league_config.payment_method, org_config.payment_method, global_config.payment_method) AS payment_method,
+    COALESCE(league_config.auto_generate, org_config.auto_generate, global_config.auto_generate) AS auto_generate
+FROM leagues l
+-- League-specific config (entity_type = ''league'', entity_id = league.id)
+LEFT JOIN playoff_configurations league_config
+    ON league_config.entity_type = ''league''
+    AND league_config.entity_id = l.id
+    AND league_config.is_default = true
+-- Organization default config (entity_type = ''organization'', entity_id = org.id)
+LEFT JOIN playoff_configurations org_config
+    ON org_config.entity_type = ''organization''
+    AND org_config.entity_id = l.organization_id
+    AND org_config.is_default = true
+-- Global default config (entity_type = ''global'', is_default = true)
+LEFT JOIN playoff_configurations global_config
+    ON global_config.entity_type = ''global''
+    AND global_config.entity_id = ''00000000-0000-0000-0000-000000000000''
+    AND global_config.is_default = true","COMMENT ON VIEW resolved_league_playoff_config IS
+    ''Returns the effective playoff configuration for each league. Priority: league config → org default → global default. Returns complete configuration record, not merged columns.''"}', 'playoff_configurations');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251211000000', '{"-- Migration: Add lineup change request fields to match_lineups
+-- Purpose: Allow teams to request player swaps during a match, pending opponent approval
+-- Similar pattern to vacate_requested_by on match_games
+--
+-- Minimal schema:
+-- - swap_position: Which position (1-5) is being swapped. NULL = no pending request.
+--   The old player is derived from lineup.player{N}_id at that position.
+-- - swap_new_player_id: The replacement player''s UUID
+-- - swap_new_player_handicap: The replacement player''s handicap
+-- - swap_requested_at: Timestamp for auditing
+--
+-- Note: swap_new_player_name is NOT stored - the name is looked up from team roster at display time.
+-- This avoids redundant data and ensures consistency with the source of truth.
+
+-- Add columns for tracking lineup change requests
+ALTER TABLE match_lineups
+ADD COLUMN IF NOT EXISTS swap_position INTEGER CHECK (swap_position >= 1 AND swap_position <= 5),
+ADD COLUMN IF NOT EXISTS swap_new_player_id UUID REFERENCES members(id),
+ADD COLUMN IF NOT EXISTS swap_new_player_handicap NUMERIC(5,1),
+ADD COLUMN IF NOT EXISTS swap_requested_at TIMESTAMPTZ","-- Add comments for documentation
+COMMENT ON COLUMN match_lineups.swap_position IS ''Position (1-5) being swapped. NULL if no pending request. Old player derived from player{N}_id.''","COMMENT ON COLUMN match_lineups.swap_new_player_id IS ''Player being swapped in.''","COMMENT ON COLUMN match_lineups.swap_new_player_handicap IS ''Handicap of the new player (cached at request time).''","COMMENT ON COLUMN match_lineups.swap_requested_at IS ''When the swap was requested.''","-- Create index for finding pending swap requests
+CREATE INDEX IF NOT EXISTS idx_match_lineups_swap_requested
+ON match_lineups(match_id)
+WHERE swap_position IS NOT NULL"}', 'add_lineup_change_request');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251212000000', '{"-- Migration: Enable real-time for tables that use postgres_changes subscriptions
+-- Purpose: Allow real-time subscriptions to work for match scoring and messaging
+--
+-- Tables requiring real-time:
+-- - matches: Match status changes, verification, results
+-- - match_lineups: Lineup selections, lock status, swap requests
+-- - match_games: Game scoring, confirmations, vacate requests
+-- - messages: Chat messages
+-- - conversation_participants: Conversation membership changes
+--
+-- This migration is idempotent - safe to run even if tables are already in publication
+
+-- Enable real-time for match-related tables (only if not already added)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = ''supabase_realtime'' AND tablename = ''matches''
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE matches;
+  END IF;
+END $$","DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = ''supabase_realtime'' AND tablename = ''match_lineups''
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE match_lineups;
+  END IF;
+END $$","DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = ''supabase_realtime'' AND tablename = ''match_games''
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE match_games;
+  END IF;
+END $$","-- Enable real-time for messaging tables (only if not already added)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = ''supabase_realtime'' AND tablename = ''messages''
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE messages;
+  END IF;
+END $$","DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = ''supabase_realtime'' AND tablename = ''conversation_participants''
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE conversation_participants;
+  END IF;
+END $$","-- Set REPLICA IDENTITY to FULL for tables that need UPDATE event details
+-- This ensures UPDATE events include all column values (not just changed ones)
+-- These are safe to run even if already set
+ALTER TABLE matches REPLICA IDENTITY FULL","ALTER TABLE match_lineups REPLICA IDENTITY FULL","ALTER TABLE match_games REPLICA IDENTITY FULL","ALTER TABLE messages REPLICA IDENTITY FULL","ALTER TABLE conversation_participants REPLICA IDENTITY FULL"}', 'enable_realtime');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251213000000', '{"-- Migration: Sync match_lineups with matches (INSERT and UPDATE)
+-- Purpose:
+--   1. Allow NULL team_id in match_lineups for playoff placeholder matches
+--   2. Auto-create lineups on match INSERT (even with NULL teams)
+--   3. Auto-update lineup team_ids when match teams are updated
+-- Date: 2025-12-11
+--
+-- NOTE: This migration was manually applied to STAGING and PRODUCTION on 2025-12-11
+-- via SQL Editor before being committed. New local instances will get it via db reset.
+-- If running migrations on staging/production fails due to this already existing,
+-- you can safely mark it as applied in supabase_migrations table.
+
+-- Step 1: Allow NULL team_id in match_lineups table
+-- This is needed for playoff placeholder matches where teams are TBD
+ALTER TABLE match_lineups ALTER COLUMN team_id DROP NOT NULL","-- Step 2: Update the auto-create function to handle NULL team_ids
+CREATE OR REPLACE FUNCTION auto_create_match_lineups()
+RETURNS TRIGGER AS $$
+DECLARE
+  home_lineup_uuid UUID;
+  away_lineup_uuid UUID;
+BEGIN
+  -- Create home team lineup (team_id can be NULL for playoff placeholders)
+  INSERT INTO match_lineups (
+    match_id,
+    team_id,
+    player1_id,
+    player1_handicap,
+    player2_id,
+    player2_handicap,
+    player3_id,
+    player3_handicap,
+    player4_id,
+    player4_handicap,
+    player5_id,
+    player5_handicap,
+    home_team_modifier,
+    locked,
+    locked_at
+  ) VALUES (
+    NEW.id,
+    NEW.home_team_id,  -- Can be NULL for playoff TBD matches
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    0,
+    false,
+    NULL
+  ) RETURNING id INTO home_lineup_uuid;
+
+  -- Create away team lineup (team_id can be NULL for playoff placeholders)
+  INSERT INTO match_lineups (
+    match_id,
+    team_id,
+    player1_id,
+    player1_handicap,
+    player2_id,
+    player2_handicap,
+    player3_id,
+    player3_handicap,
+    player4_id,
+    player4_handicap,
+    player5_id,
+    player5_handicap,
+    home_team_modifier,
+    locked,
+    locked_at
+  ) VALUES (
+    NEW.id,
+    NEW.away_team_id,  -- Can be NULL for playoff TBD matches
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    NULL,
+    0,
+    0,
+    false,
+    NULL
+  ) RETURNING id INTO away_lineup_uuid;
+
+  -- Update the match record with the lineup IDs
+  UPDATE matches
+  SET
+    home_lineup_id = home_lineup_uuid,
+    away_lineup_id = away_lineup_uuid
+  WHERE id = NEW.id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER","-- Step 3: Create function to sync lineup team_ids when match teams are updated
+-- This handles the case where playoff matches get their teams assigned
+CREATE OR REPLACE FUNCTION sync_match_lineups_on_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Only proceed if team IDs have changed
+  IF (OLD.home_team_id IS DISTINCT FROM NEW.home_team_id) OR
+     (OLD.away_team_id IS DISTINCT FROM NEW.away_team_id) THEN
+
+    -- Update home lineup''s team_id if home_team changed
+    IF OLD.home_team_id IS DISTINCT FROM NEW.home_team_id THEN
+      UPDATE match_lineups
+      SET team_id = NEW.home_team_id
+      WHERE id = NEW.home_lineup_id;
+    END IF;
+
+    -- Update away lineup''s team_id if away_team changed
+    IF OLD.away_team_id IS DISTINCT FROM NEW.away_team_id THEN
+      UPDATE match_lineups
+      SET team_id = NEW.away_team_id
+      WHERE id = NEW.away_lineup_id;
+    END IF;
+
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER","-- Step 4: Create the UPDATE trigger
+DROP TRIGGER IF EXISTS trigger_sync_match_lineups_on_update ON matches","CREATE TRIGGER trigger_sync_match_lineups_on_update
+  AFTER UPDATE ON matches
+  FOR EACH ROW
+  EXECUTE FUNCTION sync_match_lineups_on_update()","-- Add comments explaining the triggers
+COMMENT ON FUNCTION auto_create_match_lineups() IS
+''Automatically creates lineup records for both home and away teams when a new match is inserted. Supports NULL team_ids for playoff placeholder matches where teams are TBD.''","COMMENT ON FUNCTION sync_match_lineups_on_update() IS
+''Automatically updates lineup team_ids when match home_team_id or away_team_id changes. This keeps lineups in sync when playoff matches get their teams assigned.''"}', 'sync_match_lineups_with_matches');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251214114804', '{"/**
+ * Migration: Venue Table Numbers as Arrays
+ *
+ * Simplifies table storage by using arrays of table numbers per size.
+ * The array length provides the count, and values provide the table numbers.
+ *
+ * Example:
+ *   bar_box_table_numbers = [1, 2, 3]      -- 3 bar box tables numbered 1, 2, 3
+ *   eight_foot_table_numbers = [4, 5]      -- 2 eight foot tables numbered 4, 5
+ *   regulation_table_numbers = [6, 7, 8]   -- 3 regulation tables numbered 6, 7, 8
+ */
+
+-- =============================================================================
+-- VENUES TABLE: Add array columns for table numbers
+-- =============================================================================
+
+-- Add array columns for table numbers by size
+ALTER TABLE public.venues
+ADD COLUMN IF NOT EXISTS bar_box_table_numbers integer[] DEFAULT ''{}''","ALTER TABLE public.venues
+ADD COLUMN IF NOT EXISTS eight_foot_table_numbers integer[] DEFAULT ''{}''","ALTER TABLE public.venues
+ADD COLUMN IF NOT EXISTS regulation_table_numbers integer[] DEFAULT ''{}''","-- Add comments explaining the columns
+COMMENT ON COLUMN public.venues.bar_box_table_numbers IS
+''Array of table numbers for 7-foot (bar box) tables. Example: {1, 2, 3}. Array length = count.''","COMMENT ON COLUMN public.venues.eight_foot_table_numbers IS
+''Array of table numbers for 8-foot tables. Example: {4, 5}. Array length = count.''","COMMENT ON COLUMN public.venues.regulation_table_numbers IS
+''Array of table numbers for 9-foot (regulation) tables. Example: {6, 7, 8}. Array length = count.''","-- =============================================================================
+-- LEAGUE_VENUES TABLE: Add available table numbers array
+-- =============================================================================
+
+-- Add available_table_numbers array column if not exists
+ALTER TABLE public.league_venues
+ADD COLUMN IF NOT EXISTS available_table_numbers integer[] DEFAULT ''{}''","-- Add capacity column for max home teams
+ALTER TABLE public.league_venues
+ADD COLUMN IF NOT EXISTS capacity integer","-- Add comments explaining the columns
+COMMENT ON COLUMN public.league_venues.available_table_numbers IS
+''Array of table numbers from the venue that are available for this league. Example: {1, 2, 5, 6}. The table sizes are determined by the venue table number arrays.''","COMMENT ON COLUMN public.league_venues.capacity IS
+''Maximum number of home teams that can use this venue. Can be set lower than the number of available tables. Used to limit team assignment to venues. NULL means unlimited (defaults to available table count).''","-- =============================================================================
+-- INDEXES for array operations
+-- =============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_venues_bar_box_table_numbers ON public.venues USING gin (bar_box_table_numbers)","CREATE INDEX IF NOT EXISTS idx_venues_eight_foot_table_numbers ON public.venues USING gin (eight_foot_table_numbers)","CREATE INDEX IF NOT EXISTS idx_venues_regulation_table_numbers ON public.venues USING gin (regulation_table_numbers)","CREATE INDEX IF NOT EXISTS idx_league_venues_available_table_numbers ON public.league_venues USING gin (available_table_numbers)","-- =============================================================================
+-- LEAGUE_VENUES TABLE: Remove legacy constraints
+-- =============================================================================
+-- The old system required available_bar_box_tables and available_regulation_tables
+-- to calculate available_total_tables. Now we use available_table_numbers array
+-- instead, so we remove these constraints and make the legacy columns optional.
+
+-- Drop the constraint that requires at least one table (based on computed column)
+ALTER TABLE public.league_venues
+DROP CONSTRAINT IF EXISTS league_venue_must_have_tables","-- Drop the check constraints on legacy columns
+ALTER TABLE public.league_venues
+DROP CONSTRAINT IF EXISTS league_venues_available_bar_box_tables_check","ALTER TABLE public.league_venues
+DROP CONSTRAINT IF EXISTS league_venues_available_regulation_tables_check","-- Make legacy columns nullable with defaults (so they can be ignored)
+ALTER TABLE public.league_venues
+ALTER COLUMN available_bar_box_tables DROP NOT NULL,
+ALTER COLUMN available_bar_box_tables SET DEFAULT 0","ALTER TABLE public.league_venues
+ALTER COLUMN available_regulation_tables DROP NOT NULL,
+ALTER COLUMN available_regulation_tables SET DEFAULT 0","-- Add comment explaining the new structure
+COMMENT ON TABLE public.league_venues IS
+''League-venue relationships. Uses available_table_numbers array as source of truth for which tables are available. Legacy columns (available_bar_box_tables, available_regulation_tables, available_total_tables) are kept for backwards compatibility but ignored.''"}', 'venue_table_configuration');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251214211103', '{"-- Migration: Add table assignment functionality to matches
+-- This adds a column for assigned table numbers and a function to automatically
+-- assign tables based on venue availability and fill order.
+
+-- ============================================================================
+-- 1. Add assigned_table_number column to matches
+-- ============================================================================
+
+ALTER TABLE \"public\".\"matches\"
+ADD COLUMN IF NOT EXISTS \"assigned_table_number\" integer","COMMENT ON COLUMN \"public\".\"matches\".\"assigned_table_number\" IS ''The table number assigned for this match at the venue (scheduled or actual)''","-- ============================================================================
+-- 2. Create function to assign tables for a specific week
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION \"public\".\"assign_tables_for_week\"(p_season_week_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''public''
+AS $$
+DECLARE
+    v_season_id uuid;
+    v_league_id uuid;
+    match_rec RECORD;
+    venue_tables RECORD;
+    v_table_number integer;
+    v_venue_usage jsonb := ''{}''::jsonb;  -- Track used table indices per venue
+    v_leftover_matches uuid[] := ''{}'';   -- Matches that couldn''t get a table at their venue
+    v_all_available jsonb := ''[]''::jsonb; -- All available tables across all venues
+    v_leftover_match_id uuid;
+    v_available_table RECORD;
+BEGIN
+    -- Get season_id and league_id from the week
+    SELECT sw.season_id, s.league_id
+    INTO v_season_id, v_league_id
+    FROM season_weeks sw
+    JOIN seasons s ON s.id = sw.season_id
+    WHERE sw.id = p_season_week_id;
+
+    IF v_season_id IS NULL THEN
+        RAISE NOTICE ''Season week % not found'', p_season_week_id;
+        RETURN;
+    END IF;
+
+    RAISE NOTICE ''Assigning tables for week %, season %, league %'',
+        p_season_week_id, v_season_id, v_league_id;
+
+    -- First pass: Clear existing assignments for unplayed matches in this week
+    UPDATE matches
+    SET
+        assigned_table_number = NULL,
+        actual_venue_id = NULL
+    WHERE season_week_id = p_season_week_id
+      AND status IN (''scheduled'', ''in_progress'');
+
+    -- Build a lookup of available tables per venue
+    -- The available_table_numbers array is already in fill order (set by the UI)
+    -- Store as: { \"venue_id\": [table1, table2, ...], ... }
+    FOR venue_tables IN
+        SELECT
+            lv.venue_id,
+            lv.available_table_numbers
+        FROM league_venues lv
+        WHERE lv.league_id = v_league_id
+          AND lv.available_table_numbers IS NOT NULL
+          AND array_length(lv.available_table_numbers, 1) > 0
+    LOOP
+        -- Initialize usage counter for this venue
+        v_venue_usage := v_venue_usage || jsonb_build_object(venue_tables.venue_id::text, 0);
+
+        -- Add all tables from this venue to the global available list (for overflow)
+        FOR i IN 1..array_length(venue_tables.available_table_numbers, 1) LOOP
+            v_all_available := v_all_available || jsonb_build_array(
+                jsonb_build_object(
+                    ''venue_id'', venue_tables.venue_id,
+                    ''table_number'', venue_tables.available_table_numbers[i],
+                    ''priority'', i
+                )
+            );
+        END LOOP;
+    END LOOP;
+
+    RAISE NOTICE ''Venue usage initialized: %'', v_venue_usage;
+
+    -- Second pass: Assign tables to matches in match_number order
+    -- Only process matches that have a scheduled venue (home team has chosen their venue)
+    FOR match_rec IN
+        SELECT m.id, m.scheduled_venue_id, m.match_number
+        FROM matches m
+        WHERE m.season_week_id = p_season_week_id
+          AND m.status IN (''scheduled'', ''in_progress'')
+          AND m.home_team_id IS NOT NULL  -- Skip BYE matches
+          AND m.away_team_id IS NOT NULL
+          AND m.scheduled_venue_id IS NOT NULL  -- Skip matches where home team hasn''t set venue
+        ORDER BY m.match_number
+    LOOP
+        v_table_number := NULL;
+
+        -- Get the current usage index for this venue
+        DECLARE
+            v_current_index integer;
+            v_venue_tables integer[];
+        BEGIN
+            v_current_index := COALESCE((v_venue_usage->>match_rec.scheduled_venue_id::text)::integer, 0);
+
+            -- Get the table array for this venue
+            SELECT available_table_numbers INTO v_venue_tables
+            FROM league_venues
+            WHERE venue_id = match_rec.scheduled_venue_id
+              AND league_id = v_league_id;
+
+            -- Check if there''s an available table at this venue
+            IF v_venue_tables IS NOT NULL AND v_current_index < array_length(v_venue_tables, 1) THEN
+                -- Assign the next table (arrays are 1-indexed in PostgreSQL)
+                v_table_number := v_venue_tables[v_current_index + 1];
+
+                -- Update the usage counter
+                v_venue_usage := v_venue_usage ||
+                    jsonb_build_object(match_rec.scheduled_venue_id::text, v_current_index + 1);
+
+                -- Update the match with the assigned table
+                UPDATE matches
+                SET assigned_table_number = v_table_number
+                WHERE id = match_rec.id;
+
+                RAISE NOTICE ''Match % assigned table % at scheduled venue %'',
+                    match_rec.match_number, v_table_number, match_rec.scheduled_venue_id;
+            ELSE
+                -- No table available at scheduled venue, add to leftovers
+                v_leftover_matches := array_append(v_leftover_matches, match_rec.id);
+                RAISE NOTICE ''Match % (venue %) added to leftovers - no tables available'',
+                    match_rec.match_number, match_rec.scheduled_venue_id;
+            END IF;
+        END;
+    END LOOP;
+
+    -- Third pass: Assign leftover matches to any available table
+    IF array_length(v_leftover_matches, 1) > 0 THEN
+        RAISE NOTICE ''Processing % leftover matches'', array_length(v_leftover_matches, 1);
+
+        FOREACH v_leftover_match_id IN ARRAY v_leftover_matches
+        LOOP
+            -- Find the first venue that still has availability
+            FOR venue_tables IN
+                SELECT
+                    lv.venue_id,
+                    lv.available_table_numbers
+                FROM league_venues lv
+                WHERE lv.league_id = v_league_id
+                  AND lv.available_table_numbers IS NOT NULL
+                  AND array_length(lv.available_table_numbers, 1) > 0
+            LOOP
+                DECLARE
+                    v_current_index integer;
+                BEGIN
+                    v_current_index := COALESCE((v_venue_usage->>venue_tables.venue_id::text)::integer, 0);
+
+                    IF v_current_index < array_length(venue_tables.available_table_numbers, 1) THEN
+                        -- Found an available table
+                        v_table_number := venue_tables.available_table_numbers[v_current_index + 1];
+
+                        -- Update usage
+                        v_venue_usage := v_venue_usage ||
+                            jsonb_build_object(venue_tables.venue_id::text, v_current_index + 1);
+
+                        -- Update match with actual_venue_id (different from scheduled)
+                        UPDATE matches
+                        SET
+                            assigned_table_number = v_table_number,
+                            actual_venue_id = venue_tables.venue_id
+                        WHERE id = v_leftover_match_id;
+
+                        RAISE NOTICE ''Leftover match % assigned table % at alternate venue %'',
+                            v_leftover_match_id, v_table_number, venue_tables.venue_id;
+
+                        EXIT; -- Move to next leftover match
+                    END IF;
+                END;
+            END LOOP;
+        END LOOP;
+    END IF;
+
+    RAISE NOTICE ''Table assignment complete for week %'', p_season_week_id;
+END;
+$$","ALTER FUNCTION \"public\".\"assign_tables_for_week\"(uuid) OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"assign_tables_for_week\"(uuid) IS
+''Assigns table numbers to all unplayed matches in a week based on venue availability and fill order.
+Matches are processed in match_number order. If a venue runs out of tables, overflow matches are
+assigned to any available table at another venue (actual_venue_id is set).''","-- Grant permissions
+GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_week\"(uuid) TO \"anon\"","GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_week\"(uuid) TO \"authenticated\"","GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_week\"(uuid) TO \"service_role\"","-- ============================================================================
+-- 3. Create function to assign tables for an entire season
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION \"public\".\"assign_tables_for_season\"(p_season_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''public''
+AS $$
+DECLARE
+    week_rec RECORD;
+    v_week_count integer := 0;
+BEGIN
+    RAISE NOTICE ''Assigning tables for all weeks in season %'', p_season_id;
+
+    -- Process each week in the season
+    FOR week_rec IN
+        SELECT id
+        FROM season_weeks
+        WHERE season_id = p_season_id
+        ORDER BY scheduled_date
+    LOOP
+        PERFORM assign_tables_for_week(week_rec.id);
+        v_week_count := v_week_count + 1;
+    END LOOP;
+
+    RAISE NOTICE ''Table assignment complete for % weeks in season %'', v_week_count, p_season_id;
+END;
+$$","ALTER FUNCTION \"public\".\"assign_tables_for_season\"(uuid) OWNER TO \"postgres\"","COMMENT ON FUNCTION \"public\".\"assign_tables_for_season\"(uuid) IS
+''Assigns table numbers for all weeks in a season. Call this when a schedule is accepted/generated.''","-- Grant permissions
+GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_season\"(uuid) TO \"anon\"","GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_season\"(uuid) TO \"authenticated\"","GRANT EXECUTE ON FUNCTION \"public\".\"assign_tables_for_season\"(uuid) TO \"service_role\"","-- ============================================================================
+-- 5. Update the venue change trigger to also reassign tables
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION \"public\".\"update_match_venues_on_team_venue_change\"()
+RETURNS \"trigger\"
+LANGUAGE \"plpgsql\"
+SECURITY DEFINER
+SET \"search_path\" TO ''public''
+AS $$
+DECLARE
+    match_count INTEGER;
+    week_id uuid;
+    affected_weeks uuid[];
+BEGIN
+    -- Only proceed if home_venue_id actually changed
+    IF OLD.home_venue_id IS DISTINCT FROM NEW.home_venue_id THEN
+        RAISE NOTICE ''Trigger fired! Team ID: %, Old Venue: %, New Venue: %'',
+            NEW.id, OLD.home_venue_id, NEW.home_venue_id;
+
+        -- Collect all affected weeks before updating
+        SELECT array_agg(DISTINCT season_week_id) INTO affected_weeks
+        FROM matches
+        WHERE home_team_id = NEW.id
+          AND status IN (''scheduled'', ''in_progress'');
+
+        -- Update all matches where this team is the home team
+        UPDATE matches
+        SET
+            scheduled_venue_id = NEW.home_venue_id,
+            updated_at = NOW()
+        WHERE home_team_id = NEW.id
+          AND status IN (''scheduled'', ''in_progress'');
+
+        GET DIAGNOSTICS match_count = ROW_COUNT;
+
+        RAISE NOTICE ''Updated % matches for team % with new venue %'',
+            match_count, NEW.id, NEW.home_venue_id;
+
+        -- Reassign tables for all affected weeks
+        IF affected_weeks IS NOT NULL THEN
+            FOREACH week_id IN ARRAY affected_weeks
+            LOOP
+                RAISE NOTICE ''Reassigning tables for week %'', week_id;
+                PERFORM assign_tables_for_week(week_id);
+            END LOOP;
+        END IF;
+    ELSE
+        RAISE NOTICE ''Trigger fired but venue unchanged for team %'', NEW.id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$","-- ============================================================================
+-- 6. Create index for efficient table queries
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS \"idx_matches_assigned_table\"
+ON \"public\".\"matches\" (\"scheduled_venue_id\", \"season_week_id\", \"assigned_table_number\")"}', 'match_table_assignment');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251215165551', '{"-- Migration: Allow nullable fields on members table for placeholder players
+-- This enables creating \"placeholder\" players who can be on teams and have games
+-- scored without being fully registered users. When the real person registers,
+-- they can be connected to their placeholder record.
+--
+-- Fields that remain NOT NULL: first_name, last_name, city, state (needed for matching)
+-- Fields made nullable: phone, email, address, zip_code, date_of_birth
+
+ALTER TABLE members ALTER COLUMN phone DROP NOT NULL","ALTER TABLE members ALTER COLUMN email DROP NOT NULL","ALTER TABLE members ALTER COLUMN address DROP NOT NULL","ALTER TABLE members ALTER COLUMN zip_code DROP NOT NULL","ALTER TABLE members ALTER COLUMN date_of_birth DROP NOT NULL","-- Add comment explaining placeholder players
+COMMENT ON TABLE members IS ''Player/member records. Includes:
+- Registered users (user_id NOT NULL) with full profile information
+- Placeholder players (user_id IS NULL) with minimal info (name, city, state only)
+- Two special substitute members with fixed UUIDs for anonymous subs in matches
+
+Placeholder players can be on teams and have games scored. When the real person
+registers, their user_id is attached to the existing placeholder record.''"}', 'allow_nullable_member_fields');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251216121115', '{"-- Migration: Placeholder Player Merge System
+-- Purpose: Enable detection, identification, and merging of placeholder players
+--          when users register separately from the invite flow
+--
+-- This migration includes:
+-- 1. Extensions for fuzzy name matching (soundex, trigrams)
+-- 2. Functions for searching placeholder players
+-- 3. merge_requests table for LO-approved merges
+-- 4. Performance indexes
+
+-- ============================================================================
+-- PART 1: EXTENSIONS FOR FUZZY MATCHING
+-- ============================================================================
+
+-- fuzzystrmatch: Provides soundex, metaphone, levenshtein for phonetic matching
+-- Examples: soundex(''Smith'') = soundex(''Smythe''), soundex(''John'') = soundex(''Jon'')
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch","-- pg_trgm: Provides trigram similarity for typo detection
+-- Examples: similarity(''Springfield'', ''Sprigfield'') = 0.6
+CREATE EXTENSION IF NOT EXISTS pg_trgm","-- ============================================================================
+-- PART 2: FUNCTION - search_placeholder_matches
+-- ============================================================================
+-- Searches for placeholder players (user_id IS NULL) that might match
+-- a registering user based on name, city, and state.
+--
+-- Uses a scoring system:
+--   - Soundex match on first_name: 0-4 points
+--   - Soundex match on last_name: 0-4 points
+--   - Trigram similarity on city: 0-1 points (scaled to 0-2)
+--   - Exact state match: 2 bonus points
+--
+-- Returns candidates with combined score >= threshold (default 5)
+
+CREATE OR REPLACE FUNCTION search_placeholder_matches(
+  p_first_name TEXT,
+  p_last_name TEXT,
+  p_city TEXT DEFAULT NULL,
+  p_state TEXT DEFAULT NULL,
+  p_limit INT DEFAULT 5,
+  p_min_score NUMERIC DEFAULT 5.0
+)
+RETURNS TABLE (
+  id UUID,
+  first_name TEXT,
+  last_name TEXT,
+  nickname TEXT,
+  city TEXT,
+  state TEXT,
+  system_player_number INT,
+  first_name_score INT,
+  last_name_score INT,
+  city_score NUMERIC,
+  state_match BOOLEAN,
+  total_score NUMERIC
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.first_name,
+    m.last_name,
+    m.nickname,
+    m.city,
+    m.state,
+    m.system_player_number,
+    -- Soundex scores (0-4, where 4 = exact phonetic match)
+    difference(m.first_name, p_first_name) AS first_name_score,
+    difference(m.last_name, p_last_name) AS last_name_score,
+    -- Trigram similarity on city (0-1, scaled to 0-2 for scoring)
+    CASE
+      WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+      THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+      ELSE 0
+    END AS city_score,
+    -- State exact match
+    CASE
+      WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+      THEN TRUE
+      ELSE FALSE
+    END AS state_match,
+    -- Combined score
+    (
+      difference(m.first_name, p_first_name) +
+      difference(m.last_name, p_last_name) +
+      CASE
+        WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+        THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+        ELSE 0
+      END +
+      CASE
+        WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+        THEN 2
+        ELSE 0
+      END
+    )::NUMERIC AS total_score
+  FROM members m
+  WHERE
+    -- Only search placeholder players (no linked user account)
+    m.user_id IS NULL
+    -- Require at least some name similarity to avoid returning everyone
+    AND (
+      difference(m.first_name, p_first_name) >= 2
+      OR difference(m.last_name, p_last_name) >= 2
+    )
+  HAVING
+    -- Filter by minimum combined score
+    (
+      difference(m.first_name, p_first_name) +
+      difference(m.last_name, p_last_name) +
+      CASE
+        WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+        THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+        ELSE 0
+      END +
+      CASE
+        WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+        THEN 2
+        ELSE 0
+      END
+    ) >= p_min_score
+  ORDER BY total_score DESC
+  LIMIT p_limit;
+END;
+$$","GRANT EXECUTE ON FUNCTION search_placeholder_matches TO authenticated","GRANT EXECUTE ON FUNCTION search_placeholder_matches TO anon","-- ============================================================================
+-- PART 3: FUNCTION - lookup_placeholder_by_system_number
+-- ============================================================================
+-- Direct lookup when user knows their system player number
+-- Used when fuzzy search fails but user has their number from captain/LO
+
+CREATE OR REPLACE FUNCTION lookup_placeholder_by_system_number(
+  p_system_number INT
+)
+RETURNS TABLE (
+  id UUID,
+  first_name TEXT,
+  last_name TEXT,
+  nickname TEXT,
+  city TEXT,
+  state TEXT,
+  system_player_number INT
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.first_name,
+    m.last_name,
+    m.nickname,
+    m.city,
+    m.state,
+    m.system_player_number
+  FROM members m
+  WHERE
+    m.user_id IS NULL  -- Only placeholder players
+    AND m.system_player_number = p_system_number;
+END;
+$$","GRANT EXECUTE ON FUNCTION lookup_placeholder_by_system_number TO authenticated","GRANT EXECUTE ON FUNCTION lookup_placeholder_by_system_number TO anon","-- ============================================================================
+-- PART 4: TABLE - merge_requests
+-- ============================================================================
+-- Stores requests to merge a placeholder player with a registered user.
+-- Only league operators can approve/reject these requests.
+--
+-- Flow:
+-- 1. User/Captain identifies PP match during registration or later
+-- 2. Creates merge_request linking registered_member_id to placeholder_member_id
+-- 3. LO reviews request, sees both records'' data
+-- 4. LO approves → merge executed, request marked ''approved''
+-- 5. Or LO rejects → request marked ''rejected'' with reason
+
+CREATE TYPE merge_request_status AS ENUM (''pending'', ''approved'', ''rejected'')","CREATE TABLE IF NOT EXISTS merge_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- The placeholder player (user_id IS NULL) to be merged FROM
+  placeholder_member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- The registered user''s member record to merge INTO
+  registered_member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- Who requested this merge
+  requested_by_member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- Role of requester at time of request (for context)
+  requester_role TEXT NOT NULL CHECK (requester_role IN (''player'', ''captain'', ''league_operator'')),
+
+  -- Current status
+  status merge_request_status NOT NULL DEFAULT ''pending'',
+
+  -- Optional context from requester
+  request_notes TEXT,
+
+  -- LO who processed the request (if processed)
+  processed_by_member_id UUID REFERENCES members(id) ON DELETE SET NULL,
+
+  -- LO''s notes (especially useful for rejections)
+  processor_notes TEXT,
+
+  -- Team context (helps LO verify the merge)
+  -- Can be NULL if PP isn''t on a team yet
+  team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
+
+  -- Organization context (which org''s LO should handle this)
+  -- Derived from the PP''s team → season → league → organization
+  organization_id UUID REFERENCES organizations(id) ON DELETE CASCADE,
+
+  -- Timestamps
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  processed_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)","-- Indexes for common queries
+CREATE INDEX idx_merge_requests_status ON merge_requests(status)","CREATE INDEX idx_merge_requests_organization ON merge_requests(organization_id)","CREATE INDEX idx_merge_requests_placeholder ON merge_requests(placeholder_member_id)","CREATE INDEX idx_merge_requests_registered ON merge_requests(registered_member_id)","CREATE INDEX idx_merge_requests_pending_by_org ON merge_requests(organization_id, status)
+  WHERE status = ''pending''","-- Prevent duplicate pending requests for same placeholder
+CREATE UNIQUE INDEX idx_merge_requests_unique_pending
+  ON merge_requests(placeholder_member_id)
+  WHERE status = ''pending''","-- NOTE: RLS policies for merge_requests are documented in RLS_ANALYSIS.md
+-- They will be implemented later when RLS is enabled across the application.
+
+-- ============================================================================
+-- PART 5: PERFORMANCE INDEXES FOR FUZZY MATCHING
+-- ============================================================================
+
+-- Trigram index on city for faster similarity searches
+CREATE INDEX IF NOT EXISTS idx_members_city_trgm
+  ON members USING GIN (city gin_trgm_ops)","-- Functional index on soundex of names for faster phonetic lookups
+CREATE INDEX IF NOT EXISTS idx_members_first_name_soundex
+  ON members (soundex(first_name))","CREATE INDEX IF NOT EXISTS idx_members_last_name_soundex
+  ON members (soundex(last_name))","-- Index on system_player_number for direct lookups (placeholders only)
+CREATE INDEX IF NOT EXISTS idx_members_system_player_number
+  ON members (system_player_number)
+  WHERE user_id IS NULL","-- ============================================================================
+-- PART 6: HELPER FUNCTION - Update timestamp trigger
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION update_merge_request_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql","CREATE TRIGGER merge_requests_updated_at
+  BEFORE UPDATE ON merge_requests
+  FOR EACH ROW
+  EXECUTE FUNCTION update_merge_request_timestamp()","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON TABLE merge_requests IS
+''Requests to merge placeholder players with registered users.
+Created by users/captains, approved/rejected by league operators.''","COMMENT ON FUNCTION search_placeholder_matches IS
+''Fuzzy search for placeholder players matching a registering user.
+Uses soundex for phonetic name matching and trigrams for city typos.
+Returns top candidates sorted by match score.''","COMMENT ON FUNCTION lookup_placeholder_by_system_number IS
+''Direct lookup of a placeholder player by their system number.
+Used when user knows their number (given by captain/LO).''"}', 'placeholder_player_merge_system');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251216140000', '{"-- Migration: Allow Nullable Member Fields
+-- Purpose: Enable short registration form by making optional fields nullable.
+--          This supports both placeholder players (created by LO/captain) and
+--          new users who register with minimal info.
+--
+-- Fields being made nullable:
+-- - phone: Not required for initial registration
+-- - address: Not required for initial registration
+-- - zip_code: Not required for initial registration
+-- - date_of_birth: Not required for initial registration
+--
+-- Fields that remain required:
+-- - first_name, last_name: Identity
+-- - city, state: For fuzzy matching during PP merge detection
+-- - email: For contact (null for placeholder players only)
+-- - role: System requirement
+-- - nickname: Auto-generated if not provided
+
+-- ============================================================================
+-- ALTER COLUMNS TO ALLOW NULL
+-- ============================================================================
+
+ALTER TABLE members
+  ALTER COLUMN phone DROP NOT NULL","ALTER TABLE members
+  ALTER COLUMN address DROP NOT NULL","ALTER TABLE members
+  ALTER COLUMN zip_code DROP NOT NULL","ALTER TABLE members
+  ALTER COLUMN date_of_birth DROP NOT NULL","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON COLUMN members.phone IS
+''Contact phone number. Optional - can be added later in profile settings.''","COMMENT ON COLUMN members.address IS
+''Street address. Optional - can be added later in profile settings.''","COMMENT ON COLUMN members.zip_code IS
+''ZIP/postal code. Optional - can be added later in profile settings.''","COMMENT ON COLUMN members.date_of_birth IS
+''Date of birth. Optional - may be needed for age-restricted leagues.''"}', 'allow_nullable_member_fields');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251216180000', '{"-- Migration: Enhanced Placeholder Player Search
+-- Purpose: Expand search_placeholder_matches to support additional verification fields
+--          for the /register-existing page confidence-based matching
+--
+-- New fields supported:
+-- - Operator info (first_name, last_name, player_number)
+-- - Captain info (first_name, last_name, player_number)
+-- - User''s system info (first_name, last_name, player_number, nickname)
+-- - Team/Location (team_name, play_night/day_of_week, city, state)
+-- - Security: last opponent name OR \"hasn''t played yet\" flag
+--
+-- Grading system:
+-- - Grade A (6+ matches): High confidence - auto-merge allowed
+-- - Grade B (4-5 matches): Medium confidence - LO review required
+-- - Grade C (<4 matches): Low confidence - no match found
+
+-- ============================================================================
+-- DROP OLD FUNCTION (will be replaced)
+-- ============================================================================
+DROP FUNCTION IF EXISTS search_placeholder_matches(TEXT, TEXT, TEXT, TEXT, INT, NUMERIC)","-- ============================================================================
+-- NEW FUNCTION: search_placeholder_matches_v2
+-- ============================================================================
+-- Enhanced version with all verification fields for confidence scoring
+-- Each matching field adds 1 point to the score
+
+CREATE OR REPLACE FUNCTION search_placeholder_matches_v2(
+  -- League Operator info (optional)
+  p_operator_first_name TEXT DEFAULT NULL,
+  p_operator_last_name TEXT DEFAULT NULL,
+  p_operator_player_number INT DEFAULT NULL,
+
+  -- Captain info (optional)
+  p_captain_first_name TEXT DEFAULT NULL,
+  p_captain_last_name TEXT DEFAULT NULL,
+  p_captain_player_number INT DEFAULT NULL,
+
+  -- User''s system info (optional)
+  p_system_first_name TEXT DEFAULT NULL,
+  p_system_last_name TEXT DEFAULT NULL,
+  p_system_player_number INT DEFAULT NULL,
+  p_system_nickname TEXT DEFAULT NULL,
+
+  -- Team/Location info (optional)
+  p_team_name TEXT DEFAULT NULL,
+  p_play_night TEXT DEFAULT NULL,  -- Day of week (Monday, Tuesday, etc.)
+  p_city TEXT DEFAULT NULL,
+  p_state TEXT DEFAULT NULL,
+
+  -- Last opponent (security verification)
+  p_last_opponent_first_name TEXT DEFAULT NULL,
+  p_last_opponent_last_name TEXT DEFAULT NULL,
+  p_has_not_played_yet BOOLEAN DEFAULT NULL,
+
+  -- Search parameters
+  p_limit INT DEFAULT 10
+)
+RETURNS TABLE (
+  member_id UUID,
+  first_name TEXT,
+  last_name TEXT,
+  nickname TEXT,
+  city TEXT,
+  state TEXT,
+  system_player_number INT,
+  team_name TEXT,
+  captain_name TEXT,
+  operator_name TEXT,
+  total_score INT,
+  matched_fields TEXT[],
+  grade CHAR(1)
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  min_fields_provided INT := 0;
+BEGIN
+  -- Count how many search fields were provided
+  -- We need at least some fields to search
+  IF p_operator_first_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_operator_last_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_operator_player_number IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_captain_first_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_captain_last_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_captain_player_number IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_system_first_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_system_last_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_system_player_number IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_system_nickname IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_team_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_play_night IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_city IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_state IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_last_opponent_first_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_last_opponent_last_name IS NOT NULL THEN min_fields_provided := min_fields_provided + 1; END IF;
+  IF p_has_not_played_yet = TRUE THEN min_fields_provided := min_fields_provided + 1; END IF;
+
+  -- Require at least 4 fields
+  IF min_fields_provided < 4 THEN
+    RETURN;
+  END IF;
+
+  RETURN QUERY
+  WITH
+  -- Get team context for each placeholder player
+  pp_teams AS (
+    SELECT
+      tp.member_id,
+      t.team_name,
+      t.captain_id,
+      l.day_of_week,
+      l.organization_id
+    FROM team_players tp
+    JOIN teams t ON t.id = tp.team_id
+    JOIN seasons s ON s.id = t.season_id
+    JOIN leagues l ON l.id = s.league_id
+    WHERE tp.member_id IN (SELECT id FROM members WHERE user_id IS NULL)
+  ),
+
+  -- Get captain names
+  captains AS (
+    SELECT
+      pt.member_id AS pp_member_id,
+      m.first_name AS captain_first_name,
+      m.last_name AS captain_last_name,
+      m.system_player_number AS captain_player_number
+    FROM pp_teams pt
+    JOIN members m ON m.id = pt.captain_id
+  ),
+
+  -- Get operator names (organization staff)
+  operators AS (
+    SELECT DISTINCT ON (pt.member_id)
+      pt.member_id AS pp_member_id,
+      m.first_name AS operator_first_name,
+      m.last_name AS operator_last_name,
+      m.system_player_number AS operator_player_number
+    FROM pp_teams pt
+    JOIN organization_staff os ON os.organization_id = pt.organization_id
+    JOIN members m ON m.id = os.member_id
+    WHERE os.position IN (''owner'', ''admin'')
+    ORDER BY pt.member_id, os.position  -- Prefer owner over admin
+  ),
+
+  -- Get last opponent for each PP (most recent game)
+  last_opponents AS (
+    SELECT DISTINCT ON (pp_id)
+      pp_id,
+      opponent_first_name,
+      opponent_last_name,
+      has_played
+    FROM (
+      -- Games where PP was home player
+      SELECT
+        mg.home_player_id AS pp_id,
+        opp.first_name AS opponent_first_name,
+        opp.last_name AS opponent_last_name,
+        TRUE AS has_played,
+        mg.created_at
+      FROM match_games mg
+      JOIN members opp ON opp.id = mg.away_player_id
+      WHERE mg.home_player_id IN (SELECT id FROM members WHERE user_id IS NULL)
+        AND mg.away_player_id IS NOT NULL
+
+      UNION ALL
+
+      -- Games where PP was away player
+      SELECT
+        mg.away_player_id AS pp_id,
+        opp.first_name AS opponent_first_name,
+        opp.last_name AS opponent_last_name,
+        TRUE AS has_played,
+        mg.created_at
+      FROM match_games mg
+      JOIN members opp ON opp.id = mg.home_player_id
+      WHERE mg.away_player_id IN (SELECT id FROM members WHERE user_id IS NULL)
+        AND mg.home_player_id IS NOT NULL
+    ) games
+    ORDER BY pp_id, created_at DESC
+  ),
+
+  -- Calculate scores for each PP
+  -- Using soundex difference() for name matching: 4=exact, 3=close, 2=maybe, 1=weak, 0=no match
+  -- We require difference >= 3 for a \"match\" on names (catches typos, Mike/Michael, etc.)
+  scored_pps AS (
+    SELECT
+      m.id,
+      m.first_name::TEXT AS pp_first_name,
+      m.last_name::TEXT AS pp_last_name,
+      m.nickname::TEXT AS pp_nickname,
+      m.city::TEXT AS pp_city,
+      m.state::TEXT AS pp_state,
+      m.system_player_number AS pp_system_player_number,
+      pt.team_name::TEXT AS pp_team_name,
+      COALESCE(c.captain_first_name || '' '' || c.captain_last_name, '''')::TEXT AS pp_captain_name,
+      COALESCE(op.operator_first_name || '' '' || op.operator_last_name, '''')::TEXT AS pp_operator_name,
+
+      -- Track if user''s own name matches (fuzzy) - REQUIRED for Grade A
+      (p_system_first_name IS NOT NULL AND difference(m.first_name, p_system_first_name) >= 3) AS pp_first_name_matches,
+      (p_system_last_name IS NOT NULL AND difference(m.last_name, p_system_last_name) >= 3) AS pp_last_name_matches,
+
+      -- Calculate score (1 point per matching field)
+      -- All name fields use fuzzy matching (soundex difference >= 3)
+      (
+        -- System info matches (user''s own info - most important)
+        CASE WHEN p_system_first_name IS NOT NULL AND difference(m.first_name, p_system_first_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_system_last_name IS NOT NULL AND difference(m.last_name, p_system_last_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_system_player_number IS NOT NULL AND m.system_player_number = p_system_player_number THEN 1 ELSE 0 END +
+        CASE WHEN p_system_nickname IS NOT NULL AND difference(m.nickname, p_system_nickname) >= 3 THEN 1 ELSE 0 END +
+
+        -- Location matches (exact for city/state - common values)
+        CASE WHEN p_city IS NOT NULL AND LOWER(m.city) = LOWER(p_city) THEN 1 ELSE 0 END +
+        CASE WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state) THEN 1 ELSE 0 END +
+
+        -- Team matches (exact for team name, fuzzy might cause false positives)
+        CASE WHEN p_team_name IS NOT NULL AND LOWER(pt.team_name) = LOWER(p_team_name) THEN 1 ELSE 0 END +
+        CASE WHEN p_play_night IS NOT NULL AND LOWER(pt.day_of_week) = LOWER(p_play_night) THEN 1 ELSE 0 END +
+
+        -- Captain matches (fuzzy for names)
+        CASE WHEN p_captain_first_name IS NOT NULL AND difference(c.captain_first_name, p_captain_first_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_captain_last_name IS NOT NULL AND difference(c.captain_last_name, p_captain_last_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_captain_player_number IS NOT NULL AND c.captain_player_number = p_captain_player_number THEN 1 ELSE 0 END +
+
+        -- Operator matches (fuzzy for names)
+        CASE WHEN p_operator_first_name IS NOT NULL AND difference(op.operator_first_name, p_operator_first_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_operator_last_name IS NOT NULL AND difference(op.operator_last_name, p_operator_last_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_operator_player_number IS NOT NULL AND op.operator_player_number = p_operator_player_number THEN 1 ELSE 0 END +
+
+        -- Last opponent matches (fuzzy for names)
+        CASE WHEN p_has_not_played_yet = TRUE AND lo.has_played IS NULL THEN 1 ELSE 0 END +
+        CASE WHEN p_last_opponent_first_name IS NOT NULL AND difference(lo.opponent_first_name, p_last_opponent_first_name) >= 3 THEN 1 ELSE 0 END +
+        CASE WHEN p_last_opponent_last_name IS NOT NULL AND difference(lo.opponent_last_name, p_last_opponent_last_name) >= 3 THEN 1 ELSE 0 END
+      ) AS pp_total_score,
+
+      -- Build array of matched fields for display (using same fuzzy logic)
+      ARRAY_REMOVE(ARRAY[
+        CASE WHEN p_system_first_name IS NOT NULL AND difference(m.first_name, p_system_first_name) >= 3 THEN ''firstName'' END,
+        CASE WHEN p_system_last_name IS NOT NULL AND difference(m.last_name, p_system_last_name) >= 3 THEN ''lastName'' END,
+        CASE WHEN p_system_player_number IS NOT NULL AND m.system_player_number = p_system_player_number THEN ''playerNumber'' END,
+        CASE WHEN p_system_nickname IS NOT NULL AND difference(m.nickname, p_system_nickname) >= 3 THEN ''nickname'' END,
+        CASE WHEN p_city IS NOT NULL AND LOWER(m.city) = LOWER(p_city) THEN ''city'' END,
+        CASE WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state) THEN ''state'' END,
+        CASE WHEN p_team_name IS NOT NULL AND LOWER(pt.team_name) = LOWER(p_team_name) THEN ''teamName'' END,
+        CASE WHEN p_play_night IS NOT NULL AND LOWER(pt.day_of_week) = LOWER(p_play_night) THEN ''playNight'' END,
+        CASE WHEN p_captain_first_name IS NOT NULL AND difference(c.captain_first_name, p_captain_first_name) >= 3 THEN ''captainFirstName'' END,
+        CASE WHEN p_captain_last_name IS NOT NULL AND difference(c.captain_last_name, p_captain_last_name) >= 3 THEN ''captainLastName'' END,
+        CASE WHEN p_captain_player_number IS NOT NULL AND c.captain_player_number = p_captain_player_number THEN ''captainPlayerNumber'' END,
+        CASE WHEN p_operator_first_name IS NOT NULL AND difference(op.operator_first_name, p_operator_first_name) >= 3 THEN ''operatorFirstName'' END,
+        CASE WHEN p_operator_last_name IS NOT NULL AND difference(op.operator_last_name, p_operator_last_name) >= 3 THEN ''operatorLastName'' END,
+        CASE WHEN p_operator_player_number IS NOT NULL AND op.operator_player_number = p_operator_player_number THEN ''operatorPlayerNumber'' END,
+        CASE WHEN p_has_not_played_yet = TRUE AND lo.has_played IS NULL THEN ''hasNotPlayedYet'' END,
+        CASE WHEN p_last_opponent_first_name IS NOT NULL AND difference(lo.opponent_first_name, p_last_opponent_first_name) >= 3 THEN ''opponentFirstName'' END,
+        CASE WHEN p_last_opponent_last_name IS NOT NULL AND difference(lo.opponent_last_name, p_last_opponent_last_name) >= 3 THEN ''opponentLastName'' END
+      ], NULL) AS pp_matched_fields
+
+    FROM members m
+    LEFT JOIN pp_teams pt ON pt.member_id = m.id
+    LEFT JOIN captains c ON c.pp_member_id = m.id
+    LEFT JOIN operators op ON op.pp_member_id = m.id
+    LEFT JOIN last_opponents lo ON lo.pp_id = m.id
+    WHERE m.user_id IS NULL  -- Only placeholder players
+  ),
+
+  -- Deduplicate by member_id, keeping the row with highest score
+  -- (A player on multiple teams would otherwise appear multiple times)
+  deduplicated AS (
+    SELECT DISTINCT ON (id)
+      id,
+      pp_first_name,
+      pp_last_name,
+      pp_nickname,
+      pp_city,
+      pp_state,
+      pp_system_player_number,
+      pp_team_name,
+      pp_captain_name,
+      pp_operator_name,
+      pp_first_name_matches,
+      pp_last_name_matches,
+      pp_total_score,
+      pp_matched_fields
+    FROM scored_pps
+    WHERE pp_total_score > 0  -- Only candidates with at least some match
+    ORDER BY id, pp_total_score DESC
+  )
+
+  SELECT
+    dd.id AS member_id,
+    dd.pp_first_name AS first_name,
+    dd.pp_last_name AS last_name,
+    dd.pp_nickname AS nickname,
+    dd.pp_city AS city,
+    dd.pp_state AS state,
+    dd.pp_system_player_number AS system_player_number,
+    dd.pp_team_name AS team_name,
+    dd.pp_captain_name AS captain_name,
+    dd.pp_operator_name AS operator_name,
+    dd.pp_total_score AS total_score,
+    dd.pp_matched_fields AS matched_fields,
+    -- Grade based on score AND name match requirement
+    -- Grade A REQUIRES both first AND last name to match (fuzzy)
+    -- If names provided but don''t match, cap at Grade B regardless of other matches
+    CASE
+      WHEN dd.pp_total_score >= 6
+           AND (p_system_first_name IS NULL OR dd.pp_first_name_matches)
+           AND (p_system_last_name IS NULL OR dd.pp_last_name_matches)
+      THEN ''A''
+      WHEN dd.pp_total_score >= 4 THEN ''B''
+      ELSE ''C''
+    END::CHAR(1) AS grade
+  FROM deduplicated dd
+  ORDER BY dd.pp_total_score DESC
+  LIMIT p_limit;
+END;
+$$","-- Grant execute permissions
+GRANT EXECUTE ON FUNCTION search_placeholder_matches_v2 TO authenticated","GRANT EXECUTE ON FUNCTION search_placeholder_matches_v2 TO anon","-- ============================================================================
+-- BACKWARD COMPATIBILITY: Recreate original function
+-- ============================================================================
+-- Recreate the original simpler function for any code that uses it
+
+CREATE OR REPLACE FUNCTION search_placeholder_matches(
+  p_first_name TEXT,
+  p_last_name TEXT,
+  p_city TEXT DEFAULT NULL,
+  p_state TEXT DEFAULT NULL,
+  p_limit INT DEFAULT 5,
+  p_min_score NUMERIC DEFAULT 5.0
+)
+RETURNS TABLE (
+  id UUID,
+  first_name TEXT,
+  last_name TEXT,
+  nickname TEXT,
+  city TEXT,
+  state TEXT,
+  system_player_number INT,
+  first_name_score INT,
+  last_name_score INT,
+  city_score NUMERIC,
+  state_match BOOLEAN,
+  total_score NUMERIC
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    m.id,
+    m.first_name,
+    m.last_name,
+    m.nickname,
+    m.city,
+    m.state,
+    m.system_player_number,
+    difference(m.first_name, p_first_name) AS first_name_score,
+    difference(m.last_name, p_last_name) AS last_name_score,
+    CASE
+      WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+      THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+      ELSE 0
+    END AS city_score,
+    CASE
+      WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+      THEN TRUE
+      ELSE FALSE
+    END AS state_match,
+    (
+      difference(m.first_name, p_first_name) +
+      difference(m.last_name, p_last_name) +
+      CASE
+        WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+        THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+        ELSE 0
+      END +
+      CASE
+        WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+        THEN 2
+        ELSE 0
+      END
+    )::NUMERIC AS total_score
+  FROM members m
+  WHERE
+    m.user_id IS NULL
+    AND (
+      difference(m.first_name, p_first_name) >= 2
+      OR difference(m.last_name, p_last_name) >= 2
+    )
+  HAVING
+    (
+      difference(m.first_name, p_first_name) +
+      difference(m.last_name, p_last_name) +
+      CASE
+        WHEN p_city IS NOT NULL AND m.city IS NOT NULL
+        THEN similarity(LOWER(m.city), LOWER(p_city)) * 2
+        ELSE 0
+      END +
+      CASE
+        WHEN p_state IS NOT NULL AND UPPER(m.state) = UPPER(p_state)
+        THEN 2
+        ELSE 0
+      END
+    ) >= p_min_score
+  ORDER BY total_score DESC
+  LIMIT p_limit;
+END;
+$$","GRANT EXECUTE ON FUNCTION search_placeholder_matches TO authenticated","GRANT EXECUTE ON FUNCTION search_placeholder_matches TO anon","-- ============================================================================
+-- FUNCTION: get_team_verification_options
+-- ============================================================================
+-- Returns team names for a Grade B verification challenge.
+-- Given a member_id, returns their actual teams plus random decoy teams.
+-- Used to verify the user knows which team(s) they''re on.
+
+CREATE OR REPLACE FUNCTION get_team_verification_options(
+  p_member_id UUID,
+  p_decoy_count INT DEFAULT 3
+)
+RETURNS TABLE (
+  team_name TEXT,
+  is_correct BOOLEAN
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  correct_teams TEXT[];
+BEGIN
+  -- First get the member''s actual team names (deduplicated)
+  SELECT array_agg(DISTINCT t.team_name::TEXT)
+  INTO correct_teams
+  FROM team_players tp
+  JOIN teams t ON t.id = tp.team_id
+  WHERE tp.member_id = p_member_id;
+
+  -- Return correct teams (one entry per unique team name)
+  RETURN QUERY
+  SELECT
+    unnest(correct_teams) AS team_name,
+    TRUE AS is_correct;
+
+  -- Return random decoy teams (names not in correct_teams)
+  RETURN QUERY
+  SELECT DISTINCT ON (t.team_name)
+    t.team_name::TEXT AS team_name,
+    FALSE AS is_correct
+  FROM teams t
+  WHERE t.team_name::TEXT != ALL(COALESCE(correct_teams, ARRAY[]::TEXT[]))
+  ORDER BY t.team_name, random()
+  LIMIT p_decoy_count;
+END;
+$$","GRANT EXECUTE ON FUNCTION get_team_verification_options TO authenticated","GRANT EXECUTE ON FUNCTION get_team_verification_options TO anon","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON FUNCTION search_placeholder_matches_v2 IS
+''Enhanced placeholder player search with full verification fields.
+Supports matching on: operator info, captain info, user system info,
+team/location, and last opponent. Returns candidates with grade (A/B/C)
+based on confidence score.''","COMMENT ON FUNCTION get_team_verification_options IS
+''Returns team options for Grade B verification challenge.
+Shows the member''''s actual teams plus random decoy teams.
+User must identify their correct team to pass verification.''"}', 'enhanced_placeholder_search');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251217144653', '{"-- Migration: Invite Tokens Table
+-- Purpose: Store tokens for email invites to placeholder players.
+--          Tracks which PP was invited, by whom, and whether they''ve claimed it.
+--
+-- Flow:
+--   1. Captain sends invite to PP''s email -> token created with status ''pending''
+--   2. User clicks link in email -> arrives at /register?claim={memberId}&token={token}
+--   3. Upon successful registration -> token status updated to ''claimed''
+--
+-- Security:
+--   - Tokens expire after 7 days by default
+--   - Only captains/operators can create invites for their team members
+--   - Tokens can only be used once
+--
+-- NOTE: RLS is disabled for now. See RLS_ANALYSIS.md for planned policies.
+
+-- ============================================================================
+-- CREATE TABLE: invite_tokens
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS invite_tokens (
+  -- Primary key
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- The token sent in the email link (separate from id for security)
+  token UUID UNIQUE NOT NULL DEFAULT gen_random_uuid(),
+
+  -- The placeholder player being invited
+  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+
+  -- Email the invite was sent to
+  email TEXT NOT NULL,
+
+  -- Who sent the invite (captain/operator member_id)
+  invited_by_member_id UUID NOT NULL REFERENCES members(id),
+
+  -- Team context (which team is inviting them)
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+
+  -- Status tracking
+  status TEXT NOT NULL DEFAULT ''pending'' CHECK (status IN (''pending'', ''claimed'', ''expired'', ''cancelled'')),
+
+  -- If claimed, which auth user claimed it
+  claimed_by_user_id UUID REFERENCES auth.users(id),
+
+  -- Timestamps
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval ''7 days''),
+  claimed_at TIMESTAMPTZ,
+
+  -- Prevent duplicate pending invites for same PP+email combination
+  CONSTRAINT unique_pending_invite UNIQUE (member_id, email, status)
+    DEFERRABLE INITIALLY DEFERRED
+)","-- ============================================================================
+-- INDEXES
+-- ============================================================================
+
+-- Fast lookup by token (for registration page)
+CREATE INDEX idx_invite_tokens_token ON invite_tokens(token) WHERE status = ''pending''","-- Fast lookup by member_id (for checking existing invites)
+CREATE INDEX idx_invite_tokens_member_id ON invite_tokens(member_id)","-- Fast lookup by email (for finding all invites to an email)
+CREATE INDEX idx_invite_tokens_email ON invite_tokens(email)","-- Cleanup expired tokens
+CREATE INDEX idx_invite_tokens_expires_at ON invite_tokens(expires_at) WHERE status = ''pending''","-- ============================================================================
+-- RLS DISABLED FOR NOW
+-- ============================================================================
+-- RLS policies are documented in RLS_ANALYSIS.md for future implementation
+
+-- ============================================================================
+-- FUNCTION: Validate and claim invite token
+-- ============================================================================
+-- Called during registration to validate token and mark as claimed
+
+CREATE OR REPLACE FUNCTION claim_invite_token(
+  p_token UUID,
+  p_user_id UUID
+)
+RETURNS TABLE (
+  success BOOLEAN,
+  member_id UUID,
+  team_id UUID,
+  error_message TEXT
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_invite invite_tokens%ROWTYPE;
+BEGIN
+  -- Find the token
+  SELECT * INTO v_invite
+  FROM invite_tokens
+  WHERE token = p_token
+  FOR UPDATE;  -- Lock the row
+
+  -- Token not found
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, NULL::UUID, NULL::UUID, ''Invalid or expired invite token''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Token already claimed
+  IF v_invite.status = ''claimed'' THEN
+    RETURN QUERY SELECT FALSE, NULL::UUID, NULL::UUID, ''This invite has already been claimed''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Token expired
+  IF v_invite.status = ''expired'' OR v_invite.expires_at < now() THEN
+    -- Update status if it was not already marked expired
+    IF v_invite.status != ''expired'' THEN
+      UPDATE invite_tokens SET status = ''expired'' WHERE id = v_invite.id;
+    END IF;
+    RETURN QUERY SELECT FALSE, NULL::UUID, NULL::UUID, ''This invite has expired''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Token cancelled
+  IF v_invite.status = ''cancelled'' THEN
+    RETURN QUERY SELECT FALSE, NULL::UUID, NULL::UUID, ''This invite has been cancelled''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Token is valid - claim it
+  UPDATE invite_tokens
+  SET
+    status = ''claimed'',
+    claimed_by_user_id = p_user_id,
+    claimed_at = now()
+  WHERE id = v_invite.id;
+
+  RETURN QUERY SELECT TRUE, v_invite.member_id, v_invite.team_id, NULL::TEXT;
+END;
+$$","-- ============================================================================
+-- FUNCTION: Get invite details by token (for registration page display)
+-- ============================================================================
+-- Returns non-sensitive info about the invite for the registration page
+
+CREATE OR REPLACE FUNCTION get_invite_details(p_token UUID)
+RETURNS TABLE (
+  is_valid BOOLEAN,
+  member_id UUID,
+  member_first_name TEXT,
+  member_last_name TEXT,
+  team_name TEXT,
+  captain_name TEXT,
+  expires_at TIMESTAMPTZ,
+  error_message TEXT
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_invite invite_tokens%ROWTYPE;
+BEGIN
+  -- Find the token
+  SELECT * INTO v_invite
+  FROM invite_tokens it
+  WHERE it.token = p_token;
+
+  -- Token not found
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT
+      FALSE,
+      NULL::UUID,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TIMESTAMPTZ,
+      ''Invalid invite link''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Check status
+  IF v_invite.status = ''claimed'' THEN
+    RETURN QUERY SELECT
+      FALSE,
+      NULL::UUID,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TIMESTAMPTZ,
+      ''This invite has already been used''::TEXT;
+    RETURN;
+  END IF;
+
+  IF v_invite.status = ''expired'' OR v_invite.expires_at < now() THEN
+    RETURN QUERY SELECT
+      FALSE,
+      NULL::UUID,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TIMESTAMPTZ,
+      ''This invite has expired''::TEXT;
+    RETURN;
+  END IF;
+
+  IF v_invite.status = ''cancelled'' THEN
+    RETURN QUERY SELECT
+      FALSE,
+      NULL::UUID,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TEXT,
+      NULL::TIMESTAMPTZ,
+      ''This invite has been cancelled''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Return invite details
+  RETURN QUERY
+  SELECT
+    TRUE,
+    m.id,
+    m.first_name::TEXT,
+    m.last_name::TEXT,
+    t.team_name::TEXT,
+    (cm.first_name || '' '' || cm.last_name)::TEXT,
+    v_invite.expires_at,
+    NULL::TEXT
+  FROM members m
+  JOIN teams t ON t.id = v_invite.team_id
+  LEFT JOIN members cm ON cm.id = t.captain_id
+  WHERE m.id = v_invite.member_id;
+END;
+$$","-- Grant execute to anon for registration page (unauthenticated users)
+GRANT EXECUTE ON FUNCTION get_invite_details TO anon","GRANT EXECUTE ON FUNCTION get_invite_details TO authenticated","-- claim_invite_token should only be called by service role during registration
+-- (Edge Function will handle this)
+GRANT EXECUTE ON FUNCTION claim_invite_token TO service_role","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON TABLE invite_tokens IS
+''Stores email invite tokens for placeholder players.
+Captains send invites, users click link to register and claim their PP record.''","COMMENT ON FUNCTION claim_invite_token IS
+''Validates and claims an invite token during registration.
+Returns the member_id to link to the new user account.
+Called by Edge Function with service role.''","COMMENT ON FUNCTION get_invite_details IS
+''Returns display information for an invite token.
+Used on registration page to show who is inviting the user.
+Safe for anonymous access.''"}', 'invite_tokens');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251217152629', '{"-- Migration: Merge Placeholder Player Function (Schema-Aware)
+-- Purpose: Merge a placeholder player (PP) into an existing registered user''s member record.
+--          DYNAMICALLY finds and updates ALL foreign key references to members table.
+--
+-- Scenario: Captain sends invite to email that''s ALREADY in auth.users.
+--           The existing user needs to claim the PP''s history (games, stats, etc.)
+--
+-- Schema-Aware Behavior:
+--   - Queries information_schema to find ALL columns with FK to members(id)
+--   - Dynamically updates each one (PP id -> target id)
+--   - team_players handled specially (transfer rows, not just update)
+--   - invite_tokens.member_id preserved (for audit trail)
+--
+-- Audit Trail:
+--   - invite_tokens keeps permanent record: member_id (PP) + claimed_by_user_id (auth user)
+--   - If DELETE fails due to FK, we know we missed a table
+--
+-- After merge:
+--   - PP''s member record is deleted (all history transferred)
+--   - Auth user is now on all teams the PP was on
+--   - Auth user has all game history from the PP
+
+-- ============================================================================
+-- FUNCTION: merge_placeholder_into_member (Schema-Aware)
+-- ============================================================================
+-- Merges a placeholder player into an existing registered member.
+-- Dynamically finds and updates ALL foreign key references to preserve data.
+
+CREATE OR REPLACE FUNCTION merge_placeholder_into_member(
+  p_placeholder_member_id UUID,  -- The PP to merge FROM
+  p_target_member_id UUID        -- The registered member to merge INTO
+)
+RETURNS TABLE (
+  success BOOLEAN,
+  tables_updated INT,
+  total_rows_updated INT,
+  error_message TEXT
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_pp_user_id UUID;
+  v_target_user_id UUID;
+  v_tables_count INT := 0;
+  v_total_rows INT := 0;
+  v_row_count INT := 0;
+  v_fk_record RECORD;
+  v_sql TEXT;
+BEGIN
+  -- Verify the placeholder is actually a placeholder (no user_id)
+  SELECT user_id INTO v_pp_user_id
+  FROM members
+  WHERE id = p_placeholder_member_id;
+
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, 0, 0, ''Placeholder member not found''::TEXT;
+    RETURN;
+  END IF;
+
+  IF v_pp_user_id IS NOT NULL THEN
+    RETURN QUERY SELECT FALSE, 0, 0, ''Source member is not a placeholder (already has user_id)''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Verify the target is actually a registered member (has user_id)
+  SELECT user_id INTO v_target_user_id
+  FROM members
+  WHERE id = p_target_member_id;
+
+  IF NOT FOUND THEN
+    RETURN QUERY SELECT FALSE, 0, 0, ''Target member not found''::TEXT;
+    RETURN;
+  END IF;
+
+  IF v_target_user_id IS NULL THEN
+    RETURN QUERY SELECT FALSE, 0, 0, ''Target member is not registered (no user_id)''::TEXT;
+    RETURN;
+  END IF;
+
+  -- Prevent merging into self
+  IF p_placeholder_member_id = p_target_member_id THEN
+    RETURN QUERY SELECT FALSE, 0, 0, ''Cannot merge member into itself''::TEXT;
+    RETURN;
+  END IF;
+
+  -- ========================================================================
+  -- SPECIAL CASE: team_players (transfer rows, not just update FK)
+  -- ========================================================================
+  -- team_players needs special handling because we want to:
+  -- 1. Transfer PP''s team memberships to target (if not already on that team/season)
+  -- 2. Delete PP''s team_players records
+
+  WITH teams_to_add AS (
+    SELECT tp.team_id, tp.season_id, tp.is_captain, tp.individual_wins, tp.individual_losses,
+           tp.skill_level, tp.status, tp.joined_at
+    FROM team_players tp
+    WHERE tp.member_id = p_placeholder_member_id
+      AND NOT EXISTS (
+        SELECT 1 FROM team_players existing
+        WHERE existing.team_id = tp.team_id
+          AND existing.season_id = tp.season_id
+          AND existing.member_id = p_target_member_id
+      )
+  )
+  INSERT INTO team_players (member_id, team_id, season_id, is_captain, individual_wins,
+                           individual_losses, skill_level, status, joined_at)
+  SELECT p_target_member_id, team_id, season_id, is_captain, individual_wins,
+         individual_losses, skill_level, status, joined_at
+  FROM teams_to_add;
+
+  GET DIAGNOSTICS v_row_count = ROW_COUNT;
+  v_total_rows := v_total_rows + v_row_count;
+  IF v_row_count > 0 THEN
+    v_tables_count := v_tables_count + 1;
+  END IF;
+
+  -- Delete PP''s team_players records (they''ve been transferred or were duplicates)
+  DELETE FROM team_players WHERE member_id = p_placeholder_member_id;
+
+  -- ========================================================================
+  -- SCHEMA-AWARE: Find and update ALL foreign keys to members(id)
+  -- ========================================================================
+  -- Query information_schema to find all columns that reference members.id
+  -- Skip: team_players (handled above), invite_tokens.member_id (keep for audit)
+
+  FOR v_fk_record IN
+    SELECT
+      tc.table_schema,
+      tc.table_name,
+      kcu.column_name
+    FROM information_schema.table_constraints tc
+    JOIN information_schema.key_column_usage kcu
+      ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+    JOIN information_schema.constraint_column_usage ccu
+      ON ccu.constraint_name = tc.constraint_name
+      AND ccu.table_schema = tc.table_schema
+    WHERE tc.constraint_type = ''FOREIGN KEY''
+      AND ccu.table_name = ''members''
+      AND ccu.column_name = ''id''
+      AND tc.table_schema = ''public''
+      -- Skip tables we handle specially or want to preserve
+      AND tc.table_name != ''team_players''  -- Handled above with row transfer
+      AND NOT (tc.table_name = ''invite_tokens'' AND kcu.column_name = ''member_id'')  -- Keep for audit
+  LOOP
+    -- Build dynamic UPDATE statement
+    v_sql := format(
+      ''UPDATE %I.%I SET %I = $1 WHERE %I = $2'',
+      v_fk_record.table_schema,
+      v_fk_record.table_name,
+      v_fk_record.column_name,
+      v_fk_record.column_name
+    );
+
+    -- Execute the update
+    EXECUTE v_sql USING p_target_member_id, p_placeholder_member_id;
+
+    GET DIAGNOSTICS v_row_count = ROW_COUNT;
+    v_total_rows := v_total_rows + v_row_count;
+    IF v_row_count > 0 THEN
+      v_tables_count := v_tables_count + 1;
+    END IF;
+
+    RAISE NOTICE ''Updated %.%: % rows'', v_fk_record.table_name, v_fk_record.column_name, v_row_count;
+  END LOOP;
+
+  -- ========================================================================
+  -- UPDATE invite_tokens status (but keep member_id for audit)
+  -- ========================================================================
+  -- Mark any pending invites for this PP as claimed by the target user
+  -- The member_id column is preserved as the audit trail
+  UPDATE invite_tokens
+  SET
+    status = ''claimed'',
+    claimed_by_user_id = v_target_user_id,
+    claimed_at = now()
+  WHERE member_id = p_placeholder_member_id
+    AND status = ''pending'';
+
+  -- ========================================================================
+  -- DELETE the placeholder member
+  -- ========================================================================
+  -- All references have been transferred, safe to delete
+  -- If this fails, a FK constraint will tell us exactly which table we missed
+  DELETE FROM members WHERE id = p_placeholder_member_id;
+
+  RETURN QUERY SELECT TRUE, v_tables_count, v_total_rows, NULL::TEXT;
+
+EXCEPTION
+  WHEN foreign_key_violation THEN
+    -- If delete fails, we have an FK we didn''t handle
+    RETURN QUERY SELECT FALSE, v_tables_count, v_total_rows,
+      (''FK violation - table still references PP: '' || SQLERRM)::TEXT;
+  WHEN OTHERS THEN
+    RETURN QUERY SELECT FALSE, v_tables_count, v_total_rows, SQLERRM::TEXT;
+END;
+$$","-- Grant execute to service_role only (called by Edge Functions)
+GRANT EXECUTE ON FUNCTION merge_placeholder_into_member TO service_role","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON FUNCTION merge_placeholder_into_member IS
+''Schema-aware merge of a placeholder player into an existing registered member.
+
+BEHAVIOR:
+- Dynamically finds ALL foreign keys to members(id) via information_schema
+- Updates each FK column from PP id to target member id
+- team_players: transfers rows (with stats) instead of just updating FK
+- invite_tokens.member_id: preserved as audit trail (PP -> user mapping)
+
+AUDIT TRAIL:
+- invite_tokens keeps: member_id (original PP) + claimed_by_user_id (auth user)
+- This allows historical lookup even after PP member record is deleted
+
+SAFETY:
+- If DELETE fails due to FK constraint, returns error with table name
+- This catches any tables added later that we might miss
+
+Only callable by service_role (Edge Functions).''"}', 'merge_placeholder_player');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251217170000', '{"-- Migration: Check Pending Invites Function
+-- Purpose: Allow authenticated users to check if they have any pending invite tokens
+--          Called on login to notify users of unclaimed invites
+--
+-- Usage: Call after login to see if user has pending invites
+--        If results returned, show notification with link to claim page
+--        Expired invites prompt user to contact captain for resend
+
+-- ============================================================================
+-- FUNCTION: get_my_pending_invites
+-- ============================================================================
+-- Returns pending AND expired invites for the authenticated user''s email
+-- Used on login to notify users they have unclaimed placeholder players
+-- Expired invites are included so UI can prompt user to request resend
+
+CREATE OR REPLACE FUNCTION get_my_pending_invites()
+RETURNS TABLE (
+  token UUID,
+  member_id UUID,
+  placeholder_first_name TEXT,
+  placeholder_last_name TEXT,
+  team_name TEXT,
+  captain_name TEXT,
+  invited_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,
+  is_expired BOOLEAN
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_email TEXT;
+BEGIN
+  -- Get the authenticated user''s email
+  SELECT email INTO v_user_email
+  FROM auth.users
+  WHERE id = auth.uid();
+
+  IF v_user_email IS NULL THEN
+    -- No authenticated user or no email
+    RETURN;
+  END IF;
+
+  -- Return pending and expired invites for this email
+  -- Expired invites let the UI prompt user to ask captain to resend
+  RETURN QUERY
+  SELECT
+    it.token,
+    it.member_id,
+    m.first_name::TEXT as placeholder_first_name,
+    m.last_name::TEXT as placeholder_last_name,
+    t.team_name::TEXT,
+    (cm.first_name || '' '' || cm.last_name)::TEXT as captain_name,
+    it.created_at as invited_at,
+    it.expires_at,
+    (it.expires_at <= now()) as is_expired
+  FROM invite_tokens it
+  JOIN members m ON m.id = it.member_id
+  JOIN teams t ON t.id = it.team_id
+  LEFT JOIN members cm ON cm.id = it.invited_by_member_id
+  WHERE LOWER(it.email) = LOWER(v_user_email)
+    AND (
+      -- Pending and not expired
+      (it.status = ''pending'' AND it.expires_at > now())
+      OR
+      -- Expired (status pending but past expiry, or status = ''expired'')
+      (it.status IN (''pending'', ''expired'') AND it.expires_at <= now())
+    )
+  ORDER BY
+    -- Show claimable invites first, then expired
+    (it.expires_at <= now()) ASC,
+    it.created_at DESC;
+END;
+$$","-- Grant execute to authenticated users only
+GRANT EXECUTE ON FUNCTION get_my_pending_invites TO authenticated","-- ============================================================================
+-- COMMENTS
+-- ============================================================================
+
+COMMENT ON FUNCTION get_my_pending_invites IS
+''Returns pending and expired invite tokens for the authenticated user''''s email.
+Call on login to check if user has unclaimed placeholder players.
+Returns is_expired flag so UI can:
+- Show claim button for pending invites
+- Show \"Ask captain to resend\" message for expired invites''"}', 'check_pending_invites');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251218000000', '{"/**
+ * Migration: Make Venue Table Count Columns Optional
+ *
+ * The table number arrays (bar_box_table_numbers, eight_foot_table_numbers,
+ * regulation_table_numbers) are now the source of truth. The array lengths
+ * provide the counts.
+ *
+ * This migration:
+ * 1. Makes the legacy count columns optional (nullable with defaults)
+ * 2. Updates total_tables to be computed from array lengths
+ * 3. Updates the venue_must_have_tables constraint accordingly
+ */
+
+-- =============================================================================
+-- Step 1: Drop the old constraint that depends on the generated column
+-- =============================================================================
+ALTER TABLE public.venues
+DROP CONSTRAINT IF EXISTS venue_must_have_tables","-- =============================================================================
+-- Step 2: Drop the old generated column
+-- =============================================================================
+ALTER TABLE public.venues
+DROP COLUMN IF EXISTS total_tables","-- =============================================================================
+-- Step 3: Make legacy integer count columns optional
+-- =============================================================================
+ALTER TABLE public.venues
+ALTER COLUMN bar_box_tables DROP NOT NULL,
+ALTER COLUMN bar_box_tables SET DEFAULT 0","ALTER TABLE public.venues
+ALTER COLUMN regulation_tables DROP NOT NULL,
+ALTER COLUMN regulation_tables SET DEFAULT 0","-- =============================================================================
+-- Step 4: Add new generated column based on array lengths
+-- =============================================================================
+ALTER TABLE public.venues
+ADD COLUMN total_tables integer GENERATED ALWAYS AS (
+  COALESCE(array_length(bar_box_table_numbers, 1), 0) +
+  COALESCE(array_length(eight_foot_table_numbers, 1), 0) +
+  COALESCE(array_length(regulation_table_numbers, 1), 0)
+) STORED","-- =============================================================================
+-- Step 5: Migrate existing venues with old count columns to use arrays
+-- =============================================================================
+-- For venues that have bar_box_tables > 0 but empty bar_box_table_numbers,
+-- generate default table numbers [1, 2, 3, ...] based on the count
+UPDATE public.venues
+SET bar_box_table_numbers = (
+  SELECT array_agg(i)
+  FROM generate_series(1, bar_box_tables) AS i
+)
+WHERE bar_box_tables > 0
+  AND (bar_box_table_numbers IS NULL OR array_length(bar_box_table_numbers, 1) IS NULL)","-- Same for regulation_tables -> regulation_table_numbers
+-- Offset the numbers to avoid conflicts with bar_box tables
+UPDATE public.venues
+SET regulation_table_numbers = (
+  SELECT array_agg(i)
+  FROM generate_series(
+    COALESCE(array_length(bar_box_table_numbers, 1), 0) + 1,
+    COALESCE(array_length(bar_box_table_numbers, 1), 0) + regulation_tables
+  ) AS i
+)
+WHERE regulation_tables > 0
+  AND (regulation_table_numbers IS NULL OR array_length(regulation_table_numbers, 1) IS NULL)","-- =============================================================================
+-- Step 6: Add new constraint based on array-computed total
+-- =============================================================================
+ALTER TABLE public.venues
+ADD CONSTRAINT venue_must_have_tables CHECK (total_tables > 0)","-- =============================================================================
+-- Step 7: Add comments explaining the new structure
+-- =============================================================================
+COMMENT ON COLUMN public.venues.bar_box_tables IS
+''DEPRECATED: Use bar_box_table_numbers array instead. Kept for backwards compatibility.''","COMMENT ON COLUMN public.venues.regulation_tables IS
+''DEPRECATED: Use regulation_table_numbers array instead. Kept for backwards compatibility.''","COMMENT ON COLUMN public.venues.total_tables IS
+''Total number of tables (computed from array lengths: bar_box_table_numbers + eight_foot_table_numbers + regulation_table_numbers).''"}', 'venue_table_counts_optional');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251219103904', '{"-- Migration: Get Operator Player Stats
+-- Purpose: Returns player counts for an operator''s organization
+--          Used in PlayerManagement page to show breakdown of players
+--
+-- Returns:
+--   total_players: All unique members ever on teams in this org
+--   active_players: Members on teams in active/upcoming seasons
+--   placeholders: Members with user_id IS NULL (unregistered)
+--   identified_placeholders: Placeholders with email (can be invited)
+
+CREATE OR REPLACE FUNCTION get_operator_player_stats(p_org_id UUID)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_total_players INT;
+  v_active_players INT;
+  v_placeholders INT;
+  v_identified_placeholders INT;
+BEGIN
+  -- Total players: All unique members ever on teams in this org
+  SELECT COUNT(DISTINCT tp.member_id)
+  INTO v_total_players
+  FROM team_players tp
+  JOIN teams t ON t.id = tp.team_id
+  JOIN seasons s ON s.id = t.season_id
+  JOIN leagues l ON l.id = s.league_id
+  WHERE l.organization_id = p_org_id;
+
+  -- Active players: Members on teams in active/upcoming seasons
+  SELECT COUNT(DISTINCT tp.member_id)
+  INTO v_active_players
+  FROM team_players tp
+  JOIN teams t ON t.id = tp.team_id
+  JOIN seasons s ON s.id = t.season_id
+  JOIN leagues l ON l.id = s.league_id
+  WHERE l.organization_id = p_org_id
+    AND s.status IN (''active'', ''upcoming'');
+
+  -- Placeholders: Members with no user_id on teams in this org
+  SELECT COUNT(DISTINCT tp.member_id)
+  INTO v_placeholders
+  FROM team_players tp
+  JOIN teams t ON t.id = tp.team_id
+  JOIN seasons s ON s.id = t.season_id
+  JOIN leagues l ON l.id = s.league_id
+  JOIN members m ON m.id = tp.member_id
+  WHERE l.organization_id = p_org_id
+    AND m.user_id IS NULL;
+
+  -- Identified placeholders: Placeholders with email
+  SELECT COUNT(DISTINCT tp.member_id)
+  INTO v_identified_placeholders
+  FROM team_players tp
+  JOIN teams t ON t.id = tp.team_id
+  JOIN seasons s ON s.id = t.season_id
+  JOIN leagues l ON l.id = s.league_id
+  JOIN members m ON m.id = tp.member_id
+  WHERE l.organization_id = p_org_id
+    AND m.user_id IS NULL
+    AND m.email IS NOT NULL;
+
+  RETURN json_build_object(
+    ''total_players'', v_total_players,
+    ''active_players'', v_active_players,
+    ''placeholders'', v_placeholders,
+    ''identified_placeholders'', v_identified_placeholders
+  );
+END;
+$$","-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION get_operator_player_stats(UUID) TO authenticated","COMMENT ON FUNCTION get_operator_player_stats IS
+''Returns player statistics for an operator''''s organization.
+Used in PlayerManagement page to display:
+- Total players (all-time)
+- Active players (current seasons)
+- Placeholders (unregistered members)
+- Identified placeholders (PPs with email)''"}', 'get_operator_player_stats');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251219113254', '{"-- Migration: Get Operator Placeholder Players
+-- Purpose: Returns all placeholder players for an operator''s organization
+--          Used in PlayerManagement page to show/manage PPs
+--
+-- Returns array of objects:
+--   member_id: UUID of the placeholder member
+--   first_name, last_name: Name of the placeholder
+--   email: Email if set (for ID''d placeholders)
+--   team_id: Current team they''re on
+--   team_name: Name of the team
+--   season_name: Season the team is in
+--   league_name: League the team belongs to
+--   is_captain: Whether they are the team captain
+
+CREATE OR REPLACE FUNCTION get_operator_placeholders(p_org_id UUID)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  RETURN (
+    SELECT COALESCE(json_agg(
+      json_build_object(
+        ''member_id'', tp.member_id,
+        ''first_name'', m.first_name,
+        ''last_name'', m.last_name,
+        ''email'', m.email,
+        ''team_id'', t.id,
+        ''team_name'', t.name,
+        ''season_id'', s.id,
+        ''season_name'', s.season_name,
+        ''league_id'', l.id,
+        ''league_name'', l.name,
+        ''is_captain'', tp.is_captain
+      ) ORDER BY l.name, s.season_name, t.name, m.last_name, m.first_name
+    ), ''[]''::json)
+    FROM team_players tp
+    JOIN members m ON m.id = tp.member_id
+    JOIN teams t ON t.id = tp.team_id
+    JOIN seasons s ON s.id = t.season_id
+    JOIN leagues l ON l.id = s.league_id
+    WHERE l.organization_id = p_org_id
+      AND m.user_id IS NULL  -- Only placeholder players
+  );
+END;
+$$","-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION get_operator_placeholders(UUID) TO authenticated","COMMENT ON FUNCTION get_operator_placeholders IS
+''Returns all placeholder players for an operator''''s organization.
+Used in PlayerManagement page to display and manage PPs.
+Returns member info, team context, and email status for each PP.''"}', 'get_operator_placeholders');
+INSERT INTO supabase_migrations.schema_migrations VALUES ('20251219113430', '{"-- Migration: Remove Placeholder Player from Team
+-- Purpose: Allows league operators to remove a PP from a team
+--          Operators have no restrictions (can remove even if PP has games)
+--
+-- Cleanup Logic:
+--   - If PP has NO email AND is not on any other teams: DELETE member record
+--   - If PP HAS email OR is on other teams: Keep member record
+--
+-- Parameters:
+--   p_member_id: UUID of the placeholder member
+--   p_team_id: UUID of the team to remove from
+--   p_org_id: UUID of the operator''s organization (for authorization)
+--
+-- Returns JSON:
+--   success: boolean
+--   message: string (success or error description)
+--   member_deleted: boolean (whether the member record was deleted)
+
+CREATE OR REPLACE FUNCTION remove_placeholder_from_team(
+  p_member_id UUID,
+  p_team_id UUID,
+  p_org_id UUID
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_member_record RECORD;
+  v_team_record RECORD;
+  v_is_captain BOOLEAN;
+  v_other_teams INT;
+  v_member_deleted BOOLEAN := FALSE;
+BEGIN
+  -- Verify the member exists and is a placeholder (user_id IS NULL)
+  SELECT id, first_name, last_name, email, user_id
+  INTO v_member_record
+  FROM members
+  WHERE id = p_member_id;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      ''success'', FALSE,
+      ''message'', ''Member not found'',
+      ''member_deleted'', FALSE
+    );
+  END IF;
+
+  IF v_member_record.user_id IS NOT NULL THEN
+    RETURN json_build_object(
+      ''success'', FALSE,
+      ''message'', ''Cannot remove registered players using this function'',
+      ''member_deleted'', FALSE
+    );
+  END IF;
+
+  -- Verify the team belongs to this operator''s organization
+  SELECT t.id, t.name
+  INTO v_team_record
+  FROM teams t
+  JOIN seasons s ON s.id = t.season_id
+  JOIN leagues l ON l.id = s.league_id
+  WHERE t.id = p_team_id
+    AND l.organization_id = p_org_id;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      ''success'', FALSE,
+      ''message'', ''Team not found or not in your organization'',
+      ''member_deleted'', FALSE
+    );
+  END IF;
+
+  -- Check if this PP is the captain
+  SELECT tp.is_captain
+  INTO v_is_captain
+  FROM team_players tp
+  WHERE tp.member_id = p_member_id
+    AND tp.team_id = p_team_id;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      ''success'', FALSE,
+      ''message'', ''Player is not on this team'',
+      ''member_deleted'', FALSE
+    );
+  END IF;
+
+  IF v_is_captain THEN
+    RETURN json_build_object(
+      ''success'', FALSE,
+      ''message'', ''Cannot remove team captain. Reassign captain first.'',
+      ''member_deleted'', FALSE
+    );
+  END IF;
+
+  -- Remove from team_players
+  DELETE FROM team_players
+  WHERE member_id = p_member_id
+    AND team_id = p_team_id;
+
+  -- Check if PP is on any other teams
+  SELECT COUNT(*)
+  INTO v_other_teams
+  FROM team_players
+  WHERE member_id = p_member_id;
+
+  -- Cleanup: Delete member if no email AND not on other teams
+  IF v_member_record.email IS NULL AND v_other_teams = 0 THEN
+    DELETE FROM members WHERE id = p_member_id;
+    v_member_deleted := TRUE;
+  END IF;
+
+  RETURN json_build_object(
+    ''success'', TRUE,
+    ''message'', CASE
+      WHEN v_member_deleted THEN ''Player removed from team and record deleted''
+      ELSE ''Player removed from team''
+    END,
+    ''member_deleted'', v_member_deleted
+  );
+END;
+$$","-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION remove_placeholder_from_team(UUID, UUID, UUID) TO authenticated","COMMENT ON FUNCTION remove_placeholder_from_team IS
+''Removes a placeholder player from a team. League operators only.
+If the PP has no email and is not on other teams, the member record is deleted.
+Returns success status and whether the member record was deleted.''"}', 'remove_placeholder_from_team');
+
+
+--
+-- Data for Name: secrets; Type: TABLE DATA; Schema: vault; Owner: -
+--
+
+
+
+--
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: auth; Owner: -
+--
+
+SELECT pg_catalog.setval('auth.refresh_tokens_id_seq', 647, true);
+
+
+--
+-- Name: members_system_player_number_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public.members_system_player_number_seq', 138, true);
+
+
+--
+-- Name: subscription_id_seq; Type: SEQUENCE SET; Schema: realtime; Owner: -
+--
+
+SELECT pg_catalog.setval('realtime.subscription_id_seq', 1, false);
+
+
+--
+-- Name: hooks_id_seq; Type: SEQUENCE SET; Schema: supabase_functions; Owner: -
+--
+
+SELECT pg_catalog.setval('supabase_functions.hooks_id_seq', 1, false);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict GJ3N693sUzzh0WvPh6eZLLiLL8ElTkFaGhdVp7TwM2Vwj1c753a08UWMQMhgJc8
+

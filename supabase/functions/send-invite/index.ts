@@ -318,8 +318,8 @@ serve(async (req) => {
           ? "Claim invite email sent to existing user!"
           : "Registration invite email sent!",
         inviteType: isExistingUser ? "claim" : "register",
-        token: token,  // Return token for testing/debugging
-        data
+        // Token intentionally NOT returned for security - the invite is matched by email
+        emailId: data?.id,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

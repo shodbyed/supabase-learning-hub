@@ -11,6 +11,8 @@ interface InfoButtonProps {
   className?: string;
   /** Size variant: 'sm' for smaller inline use, 'default' for standard size */
   size?: 'sm' | 'default';
+  /** Force popup alignment: 'left', 'right', or 'center'. If not set, auto-detects based on viewport. */
+  align?: 'left' | 'right' | 'center';
 }
 
 /**
@@ -23,22 +25,28 @@ interface InfoButtonProps {
  * @param label - Optional text to display before the ? button
  * @param className - Additional CSS classes for the container
  * @param size - Size variant: 'sm' (16px) or 'default' (24px)
+ * @param align - Force popup alignment: 'left', 'right', or 'center'. Auto-detects if not set.
  */
 export const InfoButton: React.FC<InfoButtonProps> = ({
   title,
   children,
   label,
   className = "",
-  size = 'default'
+  size = 'default',
+  align,
 }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [popupPosition, setPopupPosition] = useState<'left' | 'right' | 'center'>('center');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
-  // Calculate popup position to keep it on screen
+  // Calculate popup position to keep it on screen (unless align prop is set)
   useEffect(() => {
-    if (showInfo && buttonRef.current) {
+    if (align) {
+      // Use forced alignment
+      setPopupPosition(align);
+    } else if (showInfo && buttonRef.current) {
+      // Auto-detect based on viewport
       const buttonRect = buttonRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const popupWidth = 320; // w-80 = 320px
@@ -59,7 +67,7 @@ export const InfoButton: React.FC<InfoButtonProps> = ({
         setPopupPosition('center');
       }
     }
-  }, [showInfo]);
+  }, [showInfo, align]);
 
   // Close popup when clicking outside
   useEffect(() => {

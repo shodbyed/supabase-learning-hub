@@ -13,7 +13,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Popover,
   PopoverContent,
@@ -21,14 +21,15 @@ import {
 } from '@/components/ui/popover';
 import { User, MessageSquare, Flag, Ban, DollarSign, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMemberId, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked, useUserProfile } from '@/api/hooks';
+import { useMemberId, useMemberById, useCreateOrOpenConversation, useBlockUser, useUnblockUser, useIsUserBlocked, useUserProfile } from '@/api/hooks';
+import { queryKeys } from '@/api/queryKeys';
 import { ReportUserModal } from '@/components/ReportUserModal';
 import { InvitePlayerModal } from '@/components/InvitePlayerModal';
+import { RecordDuesModal } from '@/components/RecordDuesModal';
 import { ConfirmDialog } from '@/components/shared';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
-import { supabase } from '@/supabaseClient';
-import { markMembershipPaid, updateMembershipPaidDate, updatePlayerStartingHandicaps } from '@/api/queries/players';
+import { updatePlayerStartingHandicaps } from '@/api/queries/players';
 import {
   Dialog,
   DialogContent,
@@ -53,6 +54,14 @@ interface PlayerNameLinkProps {
   playerId: string;
   playerName: string;
   className?: string;
+  /** Team ID for invite context (required for email invites) */
+  teamId?: string;
+  /** Team name for invite email content */
+  teamName?: string;
+  /** Captain's name for invite email content */
+  captainName?: string;
+  /** Captain's member ID for tracking who sent the invite */
+  captainMemberId?: string;
   onSendMessage?: (playerId: string) => void;
   onReportUser?: (playerId: string) => void;
   onBlockUser?: (playerId: string) => void;
@@ -63,6 +72,10 @@ export function PlayerNameLink({
   playerId,
   playerName,
   className,
+  teamId,
+  teamName,
+  captainName,
+  captainMemberId,
   onSendMessage,
   onReportUser,
   onBlockUser,
@@ -79,8 +92,7 @@ export function PlayerNameLink({
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [showUnblockConfirm, setShowUnblockConfirm] = useState(false);
-  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
-  const [showReversePaymentConfirm, setShowReversePaymentConfirm] = useState(false);
+  const [showDuesModal, setShowDuesModal] = useState(false);
   const [showHandicapModal, setShowHandicapModal] = useState(false);
   const [handicap3v3, setHandicap3v3] = useState<string>('0');
   const [handicap5v5, setHandicap5v5] = useState<string>('40');
@@ -90,73 +102,13 @@ export function PlayerNameLink({
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
-  // Fetch player's full name, email, and placeholder status (always when popover is open)
-  const { data: playerBasicData } = useQuery({
-    queryKey: ['playerBasicData', playerId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('members')
-        .select('first_name, last_name, user_id, email')
-        .eq('id', playerId)
-        .single();
-      if (error) throw error;
-      return {
-        fullName: `${data.first_name} ${data.last_name}`,
-        isPlaceholder: data.user_id === null,
-        email: data.email,
-      };
-    },
-    enabled: open && !!playerId,
-    staleTime: 60000, // 1 minute - names don't change often
-  });
+  // Fetch full member data using existing hook (cached for 15 minutes)
+  const { data: memberData } = useMemberById(playerId);
 
-  const playerFullName = playerBasicData?.fullName;
-  const isPlaceholder = playerBasicData?.isPlaceholder ?? false;
-  const playerEmail = playerBasicData?.email;
-
-  // Fetch player's membership status and handicaps (only when popover is open and user is operator)
-  const { data: playerData } = useQuery({
-    queryKey: ['playerOperatorData', playerId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('members')
-        .select('membership_paid_date, starting_handicap_3v3, starting_handicap_5v5')
-        .eq('id', playerId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    enabled: open && isOperator && !!playerId,
-    staleTime: 30000, // 30 seconds
-  });
-
-  // Mark membership as paid mutation
-  const markPaidMutation = useMutation({
-    mutationFn: (id: string) => markMembershipPaid(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playerOperatorData', playerId] });
-      queryClient.invalidateQueries({ queryKey: ['playerDetails'] });
-      toast.success(`${playerName}'s membership marked as paid!`);
-    },
-    onError: (error) => {
-      logger.error('Error marking membership as paid', { error: error instanceof Error ? error.message : String(error) });
-      toast.error('Failed to update membership status. Please try again.');
-    },
-  });
-
-  // Reverse membership mutation
-  const reverseMembershipMutation = useMutation({
-    mutationFn: (id: string) => updateMembershipPaidDate(id, null),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playerOperatorData', playerId] });
-      queryClient.invalidateQueries({ queryKey: ['playerDetails'] });
-      toast.success(`${playerName}'s membership reversed!`);
-    },
-    onError: (error) => {
-      logger.error('Error reversing membership', { error: error instanceof Error ? error.message : String(error) });
-      toast.error('Failed to reverse membership. Please try again.');
-    },
-  });
+  // Derive values from member data
+  const playerFullName = memberData ? `${memberData.first_name} ${memberData.last_name}` : undefined;
+  const isPlaceholder = memberData?.user_id === null;
+  const playerEmail = memberData?.email;
 
   // Check if user is blocked (only fetch when popover is open)
   // Note: We can't conditionally enable this hook based on `open` state because hooks can't be conditional.
@@ -283,24 +235,8 @@ export function PlayerNameLink({
   // Handle membership payment click (operators only)
   const handleMembershipAction = () => {
     if (!isOperator) return;
-
-    const hasPaid = !!playerData?.membership_paid_date;
-    if (hasPaid) {
-      setShowReversePaymentConfirm(true);
-    } else {
-      setShowPaymentConfirm(true);
-    }
     setOpen(false);
-  };
-
-  // Confirm payment received
-  const handlePaymentConfirm = () => {
-    markPaidMutation.mutate(playerId);
-  };
-
-  // Confirm reverse payment
-  const handleReversePaymentConfirm = () => {
-    reverseMembershipMutation.mutate(playerId);
+    setShowDuesModal(true);
   };
 
   // Update starting handicaps mutation
@@ -308,7 +244,7 @@ export function PlayerNameLink({
     mutationFn: ({ h3v3, h5v5 }: { h3v3: number; h5v5: number }) =>
       updatePlayerStartingHandicaps(playerId, h3v3, h5v5),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['playerOperatorData', playerId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.members.detail(playerId) });
       queryClient.invalidateQueries({ queryKey: ['unauthorizedPlayers'] });
       queryClient.invalidateQueries({ queryKey: ['playerDetails'] });
       toast.success(`Starting handicaps set for ${playerName}!`);
@@ -327,8 +263,8 @@ export function PlayerNameLink({
     if (!isOperator) return;
 
     // Pre-fill with current values or defaults
-    const current3v3 = playerData?.starting_handicap_3v3;
-    const current5v5 = playerData?.starting_handicap_5v5;
+    const current3v3 = memberData?.starting_handicap_3v3;
+    const current5v5 = memberData?.starting_handicap_5v5;
     setHandicap3v3(current3v3 !== null && current3v3 !== undefined ? String(current3v3) : '0');
     setHandicap5v5(current5v5 !== null && current5v5 !== undefined ? String(current5v5) : '40');
     setOpen(false);
@@ -355,7 +291,7 @@ export function PlayerNameLink({
   };
 
   // Determine if membership action should be shown and what label to use
-  const hasMembershipPaid = !!playerData?.membership_paid_date;
+  const hasMembershipPaid = !!memberData?.membership_paid_date;
 
   return (
     <>
@@ -461,7 +397,7 @@ export function PlayerNameLink({
                   )}
                 >
                   <DollarSign className="h-4 w-4" />
-                  <span>{hasMembershipPaid ? 'Reverse Membership' : 'Received Membership Fee'}</span>
+                  <span>{hasMembershipPaid ? 'Reverse Dues' : 'Mark Dues Paid'}</span>
                 </button>
               </>
             )}
@@ -522,28 +458,13 @@ export function PlayerNameLink({
         variant="default"
       />
 
-      {/* Mark Membership Paid Confirmation */}
-      <ConfirmDialog
-        open={showPaymentConfirm}
-        onOpenChange={setShowPaymentConfirm}
-        title="Mark Membership as Paid"
-        description={`Confirm that ${playerName} has paid their membership fee for ${new Date().getFullYear()}. Their membership will be valid through December 31, ${new Date().getFullYear()}. Do not accept payments for ${new Date().getFullYear() + 1} until next calendar year.`}
-        confirmLabel="Confirm Payment"
-        cancelLabel="Cancel"
-        onConfirm={handlePaymentConfirm}
-        variant="default"
-      />
-
-      {/* Reverse Membership Confirmation */}
-      <ConfirmDialog
-        open={showReversePaymentConfirm}
-        onOpenChange={setShowReversePaymentConfirm}
-        title="Reverse Membership Payment"
-        description={`Confirm that ${playerName} has not paid the membership fees for ${new Date().getFullYear()}. This will mark their membership as unpaid.`}
-        confirmLabel="Reverse Payment"
-        cancelLabel="Cancel"
-        onConfirm={handleReversePaymentConfirm}
-        variant="destructive"
+      {/* Record Dues Modal */}
+      <RecordDuesModal
+        open={showDuesModal}
+        onOpenChange={setShowDuesModal}
+        playerId={playerId}
+        playerName={playerName}
+        hasPaid={hasMembershipPaid}
       />
 
       {/* Set Starting Handicaps Modal */}
@@ -559,7 +480,7 @@ export function PlayerNameLink({
           <div className="space-y-4 py-4">
             {/* Current values display */}
             <div className="text-sm text-gray-500">
-              Current: 3v3 = {playerData?.starting_handicap_3v3 ?? 'Not set'}, 5v5 = {playerData?.starting_handicap_5v5 ?? 'Not set'}
+              Current: 3v3 = {memberData?.starting_handicap_3v3 ?? 'Not set'}, 5v5 = {memberData?.starting_handicap_5v5 ?? 'Not set'}
             </div>
 
             {/* 3v3 Handicap */}
@@ -616,6 +537,11 @@ export function PlayerNameLink({
         playerId={playerId}
         playerName={playerFullName || playerName}
         playerEmail={playerEmail}
+        playerUserId={memberData?.user_id}
+        teamId={teamId}
+        teamName={teamName}
+        captainName={captainName}
+        captainMemberId={captainMemberId}
       />
     </>
   );

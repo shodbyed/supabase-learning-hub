@@ -33,6 +33,9 @@ export interface Member {
   system_player_number: number; // System-generated player ID (always assigned)
   bca_member_number: string | null; // Official BCA member number (null until assigned)
   membership_paid_date: string | null; // ISO date string when membership was last paid
+  starting_handicap_3v3: number | null; // Starting handicap for 3v3 format. NULL = not yet authorized.
+  starting_handicap_5v5: number | null; // Starting handicap for 5v5 format. NULL = not yet authorized.
+  profanity_filter_enabled?: boolean; // User's profanity filter preference
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
 }

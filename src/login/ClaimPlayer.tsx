@@ -20,6 +20,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../supabaseClient';
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
@@ -34,6 +35,7 @@ import {
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { useUser } from '@/context/useUser';
+import { queryKeys } from '@/api/queryKeys';
 
 /** Data returned from get_invite_details() */
 interface InviteDetails {
@@ -44,6 +46,12 @@ interface InviteDetails {
   captain_name: string | null;
   expires_at: string;
   status: string;
+}
+
+/** Team info for displaying all teams the PP belongs to */
+interface TeamInfo {
+  team_id: string;
+  team_name: string;
 }
 
 /** State for the claim process */
@@ -80,6 +88,7 @@ const ClaimButton: React.FC<{
 export const ClaimPlayer: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, loading: userLoading } = useUser();
 
   const claimId = searchParams.get('claim');
@@ -94,6 +103,8 @@ export const ClaimPlayer: React.FC = () => {
     gamesTransferred: number;
     lineupsTransferred: number;
   } | null>(null);
+  /** All teams the placeholder player belongs to */
+  const [allTeams, setAllTeams] = useState<TeamInfo[]>([]);
 
   /**
    * Fetch invite details when component mounts
@@ -158,8 +169,31 @@ export const ClaimPlayer: React.FC = () => {
           return;
         }
 
-        // Valid invite
+        // Valid invite - now fetch all teams this PP belongs to
         setInviteDetails(details);
+
+        // Fetch all teams the placeholder player is on
+        const { data: teamData, error: teamsError } = await supabase
+          .from('team_players')
+          .select(`
+            team_id,
+            teams (
+              id,
+              team_name
+            )
+          `)
+          .eq('member_id', details.member_id);
+
+        if (!teamsError && teamData) {
+          const teams: TeamInfo[] = teamData
+            .filter((tp: any) => tp.teams && !Array.isArray(tp.teams))
+            .map((tp: any) => ({
+              team_id: tp.teams.id,
+              team_name: tp.teams.team_name,
+            }));
+          setAllTeams(teams);
+        }
+
         setClaimState('valid');
       } catch (err) {
         logger.error('Unexpected error fetching invite', { error: err });
@@ -235,6 +269,12 @@ export const ClaimPlayer: React.FC = () => {
         memberId: inviteDetails.member_id,
         stats: result.stats,
       });
+
+      // Invalidate pending invites query so Dashboard doesn't show the modal again
+      queryClient.invalidateQueries({ queryKey: queryKeys.invites.pending() });
+      // Also invalidate member queries since user now has a linked member
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+      queryClient.invalidateQueries({ queryKey: ['currentMember'] });
 
       setMergeStats(result.stats);
       setClaimState('success');
@@ -422,10 +462,15 @@ export const ClaimPlayer: React.FC = () => {
 
   // Valid invite - show claim UI
   if (claimState === 'valid' && inviteDetails) {
+    const hasMultipleTeams = allTeams.length > 1;
+
     return (
       <LoginCard
         title="Join Team"
-        description="Claim your player history and join the team"
+        description={hasMultipleTeams
+          ? "Claim your player history and join your teams"
+          : "Claim your player history and join the team"
+        }
       >
         <div className="space-y-6">
           {/* Invite details card */}
@@ -438,9 +483,24 @@ export const ClaimPlayer: React.FC = () => {
                     ? `${inviteDetails.captain_name} invited you to join`
                     : 'You\'ve been invited to join'}
                 </p>
-                <p className="text-lg font-semibold text-blue-800 mt-1">
-                  {inviteDetails.team_name}
-                </p>
+                {hasMultipleTeams ? (
+                  <div className="mt-2">
+                    <p className="text-sm text-blue-700 mb-2">
+                      Your player profile is on {allTeams.length} teams:
+                    </p>
+                    <ul className="space-y-1">
+                      {allTeams.map((team) => (
+                        <li key={team.team_id} className="text-base font-semibold text-blue-800">
+                          • {team.team_name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="text-lg font-semibold text-blue-800 mt-1">
+                    {inviteDetails.team_name}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -456,9 +516,26 @@ export const ClaimPlayer: React.FC = () => {
             </p>
           </div>
 
+          {/* Multiple teams notice */}
+          {hasMultipleTeams && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-medium mb-1">Important:</p>
+                  <p>
+                    Accepting this invite will add you to all {allTeams.length} teams listed above.
+                    If you were added to a team by mistake, please contact your league operator
+                    to remove you from that team <strong>before</strong> accepting this invite.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Claim button */}
           <ClaimButton
-            teamName={inviteDetails.team_name}
+            teamName={hasMultipleTeams ? `${allTeams.length} Teams` : inviteDetails.team_name}
             onClaim={handleClaim}
             isClaiming={isClaiming}
           />

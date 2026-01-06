@@ -125,7 +125,7 @@ export const PendingInvitesModal: React.FC<PendingInvitesModalProps> = ({
                   onClick={() => handleClaim(invite)}
                 >
                   <UserCheck className="h-4 w-4 mr-1" />
-                  Claim
+                  Accept
                 </Button>
               </div>
             </div>
